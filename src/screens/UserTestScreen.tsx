@@ -5,7 +5,7 @@ interface Answers {
   q1WantMore: number | null;
   q2Enjoyable: number | null;
   q3QuestionedAi: number | null;
-  q4Confusion: number | null;
+  q4Clarity: number | null;
   q5WantReuse: number | null;
 }
 
@@ -14,19 +14,30 @@ interface Props {
     q1WantMore: number;
     q2Enjoyable: number;
     q3QuestionedAi: number;
-    q4Confusion: number;
+    q4Clarity: number;
     q5WantReuse: number;
     freeText: string;
   }) => void;
   onSkip: () => void;
 }
 
+/**
+ * SEMANTICS FIX Run (Section 16): Q3 was previously phrased as "did you
+ * think without just believing the AI" — a normatively loaded question that
+ * tells the respondent "doubting is good," contaminating any later use of
+ * this survey alongside calibration data. Reworded to ask neutrally whether
+ * they reflected at all, without implying which direction is correct.
+ * Q4 was previously phrased as "were you confused" (higher = worse), the
+ * only one of the 5 questions where a higher number meant something bad —
+ * flipped to "was it clear" so all 5 questions consistently read
+ * higher = more positive.
+ */
 const QUESTIONS: { key: keyof Answers; label: string }[] = [
   { key: "q1WantMore", label: "もう1問やってみたいと思いましたか？" },
   { key: "q2Enjoyable", label: "問題を考えること自体は面白かったですか？" },
-  { key: "q3QuestionedAi", label: "AIの意見をそのまま信じず考えましたか？" },
-  { key: "q4Confusion", label: "操作で迷ったところはありましたか？" },
-  { key: "q5WantReuse", label: "このゲームをもう一度使いたいと思いますか？" },
+  { key: "q3QuestionedAi", label: "AIの意見を見たあと、自分の判断について考えましたか？" },
+  { key: "q4Clarity", label: "画面の操作は分かりやすかったですか？" },
+  { key: "q5WantReuse", label: "また別の日に、このゲームを開きたいと思いますか？" },
 ];
 
 function LikertRow({
@@ -65,7 +76,7 @@ export function UserTestScreen({ onSubmit, onSkip }: Props) {
     q1WantMore: null,
     q2Enjoyable: null,
     q3QuestionedAi: null,
-    q4Confusion: null,
+    q4Clarity: null,
     q5WantReuse: null,
   });
   const [freeText, setFreeText] = useState("");
@@ -111,13 +122,13 @@ export function UserTestScreen({ onSubmit, onSkip }: Props) {
           answers.q1WantMore !== null &&
           answers.q2Enjoyable !== null &&
           answers.q3QuestionedAi !== null &&
-          answers.q4Confusion !== null &&
+          answers.q4Clarity !== null &&
           answers.q5WantReuse !== null &&
           onSubmit({
             q1WantMore: answers.q1WantMore,
             q2Enjoyable: answers.q2Enjoyable,
             q3QuestionedAi: answers.q3QuestionedAi,
-            q4Confusion: answers.q4Confusion,
+            q4Clarity: answers.q4Clarity,
             q5WantReuse: answers.q5WantReuse,
             freeText,
           })

@@ -64,6 +64,7 @@ export const case003: CaseData = {
     updateCondition: "同じミスが他の人にも起きているという、仕組み由来を示す証拠が提示された場合。",
     doNotUpdateCondition: "タクヤさん個人の性格に関する伝聞のみが追加された場合。",
     uncertaintyCondition: "追加情報なしでは、個人要因と仕組み要因のどちらが主因か区別できない。",
+    utteranceType: "QUESTION",
     aiResponseGroundTruth: null,
     transferTarget: "TRANSFER-001",
     evidenceStrength: "diagnostic",

@@ -33,7 +33,12 @@
 ## AI依存を促さない
 
 - AI信頼度・AI親密度・AI好感度・AIとの絆レベルといった、AIとの関係性を数値化・スコア化する概念は実装しない。
-- AI介入画面には「AIは常に正しいとは限りません。参考にしつつ、自分でも検証してみましょう。」という注記を常に表示する。
+- 「AIは常に正しいとは限りません。参考にしつつ、自分でも検証してみましょう。」という安全原則自体は
+  維持するが、**SEMANTICS FIX Run**により表示場所をAI_INTERVENTION画面（個別の判断の直前、
+  Calibration対象ケースではACCEPT/VERIFY/HOLD/REJECTウィジェットの真横）からHOME画面（個別の判断より
+  前）へ一本化した。判断の直前に「疑え」と促す表示は、AI Calibrationの測定（プレイヤーが発言内容だけを
+  見て判断できているか）を汚すデマンド特性（demand characteristic）になり得るため
+  （`docs/AI_CALIBRATION.md`）。
 - **SPEC AMENDMENT**：AI CALIBRATION（AI提案を採用した／検証した／保留した／拒否した）は
   `docs/AI_CALIBRATION.md` のCALIBRATION MATRIXとして実装した。ただし単一のTrust Scoreには集約しない。
   「AIを疑えば高得点」「AIを信じれば高得点」のどちらも成立しないよう、AI提案の品質（正しい／不確実／

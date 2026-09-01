@@ -10,15 +10,26 @@ import type { CaseData } from "../../types/case";
  * test" — it is mixed into the case rotation like any other case
  * (Section 10). Internally, only `caseType: "TRANSFER"` marks it.
  *
- * Also doubles as this build's CORRECT-ground-truth AI_CALIBRATION content
- * (Section 2): CASE-005 alone would teach "AI claims are usually wrong" —
- * this case's claim turns out to hold up, so blanket AI-rejection can be
- * told apart from genuine verification behavior.
+ * CORRECTION (SEMANTICS FIX Run, Section 4 audit): the validation build
+ * originally also set `aiResponseGroundTruth: "CORRECT"` here, intending
+ * this case to double as CORRECT-quality AI_CALIBRATION content. Audited
+ * against the actual authored content, that was wrong: the notification in
+ * `initialSituation` is never attributed to an AI, and `aiIntervention` is
+ * a Socratic fact-vs-interpretation question ("事実ですか？それとも解釈です
+ * か？"), structurally identical to CASE-001's DETECTIVE line — there is no
+ * claim or recommendation here for a player to accept/verify/hold/reject.
+ * Rewriting the flavor text to inject an AI attribution just to keep the
+ * CORRECT label would have been exactly the "force a QUESTION into a CLAIM
+ * to balance the quality set" anti-pattern this Run forbids. Set to `null`
+ * instead — this case's real, unforced purpose (an OBSERVATION/FALSIFICATION
+ * transfer case) is unaffected. See docs/AI_CALIBRATION.md and
+ * docs/DECISIONS.md for the full reasoning. Consequence: there is currently
+ * no CORRECT-quality calibration-eligible case (KNOWN LIMITATION).
  */
 export const transfer001: CaseData = {
   caseId: "TRANSFER-001",
   title: "話題の新機能通知",
-  category: "AIの提案を疑う",
+  category: "事実と解釈",
   difficulty: "medium",
   level: 0,
   caseType: "TRANSFER",
@@ -62,7 +73,7 @@ export const transfer001: CaseData = {
   confidencePrompt: "この考えにどれくらい自信がありますか？",
 
   aiIntervention:
-    "その数字自体は、確かに表示されている事実ですね。では、その数字から「利用者はみんな満足している」と考えるのは、事実ですか？　それとも解釈ですか？",
+    "その数字自体は、確かに表示されている事実ですね。では、その数字から「利用者はみんな満足している」と考えるのは、事実ですか？ それとも解釈ですか？",
   falsificationPrompt: "その他、考えたことがあれば書いてください（任意）",
 
   newFacts: [
@@ -81,7 +92,8 @@ export const transfer001: CaseData = {
     updateCondition: "調査の対象者・質問文・回答率など、方法に関する具体的な情報が示された場合。",
     doNotUpdateCondition: "同じ数字が繰り返し強調されるだけの場合。",
     uncertaintyCondition: "追加情報なしでは、この数字がどれだけ信頼できるか判断できない。",
-    aiResponseGroundTruth: "CORRECT",
+    utteranceType: "QUESTION",
+    aiResponseGroundTruth: null,
     transferTarget: "CASE-001,CASE-003",
     evidenceStrength: "diagnostic",
     evidenceSupportsChoiceId: "a",

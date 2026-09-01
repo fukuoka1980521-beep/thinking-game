@@ -79,6 +79,10 @@ export const transfer002: CaseData = {
     updateCondition: "レビュー本文の具体的な記述や、配送トラブルの実例など、原因を裏付ける具体的な証拠が示された場合。",
     doNotUpdateCondition: "分析ツールが同じ見立てを繰り返すだけの場合。",
     uncertaintyCondition: "追加情報なしでは、確度中程度の見立てが正しいかどうか判断できない。",
+    // The analytics tool asserts a hedged causal claim ("確度：中程度"),
+    // explicitly attributed to "分析ツール" in initialSituation — a genuine
+    // CLAIM, not a question (SEMANTICS FIX Run Section 4 audit).
+    utteranceType: "CLAIM",
     aiResponseGroundTruth: "UNCERTAIN",
     transferTarget: "CASE-002,CASE-004",
     evidenceStrength: "diagnostic",

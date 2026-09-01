@@ -1,4 +1,4 @@
-import type { AbilityKey, AiCharacterKey, AiTrapType, CaseType, PlayerAiAction } from "./case";
+import type { AbilityKey, AiCharacterKey, AiTrapType, CaseType, PlayerAiAction, UtteranceType } from "./case";
 
 export type ScreenId =
   | "CASE_INTRO"
@@ -129,6 +129,10 @@ export interface TrajectoryLog {
   };
   aiIntervention: {
     message: string;
+    /** Snapshotted from the case's rubric at completion time — see isCalibrationEligible. */
+    utteranceType: UtteranceType;
+    /** True iff utteranceType !== "QUESTION" && the case has a non-null aiResponseGroundTruth. */
+    calibrationEligible: boolean;
     playerAction: PlayerAiAction | null;
     problemTypeSelected: AiTrapType | null;
     freeText: string;
@@ -181,7 +185,15 @@ export interface MetricEvent {
   caseId?: string;
 }
 
-/** The 5 optional post-play questions (Section 8). 1-5 Likert scale, local-only. */
+/**
+ * The 5 optional post-play questions (Section 8). 1-5 Likert scale,
+ * local-only. All 5 are phrased so higher = more positive/more agreement
+ * (SEMANTICS FIX Run Section 16 — `q4` used to be phrased as "how much did
+ * you get confused," which inverted the scale relative to the other 4
+ * questions; it's now phrased positively and renamed from `q4Confusion` to
+ * `q4Clarity` to match, since a field still named "Confusion" holding
+ * clarity ratings would itself be a latent semantic bug).
+ */
 export interface UserTestResponse {
   responseId: string;
   timestamp: string;
@@ -189,7 +201,7 @@ export interface UserTestResponse {
   q1WantMore: number;
   q2Enjoyable: number;
   q3QuestionedAi: number;
-  q4Confusion: number;
+  q4Clarity: number;
   q5WantReuse: number;
   freeText: string;
 }

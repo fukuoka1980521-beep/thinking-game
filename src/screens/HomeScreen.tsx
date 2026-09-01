@@ -11,7 +11,8 @@ export function HomeScreen({ hasInProgress, onResume, onTodaysCase, onSelectCase
     <div className="screen">
       <div>
         <h1 className="screen-title">思考整理ゲーム</h1>
-        <p className="muted">観察・仮説・反証・判断更新を、短いケースで練習します。</p>
+        <p className="muted">3分で終わる、小さな判断ゲーム。</p>
+        <p className="muted">最初にどう思う？　新しい事実が出たら、判断は変わる？</p>
       </div>
 
       <p className="test-notice">

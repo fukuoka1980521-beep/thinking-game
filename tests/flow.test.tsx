@@ -253,9 +253,9 @@ describe("play run: NEXT_CASE -> session summary -> user test (Section 5/7/8/9)"
     const questions = [
       "もう1問やってみたいと思いましたか？",
       "問題を考えること自体は面白かったですか？",
-      "AIの意見をそのまま信じず考えましたか？",
-      "操作で迷ったところはありましたか？",
-      "このゲームをもう一度使いたいと思いますか？",
+      "AIの意見を見たあと、自分の判断について考えましたか？",
+      "画面の操作は分かりやすかったですか？",
+      "また別の日に、このゲームを開きたいと思いますか？",
     ];
     for (const q of questions) {
       const group = screen.getByRole("radiogroup", { name: q });

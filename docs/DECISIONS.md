@@ -1,6 +1,54 @@
 # DECISIONS — 思考整理ゲーム MVP v0.1
 
-## GITHUB_PAGES_TEST_DEPLOY関連の意思決定（本Run）
+## FIRST_CASE_AND_CALIBRATION_SEMANTICS関連の意思決定（本Run）
+
+### なぜTRANSFER-001を「CLAIMへ書き換え」ではなく「null（QUESTION）へ訂正」したのか
+
+監査の結果、TRANSFER-001の`aiIntervention`は「その数字から『みんな満足している』と考えるのは、事実です
+か？それとも解釈ですか？」というCASE-001のDETECTIVEと同型のソクラテス式の問いであり、`initialSituation`
+の通知文もAIへ明示的に帰属されていなかった。にもかかわらず`aiResponseGroundTruth: "CORRECT"`を設定し、
+ACCEPT/VERIFY/HOLD/REJECTウィジェットを表示していたのは意味論上の誤りだった。
+
+この誤りを直すのに2つの道があった：(1) `null`へ訂正する、(2) ケース文面を書き換えて本物のCLAIMにする。
+(2)を選ばなかった理由は、TRANSFER-001の本来の目的（CASE-001/003のOBSERVATION/FALSIFICATION転移テスト）
+はCalibration対象である必要が全くなく、書き換えは「AI品質のバランスを保つためだけにQUESTIONをCLAIMへ
+強制する」という、本Runが明示的に禁止するアンチパターンそのものになってしまうため。(1)を選び、
+「CORRECT品質のCalibration対象ケースが現在0件」という事実をKNOWN LIMITATIONとして正直に記録した
+（`docs/AI_CALIBRATION.md`）。ケース数を増やして帳尻を合わせることもしなかった。
+
+### なぜCASE-005のutteranceTypeをRECOMMENDATIONではなくCLAIMにしたのか
+
+AIの発言は「背景色を変えたことで売上が3倍になった」という因果の主張と、「青系デザインを増やすことを
+おすすめします」という推奨の両方を含む。本Runの明示的な指示（Section 19試験項目5）でCLAIMに固定する
+ことが求められたため、これに従った。評価対象の核はrubric上も「因果関係の即断」という主張の誤りであり、
+推奨はその主張に乗っかった修辞的な付け足しと位置づけている。
+
+### なぜAI_INTERVENTION画面の「AIは常に正しいとは限りません」注記を削除したのか
+
+この注記は全ケースの AI_INTERVENTION画面に常時表示されており、特にCalibration対象ケースでは
+ACCEPT/VERIFY/HOLD/REJECTウィジェットのすぐ横に出ていた。判断の直前に「鵜呑みにするな」と促すのは、
+H2（CASE-005経験後にCORRECT/UNCERTAIN主張まで過剰拒否しないか）の測定を汚すデマンド特性
+（demand characteristic）になり得る。安全原則自体は削除せず、HOME画面（個別の判断の直前ではない場所）
+に既存の同趣旨の注記が残っているため、そちらに一本化した（`docs/SAFETY_PRINCIPLES.md`）。
+
+### なぜUser Test Q4を「confusion」から「clarity」へ反転・改名したのか
+
+Q1・Q2・Q3・Q5は「高い評価＝肯定的」の向きで統一されていたが、Q4だけ「操作で迷ったか」という
+「高い評価＝否定的」の向きだった。分析時に符号を反転し忘れるミスを誘発しやすく、フィールド名
+`q4Confusion`のまま値の意味だけ反転させるのはさらに悪い（フィールド名と実際の意味がずれる、まさに
+本Run全体が修正しようとしている類の意味論バグになる）。そのため質問文を「画面の操作は分かりやすかった
+ですか？」と肯定的に言い換え、フィールド名も`q4Clarity`へ改名し、保存キーをv1→v2へ更新した
+（旧v1データは互換性を保つ理由がないローカルの使い捨てテストデータのため、移行はしない）。
+
+### なぜCASE-001に選択肢「e」を追加したのか
+
+CASE-001は最初にプレイヤーが触れるケースであり、4つの原因仮説（a〜d）のいずれかを必ず選ばせる構造に
+なっていた。観察・反証を訓練するケースが「必ず何かの原因を言い当てさせる」設計だと、不確実性を保持する
+という本来の目的と矛盾する。「今の情報だけでは、まだ判断できない」を第5の主選択肢として追加し、
+`rubric.uncertaintyChoiceId`で明示した。既存の選択肢a〜dのidは変更していないため、既存テストへの
+影響は最小限。
+
+## GITHUB_PAGES_TEST_DEPLOY関連の意思決定（前Run）
 
 ### なぜGitHub Pages + GitHub Actionsなのか
 

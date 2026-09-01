@@ -29,15 +29,26 @@ REJECT regardless of `aiResponseGroundTruth`.
 **Why it matters:** Section F explicitly forbids treating "reject the AI" as inherently high-scoring; if
 players learn "always distrust AI" instead of "check the AI," the trap has backfired.
 
-**What to measure:** `aiCalibration` label distribution (`docs/AI_CALIBRATION.md`) across CASE-005
-(INCORRECT), TRANSFER-001 (CORRECT), and TRANSFER-002 (UNCERTAIN) — specifically whether a player who
-just rejected CASE-005's claim also rejects TRANSFER-001's *correct* claim (that would be
-`under_reliance`, the bad-direction failure this hypothesis is watching for).
+**What to measure:** `aiCalibration` label distribution (`docs/AI_CALIBRATION.md`) across the
+calibration-eligible cases — specifically whether a player who just rejected CASE-005's claim (INCORRECT)
+also rejects a subsequent *correct* claim (that would be `under_reliance`, the bad-direction failure this
+hypothesis is watching for).
 
-**Status:** Now testable with the current 3-quality case set (validation build Section 2). Still requires
-real user sessions with enough repeat play to see order effects between the three cases — this build's own
-tests only verify the mechanism (`tests/evaluationEngine.test.ts`, `tests/data.test.ts`), not the human
-behavioral question.
+**Status corrected by the SEMANTICS FIX Run:** the previous Run claimed this was "now testable with the
+current 3-quality case set." That was wrong — TRANSFER-001, audited against its actual content, turned out
+to be a Socratic question, not a CORRECT-quality claim (`docs/AI_CALIBRATION.md`). There is currently **no
+CORRECT-quality calibration-eligible case**, so **H2 in its strict form is `NOT_MEASURABLE_YET`**. TRANSFER-001
+was deliberately *not* rewritten into a claim just to make H2 measurable (Section 15 of that Run explicitly
+forbade this).
+
+A weaker, partial version is measurable now: whether exposure to CASE-005 (INCORRECT) pushes REJECT/HOLD on
+TRANSFER-002 (UNCERTAIN) beyond what's calibration-appropriate for a hedged claim (UNCERTAIN × REJECT is
+itself only `premature_rejection`, not automatically bad the way `under_reliance` on a truly correct claim
+would be — so this partial version is a weaker test of the same underlying concern). The strict version
+needs a genuine, well-attributed CORRECT-quality case authored fresh (`docs/FUTURE_IDEAS.md`), still
+requires real user sessions with enough repeat play to see order effects, and this build's own tests only
+verify the mechanism (`tests/evaluationEngine.test.ts`, `tests/data.test.ts`), not the human behavioral
+question.
 
 ## H3 — Does free character choice cause weak-viewpoint avoidance?
 
@@ -74,6 +85,22 @@ comparison itself (recent TRAINING-case average vs. TRANSFER-case result for the
 not yet computed or surfaced anywhere — the underlying data exists in `TrajectoryLog` for a next Run or a
 manual analysis pass (`docs/USER_TEST_GUIDE.md`) to do it. This remains the top scope item for the next
 Run once real users have generated enough play data across all 7 cases.
+
+## Confounds and open limitations (SEMANTICS FIX Run, Sections 6/17)
+
+- **Fixed case order.** `CASES` (`src/data/cases/index.ts`) is a fixed sequence; "今日の1問" and
+  NEXT_CASE both walk it in the same order for every player. Case content and drop-off position are
+  therefore confounded — if engagement drops after case N, that could be about case N's content, or
+  simply about being the Nth case played. No randomization or A/B framework is implemented this Run
+  (explicitly out of scope, Section 17/18).
+- **The calibration matrix cannot detect an always-VERIFY/always-HOLD strategy** — see the KNOWN
+  LIMITATION in `docs/AI_CALIBRATION.md`. Any calibration-related finding from this build should be read
+  with this in mind: a flat, non-discriminating strategy currently scores identically to genuine
+  calibration.
+- **No ability-improvement claim is licensed by this build.** Between the order confound above, the
+  VERIFY/HOLD limitation, and the small number of calibration-eligible cases (2), this product cannot
+  currently support a claim like "AI calibration improved" or "thinking ability improved" from its own
+  data — only "here is what was observed in this specific run of specific cases in this specific order."
 
 ## Stop rule (Section X)
 

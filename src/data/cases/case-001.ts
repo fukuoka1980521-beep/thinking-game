@@ -32,6 +32,7 @@ export const case001: CaseData = {
     { id: "b", label: "ミナさんは今、手が離せないほど忙しい" },
     { id: "c", label: "既読はついたが、返信を後回しにして忘れている" },
     { id: "d", label: "まだ内容をきちんと読んでいない可能性がある" },
+    { id: "e", label: "今の情報だけでは、まだ判断できない" },
   ],
   factCheck: {
     statement: "チャットに既読マークがついている",
@@ -66,12 +67,16 @@ export const case001: CaseData = {
     updateCondition: "既読の技術的な仕組み（通知設定・自動同期）に関する情報が新たに提示された場合。",
     doNotUpdateCondition: "ミナさんの心情に関する伝聞や憶測のみが追加された場合。",
     uncertaintyCondition: "追加情報なしでは、既読後に返信がない理由を断定できない。",
+    utteranceType: "QUESTION",
     aiResponseGroundTruth: null,
     transferTarget: "TRANSFER-001",
     evidenceStrength: "diagnostic",
     evidenceSupportsChoiceId: "d",
     correctInfoIds: ["i2", "i4"],
-    uncertaintyChoiceId: null,
+    // SEMANTICS FIX Run (Section 11): CASE-001 is the first case a player
+    // sees, and previously forced a specific-cause guess with no honest
+    // "I can't tell yet" option among the main choices.
+    uncertaintyChoiceId: "e",
   },
 
   reflectionPoints: {

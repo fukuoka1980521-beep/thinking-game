@@ -64,6 +64,7 @@ export const case004: CaseData = {
     updateCondition: "相手側の具体的な事情（例：介護）が本人から明かされた場合。",
     doNotUpdateCondition: "第三者の憶測のみが追加された場合。",
     uncertaintyCondition: "追加情報なしでは、キャンセルの理由を断定できない。",
+    utteranceType: "QUESTION",
     aiResponseGroundTruth: null,
     transferTarget: "TRANSFER-002",
     evidenceStrength: "diagnostic",

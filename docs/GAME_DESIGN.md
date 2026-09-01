@@ -42,10 +42,11 @@ Section Iのゲームループ改訂に合わせ、事実確認と判断を明�
 ## AI INTERVENTION 画面
 
 該当ケースのAIキャラクターが1つのメッセージ（`aiIntervention`）を発言する。ここから先は
-`caseData.rubric.aiResponseGroundTruth` が非nullかどうか（＝AIの発言が評価可能な「主張」かどうか）で
-分岐する（`src/screens/AiInterventionScreen.tsx`）。**本Runで`caseType`から独立させた**：
-CASE-005（AI_CALIBRATION）だけでなく、TRANSFER-001/002（TRANSFER）も評価可能な主張を持つ
-（`docs/AI_CALIBRATION.md`）。
+`isCalibrationEligible(caseData)`（＝`rubric.utteranceType !== "QUESTION"` かつ
+`rubric.aiResponseGroundTruth` が非null）で分岐する（`src/screens/AiInterventionScreen.tsx`）。
+`caseType`からは独立している。7ケース中、評価可能な主張を持つのはCASE-005とTRANSFER-002の2件のみ
+（SEMANTICS FIX Runの監査により、TRANSFER-001は実際にはソクラテス式の問いだったと判明し訂正済み。
+`docs/AI_CALIBRATION.md`）。
 
 - **評価可能な主張がある場合**：プレイヤーは採用する／検証する／保留する／拒否する
   （`PlayerAiAction`）を選択する（必須）。
@@ -58,7 +59,10 @@ CASE-005（AI_CALIBRATION）だけでなく、TRANSFER-001/002（TRANSFER）も�
 
 自由記述欄（`falsificationPrompt`）は補助データとして残すが、評価には使わない。
 
-画面には常に「AIは常に正しいとは限りません」という注記を表示し、AI依存を促す文言を用いない。
+AI依存を促す文言は用いない。「AIは常に正しいとは限りません」という安全原則の注記は、SEMANTICS FIX Run
+によりこの画面から削除し、HOME画面（個別の判断の直前ではない場所）に一本化した——判断の直前で
+「疑え」と促すこと自体がCalibration測定を歪めるデマンド特性になり得るため（`docs/AI_CALIBRATION.md`、
+`docs/SAFETY_PRINCIPLES.md`）。
 
 ## NEW FACT 画面
 
@@ -166,19 +170,26 @@ CASE-005では、物語内でプレイヤーが相談した「AIアシスタン�
 
 ## ケース一覧（7ケース固定：5コア + TRANSFER 2件）
 
-| ID | LEVEL | CASE_TYPE | テーマ | 主対象能力 | AIキャラクター | AI品質 |
-|---|---|---|---|---|---|---|
-| CASE-001 | 1 | TRAINING | 事実と解釈 | OBSERVATION | 探偵 | — |
-| CASE-002 | 2 | TRAINING | 複数仮説 | HYPOTHESIS | 参謀 | — |
-| TRANSFER-001 | 0 | TRANSFER | 話題の新機能通知 | OBSERVATION, FALSIFICATION | 探偵 | CORRECT |
-| CASE-003 | 3 | TRAINING | 反証 | FALSIFICATION | 悪魔 | — |
-| CASE-004 | 4 | TRAINING | 新情報による判断更新 | UPDATING | 他者視点 | — |
-| TRANSFER-002 | 0 | TRANSFER | 急に増えた低評価レビュー | HYPOTHESIS, UPDATING | 参謀 | UNCERTAIN |
-| CASE-005 | 5 | AI_CALIBRATION | AIの提案を疑う（AI TRAP） | FALSIFICATION, UPDATING | 参謀 | INCORRECT |
+| ID | LEVEL | CASE_TYPE | テーマ | 主対象能力 | AIキャラクター | utteranceType | AI品質 |
+|---|---|---|---|---|---|---|---|
+| CASE-001 | 1 | TRAINING | 事実と解釈 | OBSERVATION | 探偵 | QUESTION | — |
+| CASE-002 | 2 | TRAINING | 複数仮説 | HYPOTHESIS | 参謀 | QUESTION | — |
+| TRANSFER-001 | 0 | TRANSFER | 話題の新機能通知 | OBSERVATION, FALSIFICATION | 探偵 | QUESTION | — |
+| CASE-003 | 3 | TRAINING | 反証 | FALSIFICATION | 悪魔 | QUESTION | — |
+| CASE-004 | 4 | TRAINING | 新情報による判断更新 | UPDATING | 他者視点 | QUESTION | — |
+| TRANSFER-002 | 0 | TRANSFER | 急に増えた低評価レビュー | HYPOTHESIS, UPDATING | 参謀 | CLAIM | UNCERTAIN |
+| CASE-005 | 5 | AI_CALIBRATION | AIの提案を疑う（AI TRAP） | FALSIFICATION, UPDATING | 参謀 | CLAIM | INCORRECT |
+
+TRANSFER-001の「AI品質」は当初CORRECTとして実装されていたが、SEMANTICS FIX Runの監査により、その
+`aiIntervention`は実際にはソクラテス式の問い（QUESTION）であり、評価可能な主張ではないと判明したため
+`null`へ訂正した（`docs/AI_CALIBRATION.md`）。現時点でCalibration対象（`utteranceType`がQUESTION以外）
+はCASE-005とTRANSFER-002の2件のみで、CORRECT品質の対象は0件（KNOWN LIMITATION）。
 
 `src/data/cases/index.ts` の `CASES` 配列はこの順序（TRANSFERを間に自然に混ぜた順）で定義しており、
-CASE_SELECT画面・「今日の1問」ローテーションの両方がこの並びをそのまま使う。LEVEL 1〜5は
-`docs/MVP_SCOPE.md` のSection M構造に対応し、TRANSFERケースは`level: 0`（ラダー外）を持つ。
-LEVEL 6以降（PERSPECTIVE / CAUSALITY拡張、REAL QUESTなど）は設計のみで実装しない。
+CASE_SELECT画面・「今日の1問」ローテーションの両方がこの並びをそのまま使う。この固定順序自体が
+「ケースの内容」と「その位置での離脱率」を交絡させる可能性があり、ランダム化は本Runでも実装していない
+（KNOWN LIMITATION、`docs/VALIDATION_PLAN.md`）。LEVEL 1〜5は`docs/MVP_SCOPE.md` のSection M構造に
+対応し、TRANSFERケースは`level: 0`（ラダー外）を持つ。LEVEL 6以降（PERSPECTIVE / CAUSALITY拡張、
+REAL QUESTなど）は設計のみで実装しない。
 
 7ケースの完成度を優先し、本Runでは8ケース以上への拡張は行わない（`docs/MVP_SCOPE.md`）。

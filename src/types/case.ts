@@ -24,6 +24,22 @@ export type CaseType = "TRAINING" | "MEASUREMENT" | "AI_CALIBRATION" | "TRANSFER
 /** Ground-truth quality of a claim the in-fiction AI makes, authored by the case designer. */
 export type AiQuality = "CORRECT" | "UNCERTAIN" | "INCORRECT";
 
+/**
+ * SEMANTICS FIX (first-case/calibration Run, Section 2): what KIND of
+ * utterance the AI intervention is. This is a separate axis from
+ * `AiQuality` ("is the epistemic content right?") — a QUESTION has no
+ * quality to accept/reject in the first place. Mixing the two axes was the
+ * bug this Run corrects (see docs/AI_CALIBRATION.md, TRANSFER-001 audit).
+ *
+ * - `CLAIM`: an assertion about the world that can be right or wrong.
+ * - `RECOMMENDATION`: a suggested action, reserved for future cases that
+ *   frame the AI's output as "you should do X" rather than "X is true."
+ *   Not used by any of the 7 shipped cases yet (CASE-005 is authored as a
+ *   `CLAIM`, per this Run's explicit audit decision).
+ * - `QUESTION`: a Socratic prompt with nothing to accept/verify/hold/reject.
+ */
+export type UtteranceType = "CLAIM" | "QUESTION" | "RECOMMENDATION";
+
 /** Structured response to an AI claim (Section D/F). Replaces free-text-only reaction. */
 export type PlayerAiAction = "ACCEPT" | "VERIFY" | "HOLD" | "REJECT";
 
@@ -108,7 +124,15 @@ export interface RubricDefinition {
   updateCondition: string;
   doNotUpdateCondition: string;
   uncertaintyCondition: string;
-  /** Ground truth for the AI's claim quality, or null when the AI only asks a Socratic question. */
+  /**
+   * What kind of AI utterance this case's `aiIntervention` (or the claim it
+   * refers back to, per case) is. Determines calibration eligibility
+   * together with `aiResponseGroundTruth` — see `isCalibrationEligible` in
+   * `src/engine/evaluationEngine.ts`. Required for every case, not just
+   * calibration-eligible ones (Section 19 test #1).
+   */
+  utteranceType: UtteranceType;
+  /** Ground truth for the AI's claim quality, or null when utteranceType is QUESTION. */
   aiResponseGroundTruth: AiQuality | null;
   /** Sibling TRANSFER case id this skill should generalize to (see docs/TRANSFER_TEST_DESIGN.md). */
   transferTarget: string;

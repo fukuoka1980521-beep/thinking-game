@@ -41,10 +41,23 @@ const CALIBRATION_MATRIX: Record<"CORRECT" | "UNCERTAIN" | "INCORRECT", Record<"
   },
 };
 
+/**
+ * SEMANTICS FIX (Section 2/3): whether this case's AI utterance is something
+ * a player can meaningfully ACCEPT/VERIFY/HOLD/REJECT. A QUESTION never is —
+ * "accepting" or "rejecting" a question is meaningless — regardless of
+ * whether `aiResponseGroundTruth` happens to be set. Both conditions are
+ * checked (not just one) so a data-authoring mistake on either field can't
+ * silently make a Socratic case calibration-eligible.
+ */
+export function isCalibrationEligible(caseData: CaseData): boolean {
+  return caseData.rubric.utteranceType !== "QUESTION" && caseData.rubric.aiResponseGroundTruth !== null;
+}
+
 export function computeCalibrationLabel(
   caseData: CaseData,
   aiAction: AiActionInput,
 ): CalibrationLabel {
+  if (!isCalibrationEligible(caseData)) return "not_applicable";
   const groundTruth = caseData.rubric.aiResponseGroundTruth;
   if (!groundTruth || !aiAction.playerAction) return "not_applicable";
   return CALIBRATION_MATRIX[groundTruth][aiAction.playerAction];

@@ -70,6 +70,12 @@ export const case005: CaseData = {
     updateCondition: "背景色の変更以外に、売上を説明できる具体的な出来事（メディア掲載）が示された場合。",
     doNotUpdateCondition: "AIアシスタントが同じ主張を繰り返すだけの場合。",
     uncertaintyCondition: "追加情報なしでは、背景色の変更と売上増加の因果関係を確認できない。",
+    // SEMANTICS FIX Run (Section 19 test #5): the AI's line asserts a causal
+    // claim ("背景色を変えたことで売上が3倍になった") and appends a
+    // recommendation riding on that claim. Classified as CLAIM per this
+    // Run's explicit audit decision — the recommendation is a rhetorical
+    // add-on, not a separate thing being evaluated.
+    utteranceType: "CLAIM",
     aiResponseGroundTruth: "INCORRECT",
     transferTarget: "TRANSFER-001",
     evidenceStrength: "diagnostic",

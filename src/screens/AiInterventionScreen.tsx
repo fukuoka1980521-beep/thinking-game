@@ -4,6 +4,7 @@ import type { AiActionInput } from "../types/log";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { AiMessage } from "../components/AiMessage";
 import { AI_TRAP_TAXONOMY_OPTIONS } from "../data/aiTrapTaxonomy";
+import { isCalibrationEligible } from "../engine/evaluationEngine";
 
 interface Props {
   caseData: CaseData;
@@ -23,9 +24,10 @@ const PLAYER_AI_ACTIONS: { id: PlayerAiAction; label: string }[] = [
 
 export function AiInterventionScreen({ caseData, message, initial, onBack, onSubmit }: Props) {
   // Decoupled from caseType: whether the AI intervention is an evaluable
-  // claim (vs. a Socratic question) is a content property of this specific
-  // case, recorded via rubric.aiResponseGroundTruth. See docs/AI_CALIBRATION.md.
-  const hasEvaluableClaim = caseData.rubric.aiResponseGroundTruth !== null;
+  // claim/recommendation (vs. a Socratic question) is a content property of
+  // this specific case (utteranceType + aiResponseGroundTruth), not a
+  // property of the case's pedagogical category. See docs/AI_CALIBRATION.md.
+  const hasEvaluableClaim = isCalibrationEligible(caseData);
   const [playerAction, setPlayerAction] = useState<PlayerAiAction | null>(
     initial?.playerAction ?? null,
   );
@@ -91,10 +93,6 @@ export function AiInterventionScreen({ caseData, message, initial, onBack, onSub
           placeholder="考えたことを書いてみましょう"
         />
       </div>
-
-      <p className="muted">
-        AIは常に正しいとは限りません。参考にしつつ、自分でも検証してみましょう。
-      </p>
 
       <button
         type="button"

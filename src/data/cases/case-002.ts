@@ -65,6 +65,7 @@ export const case002: CaseData = {
     updateCondition: "特定の仮説を裏付ける具体的な証拠（SNS投稿等）が提示された場合。",
     doNotUpdateCondition: "単なる憶測や又聞きのみが追加された場合。",
     uncertaintyCondition: "追加情報なしでは、複数ある仮説のどれが正しいか区別できない。",
+    utteranceType: "QUESTION",
     aiResponseGroundTruth: null,
     transferTarget: "TRANSFER-002",
     evidenceStrength: "diagnostic",

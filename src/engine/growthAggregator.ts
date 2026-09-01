@@ -76,18 +76,25 @@ export function computeRecentGrowthStats(
 }
 
 /**
- * Section G/K: player-action distribution over recent cases that had an
- * evaluable AI claim, shown instead of a single trust score. A case "has an
- * evaluable AI claim" iff `aiIntervention.playerAction` was recorded — this
- * is independent of `caseType` (a TRANSFER case can carry a claim too; see
- * docs/AI_CALIBRATION.md).
+ * Section G/K, corrected by the SEMANTICS FIX Run (Section 2/3/7):
+ * player-action distribution over recent cases whose AI utterance was
+ * `calibrationEligible` (a CLAIM/RECOMMENDATION with a non-null quality),
+ * shown instead of a single trust score. This is independent of `caseType`
+ * (a TRANSFER case can carry an eligible claim too; see docs/AI_CALIBRATION.md)
+ * and, importantly, independent of whether `playerAction` happens to be
+ * non-null — `calibrationEligible` is checked explicitly rather than
+ * inferred from `playerAction`, so a case whose eligibility was
+ * miscategorized can never silently count (this is exactly the bug
+ * TRANSFER-001 had before this Run's audit). Logs written before this field
+ * existed have `calibrationEligible` as `undefined`, which is falsy here —
+ * they are excluded rather than guessed at (fail-safe, not a crash).
  */
 export function computeAiActionDistribution(
   logs: TrajectoryLog[],
   windowSize: number = RECENT_WINDOW_SIZE,
 ): AiActionDistribution {
   const calibrationLogs = sortByTimestamp(
-    logs.filter((l) => l.aiIntervention.playerAction !== null),
+    logs.filter((l) => l.aiIntervention.calibrationEligible && l.aiIntervention.playerAction !== null),
   ).slice(-windowSize);
 
   const counts: Record<PlayerAiAction, number> = { ACCEPT: 0, VERIFY: 0, HOLD: 0, REJECT: 0 };

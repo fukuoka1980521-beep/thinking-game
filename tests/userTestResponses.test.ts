@@ -10,7 +10,7 @@ function makeResponse(overrides: Partial<UserTestResponse> = {}): UserTestRespon
     q1WantMore: 4,
     q2Enjoyable: 5,
     q3QuestionedAi: 3,
-    q4Confusion: 1,
+    q4Clarity: 4,
     q5WantReuse: 4,
     freeText: "",
     ...overrides,
@@ -35,7 +35,15 @@ describe("user test responses", () => {
   });
 
   it("recovers from corrupted storage without crashing", () => {
-    localStorage.setItem("thinking-game:user-test-responses:v1", "not json");
+    localStorage.setItem("thinking-game:user-test-responses:v2", "not json");
+    expect(loadUserTestResponses()).toEqual([]);
+  });
+
+  it("does not read pre-rename (v1, q4Confusion) data under the new v2 key (Section 19 test #14)", () => {
+    localStorage.setItem(
+      "thinking-game:user-test-responses:v1",
+      JSON.stringify([{ responseId: "old", q4Confusion: 1 }]),
+    );
     expect(loadUserTestResponses()).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 import type { CaseData } from "../types/case";
 import type { InProgressSession, RubricResult, TrajectoryLog } from "../types/log";
-import { computeAbilityObservations } from "./evaluationEngine";
+import { computeAbilityObservations, isCalibrationEligible } from "./evaluationEngine";
 import { appendCompletedLog, clearInProgressSession } from "../lib/storage";
 
 /**
@@ -42,6 +42,8 @@ export function finalizeTrajectory(
     },
     aiIntervention: {
       message: caseData.aiIntervention,
+      utteranceType: caseData.rubric.utteranceType,
+      calibrationEligible: isCalibrationEligible(caseData),
       playerAction: session.aiAction.playerAction,
       problemTypeSelected: session.aiAction.problemTypeSelected,
       freeText: session.aiAction.freeText,

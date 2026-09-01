@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CASES } from "../src/data/cases";
+import { isCalibrationEligible } from "../src/engine/evaluationEngine";
 
 const BANNED_PERSONALITY_PHRASES = [
   "あなたは反証能力が低い",
@@ -134,25 +135,68 @@ describe("case data", () => {
     expect(CASES.filter((c) => c.caseType === "TRANSFER")).toHaveLength(2);
   });
 
-  it("only defines an AI response ground truth where the AI intervention is an evaluable claim, not a Socratic question", () => {
-    // Decoupled from caseType (validation build Section 2): TRAINING cases stay
-    // Socratic-question-only, but TRANSFER cases may also carry an evaluable claim.
+  // --- SEMANTICS FIX Run (Section 2/3/4/5/19): utteranceType vs. AiQuality ---
+
+  it("defines utteranceType for every case (Section 19 test #1)", () => {
+    for (const c of CASES) {
+      expect(["CLAIM", "QUESTION", "RECOMMENDATION"]).toContain(c.rubric.utteranceType);
+    }
+  });
+
+  it("never treats a QUESTION as calibration-eligible, regardless of aiResponseGroundTruth (Section 19 test #2)", () => {
+    for (const c of CASES) {
+      if (c.rubric.utteranceType === "QUESTION") {
+        expect(c.rubric.aiResponseGroundTruth).toBeNull();
+        expect(isCalibrationEligible(c)).toBe(false);
+      } else {
+        // CLAIM / RECOMMENDATION must carry a ground truth to be eligible.
+        expect(c.rubric.aiResponseGroundTruth).not.toBeNull();
+        expect(isCalibrationEligible(c)).toBe(true);
+      }
+    }
+  });
+
+  it("only defines an AI response ground truth where the case is calibration-eligible (TRAINING cases stay Socratic-only)", () => {
     for (const c of CASES) {
       if (c.caseType === "TRAINING") {
         expect(c.rubric.aiResponseGroundTruth).toBeNull();
+        expect(isCalibrationEligible(c)).toBe(false);
       }
     }
-    const evaluable = CASES.filter((c) => c.rubric.aiResponseGroundTruth !== null);
-    expect(evaluable.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("balances AI quality across the case set: at least one CORRECT, one UNCERTAIN, and one INCORRECT AI claim (Section 2)", () => {
-    const qualities = new Set(
-      CASES.map((c) => c.rubric.aiResponseGroundTruth).filter((q): q is NonNullable<typeof q> => q !== null),
-    );
-    expect(qualities.has("CORRECT")).toBe(true);
-    expect(qualities.has("UNCERTAIN")).toBe(true);
-    expect(qualities.has("INCORRECT")).toBe(true);
+  it(
+    "computes AI quality distribution only over calibration-eligible cases, without requiring all 3 qualities to be present (Section 5) — " +
+      "TRANSFER-001 was audited and found to be a Socratic question mis-tagged as a CORRECT claim; it is now correctly excluded, leaving no " +
+      "CORRECT-quality eligible case (KNOWN LIMITATION, see docs/AI_CALIBRATION.md)",
+    () => {
+      const eligible = CASES.filter(isCalibrationEligible);
+      const distribution = { CORRECT: 0, UNCERTAIN: 0, INCORRECT: 0 };
+      for (const c of eligible) {
+        const quality = c.rubric.aiResponseGroundTruth;
+        if (quality) distribution[quality] += 1;
+      }
+      expect(distribution).toEqual({ CORRECT: 0, UNCERTAIN: 1, INCORRECT: 1 });
+    },
+  );
+
+  it("keeps CASE-005 as utteranceType CLAIM, groundTruth INCORRECT, trapType CAUSALITY_ERROR (Section 19 test #5)", () => {
+    const case005 = CASES.find((c) => c.caseId === "CASE-005")!;
+    expect(case005.rubric.utteranceType).toBe("CLAIM");
+    expect(case005.rubric.aiResponseGroundTruth).toBe("INCORRECT");
+    expect(case005.aiTrap.trapType).toBe("CAUSALITY_ERROR");
+  });
+
+  it("gives CASE-001 a genuine 'not yet decidable' choice among its main options (Section 11/19 test #6/#7)", () => {
+    const case001 = CASES.find((c) => c.caseId === "CASE-001")!;
+    expect(case001.rubric.uncertaintyChoiceId).not.toBeNull();
+    const ids = case001.availableChoices.map((c) => c.id);
+    expect(ids).toContain(case001.rubric.uncertaintyChoiceId);
+    // Rubric coherence: the uncertainty choice must be distinct from both
+    // the critical-error choice and the evidence-supported choice — it is
+    // its own, third kind of answer, not a relabeling of either.
+    expect(case001.rubric.uncertaintyChoiceId).not.toBe(case001.rubric.criticalErrorChoiceId);
+    expect(case001.rubric.uncertaintyChoiceId).not.toBe(case001.rubric.evidenceSupportsChoiceId);
   });
 
   it("never shows AI quality or trap presence in player-facing text (Section 2)", () => {

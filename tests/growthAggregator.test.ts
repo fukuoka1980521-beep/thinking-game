@@ -13,8 +13,10 @@ function makeLog(
     observations?: Partial<TrajectoryLog["abilityObservations"]>;
     caseType?: CaseType;
     playerAction?: PlayerAiAction | null;
+    calibrationEligible?: boolean;
   } = {},
 ): TrajectoryLog {
+  const playerAction = overrides.playerAction ?? null;
   return {
     sessionId: `sess-${timestamp}`,
     caseId: "CASE-001",
@@ -29,7 +31,11 @@ function makeLog(
     firstDecision: { choiceId: "a", confidence: 50, reason: "", factCheckAnswer: "fact", infoOptionsSelected: [] },
     aiIntervention: {
       message: "m",
-      playerAction: overrides.playerAction ?? null,
+      utteranceType: playerAction !== null ? "CLAIM" : "QUESTION",
+      // Defaults to matching playerAction presence (the normal, bug-free
+      // case), but callers can override to simulate a miscategorized case.
+      calibrationEligible: overrides.calibrationEligible ?? playerAction !== null,
+      playerAction,
       problemTypeSelected: "NONE",
       freeText: "",
     },
@@ -110,18 +116,36 @@ describe("TRANSFER isolation (Section L)", () => {
   });
 });
 
-describe("AI action distribution", () => {
-  it("counts any case with a recorded player action, independent of caseType", () => {
+describe("AI action distribution (SEMANTICS FIX Run Section 2/3/7)", () => {
+  it("counts any case with a recorded player action and calibrationEligible=true, independent of caseType", () => {
     const logs = [
       makeLog("2026-01-01T00:00:00Z", { caseType: "TRAINING", playerAction: null }),
       makeLog("2026-01-02T00:00:00Z", { caseType: "AI_CALIBRATION", playerAction: "ACCEPT" }),
       makeLog("2026-01-03T00:00:00Z", { caseType: "AI_CALIBRATION", playerAction: "VERIFY" }),
-      // TRANSFER cases can also carry an evaluable AI claim (Section 2) — must still count.
+      // TRANSFER cases can also carry an evaluable claim (Section 2) — must still count.
       makeLog("2026-01-04T00:00:00Z", { caseType: "TRANSFER", playerAction: "VERIFY" }),
     ];
     const dist = computeAiActionDistribution(logs);
     expect(dist.totalCases).toBe(3);
     expect(dist.counts).toEqual({ ACCEPT: 1, VERIFY: 2, HOLD: 0, REJECT: 0 });
+  });
+
+  it("excludes a logged action when calibrationEligible is false, even if playerAction is non-null (the TRANSFER-001 bug this Run fixes)", () => {
+    const logs = [
+      makeLog("2026-01-01T00:00:00Z", { playerAction: "ACCEPT", calibrationEligible: false }),
+      makeLog("2026-01-02T00:00:00Z", { playerAction: "REJECT", calibrationEligible: true }),
+    ];
+    const dist = computeAiActionDistribution(logs);
+    expect(dist.totalCases).toBe(1);
+    expect(dist.counts).toEqual({ ACCEPT: 0, VERIFY: 0, HOLD: 0, REJECT: 1 });
+  });
+
+  it("treats a log written before calibrationEligible existed (undefined) as not eligible, rather than crashing (Section 19 test #14)", () => {
+    const legacyShapedLog = makeLog("2026-01-01T00:00:00Z", { playerAction: "ACCEPT" });
+    // Simulate a pre-migration record lacking the field entirely.
+    delete (legacyShapedLog.aiIntervention as Partial<TrajectoryLog["aiIntervention"]>).calibrationEligible;
+    const dist = computeAiActionDistribution([legacyShapedLog]);
+    expect(dist.totalCases).toBe(0);
   });
 
   it("returns zero totals when no case with an AI action has been played", () => {
