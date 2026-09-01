@@ -14,6 +14,7 @@ function makeSession(caseId: string): InProgressSession {
     caseId,
     screen: "FIRST_DECISION",
     startedAt: new Date().toISOString(),
+    playRunId: "run-test",
   };
 }
 
@@ -25,6 +26,7 @@ function makeLog(caseId: string): TrajectoryLog {
     level: 1,
     timestamp: new Date().toISOString(),
     factOrder: ["situation", "new_fact"],
+    playRunId: "run-test",
     characterOffered: ["DETECTIVE"],
     characterUsed: "DETECTIVE",
     characterChoiceAvailable: false,

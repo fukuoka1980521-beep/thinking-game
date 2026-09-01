@@ -1,6 +1,58 @@
 # DECISIONS — 思考整理ゲーム MVP v0.1
 
-## SPEC AMENDMENT関連の意思決定（本Run）
+## PLAYABLE_VALIDATION_BUILD関連の意思決定（本Run）
+
+### なぜAI応答の分岐条件を`caseType`から`rubric.aiResponseGroundTruth`へ切り替えたのか
+
+前Runは「AI_CALIBRATION型のケースだけがACCEPT/VERIFY/HOLD/REJECTを表示する」設計だった。しかし本Run
+のSection 2は「CASE-005だけでAIの品質バランスを作らない」ことを要求しており、TRANSFER-001/002にも
+評価可能なAIの主張を持たせる必要があった。`caseType`はSection B/Mの教育的区分（TRAINING/MEASUREMENT/
+AI_CALIBRATION/TRANSFER/OPEN_ENDED）であり、「AIの発言が主張か問いかけか」という内容面の性質とは
+本来別の軸である。両者を1つのフィールドに畳み込んでいたのが前Runの簡略化であり、本Runでその2つを
+分離した。結果として`caseType: "TRANSFER"`のケースも評価可能な主張を持てるようになった
+（`docs/AI_CALIBRATION.md`）。
+
+### なぜTRANSFERケースで`criticalErrorChoiceId`と`evidenceSupportsChoiceId`を同じ選択肢にしたのか
+
+TRANSFER-001/002はどちらも「もっともらしいAIの主張を、検証前に鵜呑みにする」ことが批判的誤りであり、
+かつ検証後にはその主張が（CORRECT／UNCERTAINだが結果的に妥当）だったと判明する構成にした。そのため、
+「最初に選ぶと批判的誤り」「検証後に選ぶと妥当な結論」という、同じ選択肢が時点によって意味を変える
+設計になっている。これは矛盾ではなく意図的な設計で、「たまたま最初から正しく言い当てたが、根拠なく
+言い当てただけ」（`criticalErrorMade: true` かつ `updateAppropriateness: "appropriate_keep"`）を
+明示的に区別できる、というこの評価モデルの利点を実証する例でもある。詳細は
+`docs/TRANSFER_TEST_DESIGN.md` および `docs/RUBRIC_DESIGN.md`。
+
+### なぜTRANSFERケースを「転移テスト」と明示せず、通常のケース選択に自然に混ぜたのか
+
+Section 10の明示的な要求。転移テストの目的は「別文脈でも同じ思考構造を使えるか」を測ることであり、
+利用者が「これは特別なテストだ」と認識した状態でプレイすると、通常のプレイと異なる心構えで
+臨んでしまい、測定の妥当性が損なわれる。前Run時点のドキュメント（`docs/TRANSFER_TEST_DESIGN.md`旧版）
+は逆に「隠しエントリーポイントで研究者だけがアクセスする」設計を提案していたが、本Runの明示的な
+指示を優先し、`CASES`配列内に自然な順序で混在させる設計へ変更した。
+
+### なぜセッション振り返り・ユーザーテストのダッシュボードを作らなかったのか
+
+Section 15が「管理画面」をDO_NOT_IMPLEMENTとして明示している。計測データ（`localStorage`）自体は
+記録するが、集計・可視化はテスト実施者がブラウザの開発者ツールから直接読み出す運用とした
+（`docs/USER_TEST_GUIDE.md`）。将来、協力者数が増えて手動確認が非現実的になった時点で、
+改めて集計手段を検討する。
+
+### なぜPlaywrightを追加したのか
+
+Claude in Chromeブラウザ拡張が3Run連続（前々回・前回・今回）で未接続だったため、モバイル幅での
+実際の見た目確認という要件（Section 12/14）を満たす手段として、`playwright`をdevDependencyへ
+一時的に追加し、320/375/390/430pxでのスクリーンショット取得と横スクロール自動検知に使った
+（`docs/TEST_PLAN.md`）。製品機能には一切関係しないため`DO NOT IMPLEMENT`とは無関係であり、
+今後のRunでも同様の視覚確認に使えるよう保持することにした。
+
+### なぜGrowthScreenのラベルから英語の内部識別子を除いたのか
+
+Section 4が「rubric/calibration matrix/trajectory/ground truth/falsificationなどの内部用語を
+そのまま見せない」ことを明示的に要求している。前Runでは`abilityLabel`が
+「OBSERVATION（事実と解釈の区別）」のように内部識別子を先頭に出していたが、本Runで
+「事実と意見を区別する力」のような平易な日本語のみに変更した（`src/engine/growthAggregator.ts`）。
+
+## SPEC AMENDMENT関連の意思決定（前Run）
 
 ### なぜCASE-002〜004はCASE-001/005より軽いrubricなのか
 

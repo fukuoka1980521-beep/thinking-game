@@ -117,6 +117,13 @@ export interface RubricDefinition {
   evidenceSupportsChoiceId: string;
   /** Subset of infoOptions ids that are genuinely diagnostic, vs. distractors. */
   correctInfoIds: string[];
+  /**
+   * Id of the availableChoices entry that represents genuine epistemic
+   * humility ("I can't tell yet / I'd want more data"), if the case offers
+   * one. Not every case has one — retrofitting one onto an already-shipped
+   * choice set is avoided; new cases are authored with one where natural.
+   */
+  uncertaintyChoiceId: string | null;
 }
 
 export interface CaseData {
@@ -124,8 +131,12 @@ export interface CaseData {
   title: string;
   category: string;
   difficulty: "easy" | "medium" | "hard";
-  /** MVP_LEVEL 1-5 per Section M. Levels 6+ are design-only, not implemented. */
-  level: 1 | 2 | 3 | 4 | 5;
+  /**
+   * MVP_LEVEL 1-5 per Section M for cases on the main ladder. `0` marks a
+   * case that is not part of the level ladder (TRANSFER cases, mixed in
+   * naturally rather than shown as a "level"). Levels 6+ are design-only.
+   */
+  level: number;
   caseType: CaseType;
   version: string;
   riskLevel: "low";

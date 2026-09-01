@@ -5,13 +5,13 @@
 The 4 coach characters (探偵・悪魔・他者視点・参謀, `src/data/aiCharacters.ts`) mostly ask **Socratic
 questions** ("それは確認された事実ですか？"). A question is not a claim — there is nothing to accept,
 verify, or reject. Only a case where the in-fiction AI actually **asserts something that can be right or
-wrong** can be evaluated for calibration. In this MVP that is CASE-005 only, where the AI intervention is
-"AIアシスタント" quoting a causal claim about the player's sales data.
+wrong** can be evaluated for calibration.
 
-This is why `RubricDefinition.aiResponseGroundTruth` is `null` for CASE-001〜004 (`caseType: "TRAINING"`)
-and set to `"INCORRECT"` only for CASE-005 (`caseType: "AI_CALIBRATION"`) — enforced by a `data.test.ts`
-invariant. `AiInterventionScreen` only renders the ACCEPT/VERIFY/HOLD/REJECT control when
-`caseData.caseType === "AI_CALIBRATION"`.
+**Validation-build update:** this is now decoupled from `caseType`. `AiInterventionScreen` renders the
+ACCEPT/VERIFY/HOLD/REJECT control whenever `caseData.rubric.aiResponseGroundTruth !== null`, regardless of
+`caseType`. This lets `TRANSFER-001`/`TRANSFER-002` carry an evaluable AI claim too (needed for the AI
+quality balance below), while CASE-001〜004 (`caseType: "TRAINING"`) stay Socratic-question-only
+(`aiResponseGroundTruth: null`, enforced by a `data.test.ts` invariant).
 
 ## PLAYER_AI_ACTION
 
@@ -49,14 +49,37 @@ Whether the player *correctly identifies the type of flaw* (via the taxonomy sel
 correctly naming *why* it's wrong (separate, also useful, signal) — the two are not conflated into one
 score.
 
+## AI quality balance across the case set (validation-build Section 2)
+
+CASE-005 alone would only teach "AI claims are usually wrong." The case set now has one case of each
+quality, so blanket AI-rejection can be told apart from genuine calibration (H2, `docs/VALIDATION_PLAN.md`):
+
+| Case | AI quality | Trap? |
+|---|---|---|
+| CASE-005 | INCORRECT | Yes (`CAUSALITY_ERROR`) |
+| TRANSFER-001 | CORRECT | No — the claim holds up once verified |
+| TRANSFER-002 | UNCERTAIN | No — the AI itself hedges ("確度：中程度") |
+
+AI quality and trap presence are never shown to the player during play (enforced by a `data.test.ts`
+check on all player-facing case text) — only the RESULT-screen feedback (via `CALIBRATION_COPY` /
+`buildReflection`) references the outcome, and only in outcome-neutral phrasing, never as "this was a
+trap" or "this AI was rated X."
+
 ## Character assignment and calibration (Section H)
 
-`characterOffered`, `characterChoiceAvailable` are recorded on every trajectory log even though this MVP
-always system-assigns the character (`characterChoiceAvailable: false` for all 5 cases, enforced by a
+`characterOffered`, `characterChoiceAvailable` are recorded on every trajectory log even though this build
+always system-assigns the character (`characterChoiceAvailable: false` for all 7 cases, enforced by a
 `data.test.ts` invariant). This is forward-compatible data collection for the future levels 4–5 partial
 choice described in Section H — no behavior changes yet, but the field exists so a future Run doesn't need
 a data migration to start measuring "does free character choice let players avoid their weak AI-response
-pattern."
+pattern" (H3, `docs/VALIDATION_PLAN.md`).
+
+## Calibration V2: deferred (validation-build Section 3)
+
+A future refinement — AI_QUALITY × PLAYER_ACTION × EPISTEMIC_CONTEXT — is recorded here as
+`NOW_NOT_IMPLEMENT`. The idea: VERIFY/HOLD on a CORRECT claim can be either reasonable caution or excessive
+over-verification depending on context (time pressure, stakes, how many times the player has already
+verified similar claims). The current 2-axis matrix cannot distinguish these. Not implemented this Run.
 
 ## Experiment group placeholder (Section F)
 
@@ -66,14 +89,17 @@ actually served. The field exists purely so a future A/B rollout (`TRAP_RATE_10`
 
 ## What is measurable today vs. not
 
-**Measurable now** (from CASE-005 alone, accumulated over repeat play via "今日の1問"):
-- Distribution of ACCEPT/VERIFY/HOLD/REJECT over recent AI_CALIBRATION sessions.
-- Whether the trap type was correctly identified.
-- The calibration label for each session (stored in `rubricResult.aiCalibration`, not yet broken out into
-  its own GrowthScreen chart — see `docs/TEST_PLAN.md` / next-run recommendation).
+**Measurable now** (3 AI-claim cases across the 7-case rotation):
+- Distribution of ACCEPT/VERIFY/HOLD/REJECT over recent sessions with an evaluable AI claim, regardless of
+  `caseType` (`computeAiActionDistribution`, `src/engine/growthAggregator.ts`).
+- Whether the trap type was correctly identified (CASE-005 only — the other two claims aren't traps).
+- The calibration label for each session (stored in `rubricResult.aiCalibration`).
+- Reaction to a CORRECT and an UNCERTAIN claim, not just an INCORRECT one — whether exposure to CASE-005
+  produces blanket rejection of TRANSFER-001's (correct) claim (H2).
 
 **Not measurable yet:**
-- Calibration across *multiple different* AI-claim cases (only one exists).
-- Whether calibration generalizes to a different surface topic (that is exactly what TRANSFER cases would
-  test — `docs/TRANSFER_TEST_DESIGN.md` — and none are implemented yet).
-- Any A/B effect of trap rate (H2 in `docs/VALIDATION_PLAN.md`) — no variation is served.
+- More than one case per AI-quality bucket (still only 1 CORRECT, 1 UNCERTAIN, 1 INCORRECT case).
+- Whether calibration generalizes to a *third, unrelated* surface topic beyond TRANSFER-001/002.
+- Any A/B effect of trap rate (H2's second half) — no variation is served, `experimentGroup` is a fixed
+  placeholder.
+- Calibration V2 (epistemic context) — see above, `NOW_NOT_IMPLEMENT`.

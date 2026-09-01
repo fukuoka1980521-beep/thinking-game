@@ -49,3 +49,7 @@ export function appendCompletedLog(log: TrajectoryLog): void {
 export function createSessionId(): string {
   return `sess-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
+
+export function createPlayRunId(): string {
+  return `run-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}

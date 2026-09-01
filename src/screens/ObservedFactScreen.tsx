@@ -16,7 +16,7 @@ export function ObservedFactScreen({ caseData, initial, onBack, onSubmit }: Prop
   );
 
   return (
-    <ScreenContainer title="観測された事実の確認" onBack={onBack}>
+    <ScreenContainer title="事実の確認" onBack={onBack}>
       <div className="field">
         <label>次の1文は「事実」ですか、それとも「解釈」ですか？</label>
         <p className="card" style={{ margin: 0 }}>

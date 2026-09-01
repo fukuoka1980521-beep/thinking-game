@@ -20,10 +20,18 @@ interface Props {
   initialSession: InProgressSession;
   onExitToHome: () => void;
   onViewGrowth: () => void;
+  onNextCase: () => void;
   onCompleted: (log: TrajectoryLog) => void;
 }
 
-export function CaseSession({ caseData, initialSession, onExitToHome, onViewGrowth, onCompleted }: Props) {
+export function CaseSession({
+  caseData,
+  initialSession,
+  onExitToHome,
+  onViewGrowth,
+  onNextCase,
+  onCompleted,
+}: Props) {
   const [session, dispatch] = useReducer(sessionReducer, initialSession);
   const finalizedRef = useRef(false);
 
@@ -140,6 +148,7 @@ export function CaseSession({ caseData, initialSession, onExitToHome, onViewGrow
         <ResultScreen
           caseData={caseData}
           reflection={reflection}
+          onNextCase={onNextCase}
           onGoHome={onExitToHome}
           onViewGrowth={onViewGrowth}
         />

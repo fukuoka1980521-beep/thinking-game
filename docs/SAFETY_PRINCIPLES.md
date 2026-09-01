@@ -10,6 +10,10 @@
 - 将来クラウド保存・データ再利用を検討する際の3分類（GAMEPLAY DATA / OPTIONAL TEXT / REAL WORLD
   SENSITIVE DATA）と目的分離の原則は `docs/DATA_BOUNDARY.md` に記載。本MVPは全てローカル保存のため
   同意UIは未実装。
+- **本Run追加**：セッション振り返り（`thinking-game:metrics:v1`）とユーザーテスト回答
+  （`thinking-game:user-test-responses:v1`）も同様にローカル保存のみで、外部analyticsや自動集計
+  サーバーへは送信しない。集計はテスト実施者が本人の端末でdevtoolsから手動で行う
+  （`docs/USER_TEST_GUIDE.md`）。
 
 ## 人格診断の禁止
 
@@ -36,6 +40,9 @@
   誤り）と組み合わせて評価する。GrowthScreenはACCEPT/VERIFY/HOLD/REJECTの件数分布のみを表示する。
 - `tests/safety.test.ts` および `tests/evaluationEngine.test.ts` で、単一スコア概念が存在しないこと、
   正しいAIの拒否や誤ったAIの採用が高評価にならないことを検証している。
+- **本Run追加**：AI品質（CORRECT/UNCERTAIN/INCORRECT）とトラップの有無・出現率は、プレイ中の画面には
+  一切表示しない。ケースセット全体でAI品質に偏りを作らないこと自体は達成するが、それを利用者に
+  可視化しない（`docs/AI_CALIBRATION.md`、`tests/data.test.ts` の非露出テスト）。
 
 ## AI TRAP（CASE-005）の安全な実装方法
 

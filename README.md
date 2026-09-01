@@ -15,18 +15,21 @@ AIと対話しながら、観察・仮説形成・反証・判断更新などを
 - Not publicly deployed yet
 - 生成AI APIは未接続（CASE DATAは事前定義。詳細は `docs/DECISIONS.md`）
 
-## Run: THINKING_GAME_MVP_V0_1
+## Run: THINKING_GAME_PLAYABLE_VALIDATION_BUILD_V0_1
 
-現在のバージョンは v0.1 のMVPに、SPEC AMENDMENT（rubric・AI Calibration Matrix・判断軌跡スキーマ）を
-適用したものです。5つのケースで、思考整理ゲームのコアループ（事実確認→判断→AI介入→新情報→再判断→
-振り返り→成長記録）を体験できます。CASE-001は新設計を完全実装、CASE-005はAI CALIBRATION型として
-完全実装、CASE-002〜004はTRAINING型として軽量なrubricで移行済みです。詳細は `docs/DECISIONS.md`。
+現在のビルドは、rubric・AI Calibration Matrix・判断軌跡スキーマ（SPEC AMENDMENT）に続き、
+実際に人がスマートフォンで5〜10分遊んで「もう1問やりたいか」を検証できる状態（PLAYABLE VALIDATION
+BUILD）まで仕上げたものです。7つのケース（5コア＋TRANSFER 2件、AI品質はCORRECT/UNCERTAIN/INCORRECT
+をバランス）で、事実確認→判断→AIの意見→新情報→再判断→振り返り→RESULT（「次の問題へ」）という
+コアループを、5ケース区切りの振り返りと任意のユーザーテストアンケートまで含めて体験できます。
+詳細は `docs/DECISIONS.md`。
 
 ## Tech Stack
 
 - React + TypeScript + Vite
-- ローカル永続化のみ（`localStorage`）。外部サーバー通信なし
+- ローカル永続化のみ（`localStorage`）。外部サーバー通信・外部analyticsなし
 - バックエンドなし
+- `playwright`（devDependency）：モバイル幅の視覚確認用（`docs/TEST_PLAN.md`）。製品には含まれない
 
 ## How to Run
 
@@ -38,6 +41,11 @@ npm run test      # vitest によるテスト一式
 npm run typecheck # 型チェックのみ
 ```
 
+## ユーザーテストの実施方法
+
+`docs/USER_TEST_GUIDE.md` を参照。テスト協力者への案内文と、プレイ結果・アンケート回答を
+ブラウザの開発者ツールから読み出す手順を記載しています（管理画面は意図的に実装していません）。
+
 ## Documentation
 
 - `docs/PRODUCT_SPEC.md` — プロダクト仕様
@@ -48,15 +56,17 @@ npm run typecheck # 型チェックのみ
 - `docs/TEST_PLAN.md` — テスト計画と結果
 - `docs/FUTURE_IDEAS.md` — 将来検討事項（NOW_NOT_IMPLEMENT）
 - `docs/DECISIONS.md` — 主要な意思決定とその理由
-- `docs/RUBRIC_DESIGN.md` — CASE RUBRICの設計原則（SPEC AMENDMENT）
-- `docs/AI_CALIBRATION.md` — AI Calibration Matrixの設計（SPEC AMENDMENT）
-- `docs/AI_TRAP_TAXONOMY.md` — AI欠陥タクソノミー（SPEC AMENDMENT）
-- `docs/TRAJECTORY_SCHEMA.md` — 判断軌跡（TrajectoryLog）スキーマ（SPEC AMENDMENT）
-- `docs/DATA_BOUNDARY.md` — 将来のデータ再利用・プライバシー境界（SPEC AMENDMENT）
-- `docs/VALIDATION_PLAN.md` — 検証すべき4つの仮説 H1-H4（SPEC AMENDMENT）
-- `docs/TRANSFER_TEST_DESIGN.md` — TRANSFERケースの設計（未実装、SPEC AMENDMENT）
+- `docs/RUBRIC_DESIGN.md` — CASE RUBRICの設計原則
+- `docs/AI_CALIBRATION.md` — AI Calibration Matrixの設計
+- `docs/AI_TRAP_TAXONOMY.md` — AI欠陥タクソノミー
+- `docs/TRAJECTORY_SCHEMA.md` — 判断軌跡（TrajectoryLog）スキーマ
+- `docs/DATA_BOUNDARY.md` — 将来のデータ再利用・プライバシー境界
+- `docs/VALIDATION_PLAN.md` — 検証すべき4つの仮説 H1-H4
+- `docs/TRANSFER_TEST_DESIGN.md` — TRANSFERケースの設計（実装済み）
+- `docs/USER_TEST_GUIDE.md` — ユーザーテストの実施・データ取得手順
 
 ## Product Hypothesis
 
 今回の最重要プロダクト仮説は、「1ケース終了した利用者が、もう1ケースやりたいと思うか」です。
-これは技術的完成だけでは証明できず、実利用者によるテストが必要です。
+これは技術的完成だけでは証明できず、実利用者によるテストが必要です。本ビルドは
+`READY_FOR_SMALL_USER_TEST` の判定を目指すものであり、`PRODUCT_VALIDATED` を宣言するものではありません。

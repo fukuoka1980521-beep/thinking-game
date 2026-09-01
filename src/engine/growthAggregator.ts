@@ -75,13 +75,19 @@ export function computeRecentGrowthStats(
   return computeGrowthStats(sortByTimestamp(logs).slice(-windowSize));
 }
 
-/** Section G/K: player-action distribution over recent AI_CALIBRATION cases, shown instead of a single trust score. */
+/**
+ * Section G/K: player-action distribution over recent cases that had an
+ * evaluable AI claim, shown instead of a single trust score. A case "has an
+ * evaluable AI claim" iff `aiIntervention.playerAction` was recorded — this
+ * is independent of `caseType` (a TRANSFER case can carry a claim too; see
+ * docs/AI_CALIBRATION.md).
+ */
 export function computeAiActionDistribution(
   logs: TrajectoryLog[],
   windowSize: number = RECENT_WINDOW_SIZE,
 ): AiActionDistribution {
   const calibrationLogs = sortByTimestamp(
-    logs.filter((l) => l.caseType === "AI_CALIBRATION" && l.aiIntervention.playerAction !== null),
+    logs.filter((l) => l.aiIntervention.playerAction !== null),
   ).slice(-windowSize);
 
   const counts: Record<PlayerAiAction, number> = { ACCEPT: 0, VERIFY: 0, HOLD: 0, REJECT: 0 };
@@ -92,16 +98,22 @@ export function computeAiActionDistribution(
   return { totalCases: calibrationLogs.length, counts };
 }
 
+/**
+ * Player-facing label. Deliberately plain Japanese with no internal jargon
+ * (rubric/calibration/OBSERVATION-the-key/falsification etc. — see this
+ * Run's Section 4/6) even though the underlying AbilityKey is an English
+ * internal identifier.
+ */
 export function abilityLabel(key: AbilityKey): string {
   switch (key) {
     case "OBSERVATION":
-      return "OBSERVATION（事実と解釈の区別）";
+      return "事実と意見を区別する力";
     case "HYPOTHESIS":
-      return "HYPOTHESIS（複数仮説）";
+      return "いろいろな可能性を考える力";
     case "FALSIFICATION":
-      return "FALSIFICATION（反証）";
+      return "反対の可能性も考える力";
     case "UPDATING":
-      return "UPDATING（判断更新）";
+      return "新しい情報で考えを見直す力";
   }
 }
 

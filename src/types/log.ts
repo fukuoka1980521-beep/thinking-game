@@ -23,7 +23,7 @@ export interface FirstDecisionInput {
 }
 
 export interface AiActionInput {
-  /** Only meaningful for AI_CALIBRATION cases; null for Socratic-question (TRAINING) cases. */
+  /** Only meaningful when the case's rubric.aiResponseGroundTruth is non-null (an evaluable AI claim exists); null for Socratic-question cases. */
   playerAction: PlayerAiAction | null;
   problemTypeSelected: AiTrapType | null;
   freeText: string;
@@ -41,6 +41,8 @@ export interface InProgressSession {
   caseId: string;
   screen: ScreenId;
   startedAt: string;
+  /** Groups this case together with the others played back-to-back in one sitting (PLAY FLOW Section 5/7). */
+  playRunId: string;
   observedFact?: ObservedFactInput;
   first?: FirstDecisionInput;
   aiAction?: AiActionInput;
@@ -111,6 +113,8 @@ export interface TrajectoryLog {
   level: number;
   timestamp: string;
   factOrder: string[];
+  /** Which play run (Section 5/7) this case was completed as part of. */
+  playRunId: string;
 
   characterOffered: AiCharacterKey[];
   characterUsed: AiCharacterKey;
@@ -156,4 +160,46 @@ export interface GrowthWindowStats {
 export interface AiActionDistribution {
   totalCases: number;
   counts: Record<PlayerAiAction, number>;
+}
+
+/**
+ * SPEC AMENDMENT (validation build, Section 5/9): funnel events for the
+ * "does someone want to play another case" question. Local-only, never
+ * transmitted. See docs/USER_TEST_GUIDE.md for how to read these back.
+ */
+export type MetricEventType =
+  | "CASE_START"
+  | "CASE_COMPLETE"
+  | "NEXT_CASE_CLICK"
+  | "SESSION_COMPLETE"
+  | "USER_TEST_SUBMITTED";
+
+export interface MetricEvent {
+  type: MetricEventType;
+  timestamp: string;
+  playRunId: string;
+  caseId?: string;
+}
+
+/** The 5 optional post-play questions (Section 8). 1-5 Likert scale, local-only. */
+export interface UserTestResponse {
+  responseId: string;
+  timestamp: string;
+  playRunId: string;
+  q1WantMore: number;
+  q2Enjoyable: number;
+  q3QuestionedAi: number;
+  q4Confusion: number;
+  q5WantReuse: number;
+  freeText: string;
+}
+
+/** Section 7: behavioral tally for one play run, shown back to the player without ability claims. */
+export interface SessionSummary {
+  totalCases: number;
+  reconsidered: number;
+  maintained: number;
+  verifiedAi: number;
+  rejectedAi: number;
+  choseUncertain: number;
 }

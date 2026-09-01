@@ -16,7 +16,9 @@ progress, not as being told you were wrong twice.
 **What to measure:** Post-session continuation rate ("もう1問"), qualitative reaction to the RESULT screen
 copy for `under_update` / `misaligned_change` outcomes specifically (do these read as punitive?).
 
-**Status:** Not tested. Requires real users.
+**Status:** Now measurable via `NEXT_CASE_CLICK` / `CASE_COMPLETE` metric events (validation build Section
+9; see `docs/USER_TEST_GUIDE.md` for the exact query) and User Test Q1/Q2/Q5. Still requires real users —
+no session has been run outside of this build's own automated tests.
 
 ## H2 — Does the AI trap increase calibration, or just blanket AI rejection?
 
@@ -27,13 +29,15 @@ REJECT regardless of `aiResponseGroundTruth`.
 **Why it matters:** Section F explicitly forbids treating "reject the AI" as inherently high-scoring; if
 players learn "always distrust AI" instead of "check the AI," the trap has backfired.
 
-**What to measure:** `aiCalibration` label distribution (`docs/AI_CALIBRATION.md`) across repeated
-CASE-005 plays and, once available, across a second `AI_CALIBRATION` case with `aiResponseGroundTruth:
-"CORRECT"` — the current build only has one AI_CALIBRATION case, so this can't yet be measured for a
-correct-AI scenario. **Next-run recommendation:** author a second AI_CALIBRATION case where the AI's claim
-is correct, specifically to test whether players who just saw CASE-005 wrongly reject it.
+**What to measure:** `aiCalibration` label distribution (`docs/AI_CALIBRATION.md`) across CASE-005
+(INCORRECT), TRANSFER-001 (CORRECT), and TRANSFER-002 (UNCERTAIN) — specifically whether a player who
+just rejected CASE-005's claim also rejects TRANSFER-001's *correct* claim (that would be
+`under_reliance`, the bad-direction failure this hypothesis is watching for).
 
-**Status:** Not testable yet with current case set (needs a CORRECT-ground-truth AI_CALIBRATION case).
+**Status:** Now testable with the current 3-quality case set (validation build Section 2). Still requires
+real user sessions with enough repeat play to see order effects between the three cases — this build's own
+tests only verify the mechanism (`tests/evaluationEngine.test.ts`, `tests/data.test.ts`), not the human
+behavioral question.
 
 ## H3 — Does free character choice cause weak-viewpoint avoidance?
 
@@ -65,8 +69,11 @@ player's recent TRAINING-case average for the same `targetSkill`, kept as a **se
 regular Growth stats (already enforced in code — `growthAggregator.ts` excludes `caseType: "TRANSFER"`
 from `computeGrowthStats`).
 
-**Status:** Not testable — no TRANSFER case is implemented yet this Run (see `docs/TRANSFER_TEST_DESIGN.md`
-and `docs/MVP_SCOPE.md`). This is the top scope item for the next Run once CASE-001 has real play data.
+**Status:** TRANSFER-001/002 are now implemented and playable (`docs/TRANSFER_TEST_DESIGN.md`). The
+comparison itself (recent TRAINING-case average vs. TRANSFER-case result for the same `targetSkill`) is
+not yet computed or surfaced anywhere — the underlying data exists in `TrajectoryLog` for a next Run or a
+manual analysis pass (`docs/USER_TEST_GUIDE.md`) to do it. This remains the top scope item for the next
+Run once real users have generated enough play data across all 7 cases.
 
 ## Stop rule (Section X)
 

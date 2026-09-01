@@ -22,7 +22,10 @@ const PLAYER_AI_ACTIONS: { id: PlayerAiAction; label: string }[] = [
 ];
 
 export function AiInterventionScreen({ caseData, message, initial, onBack, onSubmit }: Props) {
-  const isCalibration = caseData.caseType === "AI_CALIBRATION";
+  // Decoupled from caseType: whether the AI intervention is an evaluable
+  // claim (vs. a Socratic question) is a content property of this specific
+  // case, recorded via rubric.aiResponseGroundTruth. See docs/AI_CALIBRATION.md.
+  const hasEvaluableClaim = caseData.rubric.aiResponseGroundTruth !== null;
   const [playerAction, setPlayerAction] = useState<PlayerAiAction | null>(
     initial?.playerAction ?? null,
   );
@@ -31,13 +34,13 @@ export function AiInterventionScreen({ caseData, message, initial, onBack, onSub
   );
   const [freeText, setFreeText] = useState(initial?.freeText ?? "");
 
-  const canSubmit = problemTypeSelected !== null && (!isCalibration || playerAction !== null);
+  const canSubmit = problemTypeSelected !== null && (!hasEvaluableClaim || playerAction !== null);
 
   return (
-    <ScreenContainer title="AIからの介入" onBack={onBack}>
+    <ScreenContainer title="AIの意見" onBack={onBack}>
       <AiMessage character={caseData.aiCharacter} message={message} />
 
-      {isCalibration && (
+      {hasEvaluableClaim && (
         <div className="field">
           <label>このAIの提案を、あなたはどうしますか？</label>
           <div className="choice-list">
@@ -59,7 +62,7 @@ export function AiInterventionScreen({ caseData, message, initial, onBack, onSub
 
       <div className="field">
         <label>
-          {isCalibration
+          {hasEvaluableClaim
             ? "このAIの発言について、気になる点はありますか？"
             : "自分の最初の考えについて、気になる点はありますか？"}
         </label>

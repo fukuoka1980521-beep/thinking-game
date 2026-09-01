@@ -27,6 +27,7 @@ export function finalizeTrajectory(
     level: caseData.level,
     timestamp: new Date().toISOString(),
     factOrder: ["situation", "new_fact"],
+    playRunId: session.playRunId,
 
     characterOffered: caseData.characterOffered,
     characterUsed: caseData.aiCharacter,

@@ -20,9 +20,10 @@ interface TrajectoryLog {
   sessionId: string;
   caseId: string;
   caseType: CaseType;              // TRAINING | MEASUREMENT | AI_CALIBRATION | TRANSFER | OPEN_ENDED
-  level: number;                    // 1-5, see docs/MVP_SCOPE.md Section M levels
+  level: number;                    // 1-5 on the ladder, 0 for TRANSFER cases
   timestamp: string;
   factOrder: string[];              // presentation order; currently always ["situation", "new_fact"]
+  playRunId: string;                 // groups cases played back-to-back in one sitting (validation build Section 5/7)
 
   characterOffered: AiCharacterKey[];
   characterUsed: AiCharacterKey;
@@ -37,7 +38,7 @@ interface TrajectoryLog {
   };
   aiIntervention: {
     message: string;                // dialogue content, for record-keeping only
-    playerAction: PlayerAiAction | null;   // ACCEPT/VERIFY/HOLD/REJECT, only for AI_CALIBRATION cases
+    playerAction: PlayerAiAction | null;   // ACCEPT/VERIFY/HOLD/REJECT, only when the case has an evaluable AI claim (independent of caseType — see docs/AI_CALIBRATION.md)
     problemTypeSelected: AiTrapType | null;
     freeText: string;               // optional, auxiliary
   };
@@ -87,6 +88,45 @@ interface RubricResult {
 disposable local practice data, and the v1/v2 key split means an old browser profile simply starts a fresh
 v2 history rather than crashing on a shape mismatch. `rubricResult.rubricVersion` similarly lets a future
 rubric re-authoring for the same `caseId` be told apart from logs scored under an older rubric.
+
+## Validation-build additions (Section 5/7/8/9)
+
+Three more local-only schemas exist alongside `TrajectoryLog`, all in `src/types/log.ts`:
+
+```ts
+interface MetricEvent {
+  type: "CASE_START" | "CASE_COMPLETE" | "NEXT_CASE_CLICK" | "SESSION_COMPLETE" | "USER_TEST_SUBMITTED";
+  timestamp: string;
+  playRunId: string;
+  caseId?: string;
+}
+
+interface UserTestResponse {
+  responseId: string;
+  timestamp: string;
+  playRunId: string;
+  q1WantMore: number;   // 1-5
+  q2Enjoyable: number;
+  q3QuestionedAi: number;
+  q4Confusion: number;
+  q5WantReuse: number;
+  freeText: string;
+}
+
+interface SessionSummary {
+  totalCases: number;
+  reconsidered: number;
+  maintained: number;
+  verifiedAi: number;
+  rejectedAi: number;
+  choseUncertain: number;
+}
+```
+
+`MetricEvent[]` persists at `thinking-game:metrics:v1`, `UserTestResponse[]` at
+`thinking-game:user-test-responses:v1` (`src/lib/metrics.ts`, `src/lib/userTestResponses.ts`).
+`SessionSummary` is computed on demand (`src/engine/sessionSummary.ts`) from `TrajectoryLog[]` filtered by
+`playRunId` — it is not itself persisted. See `docs/USER_TEST_GUIDE.md` for how a tester reads these back.
 
 ## What this schema explicitly is not
 

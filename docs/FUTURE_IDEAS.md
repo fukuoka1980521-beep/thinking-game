@@ -15,28 +15,30 @@ FEATURE GATEの判定基準（面白さ／思考成長への寄与／AI依存を
 理由：MVPでは「ゲーム構造自体が面白いか」の検証を優先するため。詳細は `docs/DECISIONS.md`。
 データの扱い方の原則は先取りして `docs/DATA_BOUNDARY.md` に記載済み（実装は未着手）。
 
-## CALIBRATION（AIへの適正信頼の測定）— SPEC AMENDMENTにより実装済み
+## CALIBRATION V2（`NOW_NOT_IMPLEMENT`、PLAYABLE_VALIDATION_BUILD Section 3）
 
-旧版でここに「将来候補」として記載していたAI CALIBRATION（AI提案を採用した／検証した／保留した／
-拒否した、AIが正しい場合に採用できたか、問題がある場合に拒否できたか）は、SPEC AMENDMENTにより
-CALIBRATION MATRIXとして実装済み。詳細は `docs/AI_CALIBRATION.md`。以下は、実装後もなお残る未実装部分。
+将来候補：AI QUALITY × PLAYER ACTION × EPISTEMIC CONTEXT。CORRECT AIに対するVERIFY/HOLDも、
+状況（時間的余裕・重要度・すでに何度も同種の主張を検証済みか等）によっては合理的にも過剰検証にも
+なり得る。現在の2軸マトリクス（`docs/AI_CALIBRATION.md`）ではこれを区別できない。明示的に
+`NOW_NOT_IMPLEMENT`。
 
-### TRANSFER-001 / TRANSFER-002（`NOW_NOT_IMPLEMENT`、設計のみ完了）
+## 前Run（rubric導入）からの未実装項目 — 本Runで実装済みのもの
 
-`docs/TRANSFER_TEST_DESIGN.md` に2ケース分の設計を記載。Section Tが「最初に完全実装するのはCASE-001の
-みでよい」と明示的に許容しているため、本Runではプレイ可能なデータとしては実装していない。
-次Runの最有力候補（H4検証に必須、`docs/VALIDATION_PLAN.md`）。
+以下は前Run（SPEC AMENDMENT）で「次Run候補」としていたが、本Run（PLAYABLE_VALIDATION_BUILD）で
+実装済みになった：
 
-### 2件目のAI_CALIBRATIONケース（`aiResponseGroundTruth: "CORRECT"`）
+- ~~TRANSFER-001 / TRANSFER-002~~ → 実装済み（`docs/TRANSFER_TEST_DESIGN.md`）。
+- ~~2件目・3件目のAI_CALIBRATIONケース（CORRECT/UNCERTAIN）~~ → TRANSFER-001（CORRECT）・
+  TRANSFER-002（UNCERTAIN）が兼ねる形で実装済み（`docs/AI_CALIBRATION.md`）。
+- ~~実ブラウザでのスマートフォン横スクロール目視確認~~ → Claude in Chrome拡張が3Run連続で未接続
+  だったため、Playwrightを用いた自動スクリーンショット確認に切り替えて実施済み（`docs/TEST_PLAN.md`）。
 
-H2（`docs/VALIDATION_PLAN.md`）の検証には、AIの提案が正しいケースも必要。CASE-005は
-`aiResponseGroundTruth: "INCORRECT"` の1件のみのため、「AI罠を経験した後、正しいAI提案まで拒否するように
-ならないか」を測定できない。次Run候補。
+## 本Runでもなお未実装のもの
 
 ### キャラクターの部分的・自由選択（Section H、LEVEL 4-5）
 
-本MVPは全レベルでキャラクターをシステム割り当てのまま据え置いた（`characterChoiceAvailable: false`）。
-`characterOffered` はログに記録済みなので、選択制を導入してもデータ移行は不要。
+引き続きシステム割り当てのまま（`characterChoiceAvailable: false`）。`characterOffered` はログに
+記録済みなので、選択制を導入してもデータ移行は不要（H3、`docs/VALIDATION_PLAN.md`）。
 
 ### Trap rate A/Bテストの実配信
 
@@ -45,19 +47,27 @@ H2（`docs/VALIDATION_PLAN.md`）の検証には、AIの提案が正しいケー
 
 ### GrowthScreenでのCalibration Matrix全内訳表示
 
-現在はACCEPT/VERIFY/HOLD/REJECTの件数分布のみ表示。`appropriate_reliance` 等12種類のラベル別内訳は
+現在はACCEPT/VERIFY/HOLD/REJECTの件数分布のみ表示。`appropriate_reliance` 等8種類のラベル別内訳は
 `TrajectoryLog.rubricResult.aiCalibration` に記録済みだが、画面には未反映（データはあるが表示していない）。
+
+### ユーザーテスト・メトリクスの自動集計ダッシュボード
+
+`管理画面`はDO_NOT_IMPLEMENT。現状は `docs/USER_TEST_GUIDE.md` の手順でdevtoolsから手動確認する。
+テスト協力者数が増えた場合、この手動確認は現実的でなくなる可能性がある。
+
+### H4（TRANSFER転移）の自動比較
+
+TRANSFER-001/002は実装済みだが、「TRAINING平均 vs TRANSFER結果」の比較自体はまだ計算・表示していない
+（`docs/VALIDATION_PLAN.md` H4）。
 
 ## その他の見送り項目
 
-- 30ケース以上への拡張：5ケースの完成度を優先するため見送り（TRANSFER含めても7ケースまで、Section T）。
-- PERSPECTIVE / CAUSALITY / DECISION の3能力：本MVPはOBSERVATION / HYPOTHESIS / FALSIFICATION /
-  UPDATINGの4能力に絞る。CASE-005はBASIC CAUSALITYの要素（相関と因果の混同）を含むが、独立した
-  CAUSALITY能力としては集計していない。
+- 8ケース以上への拡張：7ケースの完成度を優先するため見送り（Section 1）。
+- PERSPECTIVE / CAUSALITY / DECISION の3能力：OBSERVATION / HYPOTHESIS / FALSIFICATION / UPDATINGの
+  4能力に絞る。CASE-005・TRANSFER-001/002はBASIC CAUSALITYの要素（相関と因果の混同等）を含むが、
+  独立したCAUSALITY能力としては集計していない。
 - Service Workerによるオフラインキャッシュ・完全なPWA化：複雑さが増すため、`manifest.json` と
   ビューポート設定のみに留めた。
-- ケース選択のランキング・共有機能：SNS・PvP・ランキングは禁止事項に該当。
+- ケース選択のランキング・共有機能・通知・ストリーク：SNS・PvP・ランキング等は禁止事項に該当
+  （Section 15）。
 - 生成AI APIの接続：`docs/DECISIONS.md` を参照。
-- 実ブラウザでのスマートフォン横スクロール目視確認：本Runでもブラウザ拡張が未接続だったため
-  未実施（前Runから持ち越し）。次回セッションでの優先確認事項とする。特にFIRST DECISION・
-  AI INTERVENTION画面は選択肢が増えたため、優先して確認すること。

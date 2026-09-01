@@ -11,16 +11,19 @@ const BANNED_PERSONALITY_PHRASES = [
 
 const BANNED_TRUST_TERMS = ["AI信頼度", "AI親密度", "AI好感度", "絆レベル"];
 
+// Section 4: internal jargon must never leak into player-facing case copy.
+const BANNED_JARGON_TERMS = ["rubric", "calibration matrix", "trajectory", "ground truth", "falsification"];
+
 describe("case data", () => {
-  it("has exactly 5 cases", () => {
-    expect(CASES).toHaveLength(5);
+  it("has exactly 7 cases (5 core + 2 transfer, Section 1)", () => {
+    expect(CASES).toHaveLength(7);
   });
 
-  it("has unique case ids in the CASE-00N form", () => {
+  it("has unique case ids in the CASE-00N or TRANSFER-00N form", () => {
     const ids = CASES.map((c) => c.caseId);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of ids) {
-      expect(id).toMatch(/^CASE-\d{3}$/);
+      expect(id).toMatch(/^(CASE|TRANSFER)-\d{3}$/);
     }
   });
 
@@ -72,7 +75,38 @@ describe("case data", () => {
     }
   });
 
-  it("covers all four MVP ability targets across the five cases", () => {
+  it("never leaks internal jargon into player-facing case text (Section 4)", () => {
+    for (const c of CASES) {
+      const playerFacingText = [
+        c.title,
+        c.initialQuestion,
+        ...c.initialSituation,
+        c.aiIntervention,
+        c.falsificationPrompt,
+        ...c.newFacts,
+        c.finalQuestion,
+        ...c.availableChoices.map((choice) => choice.label),
+        ...c.infoOptions.map((option) => option.label),
+        c.reflectionPoints.factCorrect,
+        c.reflectionPoints.factIncorrect,
+        c.reflectionPoints.hypothesisConsidered,
+        c.reflectionPoints.hypothesisNotConsidered,
+        c.reflectionPoints.falsificationConsidered,
+        c.reflectionPoints.falsificationNotConsidered,
+        c.reflectionPoints.updatingEngaged,
+        c.reflectionPoints.updatingNotEngaged,
+        c.reflectionPoints.nextTheme,
+        c.aiTrap.explanation ?? "",
+      ]
+        .join(" ")
+        .toLowerCase();
+      for (const term of BANNED_JARGON_TERMS) {
+        expect(playerFacingText).not.toContain(term);
+      }
+    }
+  });
+
+  it("covers all four MVP ability targets across the cases", () => {
     const covered = new Set(CASES.flatMap((c) => c.abilityTargets));
     expect(covered.has("OBSERVATION")).toBe(true);
     expect(covered.has("HYPOTHESIS")).toBe(true);
@@ -82,25 +116,50 @@ describe("case data", () => {
 
   // --- SPEC AMENDMENT (rubric, case_type, AI calibration) checks below ---
 
-  it("assigns each case a unique MVP level 1-5, matching Section M's level order", () => {
-    const levels = CASES.map((c) => c.level).sort((a, b) => a - b);
-    expect(levels).toEqual([1, 2, 3, 4, 5]);
+  it("assigns each ladder case a unique MVP level 1-5, and 0 to every TRANSFER case (Section M/10)", () => {
+    const ladderLevels = CASES.filter((c) => c.caseType !== "TRANSFER")
+      .map((c) => c.level)
+      .sort((a, b) => a - b);
+    expect(ladderLevels).toEqual([1, 2, 3, 4, 5]);
+
+    for (const c of CASES.filter((c) => c.caseType === "TRANSFER")) {
+      expect(c.level).toBe(0);
+    }
   });
 
-  it("gives every case a valid caseType, with exactly one AI_CALIBRATION case", () => {
+  it("gives every case a valid caseType, with exactly two TRANSFER cases (Section 1)", () => {
     for (const c of CASES) {
       expect(["TRAINING", "MEASUREMENT", "AI_CALIBRATION", "TRANSFER", "OPEN_ENDED"]).toContain(c.caseType);
     }
-    expect(CASES.filter((c) => c.caseType === "AI_CALIBRATION")).toHaveLength(1);
+    expect(CASES.filter((c) => c.caseType === "TRANSFER")).toHaveLength(2);
   });
 
-  it("only defines an AI response ground truth when the case is AI_CALIBRATION (Socratic questions aren't evaluable claims)", () => {
+  it("only defines an AI response ground truth where the AI intervention is an evaluable claim, not a Socratic question", () => {
+    // Decoupled from caseType (validation build Section 2): TRAINING cases stay
+    // Socratic-question-only, but TRANSFER cases may also carry an evaluable claim.
     for (const c of CASES) {
-      if (c.caseType === "AI_CALIBRATION") {
-        expect(c.rubric.aiResponseGroundTruth).not.toBeNull();
-      } else {
+      if (c.caseType === "TRAINING") {
         expect(c.rubric.aiResponseGroundTruth).toBeNull();
       }
+    }
+    const evaluable = CASES.filter((c) => c.rubric.aiResponseGroundTruth !== null);
+    expect(evaluable.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("balances AI quality across the case set: at least one CORRECT, one UNCERTAIN, and one INCORRECT AI claim (Section 2)", () => {
+    const qualities = new Set(
+      CASES.map((c) => c.rubric.aiResponseGroundTruth).filter((q): q is NonNullable<typeof q> => q !== null),
+    );
+    expect(qualities.has("CORRECT")).toBe(true);
+    expect(qualities.has("UNCERTAIN")).toBe(true);
+    expect(qualities.has("INCORRECT")).toBe(true);
+  });
+
+  it("never shows AI quality or trap presence in player-facing text (Section 2)", () => {
+    for (const c of CASES) {
+      const playerFacingText = [c.title, c.initialQuestion, ...c.initialSituation, c.aiIntervention].join(" ");
+      expect(playerFacingText).not.toMatch(/CORRECT|UNCERTAIN|INCORRECT/);
+      expect(playerFacingText).not.toMatch(/罠|トラップ|TRAP/i);
     }
   });
 
@@ -118,11 +177,14 @@ describe("case data", () => {
     }
   });
 
-  it("references only real choice ids from rubric.criticalErrorChoiceId / evidenceSupportsChoiceId", () => {
+  it("references only real choice ids from rubric.criticalErrorChoiceId / evidenceSupportsChoiceId / uncertaintyChoiceId", () => {
     for (const c of CASES) {
       const ids = c.availableChoices.map((choice) => choice.id);
       if (c.rubric.criticalErrorChoiceId !== null) {
         expect(ids).toContain(c.rubric.criticalErrorChoiceId);
+      }
+      if (c.rubric.uncertaintyChoiceId !== null) {
+        expect(ids).toContain(c.rubric.uncertaintyChoiceId);
       }
       expect(ids).toContain(c.rubric.evidenceSupportsChoiceId);
     }

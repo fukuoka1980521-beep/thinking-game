@@ -22,6 +22,7 @@ function makeLog(
     level: 1,
     timestamp,
     factOrder: ["situation", "new_fact"],
+    playRunId: "run-test",
     characterOffered: ["DETECTIVE"],
     characterUsed: "DETECTIVE",
     characterChoiceAvailable: false,
@@ -110,19 +111,20 @@ describe("TRANSFER isolation (Section L)", () => {
 });
 
 describe("AI action distribution", () => {
-  it("only counts AI_CALIBRATION-type cases with a recorded player action", () => {
+  it("counts any case with a recorded player action, independent of caseType", () => {
     const logs = [
       makeLog("2026-01-01T00:00:00Z", { caseType: "TRAINING", playerAction: null }),
       makeLog("2026-01-02T00:00:00Z", { caseType: "AI_CALIBRATION", playerAction: "ACCEPT" }),
       makeLog("2026-01-03T00:00:00Z", { caseType: "AI_CALIBRATION", playerAction: "VERIFY" }),
-      makeLog("2026-01-04T00:00:00Z", { caseType: "AI_CALIBRATION", playerAction: "VERIFY" }),
+      // TRANSFER cases can also carry an evaluable AI claim (Section 2) — must still count.
+      makeLog("2026-01-04T00:00:00Z", { caseType: "TRANSFER", playerAction: "VERIFY" }),
     ];
     const dist = computeAiActionDistribution(logs);
     expect(dist.totalCases).toBe(3);
     expect(dist.counts).toEqual({ ACCEPT: 1, VERIFY: 2, HOLD: 0, REJECT: 0 });
   });
 
-  it("returns zero totals when no AI_CALIBRATION case has been played", () => {
+  it("returns zero totals when no case with an AI action has been played", () => {
     const dist = computeAiActionDistribution([makeLog("2026-01-01T00:00:00Z")]);
     expect(dist.totalCases).toBe(0);
     expect(dist.counts).toEqual({ ACCEPT: 0, VERIFY: 0, HOLD: 0, REJECT: 0 });

@@ -1,58 +1,61 @@
-# TRANSFER_TEST_DESIGN — SPEC AMENDMENT (Section L)
+# TRANSFER_TEST_DESIGN — SPEC AMENDMENT (Section L) → IMPLEMENTED (validation build Section 1/10)
 
-## Status: designed, not implemented this Run
+## Status: implemented and playable
 
-Section T explicitly permits deferring everything except CASE-001's full implementation this Run.
-TRANSFER-001 and TRANSFER-002 are designed below in enough detail to implement later, but are **not**
-present as playable `CaseData` yet, and are not selectable from CASE_SELECT. `RubricDefinition.transferTarget`
-on every shipped case already points at one of these two ids, so wiring them in later does not require
-touching the existing 5 cases again.
+Originally designed but deferred (Section T of the rubric amendment explicitly allowed this). The
+PLAYABLE_VALIDATION_BUILD Run implemented both as real `CaseData` (`src/data/cases/transfer-001.ts`,
+`src/data/cases/transfer-002.ts`), mixed naturally into `CASES` (`src/data/cases/index.ts`) — **not**
+flagged to the player as a "transfer test" (Section 10). Only `caseType: "TRANSFER"` and `level: 0` mark
+them internally.
+
+`src/engine/growthAggregator.ts` excludes `caseType: "TRANSFER"` logs from the regular Growth stats
+(`excludeTransfer`), so these two cases don't pollute the 4-ability percentages; they do still count
+toward the AI-action distribution when they carry an evaluable claim (see `docs/AI_CALIBRATION.md`).
 
 ## Why transfer, not just repeated training
 
 Section L's concern: improving at 5 fixed stories could just mean "learned these 5 stories," not "learned
 observation / hypothesis generation / falsification / updating as transferable skills." A TRANSFER case
 tests the same underlying rubric structure on a **different surface topic**, so genuine skill transfer can
-be told apart from memorizing the training set.
+be told apart from memorizing the training set (H4, `docs/VALIDATION_PLAN.md`).
 
-`docs/VALIDATION_PLAN.md` (H4) is the hypothesis this exists to test, and
-`src/engine/growthAggregator.ts` already excludes `caseType: "TRANSFER"` logs from the regular Growth
-stats (`excludeTransfer`), so wiring in real TRANSFER cases later will not silently pollute the existing
-ability percentages.
+## TRANSFER-001 — implemented (`src/data/cases/transfer-001.ts`)
 
-## TRANSFER-001 (target skill: OBSERVATION / FALSIFICATION — mirrors CASE-001 and CASE-003)
+- **Target skill / mirrors:** OBSERVATION, FALSIFICATION — mirrors CASE-001 and CASE-003.
+- **Surface topic:** A news app's push notification claims "利用者の8割がこの新機能を高く評価しています"
+  for a new feature.
+- **Underlying structure:** A number is presented as a settled fact; whether it was measured fairly
+  (sample size, wording, random selection) is not stated up front.
+- **Also serves:** this build's CORRECT-ground-truth AI_CALIBRATION content (Section 2) — the survey
+  turns out to have been done well, testing whether players over-verify or reflexively reject a claim that
+  actually holds up.
+- **Design note:** `criticalErrorChoiceId` and `evidenceSupportsChoiceId` are both `"a"` ("その数字は信頼
+  できると思う") — deliberately the *same* choice. Picking it at FIRST_DECISION (before checking the
+  methodology) is the critical error; picking it at SECOND_DECISION (after the methodology is confirmed
+  solid) is the evidence-supported answer. This lets `criticalErrorMade: true` and
+  `updateAppropriateness: "appropriate_keep"` (if the player picked it both times) coexist without being a
+  logic bug — they describe two different moments ("right for the wrong reason at first" vs. "correctly
+  reads the confirming evidence"), which is exactly the kind of signal calibration measurement should be
+  able to distinguish. See `docs/RUBRIC_DESIGN.md`.
 
-- **Surface topic:** A news app's push notification claims "利用者の8割がこの新機能を高評価" for a feature
-  you personally find confusing.
-- **Underlying structure:** A number is presented as a settled fact; whether it is measured fairly (sample,
-  question wording, time window) is not stated. Mirrors CASE-001's fact/interpretation split and CASE-003's
-  "don't treat a judgmental conclusion as a confirmed fact" critical error.
-- **Rubric sketch:** `observableBehavior` = "アプリ内に「8割が高評価」という通知が表示された";
-  `criticalError` = 数字をそのまま鵜呑みにして「みんな良いと思っている」と断定する;
-  `evidenceSupportsChoiceId`-equivalent evidence = 調査方法（対象者・質問文）に偏りがあったことが判明する。
-- **transferTarget source cases:** `CASE-001`, `CASE-003`, `CASE-005`.
+## TRANSFER-002 — implemented (`src/data/cases/transfer-002.ts`)
 
-## TRANSFER-002 (target skill: HYPOTHESIS / UPDATING — mirrors CASE-002 and CASE-004)
+- **Target skill / mirrors:** HYPOTHESIS, UPDATING — mirrors CASE-002 and CASE-004.
+- **Surface topic:** A review-analysis tool flags "配送中の破損が原因である可能性が高い（確度：中程度）"
+  after a sudden wave of low-rated reviews.
+- **Underlying structure:** The tool itself hedges ("確度：中程度") rather than asserting certainty —
+  unlike CASE-005's overconfident claim. Multiple causes are plausible before evidence narrows it down.
+- **Also serves:** this build's UNCERTAIN-ground-truth AI_CALIBRATION content (Section 2) — tests whether
+  players can tell an appropriately-hedged claim apart from an overconfident one, and whether they treat
+  "確度：中程度" as license to accept it outright (the critical error) or as a cue to verify.
+- **Design note:** same same-choice pattern as TRANSFER-001 (`criticalErrorChoiceId` = `evidenceSupportsChoiceId`
+  = `"a"`), for the same reason.
 
-- **Surface topic:** A product you sell gets a sudden wave of 1-star reviews in one day.
-- **Underlying structure:** Multiple plausible causes exist (a shipping problem, a competitor's smear
-  campaign, a genuine defect, a review-bombing incident unrelated to the product) before any evidence
-  narrows it down. Mirrors CASE-002's hypothesis-diversity requirement and CASE-004's "revise on
-  person-specific new information" structure.
-- **Rubric sketch:** `infoOptions` should include both diagnostic items (shipping tracking data, review
-  content patterns) and distractors (unrelated general market sentiment); `evidenceSupportsChoiceId`-
-  equivalent evidence = レビュー本文に共通する具体的な破損状況の記述が見つかる（配送問題を支持）。
-- **transferTarget source cases:** `CASE-002`, `CASE-004`.
+## What's still not tested
 
-## Implementation notes for the next Run
-
-- Both should be `caseType: "TRANSFER"`, `riskLevel: "low"`, and follow the exact same screen sequence as
-  every other case (no new UI needed — `CaseSession.tsx` and all screens are already case-type-agnostic
-  except for the AI_CALIBRATION-only ACCEPT/VERIFY/HOLD/REJECT control).
-- They should **not** appear in the "今日の1問" rotation or CASE_SELECT list by default, to avoid confusing
-  a first-time player with what looks like an unrelated 6th/7th case — a small filter on `CASES` by
-  `caseType !== "TRANSFER"` for those two entry points is the likely implementation, with a separate
-  "TRANSFER" flag or hidden entry point for whoever is running the H4 comparison.
-- GrowthScreen should not surface transfer results in the main ability bars (already guaranteed at the
-  aggregator level); a next Run should decide whether to surface them at all in the UI, or keep them
-  logs-only for manual/researcher inspection until H4 has a real answer.
+- H4 itself (does in-game improvement actually transfer) requires comparing a player's TRAINING-case
+  performance against their TRANSFER-case performance across multiple sessions — that comparison isn't
+  computed or surfaced anywhere yet; the data (`TrajectoryLog.caseType`, `.transferTarget`) is there for a
+  future Run or manual analysis (`docs/USER_TEST_GUIDE.md`) to do it.
+- Only one TRANSFER case exists per mirrored skill pair, so this can't yet distinguish "transfers to this
+  specific new topic" from "transfers to any new topic."

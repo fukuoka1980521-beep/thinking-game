@@ -5,11 +5,12 @@ import { ScreenContainer } from "../components/ScreenContainer";
 interface Props {
   caseData: CaseData;
   reflection: ReflectionResult;
+  onNextCase: () => void;
   onGoHome: () => void;
   onViewGrowth: () => void;
 }
 
-export function ResultScreen({ caseData, reflection, onGoHome, onViewGrowth }: Props) {
+export function ResultScreen({ caseData, reflection, onNextCase, onGoHome, onViewGrowth }: Props) {
   return (
     <ScreenContainer title="結果">
       <div className="card reflection-section good">
@@ -43,12 +44,17 @@ export function ResultScreen({ caseData, reflection, onGoHome, onViewGrowth }: P
       </div>
 
       <div className="spacer" />
-      <button type="button" className="btn btn-primary" onClick={onViewGrowth}>
-        成長を見る
+      <button type="button" className="btn btn-primary" onClick={onNextCase}>
+        次の問題へ
       </button>
-      <button type="button" className="btn-secondary" onClick={onGoHome}>
-        ホームに戻る
-      </button>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
+        <button type="button" className="btn-secondary" onClick={onViewGrowth}>
+          成長を見る
+        </button>
+        <button type="button" className="btn-secondary" onClick={onGoHome}>
+          ホームに戻る
+        </button>
+      </div>
     </ScreenContainer>
   );
 }

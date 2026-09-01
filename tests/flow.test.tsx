@@ -2,8 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../src/App";
+import { UserTestScreen } from "../src/screens/UserTestScreen";
 import { CASES, getCaseById } from "../src/data/cases";
 import { loadCompletedLogs, loadInProgressSession } from "../src/lib/storage";
+import { loadMetricEvents } from "../src/lib/metrics";
+import { loadUserTestResponses } from "../src/lib/userTestResponses";
+import { computeGrowthStats } from "../src/engine/growthAggregator";
+import type { CaseData } from "../src/types/case";
 
 const case001 = CASES[0]; // TRAINING
 const case005 = getCaseById("CASE-005")!; // AI_CALIBRATION
@@ -84,7 +89,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
 
     await user.click(screen.getByRole("button", { name: "成長を見る" }));
     await user.click(screen.getByRole("button", { name: /全期間/ }));
-    const observationRow = screen.getByText(/OBSERVATION/).closest(".growth-row") as HTMLElement;
+    const observationRow = screen.getByText(/事実と意見を区別する力/).closest(".growth-row") as HTMLElement;
     expect(within(observationRow).getByText("1 / 1 cases")).toBeInTheDocument();
   });
 
@@ -198,5 +203,103 @@ describe("full case flow (CASE-005, AI_CALIBRATION)", () => {
     // Only select the problem type, not an AI action.
     await user.click(screen.getByRole("radio", { name: "根拠不足" }));
     expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
+  });
+});
+
+/** Mechanically completes whichever case is currently showing, regardless of case content. */
+async function genericPlayThroughCurrentCase(user: ReturnType<typeof userEvent.setup>, caseData: CaseData) {
+  await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  await user.click(screen.getByRole("radio", { name: caseData.availableChoices[0].label }));
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  if (caseData.rubric.aiResponseGroundTruth !== null) {
+    await user.click(screen.getByRole("radio", { name: "採用する" }));
+  }
+  await user.click(screen.getByRole("radio", { name: "問題なし" }));
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  await user.click(screen.getByRole("button", { name: "再判断する" }));
+
+  await user.click(screen.getByRole("radio", { name: caseData.availableChoices[0].label }));
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  await user.click(screen.getByRole("button", { name: "結果を見る" }));
+}
+
+describe("play run: NEXT_CASE -> session summary -> user test (Section 5/7/8/9)", () => {
+  it("drives 5 cases via 次の問題へ, then shows the session summary and records the user test", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await goToCaseSelectAndOpen(user, CASES[0].title);
+    await user.click(screen.getByRole("button", { name: "はじめる" }));
+
+    for (let i = 0; i < 5; i++) {
+      await genericPlayThroughCurrentCase(user, CASES[i]);
+      await user.click(screen.getByRole("button", { name: "次の問題へ" }));
+      if (i < 4) {
+        await user.click(screen.getByRole("button", { name: "はじめる" }));
+      }
+    }
+
+    // Session summary shown after 5 cases, with no ability-score framing.
+    expect(screen.getByText("今回のプレイ")).toBeInTheDocument();
+    expect(screen.getByText(/今回、5問に取り組みました/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "感想を聞かせてください（30秒）" }));
+
+    const questions = [
+      "もう1問やってみたいと思いましたか？",
+      "問題を考えること自体は面白かったですか？",
+      "AIの意見をそのまま信じず考えましたか？",
+      "操作で迷ったところはありましたか？",
+      "このゲームをもう一度使いたいと思いますか？",
+    ];
+    for (const q of questions) {
+      const group = screen.getByRole("radiogroup", { name: q });
+      await user.click(within(group).getByRole("radio", { name: "3" }));
+    }
+    await user.click(screen.getByRole("button", { name: "送信する" }));
+
+    expect(screen.getByText("ありがとうございました")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "ホームに戻る" }));
+    expect(screen.getByText("思考整理ゲーム")).toBeInTheDocument();
+
+    // Metrics funnel (Section 9).
+    const events = loadMetricEvents();
+    const countByType = (t: string) => events.filter((e) => e.type === t).length;
+    expect(countByType("CASE_START")).toBe(5);
+    expect(countByType("CASE_COMPLETE")).toBe(5);
+    expect(countByType("NEXT_CASE_CLICK")).toBe(5);
+    expect(countByType("SESSION_COMPLETE")).toBe(1);
+    expect(countByType("USER_TEST_SUBMITTED")).toBe(1);
+
+    // User test response saved local-only (Section 8).
+    const responses = loadUserTestResponses();
+    expect(responses).toHaveLength(1);
+    expect(responses[0].q1WantMore).toBe(3);
+    expect(responses[0].q5WantReuse).toBe(3);
+
+    // TRANSFER case mixed in naturally, but excluded from growth stats (Section 10/L).
+    const logs = loadCompletedLogs();
+    expect(logs).toHaveLength(5);
+    expect(logs.map((l) => l.caseId)).toContain("TRANSFER-001");
+    expect(computeGrowthStats(logs).totalCases).toBe(4);
+  });
+});
+
+describe("UserTestScreen (isolated)", () => {
+  it("keeps submit disabled until all 5 questions are answered", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(<UserTestScreen onSubmit={onSubmit} onSkip={() => {}} />);
+
+    expect(screen.getByRole("button", { name: "送信する" })).toBeDisabled();
+
+    const firstGroup = screen.getByRole("radiogroup", { name: "もう1問やってみたいと思いましたか？" });
+    await user.click(within(firstGroup).getByRole("radio", { name: "5" }));
+    expect(screen.getByRole("button", { name: "送信する" })).toBeDisabled();
   });
 });

@@ -71,6 +71,7 @@ export const case001: CaseData = {
     evidenceStrength: "diagnostic",
     evidenceSupportsChoiceId: "d",
     correctInfoIds: ["i2", "i4"],
+    uncertaintyChoiceId: null,
   },
 
   reflectionPoints: {
