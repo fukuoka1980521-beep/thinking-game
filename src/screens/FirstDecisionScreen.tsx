@@ -14,14 +14,19 @@ interface Props {
 
 export function FirstDecisionScreen({ caseData, initial, onBack, onSubmit }: Props) {
   const [choiceId, setChoiceId] = useState<string | null>(initial?.choiceId ?? null);
-  const [reason, setReason] = useState(initial?.reason ?? "");
-  const [factCheckAnswer, setFactCheckAnswer] = useState<"fact" | "interpretation" | null>(
-    initial?.factCheckAnswer ?? null,
-  );
-  const [altHypothesis, setAltHypothesis] = useState(initial?.altHypothesis ?? "");
   const [confidence, setConfidence] = useState(initial?.confidence ?? 50);
+  const [reason, setReason] = useState(initial?.reason ?? "");
+  const [infoOptionsSelected, setInfoOptionsSelected] = useState<string[]>(
+    initial?.infoOptionsSelected ?? [],
+  );
 
-  const canSubmit = choiceId !== null && reason.trim().length > 0 && factCheckAnswer !== null;
+  const canSubmit = choiceId !== null;
+
+  function toggleInfoOption(id: string) {
+    setInfoOptionsSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  }
 
   return (
     <ScreenContainer title="第一判断" onBack={onBack}>
@@ -30,8 +35,32 @@ export function FirstDecisionScreen({ caseData, initial, onBack, onSubmit }: Pro
         <ChoiceList choices={caseData.availableChoices} selectedId={choiceId} onSelect={setChoiceId} />
       </div>
 
+      <ConfidenceSlider label={caseData.confidencePrompt} value={confidence} onChange={setConfidence} />
+
       <div className="field">
-        <label htmlFor="reason">そう考えた理由</label>
+        <label>どの情報を重要と考えましたか？（複数選択可）</label>
+        <div className="choice-list">
+          {caseData.infoOptions.map((option) => {
+            const selected = infoOptionsSelected.includes(option.id);
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="checkbox"
+                aria-checked={selected}
+                className={`btn btn-choice${selected ? " selected" : ""}`}
+                onClick={() => toggleInfoOption(option.id)}
+              >
+                {selected ? "✓ " : ""}
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="field">
+        <label htmlFor="reason">そう考えた理由（任意）</label>
         <textarea
           id="reason"
           value={reason}
@@ -40,48 +69,12 @@ export function FirstDecisionScreen({ caseData, initial, onBack, onSubmit }: Pro
         />
       </div>
 
-      <div className="field">
-        <label>次の1文は「事実」ですか、それとも「解釈」ですか？</label>
-        <p className="card" style={{ margin: 0 }}>
-          {caseData.factCheck.statement}
-        </p>
-        <div className="choice-list">
-          <button
-            type="button"
-            className={`btn btn-choice${factCheckAnswer === "fact" ? " selected" : ""}`}
-            onClick={() => setFactCheckAnswer("fact")}
-          >
-            事実（確認できていること）
-          </button>
-          <button
-            type="button"
-            className={`btn btn-choice${factCheckAnswer === "interpretation" ? " selected" : ""}`}
-            onClick={() => setFactCheckAnswer("interpretation")}
-          >
-            解釈（推測・意見）
-          </button>
-        </div>
-      </div>
-
-      <div className="field">
-        <label htmlFor="alt-hypothesis">他にどんな可能性が考えられますか？（任意）</label>
-        <textarea
-          id="alt-hypothesis"
-          value={altHypothesis}
-          onChange={(e) => setAltHypothesis(e.target.value)}
-          placeholder="思いつけば書いてみましょう"
-        />
-      </div>
-
-      <ConfidenceSlider label={caseData.confidencePrompt} value={confidence} onChange={setConfidence} />
-
       <button
         type="button"
         className="btn btn-primary"
         disabled={!canSubmit}
         onClick={() =>
-          choiceId &&
-          onSubmit({ choiceId, reason, confidence, factCheckAnswer, altHypothesis })
+          choiceId && onSubmit({ choiceId, confidence, reason, infoOptionsSelected })
         }
       >
         次へ

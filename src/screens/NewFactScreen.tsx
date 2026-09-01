@@ -1,17 +1,17 @@
-import type { CaseData } from "../types/case";
 import { ScreenContainer } from "../components/ScreenContainer";
 
 interface Props {
-  caseData: CaseData;
+  /** Supplied by the Dialogue Engine (src/engine/dialogueEngine.ts), not read from CaseData directly. */
+  newEvidence: string[];
   onBack: () => void;
   onNext: () => void;
 }
 
-export function NewFactScreen({ caseData, onBack, onNext }: Props) {
+export function NewFactScreen({ newEvidence, onBack, onNext }: Props) {
   return (
     <ScreenContainer title="新しい情報" onBack={onBack}>
       <div className="card">
-        {caseData.newFacts.map((fact, i) => (
+        {newEvidence.map((fact, i) => (
           <p key={i} className="situation-line">
             {fact}
           </p>

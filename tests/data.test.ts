@@ -79,4 +79,81 @@ describe("case data", () => {
     expect(covered.has("FALSIFICATION")).toBe(true);
     expect(covered.has("UPDATING")).toBe(true);
   });
+
+  // --- SPEC AMENDMENT (rubric, case_type, AI calibration) checks below ---
+
+  it("assigns each case a unique MVP level 1-5, matching Section M's level order", () => {
+    const levels = CASES.map((c) => c.level).sort((a, b) => a - b);
+    expect(levels).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it("gives every case a valid caseType, with exactly one AI_CALIBRATION case", () => {
+    for (const c of CASES) {
+      expect(["TRAINING", "MEASUREMENT", "AI_CALIBRATION", "TRANSFER", "OPEN_ENDED"]).toContain(c.caseType);
+    }
+    expect(CASES.filter((c) => c.caseType === "AI_CALIBRATION")).toHaveLength(1);
+  });
+
+  it("only defines an AI response ground truth when the case is AI_CALIBRATION (Socratic questions aren't evaluable claims)", () => {
+    for (const c of CASES) {
+      if (c.caseType === "AI_CALIBRATION") {
+        expect(c.rubric.aiResponseGroundTruth).not.toBeNull();
+      } else {
+        expect(c.rubric.aiResponseGroundTruth).toBeNull();
+      }
+    }
+  });
+
+  it("defines a complete rubric for every case (Section B)", () => {
+    for (const c of CASES) {
+      expect(c.rubric.rubricVersion).toBeTruthy();
+      expect(c.rubric.observableBehavior).toBeTruthy();
+      expect(c.rubric.acceptableReasoning).toBeTruthy();
+      expect(c.rubric.weakReasoning).toBeTruthy();
+      expect(c.rubric.criticalError).toBeTruthy();
+      expect(c.rubric.updateCondition).toBeTruthy();
+      expect(c.rubric.doNotUpdateCondition).toBeTruthy();
+      expect(c.rubric.uncertaintyCondition).toBeTruthy();
+      expect(c.rubric.transferTarget).toBeTruthy();
+    }
+  });
+
+  it("references only real choice ids from rubric.criticalErrorChoiceId / evidenceSupportsChoiceId", () => {
+    for (const c of CASES) {
+      const ids = c.availableChoices.map((choice) => choice.id);
+      if (c.rubric.criticalErrorChoiceId !== null) {
+        expect(ids).toContain(c.rubric.criticalErrorChoiceId);
+      }
+      expect(ids).toContain(c.rubric.evidenceSupportsChoiceId);
+    }
+  });
+
+  it("keeps rubric.correctInfoIds as a subset of the case's own infoOptions", () => {
+    for (const c of CASES) {
+      expect(c.infoOptions.length).toBeGreaterThanOrEqual(2);
+      const ids = c.infoOptions.map((o) => o.id);
+      for (const correctId of c.rubric.correctInfoIds) {
+        expect(ids).toContain(correctId);
+      }
+    }
+  });
+
+  it("keeps aiTrap fields internally consistent", () => {
+    for (const c of CASES) {
+      if (c.aiTrap.present) {
+        expect(c.aiTrap.trapType).not.toBe("NONE");
+        expect(c.aiTrap.trapGroundTruth).not.toBeNull();
+        expect(c.aiTrap.appropriateAction).not.toBeNull();
+      } else {
+        expect(c.aiTrap.trapType).toBe("NONE");
+      }
+    }
+  });
+
+  it("system-assigns the AI character for every case in this MVP (Section H, levels 1-3 behavior kept for all levels)", () => {
+    for (const c of CASES) {
+      expect(c.characterChoiceAvailable).toBe(false);
+      expect(c.characterOffered).toContain(c.aiCharacter);
+    }
+  });
 });

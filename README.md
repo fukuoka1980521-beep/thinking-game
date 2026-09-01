@@ -17,7 +17,10 @@ AIと対話しながら、観察・仮説形成・反証・判断更新などを
 
 ## Run: THINKING_GAME_MVP_V0_1
 
-現在のバージョンは v0.1 のMVPです。5つのケースで、思考整理ゲームのコアループ（判断→AI介入→新情報→再判断→振り返り→成長記録）を体験できます。
+現在のバージョンは v0.1 のMVPに、SPEC AMENDMENT（rubric・AI Calibration Matrix・判断軌跡スキーマ）を
+適用したものです。5つのケースで、思考整理ゲームのコアループ（事実確認→判断→AI介入→新情報→再判断→
+振り返り→成長記録）を体験できます。CASE-001は新設計を完全実装、CASE-005はAI CALIBRATION型として
+完全実装、CASE-002〜004はTRAINING型として軽量なrubricで移行済みです。詳細は `docs/DECISIONS.md`。
 
 ## Tech Stack
 
@@ -38,13 +41,20 @@ npm run typecheck # 型チェックのみ
 ## Documentation
 
 - `docs/PRODUCT_SPEC.md` — プロダクト仕様
-- `docs/GAME_DESIGN.md` — ゲームデザイン（ループ、能力、AIキャラクター）
+- `docs/GAME_DESIGN.md` — ゲームデザイン（ループ、能力、AIキャラクター、エンジン分離）
 - `docs/SAFETY_PRINCIPLES.md` — 安全性・禁止事項の原則
-- `docs/DATA_MODEL.md` — CASE DATA / THINKING LOG のデータ構造
-- `docs/MVP_SCOPE.md` — 今回実装する範囲・しない範囲
+- `docs/DATA_MODEL.md` — CaseData / TrajectoryLog のデータ構造（見取り図）
+- `docs/MVP_SCOPE.md` — 今回実装する範囲・しない範囲・LEVEL構造
 - `docs/TEST_PLAN.md` — テスト計画と結果
 - `docs/FUTURE_IDEAS.md` — 将来検討事項（NOW_NOT_IMPLEMENT）
 - `docs/DECISIONS.md` — 主要な意思決定とその理由
+- `docs/RUBRIC_DESIGN.md` — CASE RUBRICの設計原則（SPEC AMENDMENT）
+- `docs/AI_CALIBRATION.md` — AI Calibration Matrixの設計（SPEC AMENDMENT）
+- `docs/AI_TRAP_TAXONOMY.md` — AI欠陥タクソノミー（SPEC AMENDMENT）
+- `docs/TRAJECTORY_SCHEMA.md` — 判断軌跡（TrajectoryLog）スキーマ（SPEC AMENDMENT）
+- `docs/DATA_BOUNDARY.md` — 将来のデータ再利用・プライバシー境界（SPEC AMENDMENT）
+- `docs/VALIDATION_PLAN.md` — 検証すべき4つの仮説 H1-H4（SPEC AMENDMENT）
+- `docs/TRANSFER_TEST_DESIGN.md` — TRANSFERケースの設計（未実装、SPEC AMENDMENT）
 
 ## Product Hypothesis
 

@@ -2,58 +2,70 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../src/App";
-import { CASES } from "../src/data/cases";
+import { CASES, getCaseById } from "../src/data/cases";
 import { loadCompletedLogs, loadInProgressSession } from "../src/lib/storage";
 
-const case001 = CASES[0];
+const case001 = CASES[0]; // TRAINING
+const case005 = getCaseById("CASE-005")!; // AI_CALIBRATION
 
 async function goToCaseSelectAndOpen(user: ReturnType<typeof userEvent.setup>, title: string) {
   await user.click(screen.getByRole("button", { name: "ケースを選ぶ" }));
   await user.click(screen.getByRole("button", { name: new RegExp(title) }));
 }
 
-async function fillFirstDecision(
+/** Drives one full case from CASE_INTRO through RESULT. */
+async function playThroughCase(
   user: ReturnType<typeof userEvent.setup>,
-  choiceLabel: string,
-  factAnswerLabel: string,
+  opts: {
+    title: string;
+    factAnswer: "事実（確認できていること）" | "解釈（推測・意見）";
+    firstChoiceLabel: string;
+    secondChoiceLabel: string;
+    aiAction?: "採用する" | "検証する" | "保留する" | "拒否する";
+    problemType: string;
+  },
 ) {
-  await user.click(screen.getByRole("radio", { name: choiceLabel }));
-  await user.type(screen.getByLabelText("そう考えた理由"), "テストの理由です");
-  await user.click(screen.getByRole("button", { name: factAnswerLabel }));
+  await goToCaseSelectAndOpen(user, opts.title);
+  await user.click(screen.getByRole("button", { name: "はじめる" }));
+
+  // OBSERVED_FACT
+  await user.click(screen.getByRole("button", { name: opts.factAnswer }));
   await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  // FIRST_DECISION
+  await user.click(screen.getByRole("radio", { name: opts.firstChoiceLabel }));
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  // AI_INTERVENTION
+  if (opts.aiAction) {
+    await user.click(screen.getByRole("radio", { name: opts.aiAction }));
+  }
+  await user.click(screen.getByRole("radio", { name: opts.problemType }));
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  // NEW_FACT
+  await user.click(screen.getByRole("button", { name: "再判断する" }));
+
+  // SECOND_DECISION
+  await user.click(screen.getByRole("radio", { name: opts.secondChoiceLabel }));
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  // REFLECTION
+  await user.click(screen.getByRole("button", { name: "結果を見る" }));
 }
 
-describe("full case flow (CASE-001)", () => {
-  it("walks from HOME through RESULT and records a completed log", async () => {
+describe("full case flow (CASE-001, TRAINING)", () => {
+  it("walks from HOME through RESULT and records a trajectory log", async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await goToCaseSelectAndOpen(user, case001.title);
-
-    expect(screen.getByText(case001.initialSituation[0])).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "はじめる" }));
-
-    expect(screen.getByText(case001.initialQuestion)).toBeInTheDocument();
-    await fillFirstDecision(
-      user,
-      case001.availableChoices[0].label,
-      "事実（確認できていること）",
-    );
-
-    expect(screen.getByText(case001.aiIntervention)).toBeInTheDocument();
-    await user.type(screen.getByLabelText(case001.falsificationPrompt), "反対の可能性です");
-    await user.click(screen.getByRole("button", { name: "次へ" }));
-
-    expect(screen.getByText(case001.newFacts[0])).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "再判断する" }));
-
-    expect(screen.getByText(case001.finalQuestion)).toBeInTheDocument();
-    await user.click(screen.getByRole("radio", { name: case001.availableChoices[1].label }));
-    await user.type(screen.getByLabelText("そう考えた理由"), "新情報を受けての理由です");
-    await user.click(screen.getByRole("button", { name: "次へ" }));
-
-    expect(screen.getByText(/確信度/)).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "結果を見る" }));
+    await playThroughCase(user, {
+      title: case001.title,
+      factAnswer: "事実（確認できていること）",
+      firstChoiceLabel: case001.availableChoices[0].label, // "a" — the critical-error choice
+      secondChoiceLabel: case001.availableChoices[3].label, // "d" — evidence-supported choice
+      problemType: "情報不足",
+    });
 
     expect(screen.getByText("今回よかった点")).toBeInTheDocument();
     expect(screen.getByText("確認したい点")).toBeInTheDocument();
@@ -62,14 +74,18 @@ describe("full case flow (CASE-001)", () => {
 
     const logs = loadCompletedLogs();
     expect(logs).toHaveLength(1);
-    expect(logs[0].caseId).toBe(case001.caseId);
-    expect(logs[0].decisionChanged).toBe(true);
+    const log = logs[0];
+    expect(log.caseId).toBe(case001.caseId);
+    expect(log.decisionChanged).toBe(true);
+    expect(log.rubricResult.criticalErrorMade).toBe(true); // first choice was "a"
+    expect(log.rubricResult.updateAppropriateness).toBe("appropriate_update"); // moved a -> d
+    expect(log.rubricResult.aiCalibration).toBe("not_applicable"); // TRAINING case, no AI claim
     expect(loadInProgressSession()).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "成長を見る" }));
-    const allTimeTab = screen.getByRole("button", { name: /全期間/ });
-    await user.click(allTimeTab);
-    expect(within(screen.getByText(/OBSERVATION/).closest(".growth-row")!).getByText("1 / 1 cases")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /全期間/ }));
+    const observationRow = screen.getByText(/OBSERVATION/).closest(".growth-row") as HTMLElement;
+    expect(within(observationRow).getByText("1 / 1 cases")).toBeInTheDocument();
   });
 
   it("preserves entered data when navigating back", async () => {
@@ -78,10 +94,11 @@ describe("full case flow (CASE-001)", () => {
 
     await goToCaseSelectAndOpen(user, case001.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
+    await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
 
     await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
-    await user.type(screen.getByLabelText("そう考えた理由"), "残ってほしい理由");
-    await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
+    await user.type(screen.getByLabelText("そう考えた理由（任意）"), "残ってほしい理由");
     await user.click(screen.getByRole("button", { name: "次へ" }));
 
     expect(screen.getByText(case001.aiIntervention)).toBeInTheDocument();
@@ -99,11 +116,10 @@ describe("full case flow (CASE-001)", () => {
 
     await goToCaseSelectAndOpen(user, case001.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
-    await fillFirstDecision(
-      user,
-      case001.availableChoices[0].label,
-      "事実（確認できていること）",
-    );
+    await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
+    await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
     expect(screen.getByText(case001.aiIntervention)).toBeInTheDocument();
 
     unmount();
@@ -123,9 +139,12 @@ describe("full case flow (CASE-001)", () => {
 
     await goToCaseSelectAndOpen(user, case001.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
+    await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
     await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
-    await user.type(screen.getByLabelText("そう考えた理由"), "CASE-001の理由");
+    await user.type(screen.getByLabelText("そう考えた理由（任意）"), "CASE-001の理由");
 
+    await user.click(screen.getByRole("button", { name: "戻る" }));
     await user.click(screen.getByRole("button", { name: "戻る" }));
     await user.click(screen.getByRole("button", { name: "戻る" }));
     await goToCaseSelectAndOpen(user, case002.title);
@@ -135,5 +154,49 @@ describe("full case flow (CASE-001)", () => {
     expect(screen.queryByDisplayValue("CASE-001の理由")).not.toBeInTheDocument();
 
     vi.restoreAllMocks();
+  });
+});
+
+describe("full case flow (CASE-005, AI_CALIBRATION)", () => {
+  it("shows the structured AI-action controls and records a calibration label", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await playThroughCase(user, {
+      title: case005.title,
+      factAnswer: "解釈（推測・意見）",
+      firstChoiceLabel: case005.availableChoices[2].label, // "c" — already evidence-aligned
+      secondChoiceLabel: case005.availableChoices[2].label,
+      aiAction: "拒否する",
+      problemType: "因果関係の混同",
+    });
+
+    expect(screen.getByText("今回よかった点")).toBeInTheDocument();
+    // CASE-005 always shows its trap explanation in RESULT.
+    expect(screen.getByText(case005.aiTrap.explanation!)).toBeInTheDocument();
+
+    const logs = loadCompletedLogs();
+    expect(logs).toHaveLength(1);
+    const log = logs[0];
+    expect(log.aiIntervention.playerAction).toBe("REJECT");
+    expect(log.rubricResult.aiCalibration).toBe("appropriate_rejection");
+    expect(log.rubricResult.trapDetection.correctDetection).toBe(true);
+    expect(log.rubricResult.updateAppropriateness).toBe("appropriate_keep");
+  });
+
+  it("requires an AI-action selection (not just a problem-type selection) before proceeding", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await goToCaseSelectAndOpen(user, case005.title);
+    await user.click(screen.getByRole("button", { name: "はじめる" }));
+    await user.click(screen.getByRole("button", { name: "解釈（推測・意見）" }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
+    await user.click(screen.getByRole("radio", { name: case005.availableChoices[0].label }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
+
+    // Only select the problem type, not an AI action.
+    await user.click(screen.getByRole("radio", { name: "根拠不足" }));
+    expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
   });
 });

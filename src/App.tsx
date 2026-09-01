@@ -10,7 +10,7 @@ import {
   loadCompletedLogs,
   createSessionId,
 } from "./lib/storage";
-import type { InProgressSession, ThinkingLog } from "./types/log";
+import type { InProgressSession, TrajectoryLog } from "./types/log";
 
 type View = { kind: "HOME" } | { kind: "CASE_SELECT" } | { kind: "GROWTH" } | { kind: "SESSION" };
 
@@ -22,7 +22,7 @@ export default function App() {
   // The session currently mounted in SESSION view. Stays set (so RESULT can render)
   // even after the session finishes and homeInProgress is cleared.
   const [activeSession, setActiveSession] = useState<InProgressSession | null>(null);
-  const [logs, setLogs] = useState<ThinkingLog[]>([]);
+  const [logs, setLogs] = useState<TrajectoryLog[]>([]);
 
   useEffect(() => {
     setHomeInProgress(loadInProgressSession());
@@ -59,7 +59,7 @@ export default function App() {
     setView({ kind: "HOME" });
   }
 
-  function handleCompleted(log: ThinkingLog) {
+  function handleCompleted(log: TrajectoryLog) {
     setLogs((prev) => [...prev, log]);
     setHomeInProgress(null);
   }

@@ -1,13 +1,15 @@
 import type {
+  AiActionInput,
   FirstDecisionInput,
   InProgressSession,
-  InterventionInput,
+  ObservedFactInput,
   ScreenId,
   SecondDecisionInput,
 } from "../types/log";
 
 export const SCREEN_ORDER: ScreenId[] = [
   "CASE_INTRO",
+  "OBSERVED_FACT",
   "FIRST_DECISION",
   "AI_INTERVENTION",
   "NEW_FACT",
@@ -19,8 +21,9 @@ export const SCREEN_ORDER: ScreenId[] = [
 export type SessionAction =
   | { type: "RESTORE"; session: InProgressSession }
   | { type: "ADVANCE_FROM_INTRO" }
+  | { type: "SUBMIT_OBSERVED_FACT"; input: ObservedFactInput }
   | { type: "SUBMIT_FIRST_DECISION"; input: FirstDecisionInput }
-  | { type: "SUBMIT_INTERVENTION"; input: InterventionInput }
+  | { type: "SUBMIT_AI_ACTION"; input: AiActionInput }
   | { type: "ADVANCE_FROM_NEW_FACT" }
   | { type: "SUBMIT_SECOND_DECISION"; input: SecondDecisionInput }
   | { type: "SUBMIT_REFLECTION"; note: string }
@@ -34,11 +37,13 @@ export function sessionReducer(
     case "RESTORE":
       return action.session;
     case "ADVANCE_FROM_INTRO":
-      return { ...state, screen: "FIRST_DECISION" };
+      return { ...state, screen: "OBSERVED_FACT" };
+    case "SUBMIT_OBSERVED_FACT":
+      return { ...state, observedFact: action.input, screen: "FIRST_DECISION" };
     case "SUBMIT_FIRST_DECISION":
       return { ...state, first: action.input, screen: "AI_INTERVENTION" };
-    case "SUBMIT_INTERVENTION":
-      return { ...state, intervention: action.input, screen: "NEW_FACT" };
+    case "SUBMIT_AI_ACTION":
+      return { ...state, aiAction: action.input, screen: "NEW_FACT" };
     case "ADVANCE_FROM_NEW_FACT":
       return { ...state, screen: "SECOND_DECISION" };
     case "SUBMIT_SECOND_DECISION":

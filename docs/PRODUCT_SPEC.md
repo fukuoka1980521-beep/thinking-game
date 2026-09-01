@@ -1,5 +1,10 @@
 # PRODUCT_SPEC — 思考整理ゲーム MVP v0.1
 
+> **SPEC AMENDMENT適用済み**：本ゲームの正本価値は「思考能力を点数化すること」ではなく、
+> 「証拠・AI介入・追加情報に対して人間の判断がどう変化したかを観測すること」である。ログは
+> 判断軌跡（DECISION TRAJECTORY）であり、能力推定は事前定義されたrubricが存在する場合のみ行う。
+> 詳細は `docs/RUBRIC_DESIGN.md` / `docs/TRAJECTORY_SCHEMA.md` を参照。
+
 ## 目的
 
 「思考整理ゲーム」は単なるクイズゲームではなく、利用者が以下を訓練するためのスマートフォン向けゲームです。
@@ -27,10 +32,14 @@
 ## コアゲームループ
 
 ```
-CASE提示 → 第一判断 → 判断理由 → 確信度(0-100)
-→ AIキャラクターから反論・別視点 → 追加情報 → 再判断 → 確信度(0-100)
-→ 振り返り → RESULT → 成長記録
+CASE提示 → OBSERVED FACT確認 → 第一判断 → 確信度(0-100) → （理由・任意）
+→ AIキャラクターから反論・別視点 → PLAYER AI ACTION（AI_CALIBRATION型のみ）
+→ 気になる点の選択 → 追加情報1枚 → 再判断 → 確信度(0-100) → 振り返り → RESULT → 成長記録
 ```
+
+SPEC AMENDMENTにより、事実の確認（OBSERVED FACT）を第一判断より前に分離し、判断理由は構造化された
+選択（どの情報を重要と考えたか・AIへの対応・気になる点）を優先する補助データとした（Section D「structured
+action first」）。詳細な画面対応は `docs/GAME_DESIGN.md` を参照。
 
 1ケースの所要時間は3〜7分を目標とする。
 
@@ -46,7 +55,14 @@ CASE提示 → 第一判断 → 判断理由 → 確信度(0-100)
 - AIの意見を無条件採用しなかったか
 
 特に「最初は間違っていたが、新しい証拠を受けて合理的に判断を更新した」ことを価値として扱う。
-実装上の対応方法は `docs/DATA_MODEL.md` の `AbilityObservations` を参照。
+逆に「変更 = 常に正しい」でもない。証拠が支持しない方向へ変えた場合や、証拠があるのに変えなかった場合も
+区別して記録する（`updateAppropriateness`、`docs/RUBRIC_DESIGN.md`）。
+
+AIへの対応についても、単純に「疑えば高得点」「信じれば高得点」とはしない。AI提案の品質（正しい／不確実／
+誤り）と、プレイヤーの対応（採用／検証／保留／拒否）を組み合わせたCALIBRATION MATRIXで評価する
+（`docs/AI_CALIBRATION.md`）。
+
+実装上の対応方法は `docs/TRAJECTORY_SCHEMA.md` の `RubricResult` / `AbilityObservations` を参照。
 
 ## AIキャラクター
 
@@ -61,9 +77,15 @@ CASE提示 → 第一判断 → 判断理由 → 確信度(0-100)
 
 AIは万能の先生として扱わない。CASE-005ではAIの発言自体に問題がある教材を用意する（`docs/GAME_DESIGN.md` 参照）。
 
+この4キャラクターは、コーチとしてソクラテス式の問いかけをするだけで、正誤の判定対象となる「主張」は
+行わない。主張を評価する対象（AIアシスタントの提案）は別に存在し、両者を混同しない設計としている
+（`docs/AI_CALIBRATION.md`）。対話（Dialogue Engine）と評価（Evaluation Engine）はコード上も分離されて
+おり、対話AIの発言内容が評価結果を直接左右することはない（`docs/RUBRIC_DESIGN.md` Architecture節）。
+
 ## 画面構成
 
-HOME → CASE INTRO → FIRST DECISION → AI INTERVENTION → NEW FACT → SECOND DECISION → REFLECTION → RESULT → GROWTH
+HOME → CASE INTRO → OBSERVED FACT → FIRST DECISION → AI INTERVENTION → NEW FACT → SECOND DECISION
+→ REFLECTION → RESULT → GROWTH
 
 詳細は `docs/GAME_DESIGN.md` を参照。
 

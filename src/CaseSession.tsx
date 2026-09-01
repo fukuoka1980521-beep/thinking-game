@@ -1,10 +1,13 @@
 import { useEffect, useReducer, useRef } from "react";
 import type { CaseData } from "./types/case";
-import type { InProgressSession, ThinkingLog } from "./types/log";
+import type { InProgressSession, TrajectoryLog } from "./types/log";
 import { sessionReducer, canGoBack } from "./state/sessionReducer";
-import { saveInProgressSession, clearInProgressSession, appendCompletedLog } from "./lib/storage";
-import { computeAbilityObservations, buildReflection } from "./lib/reflection";
+import { saveInProgressSession } from "./lib/storage";
+import { computeAbilityObservations, computeRubricResult, buildReflection } from "./engine/evaluationEngine";
+import { finalizeTrajectory } from "./engine/playerActionLogger";
+import { getAiInterventionMessage, getNewEvidence } from "./engine/dialogueEngine";
 import { CaseIntroScreen } from "./screens/CaseIntroScreen";
+import { ObservedFactScreen } from "./screens/ObservedFactScreen";
 import { FirstDecisionScreen } from "./screens/FirstDecisionScreen";
 import { AiInterventionScreen } from "./screens/AiInterventionScreen";
 import { NewFactScreen } from "./screens/NewFactScreen";
@@ -17,7 +20,7 @@ interface Props {
   initialSession: InProgressSession;
   onExitToHome: () => void;
   onViewGrowth: () => void;
-  onCompleted: (log: ThinkingLog) => void;
+  onCompleted: (log: TrajectoryLog) => void;
 }
 
 export function CaseSession({ caseData, initialSession, onExitToHome, onViewGrowth, onCompleted }: Props) {
@@ -32,34 +35,23 @@ export function CaseSession({ caseData, initialSession, onExitToHome, onViewGrow
   }, [session]);
 
   useEffect(() => {
-    if (session.screen === "RESULT" && !finalizedRef.current && session.first && session.intervention && session.second) {
+    if (
+      session.screen === "RESULT" &&
+      !finalizedRef.current &&
+      session.observedFact &&
+      session.first &&
+      session.aiAction &&
+      session.second
+    ) {
       finalizedRef.current = true;
-      const observations = computeAbilityObservations(
+      const rubricResult = computeRubricResult(
         caseData,
+        session.observedFact,
         session.first,
-        session.intervention,
+        session.aiAction,
         session.second,
       );
-      const reflection = buildReflection(caseData, observations);
-      const log: ThinkingLog = {
-        sessionId: session.sessionId,
-        caseId: session.caseId,
-        timestamp: new Date().toISOString(),
-        firstDecision: session.first.choiceId,
-        firstReason: session.first.reason,
-        firstConfidence: session.first.confidence,
-        aiInterventionSeen: true,
-        secondDecision: session.second.choiceId,
-        secondReason: session.second.reason,
-        secondConfidence: session.second.confidence,
-        decisionChanged: session.second.choiceId !== session.first.choiceId,
-        reflectionNote: session.reflectionNote ?? "",
-        reflection,
-        abilityObservations: observations,
-        completed: true,
-      };
-      appendCompletedLog(log);
-      clearInProgressSession();
+      const log = finalizeTrajectory(caseData, session, rubricResult);
       onCompleted(log);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,12 +69,21 @@ export function CaseSession({ caseData, initialSession, onExitToHome, onViewGrow
           onExit={onExitToHome}
         />
       );
+    case "OBSERVED_FACT":
+      return (
+        <ObservedFactScreen
+          caseData={caseData}
+          initial={session.observedFact}
+          onBack={showBack ? onBack : onExitToHome}
+          onSubmit={(input) => dispatch({ type: "SUBMIT_OBSERVED_FACT", input })}
+        />
+      );
     case "FIRST_DECISION":
       return (
         <FirstDecisionScreen
           caseData={caseData}
           initial={session.first}
-          onBack={showBack ? onBack : onExitToHome}
+          onBack={onBack}
           onSubmit={(input) => dispatch({ type: "SUBMIT_FIRST_DECISION", input })}
         />
       );
@@ -90,15 +91,16 @@ export function CaseSession({ caseData, initialSession, onExitToHome, onViewGrow
       return (
         <AiInterventionScreen
           caseData={caseData}
-          initial={session.intervention}
+          message={getAiInterventionMessage(caseData)}
+          initial={session.aiAction}
           onBack={onBack}
-          onSubmit={(input) => dispatch({ type: "SUBMIT_INTERVENTION", input })}
+          onSubmit={(input) => dispatch({ type: "SUBMIT_AI_ACTION", input })}
         />
       );
     case "NEW_FACT":
       return (
         <NewFactScreen
-          caseData={caseData}
+          newEvidence={getNewEvidence(caseData)}
           onBack={onBack}
           onNext={() => dispatch({ type: "ADVANCE_FROM_NEW_FACT" })}
         />
@@ -124,9 +126,16 @@ export function CaseSession({ caseData, initialSession, onExitToHome, onViewGrow
         />
       );
     case "RESULT": {
-      if (!session.first || !session.intervention || !session.second) return null;
-      const observations = computeAbilityObservations(caseData, session.first, session.intervention, session.second);
-      const reflection = buildReflection(caseData, observations);
+      if (!session.observedFact || !session.first || !session.aiAction || !session.second) return null;
+      const rubricResult = computeRubricResult(
+        caseData,
+        session.observedFact,
+        session.first,
+        session.aiAction,
+        session.second,
+      );
+      const observations = computeAbilityObservations(session.first, session.second, rubricResult);
+      const reflection = buildReflection(caseData, observations, rubricResult);
       return (
         <ResultScreen
           caseData={caseData}

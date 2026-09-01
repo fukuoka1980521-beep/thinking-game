@@ -1,106 +1,58 @@
 # DATA_MODEL — 思考整理ゲーム MVP v0.1
 
+> **SPEC AMENDMENT適用済み**：CaseDataにrubric・infoOptions・level・caseType等を追加し、
+> 完了ログをThinkingLogからTrajectoryLog（判断軌跡スキーマ）へ置き換えた。フィールドの詳細な意味と
+> 設計意図は `docs/RUBRIC_DESIGN.md`（CaseData側）と `docs/TRAJECTORY_SCHEMA.md`（ログ側）を参照。
+> 本ファイルは全体の見取り図としてのみ機能する。
+
 ## CaseData（`src/types/case.ts`）
 
 ケースはReactコンポーネントへ直接ハードコードせず、`src/data/cases/*.ts` に独立したデータとして定義する。
 将来的にはCASE DATAの追加だけでケースを増やせる構造を優先している。
 
-```ts
-interface CaseData {
-  caseId: string;               // 例: "CASE-001"
-  title: string;
-  category: string;             // 例: "事実と解釈"
-  difficulty: "easy" | "medium" | "hard";
-  version: string;              // 例: "1.0.0"
-  riskLevel: "low";             // 本MVPでは常にlow
-  abilityTargets: AbilityKey[]; // OBSERVATION / HYPOTHESIS / FALSIFICATION / UPDATING
-  aiCharacter: AiCharacterKey;  // DETECTIVE / DEVIL / OBSERVER / STRATEGIST
-  aiTrap: { present: boolean; flawType?: string; explanation?: string };
+主なフィールド群（完全な定義は `src/types/case.ts` を正とする）：
 
-  initialSituation: string[];   // 状況の提示（複数行）
-  initialQuestion: string;
-  availableChoices: Choice[];   // 第一判断・再判断で共有する選択肢
-  factCheck: { statement: string; correctAnswer: "fact" | "interpretation" };
-  confidencePrompt: string;
-
-  aiIntervention: string;
-  falsificationPrompt: string;
-
-  newFacts: string[];
-
-  finalQuestion: string;
-
-  reflectionPoints: ReflectionPoints; // RESULT画面で使う定型文（下記参照）
-}
-```
-
-`ReflectionPoints` は、観測されたシグナルの正負それぞれに対応する事前定義文と、次回テーマの固定文を持つ。
-
-```ts
-interface ReflectionPoints {
-  factCorrect: string;
-  factIncorrect: string;
-  hypothesisConsidered: string;
-  hypothesisNotConsidered: string;
-  falsificationConsidered: string;
-  falsificationNotConsidered: string;
-  updatingEngaged: string;
-  updatingNotEngaged: string;
-  nextTheme: string;
-}
-```
+- **識別・分類**：`caseId` / `title` / `category` / `difficulty` / `level`（1-5） / `caseType`
+  （TRAINING / MEASUREMENT / AI_CALIBRATION / TRANSFER / OPEN_ENDED） / `version` / `riskLevel`
+- **能力・キャラクター**：`abilityTargets` / `aiCharacter` / `characterOffered` /
+  `characterChoiceAvailable`（本MVPでは常にfalse） / `aiTrap`（`AiTrapInfo`）
+- **提示内容**：`initialSituation` / `initialQuestion` / `availableChoices` / `factCheck` /
+  `infoOptions`（構造化「重要な情報」チェックリスト） / `confidencePrompt` / `aiIntervention` /
+  `falsificationPrompt`（補助的自由記述プロンプト） / `newFacts`（常に1件） / `finalQuestion`
+- **評価根拠**：`rubric`（`RubricDefinition`。詳細は `docs/RUBRIC_DESIGN.md`） / `reflectionPoints`
+  （RESULT画面用の事前定義文、`docs/GAME_DESIGN.md`）
 
 ## セッション中の一時データ（`src/types/log.ts`）
 
-- `FirstDecisionInput`: 第一判断（`choiceId` / `reason` / `confidence` / `factCheckAnswer` / `altHypothesis`）
-- `InterventionInput`: AI介入への回答（`falsificationText`）
-- `SecondDecisionInput`: 再判断（`choiceId` / `reason` / `confidence`）
-- `InProgressSession`: 上記に加えて `sessionId` / `caseId` / `screen` / `startedAt` / `reflectionNote` を持ち、
-  リロード耐性のために `localStorage` へ都度保存される。
+- `ObservedFactInput`：事実／解釈の分類
+- `FirstDecisionInput`：第一判断（`choiceId` / `confidence` / `reason`（任意） / `infoOptionsSelected`）
+- `AiActionInput`：AIへの応答（`playerAction`（AI_CALIBRATIONケースのみ） / `problemTypeSelected` /
+  `freeText`（任意））
+- `SecondDecisionInput`：再判断（`choiceId` / `confidence` / `reason`（任意））
+- `InProgressSession`：上記に加えて `sessionId` / `caseId` / `screen` / `startedAt` / `reflectionNote`
+  を持ち、リロード耐性のために `localStorage`（`thinking-game:in-progress:v2`）へ都度保存される。
 
-## ThinkingLog（完了したケースの記録）
+## TrajectoryLog（完了したケースの記録）
 
-```ts
-interface ThinkingLog {
-  sessionId: string;
-  caseId: string;
-  timestamp: string;
-  firstDecision: string;      // choiceId
-  firstReason: string;
-  firstConfidence: number;
-  aiInterventionSeen: boolean;
-  secondDecision: string;     // choiceId
-  secondReason: string;
-  secondConfidence: number;
-  decisionChanged: boolean;
-  reflectionNote: string;
-  reflection: { goodPoints: string[]; checkPoints: string[]; nextTheme: string };
-  abilityObservations: AbilityObservations;
-  completed: true;
-}
-```
+完了したケースは `TrajectoryLog`（`docs/TRAJECTORY_SCHEMA.md` に全フィールドの説明あり）として
+`thinking-game:completed-logs:v2` に保存される。旧 `ThinkingLog`（v1）とは非互換で、移行は行わない
+（ローカルの練習履歴であり、失われても実害がないため）。
 
-`AbilityObservations` は、能力の評価値ではなく、そのケースで観測された思考行動を表す真偽値の集合。
-
-```ts
-interface AbilityObservations {
-  observationCorrect: boolean;      // factCheckAnswerが正解と一致したか
-  hypothesisConsidered: boolean;    // altHypothesisに記入があったか
-  falsificationConsidered: boolean; // falsificationTextに記入があったか
-  updatingEngaged: boolean;         // 再判断でchoiceまたはconfidenceが変化したか
-}
-```
-
-計算ロジックは `src/lib/reflection.ts` の `computeAbilityObservations` を参照。
+中心となる評価結果は `RubricResult`（`observationCorrect` / `criticalErrorMade` / `infoOptionsConsidered` /
+`infoOptionsMatchedGroundTruth` / `updateAppropriateness` / `aiCalibration` / `trapDetection`）。
+`AbilityObservations` はGrowth Aggregator向けの橋渡し用フィールドで、`RubricResult` から導出される
+（自由記述からは導出しない）。
 
 ## 保存先
 
-- `thinking-game:in-progress:v1` — 未完了セッション1件（`InProgressSession`）
-- `thinking-game:completed-logs:v1` — 完了済みログの配列（`ThinkingLog[]`）
+- `thinking-game:in-progress:v2` — 未完了セッション1件（`InProgressSession`）
+- `thinking-game:completed-logs:v2` — 完了済み `TrajectoryLog` の配列
 
-いずれも `localStorage` にのみ保存し、外部送信は行わない（`src/lib/storage.ts`）。
+いずれも `localStorage` にのみ保存し、外部送信は行わない（`src/lib/storage.ts`、`docs/DATA_BOUNDARY.md`）。
 
 ## GROWTH集計
 
-`src/lib/growth.ts` の `computeGrowthStats` / `computeRecentGrowthStats` が、完了ログ配列から
-能力ごとの「該当件数 / 完了ケース数」を算出する。直近5件は `timestamp` 昇順に並べた末尾5件を対象とする。
+`src/engine/growthAggregator.ts` の `computeGrowthStats` / `computeRecentGrowthStats`
+（直近10件、`docs/GAME_DESIGN.md`）が能力ごとの「該当件数 / 完了ケース数」を算出する。
+`computeAiActionDistribution` がAI_CALIBRATIONケースでのACCEPT/VERIFY/HOLD/REJECT分布を算出する。
+`caseType: "TRANSFER"` のログは通常の集計から除外される（Section L、`docs/TRANSFER_TEST_DESIGN.md`）。

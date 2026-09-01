@@ -1,5 +1,5 @@
 import type { CaseData } from "../types/case";
-import type { ReflectionResult } from "../lib/reflection";
+import type { ReflectionResult } from "../engine/evaluationEngine";
 import { ScreenContainer } from "../components/ScreenContainer";
 
 interface Props {

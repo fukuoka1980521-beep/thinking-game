@@ -1,7 +1,10 @@
-import type { InProgressSession, ThinkingLog } from "../types/log";
+import type { InProgressSession, TrajectoryLog } from "../types/log";
 
-const IN_PROGRESS_KEY = "thinking-game:in-progress:v1";
-const COMPLETED_LOGS_KEY = "thinking-game:completed-logs:v1";
+// Bumped to v2 with the trajectory-schema spec amendment; the v1 shape is
+// incompatible, and this data is disposable local practice history, so we
+// simply start a fresh namespace rather than migrating.
+const IN_PROGRESS_KEY = "thinking-game:in-progress:v2";
+const COMPLETED_LOGS_KEY = "thinking-game:completed-logs:v2";
 
 /**
  * All persistence in this module is local-only (localStorage). No network
@@ -26,18 +29,18 @@ export function clearInProgressSession(): void {
   localStorage.removeItem(IN_PROGRESS_KEY);
 }
 
-export function loadCompletedLogs(): ThinkingLog[] {
+export function loadCompletedLogs(): TrajectoryLog[] {
   const raw = localStorage.getItem(COMPLETED_LOGS_KEY);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as ThinkingLog[]) : [];
+    return Array.isArray(parsed) ? (parsed as TrajectoryLog[]) : [];
   } catch {
     return [];
   }
 }
 
-export function appendCompletedLog(log: ThinkingLog): void {
+export function appendCompletedLog(log: TrajectoryLog): void {
   const logs = loadCompletedLogs();
   logs.push(log);
   localStorage.setItem(COMPLETED_LOGS_KEY, JSON.stringify(logs));

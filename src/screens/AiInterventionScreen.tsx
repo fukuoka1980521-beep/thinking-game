@@ -1,29 +1,90 @@
 import { useState } from "react";
-import type { CaseData } from "../types/case";
-import type { InterventionInput } from "../types/log";
+import type { AiTrapType, CaseData, PlayerAiAction } from "../types/case";
+import type { AiActionInput } from "../types/log";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { AiMessage } from "../components/AiMessage";
+import { AI_TRAP_TAXONOMY_OPTIONS } from "../data/aiTrapTaxonomy";
 
 interface Props {
   caseData: CaseData;
-  initial?: InterventionInput;
+  /** Supplied by the Dialogue Engine (src/engine/dialogueEngine.ts), not read from CaseData directly. */
+  message: string;
+  initial?: AiActionInput;
   onBack: () => void;
-  onSubmit: (input: InterventionInput) => void;
+  onSubmit: (input: AiActionInput) => void;
 }
 
-export function AiInterventionScreen({ caseData, initial, onBack, onSubmit }: Props) {
-  const [falsificationText, setFalsificationText] = useState(initial?.falsificationText ?? "");
+const PLAYER_AI_ACTIONS: { id: PlayerAiAction; label: string }[] = [
+  { id: "ACCEPT", label: "採用する" },
+  { id: "VERIFY", label: "検証する" },
+  { id: "HOLD", label: "保留する" },
+  { id: "REJECT", label: "拒否する" },
+];
+
+export function AiInterventionScreen({ caseData, message, initial, onBack, onSubmit }: Props) {
+  const isCalibration = caseData.caseType === "AI_CALIBRATION";
+  const [playerAction, setPlayerAction] = useState<PlayerAiAction | null>(
+    initial?.playerAction ?? null,
+  );
+  const [problemTypeSelected, setProblemTypeSelected] = useState<AiTrapType | null>(
+    initial?.problemTypeSelected ?? null,
+  );
+  const [freeText, setFreeText] = useState(initial?.freeText ?? "");
+
+  const canSubmit = problemTypeSelected !== null && (!isCalibration || playerAction !== null);
 
   return (
     <ScreenContainer title="AIからの介入" onBack={onBack}>
-      <AiMessage character={caseData.aiCharacter} message={caseData.aiIntervention} />
+      <AiMessage character={caseData.aiCharacter} message={message} />
+
+      {isCalibration && (
+        <div className="field">
+          <label>このAIの提案を、あなたはどうしますか？</label>
+          <div className="choice-list">
+            {PLAYER_AI_ACTIONS.map((action) => (
+              <button
+                key={action.id}
+                type="button"
+                role="radio"
+                aria-checked={playerAction === action.id}
+                className={`btn btn-choice${playerAction === action.id ? " selected" : ""}`}
+                onClick={() => setPlayerAction(action.id)}
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="field">
+        <label>
+          {isCalibration
+            ? "このAIの発言について、気になる点はありますか？"
+            : "自分の最初の考えについて、気になる点はありますか？"}
+        </label>
+        <div className="choice-list">
+          {AI_TRAP_TAXONOMY_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              role="radio"
+              aria-checked={problemTypeSelected === option.id}
+              className={`btn btn-choice${problemTypeSelected === option.id ? " selected" : ""}`}
+              onClick={() => setProblemTypeSelected(option.id)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="field">
         <label htmlFor="falsification">{caseData.falsificationPrompt}</label>
         <textarea
           id="falsification"
-          value={falsificationText}
-          onChange={(e) => setFalsificationText(e.target.value)}
+          value={freeText}
+          onChange={(e) => setFreeText(e.target.value)}
           placeholder="考えたことを書いてみましょう"
         />
       </div>
@@ -32,7 +93,12 @@ export function AiInterventionScreen({ caseData, initial, onBack, onSubmit }: Pr
         AIは常に正しいとは限りません。参考にしつつ、自分でも検証してみましょう。
       </p>
 
-      <button type="button" className="btn btn-primary" onClick={() => onSubmit({ falsificationText })}>
+      <button
+        type="button"
+        className="btn btn-primary"
+        disabled={!canSubmit}
+        onClick={() => onSubmit({ playerAction, problemTypeSelected, freeText })}
+      >
         次へ
       </button>
     </ScreenContainer>

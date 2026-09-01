@@ -17,7 +17,7 @@ export function SecondDecisionScreen({ caseData, initial, onBack, onSubmit }: Pr
   const [reason, setReason] = useState(initial?.reason ?? "");
   const [confidence, setConfidence] = useState(initial?.confidence ?? 50);
 
-  const canSubmit = choiceId !== null && reason.trim().length > 0;
+  const canSubmit = choiceId !== null;
 
   return (
     <ScreenContainer title="再判断" onBack={onBack}>
@@ -26,8 +26,10 @@ export function SecondDecisionScreen({ caseData, initial, onBack, onSubmit }: Pr
         <ChoiceList choices={caseData.availableChoices} selectedId={choiceId} onSelect={setChoiceId} />
       </div>
 
+      <ConfidenceSlider label={caseData.confidencePrompt} value={confidence} onChange={setConfidence} />
+
       <div className="field">
-        <label htmlFor="reason2">そう考えた理由</label>
+        <label htmlFor="reason2">変えた（または変えなかった）理由（任意）</label>
         <textarea
           id="reason2"
           value={reason}
@@ -35,8 +37,6 @@ export function SecondDecisionScreen({ caseData, initial, onBack, onSubmit }: Pr
           placeholder="考えが変わった、または変わらなかった理由を書いてみましょう"
         />
       </div>
-
-      <ConfidenceSlider label={caseData.confidencePrompt} value={confidence} onChange={setConfidence} />
 
       <button
         type="button"

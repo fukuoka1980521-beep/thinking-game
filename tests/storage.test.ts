@@ -6,7 +6,7 @@ import {
   loadInProgressSession,
   saveInProgressSession,
 } from "../src/lib/storage";
-import type { InProgressSession, ThinkingLog } from "../src/types/log";
+import type { InProgressSession, TrajectoryLog } from "../src/types/log";
 
 function makeSession(caseId: string): InProgressSession {
   return {
@@ -17,21 +17,36 @@ function makeSession(caseId: string): InProgressSession {
   };
 }
 
-function makeLog(caseId: string): ThinkingLog {
+function makeLog(caseId: string): TrajectoryLog {
   return {
     sessionId: `sess-${caseId}`,
     caseId,
+    caseType: "TRAINING",
+    level: 1,
     timestamp: new Date().toISOString(),
-    firstDecision: "a",
-    firstReason: "reason",
-    firstConfidence: 50,
-    aiInterventionSeen: true,
-    secondDecision: "b",
-    secondReason: "reason2",
-    secondConfidence: 60,
+    factOrder: ["situation", "new_fact"],
+    characterOffered: ["DETECTIVE"],
+    characterUsed: "DETECTIVE",
+    characterChoiceAvailable: false,
+    firstDecision: { choiceId: "a", confidence: 50, reason: "reason", factCheckAnswer: "fact", infoOptionsSelected: [] },
+    aiIntervention: { message: "m", playerAction: null, problemTypeSelected: "NONE", freeText: "" },
+    newEvidence: ["fact"],
+    secondDecision: { choiceId: "b", confidence: 60, reason: "reason2" },
     decisionChanged: true,
+    confidenceChange: 10,
     reflectionNote: "",
-    reflection: { goodPoints: ["good"], checkPoints: ["check"], nextTheme: "next" },
+    rubricResult: {
+      rubricVersion: "1.0.0",
+      observationCorrect: true,
+      criticalErrorMade: false,
+      infoOptionsConsidered: 0,
+      infoOptionsMatchedGroundTruth: 0,
+      updateAppropriateness: "appropriate_update",
+      aiCalibration: "not_applicable",
+      trapDetection: { applicable: false, groundTruthType: "NONE", playerSelectedType: null, correctDetection: false },
+    },
+    experimentGroup: "CONTROL_NO_AB_TEST_V0",
+    transferTarget: "",
     abilityObservations: {
       observationCorrect: true,
       hypothesisConsidered: false,
@@ -75,7 +90,7 @@ describe("storage", () => {
   });
 
   it("returns an empty array, not a crash, on corrupted completed-log storage", () => {
-    localStorage.setItem("thinking-game:completed-logs:v1", "not json");
+    localStorage.setItem("thinking-game:completed-logs:v2", "not json");
     expect(loadCompletedLogs()).toEqual([]);
   });
 });
