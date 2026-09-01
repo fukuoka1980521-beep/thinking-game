@@ -1,13 +1,40 @@
 # TEST_PLAN — 思考整理ゲーム PLAYABLE_VALIDATION_BUILD_V0_1 / V0_2
 
-> **SPEC AMENDMENT適用済み（4段階）**：Section Wの追加検査項目、PLAYABLE_VALIDATION_BUILD Run
+> **SPEC AMENDMENT適用済み（5段階）**：Section Wの追加検査項目、PLAYABLE_VALIDATION_BUILD Run
 > （7ケースロード・NEXT_CASE遷移・session summary・user test回答保存・TRANSFER除外・
 > AI quality balance検査・320pxでの横overflowなし）、FIRST_CASE_AND_CALIBRATION_SEMANTICS Run
 > （utteranceType整合性・calibrationEligible分離・priming除去・CASE-001不確実性選択肢・survey改訂）、
-> そしてTHINKING_GAME_FIRST_PLAY_COMPREHENSION_AND_RESULT_FEEDBACK Run（ONBOARDING・RESULT decision
-> trajectory化・HOME/SESSION_SUMMARYのvisual追加）をすべて追加した。
+> THINKING_GAME_FIRST_PLAY_COMPREHENSION_AND_RESULT_FEEDBACK Run（ONBOARDING・RESULT decision
+> trajectory化・HOME/SESSION_SUMMARYのvisual追加）、そしてTHINKING_GAME_PERSONALIZED_DIALOGUE_AND_
+> VISUAL_EXPERIENCE Run（CASE-001の構造化シグナルによる個別化ダイアログ）をすべて追加した。
 
-## THINKING_GAME_FIRST_PLAY_COMPREHENSION_AND_RESULT_FEEDBACK関連の追加テスト（本Run、`tests/onboarding.test.tsx` 9件 + `tests/flow.test.tsx` 更新）
+## THINKING_GAME_PERSONALIZED_DIALOGUE_AND_VISUAL_EXPERIENCE関連の追加テスト（本Run、`tests/dialogueEngine.test.ts` 7件追加＋`tests/flow.test.tsx`更新）
+
+| # | 確認項目 | テストファイル |
+|---|---|---|
+| 80 | `personalizedDialogue`未指定の呼び出しでは、全7ケースとも従来通り静的な`aiIntervention`をそのまま返す（回帰） | `tests/dialogueEngine.test.ts` |
+| 81 | CASE-001でプレイヤーの選択肢がラベルとしてメッセージに具体的に反映される（Section 4/17 #1） | `tests/dialogueEngine.test.ts` |
+| 82 | プレイヤーが書いた理由文が意味解釈なしでそのまま引用され、未入力なら引用行自体が出ない（Section 17 #2） | `tests/dialogueEngine.test.ts` |
+| 83 | プレイヤーが選んだ情報オプションがラベルとして反映され、未選択なら該当行が出ない（Section 4） | `tests/dialogueEngine.test.ts` |
+| 84 | 5つの選択肢がそれぞれ異なるメッセージを生成し、どれも静的な`aiIntervention`と一致しない（Section 5、anti-generic contract） | `tests/dialogueEngine.test.ts` |
+| 85 | 同じ選択肢でもAIキャラクター（探偵/悪魔/他者視点/参謀）が違えば4通りとも異なるメッセージになる（Section 6/18、差別化） | `tests/dialogueEngine.test.ts` |
+| 86 | 選択肢IDに対応する執筆データがない場合、クラッシュせず静的メッセージへ安全にフォールバックする（Section 17 #5相当・authoring-gap安全網） | `tests/dialogueEngine.test.ts` |
+| 87 | CASE-001以外の6ケースは、`FirstDecisionInput`を渡しても個別化ダイアログの影響を一切受けない（Section 17 #6） | `tests/dialogueEngine.test.ts` |
+| 88 | 個別化メッセージ導入後もCASE-001フルフローが機能し、E2Eでも選択肢ラベル・引用行がAI_INTERVENTION画面に表示される | `tests/flow.test.tsx` |
+| 89 | 理由未入力時はE2Eでも引用行が出ない、リロード後も同じ個別化メッセージが復元される | `tests/flow.test.tsx` |
+
+**Evaluation Engineが個別化メッセージを一切消費しないことの確認**：`src/engine/evaluationEngine.ts`は
+本Runで一切変更していない（`git diff`で未変更を確認済み）。`computeRubricResult`等の関数シグネチャは
+以前から文字列としての`message`を一切受け取っておらず、構造化された`FirstDecisionInput`/`AiActionInput`
+/`SecondDecisionInput`のみを消費する。既存の86＋16件（前Run分含む）の計算ロジック系テストが無変更で
+全てPASSしていることが、この分離が壊れていないことの直接的な回帰証拠である。
+
+**API秘密情報・外部通信が存在しないことの確認**：`tests/safety.test.ts`（3件、既存）が`src/`全体を
+静的スキャンし、`fetch`/`XMLHttpRequest`/`WebSocket`・生成AI SDK参照・APIキー/Bearerトークンの
+ハードコードのいずれも存在しないことを検査している。本RunでdialogueEngineを書き換えた後も無変更で
+PASS——個別化ダイアログの実装が100%ローカル・非同期通信ゼロであることの自動的な裏付け。
+
+## THINKING_GAME_FIRST_PLAY_COMPREHENSION_AND_RESULT_FEEDBACK関連の追加テスト（前Run、`tests/onboarding.test.tsx` 9件 + `tests/flow.test.tsx` 更新）
 
 | # | 確認項目 | テストファイル |
 |---|---|---|
@@ -171,7 +198,19 @@ Section 13、およびFIRST_CASE_AND_CALIBRATION_SEMANTICS Run Section 19の追�
 - **7ケースの内容が政治・宗教・医療・犯罪等の高リスク題材を含まないこと**：全ケースの本文を目視確認。
 - **内部用語の非露出**：自動テストに加え、上記スクリーンショットでも目視確認。
 
+## PERSONALIZED_DIALOGUEの手動比較確認（本Run、Section 18）
+
+`npm run dev`起動中のローカル環境に対し、CASE-001で同一選択肢「ミナさんはあなたを無視している」を
+選んだ上で、意味的に大きく異なる3種類の理由文（A: 強い因果主張、B: 慎重な不確実性、C: 別の仮説）を
+それぞれ入力し、生成されたAI_INTERVENTIONメッセージを並べて比較した（一時Playwrightスクリプト、
+実行後削除）。
+
+結果：引用部分（プレイヤーが書いた理由文そのもの）は3パターンとも正しく異なっていたが、**反証・問い
+返し本体の文面は3パターンとも完全に同一**だった（選択肢が同じであるため）。これは意味理解を伴わない
+構造化アプローチの限界であり、正直にKNOWN_LIMITとして`docs/DECISIONS.md`に記録した。320/375/390/430px
+いずれでも、この3〜4文からなる長めのメッセージによる横overflowは発生しないことも確認した。
+
 ## 実行結果
 
-`npm run typecheck` / `npm run build` / `npm run test`（95件＝旧86件＋ONBOARDING9件）はいずれもPASS
-（実行ログはCLOSE報告を参照）。
+`npm run typecheck` / `npm run build` / `npm run test`（102件＝旧95件＋dialogueEngine個別化7件）は
+いずれもPASS（実行ログはCLOSE報告を参照）。

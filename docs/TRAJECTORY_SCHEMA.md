@@ -77,7 +77,7 @@ interface RubricResult {
 
 | Producer | Fields |
 |---|---|
-| Dialogue Engine (`src/engine/dialogueEngine.ts`) | `aiIntervention.message`, `newEvidence` — read straight from `CaseData`, never mutated. |
+| Dialogue Engine (`src/engine/dialogueEngine.ts`) | `aiIntervention.message`, `newEvidence`. `newEvidence` is read straight from `CaseData`. `aiIntervention.message` is read straight from `CaseData.aiIntervention` for every case **except** ones with `personalizedDialogue` set (CASE-001 only, PERSONALIZED_DIALOGUE Run): there, it's deterministically composed from the player's own `FirstDecisionInput` (choice, info options, verbatim reason text) plus one pre-authored per-character challenge fragment — never a generative-model call, and never fed back into `rubricResult` (see docs/DECISIONS.md). |
 | Player Action Logger (`src/engine/playerActionLogger.ts`) | Assembles the whole `TrajectoryLog` from the finished `InProgressSession` plus the `RubricResult` it's handed. |
 | Evaluation Engine (`src/engine/evaluationEngine.ts`) | `rubricResult`, `abilityObservations` — computed only from structured fields (never `reason` / `freeText`). |
 | Growth Aggregator (`src/engine/growthAggregator.ts`) | Reads `abilityObservations` and `aiIntervention.playerAction` only; never touches `reason`/`freeText`/`message`. |

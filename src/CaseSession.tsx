@@ -59,7 +59,8 @@ export function CaseSession({
         session.aiAction,
         session.second,
       );
-      const log = finalizeTrajectory(caseData, session, rubricResult);
+      const shownMessage = getAiInterventionMessage(caseData, session.first);
+      const log = finalizeTrajectory(caseData, session, rubricResult, shownMessage);
       onCompleted(log);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,7 +100,7 @@ export function CaseSession({
       return (
         <AiInterventionScreen
           caseData={caseData}
-          message={getAiInterventionMessage(caseData)}
+          message={getAiInterventionMessage(caseData, session.first)}
           initial={session.aiAction}
           onBack={onBack}
           onSubmit={(input) => dispatch({ type: "SUBMIT_AI_ACTION", input })}

@@ -9,6 +9,7 @@ import { loadMetricEvents } from "../src/lib/metrics";
 import { loadUserTestResponses } from "../src/lib/userTestResponses";
 import { markOnboardingSeen } from "../src/lib/onboarding";
 import { computeGrowthStats } from "../src/engine/growthAggregator";
+import { getAiInterventionMessage } from "../src/engine/dialogueEngine";
 import type { CaseData } from "../src/types/case";
 
 const case001 = CASES[0]; // TRAINING
@@ -129,7 +130,20 @@ describe("full case flow (CASE-001, TRAINING)", () => {
     await user.type(screen.getByLabelText("そう考えた理由（任意）"), "残ってほしい理由");
     await user.click(screen.getByRole("button", { name: "次へ" }));
 
-    expect(screen.getByText(case001.aiIntervention)).toBeInTheDocument();
+    // PERSONALIZED_DIALOGUE Run Section 4/5: the shown message is no longer
+    // the static aiIntervention string — it's composed from this player's
+    // actual choice, info options, and (verbatim) reason text.
+    const expectedMessage = getAiInterventionMessage(case001, {
+      choiceId: case001.availableChoices[0].id,
+      confidence: 50,
+      reason: "残ってほしい理由",
+      infoOptionsSelected: [],
+    });
+    expect(expectedMessage).not.toBe(case001.aiIntervention);
+    expect(screen.getByText("「残ってほしい理由」――そう考えたんですね。", { exact: false })).toBeInTheDocument();
+    expect(
+      screen.getByText(`あなたは「${case001.availableChoices[0].label}」を選びましたね。`, { exact: false }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "戻る" }));
 
     expect(screen.getByDisplayValue("残ってほしい理由")).toBeInTheDocument();
@@ -148,14 +162,18 @@ describe("full case flow (CASE-001, TRAINING)", () => {
     await user.click(screen.getByRole("button", { name: "次へ" }));
     await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
     await user.click(screen.getByRole("button", { name: "次へ" }));
-    expect(screen.getByText(case001.aiIntervention)).toBeInTheDocument();
+    // No reason text this time — the reason-quote line should not appear,
+    // but the choice is still referenced by label.
+    const choiceLine = `あなたは「${case001.availableChoices[0].label}」を選びましたね。`;
+    expect(screen.getByText(choiceLine, { exact: false })).toBeInTheDocument();
+    expect(screen.queryByText("そう考えたんですね。", { exact: false })).not.toBeInTheDocument();
 
     unmount();
 
     renderAppPastOnboarding();
     expect(await screen.findByRole("button", { name: "続きから再開する" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "続きから再開する" }));
-    expect(screen.getByText(case001.aiIntervention)).toBeInTheDocument();
+    expect(screen.getByText(choiceLine, { exact: false })).toBeInTheDocument();
   });
 
   it("does not mix data between cases when switching mid-session", async () => {

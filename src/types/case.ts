@@ -150,6 +150,30 @@ export interface RubricDefinition {
   uncertaintyChoiceId: string | null;
 }
 
+/**
+ * PERSONALIZED_DIALOGUE Run (Section 3/4/13): one authored challenge
+ * fragment per AI character role, for a single `availableChoices` entry.
+ * Kept separate from `RubricDefinition` because it drives displayed dialogue
+ * text only — the Evaluation Engine never reads this.
+ */
+export interface DialogueBranch {
+  detective: string;
+  devil: string;
+  observer: string;
+  strategist: string;
+}
+
+/**
+ * Optional per-case configuration for context-aware AI dialogue. When
+ * absent (every case but CASE-001 this Run), `getAiInterventionMessage`
+ * falls back to the static `aiIntervention` string unchanged — this is an
+ * additive, opt-in mechanism, not a replacement for the existing field.
+ */
+export interface PersonalizedDialogueConfig {
+  /** Keyed by `availableChoices[].id`. */
+  branches: Record<string, DialogueBranch>;
+}
+
 export interface CaseData {
   caseId: string;
   title: string;
@@ -188,4 +212,6 @@ export interface CaseData {
 
   rubric: RubricDefinition;
   reflectionPoints: ReflectionPoints;
+  /** Section 3: implemented for CASE-001 only this Run. */
+  personalizedDialogue?: PersonalizedDialogueConfig;
 }

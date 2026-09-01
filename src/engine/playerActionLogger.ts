@@ -13,6 +13,10 @@ export function finalizeTrajectory(
   caseData: CaseData,
   session: InProgressSession,
   rubricResult: RubricResult,
+  /** The message actually shown on AI_INTERVENTION (Section 4/16: may differ
+   * from `caseData.aiIntervention` when `personalizedDialogue` applies).
+   * Defaults to the static string for callers that don't pass one. */
+  shownAiMessage: string = caseData.aiIntervention,
 ): TrajectoryLog {
   if (!session.observedFact || !session.first || !session.aiAction || !session.second) {
     throw new Error("Cannot finalize an incomplete session");
@@ -41,7 +45,7 @@ export function finalizeTrajectory(
       infoOptionsSelected: session.first.infoOptionsSelected,
     },
     aiIntervention: {
-      message: caseData.aiIntervention,
+      message: shownAiMessage,
       utteranceType: caseData.rubric.utteranceType,
       calibrationEligible: isCalibrationEligible(caseData),
       playerAction: session.aiAction.playerAction,

@@ -30,6 +30,34 @@ rubric list, specifically to remove this confound before H1 is read again. **Thi
 validated as an improvement** — see the IMPORTANT note in `docs/DECISIONS.md`. The next real step is
 observing new, first-time players, not shipping further features.
 
+## H5 — Does concretely referencing the player's own choice/selections/words increase perceived AI engagement? (added by THINKING_GAME_PERSONALIZED_DIALOGUE_AND_VISUAL_EXPERIENCE Run)
+
+**Claim to test (as stated by the Owner):** If the AI concretely picks up on what the player actually wrote
+and responds with a specific counterpoint/question, players feel like they are "thinking together with the
+AI" rather than taking a fixed quiz.
+
+**What shipped this Run:** CASE-001's AI_INTERVENTION message is now composed from the player's real
+`FirstDecisionInput` — their choice (referenced by label), their selected info options (referenced by
+label), and their written reason (quoted back verbatim) — plus one of 20 pre-authored, choice×character
+challenge fragments. This is real, tested, deterministic personalization with zero external network calls
+(see `docs/DECISIONS.md`).
+
+**What this Run's own manual test disproved:** A side-by-side comparison (Section 18 of that Run; see
+`docs/TEST_PLAN.md`) with three semantically different reason texts on the *same* choice showed the quoted
+preamble differs correctly, but the substantive challenge/question is identical across all three, because it
+is keyed to the choice, not to the content of what was written. **This means H5, as literally stated by the
+Owner ("the AI picks up on what I actually wrote"), is not genuinely exercised by what shipped** — only a
+narrower claim ("the AI references what I clicked, and echoes my own words back") is.
+
+**Status:** `PARTIALLY_TESTABLE`. The narrow claim (structured-signal personalization feels less generic
+than a flat static message) can be observed with real users now. The literal, Owner-stated claim (semantic
+reading of free text) is `BLOCKED_BY_SAFE_SERVER_ARCHITECTURE` — it requires a server-side LLM call, which
+requires provisioning new secret-handling infrastructure and sending player-written text off-device, both
+of which are product/privacy decisions for the Owner to make explicitly, not something this Run built
+unilaterally. **Do not read a positive H5 signal from user testing as validating the literal Owner
+hypothesis** — re-run the Section 18 comparison test on any future dialogue change to check whether that
+gap has actually closed.
+
 ## H2 — Does the AI trap increase calibration, or just blanket AI rejection?
 
 **Claim to test:** Encountering a flawed AI claim (CASE-005) increases *appropriate* calibration behavior
