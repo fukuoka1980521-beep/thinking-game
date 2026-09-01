@@ -14,6 +14,10 @@ export function HomeScreen({ hasInProgress, onResume, onTodaysCase, onSelectCase
         <p className="muted">観察・仮説・反証・判断更新を、短いケースで練習します。</p>
       </div>
 
+      <p className="test-notice">
+        このアプリは現在、使いやすさやゲーム体験を確認するための試作版です。
+      </p>
+
       {hasInProgress && (
         <button type="button" className="btn btn-primary" onClick={onResume}>
           続きから再開する
