@@ -1,8 +1,25 @@
 # TEST_PLAN — 思考整理ゲーム PLAYABLE_VALIDATION_BUILD_V0_1
 
-> **SPEC AMENDMENT適用済み（2段階）**：Section Wの追加検査項目に加え、本Run（Section 13）の
+> **SPEC AMENDMENT適用済み（2段階）**：Section Wの追加検査項目に加え、前Run（Section 13）の
 > 追加検査項目（7ケースロード・NEXT_CASE遷移・session summary・user test回答保存・TRANSFER除外・
 > AI quality balance検査・320pxでの横overflowなし）をすべて追加した。
+
+## LIVE環境での確認（GITHUB_PAGES_TEST_DEPLOY Run、公開URLに対する実地確認）
+
+`https://fukuoka1980521-beep.github.io/thinking-game/` に対して、Playwright（一時スクリプト、
+実行後削除）で以下を実施し、いずれも成功を確認した。
+
+- 幅320/375/390/430pxでHOME表示、横overflowなし。
+- 幅375px代表で、HOME→今日の1問→CASE INTRO→OBSERVED FACT→FIRST DECISION→AI INTERVENTION→
+  NEW FACT→SECOND DECISION→REFLECTION→RESULT→「次の問題へ」まで一連のLIVE遷移を確認、
+  各画面で横overflowなし。
+- ケース途中でのリロード→「続きから再開する」→中断箇所の画面（AI INTERVENTION）へ正しく復元。
+- 5ケース完走後、SESSION SUMMARY（「今回のプレイ」見出し）が正しく表示される。
+- ブラウザのconsole error・4xx以上のレスポンスともに0件（JS/CSS/manifestの404なし）。
+- セッション中にブラウザが実際に通信したドメインは `fukuoka1980521-beep.github.io` のみ
+  （他の外部ドメインへのリクエストは一切発生しなかった＝NETWORK_PRIVACY_VERIFY）。
+- `localStorage`に保存されたキーは本アプリ由来の2種類のみ（`thinking-game:metrics:v1`、
+  `thinking-game:completed-logs:v2`）で、完了ログ件数もプレイ内容と一致した。
 
 ## 自動テスト（`npm run test` / vitest, 75件）
 

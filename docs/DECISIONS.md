@@ -1,6 +1,34 @@
 # DECISIONS — 思考整理ゲーム MVP v0.1
 
-## PLAYABLE_VALIDATION_BUILD関連の意思決定（本Run）
+## GITHUB_PAGES_TEST_DEPLOY関連の意思決定（本Run）
+
+### なぜGitHub Pages + GitHub Actionsなのか
+
+小規模ユーザーテストに必要なのは「第三者がスマートフォンから開ける公開URL」のみであり、
+サーバーサイド処理は一切不要（`localStorage`のみで完結する設計、`docs/DATA_BOUNDARY.md`）。
+GitHub Pagesは無料・追加インフラ不要でこれを満たす。デプロイ方式は、リポジトリの初期状態に
+Pages設定がなかったため、現在推奨されるActionsベース（`build_type: "workflow"`）を新規に採用した
+（既存の`kore-dousuru-nagoya`等が使っているレガシーなブランチ配信方式とは異なるが、両方とも
+GitHub Pages上で共存可能であり、他リポジトリの設定には触れていない）。
+
+### なぜmanifestとstart_urlを絶対パスから相対パスへ変えたのか
+
+GitHub Pagesはプロジェクトページとして`/thinking-game/`というサブパス配下で配信される。
+Viteの`base`設定でJS/CSSバンドルへの参照は自動的に書き換わるが、`<link rel="manifest">`の
+`href`やmanifest内の`start_url`は素朴な絶対パス（`/manifest.json`、`/`）のままだと
+ドメインルート（`https://<user>.github.io/`）を指してしまい、サブパス配信と食い違う。
+相対パス（`manifest.json`、`.`）に変更することで、Vite側の書き換えに依存せず、
+どのサブパスに配置されても正しく解決されるようにした。ビルド後の`dist/index.html`を実際に確認し、
+JS/CSSバンドルは`/thinking-game/assets/...`に、manifestは相対のまま出力されることを確認済み。
+
+### なぜHOMEに小さな注記を追加したのか
+
+本Runの要求どおり、「思考力が向上することが証明されています」等の未検証な効果訴求は一切行わず、
+「このアプリは現在、使いやすさやゲーム体験を確認するための試作版です。」という事実記述のみを追加した。
+既存のAI依存を促さない注記（画面下部）とは別に、HOME上部に小さく配置し、既存UIのレイアウトを
+崩さない範囲に留めている。
+
+## PLAYABLE_VALIDATION_BUILD関連の意思決定（前Run）
 
 ### なぜAI応答の分岐条件を`caseType`から`rubric.aiResponseGroundTruth`へ切り替えたのか
 

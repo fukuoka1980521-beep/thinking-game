@@ -12,8 +12,18 @@ AIと対話しながら、観察・仮説形成・反証・判断更新などを
 - Independent from thinking-os
 - Calibrated trust with AI, not AI dependence
 - MVP first
-- Not publicly deployed yet
 - 生成AI APIは未接続（CASE DATAは事前定義。詳細は `docs/DECISIONS.md`）
+
+## 公開テストURL（PUBLIC TEST URL）
+
+**https://fukuoka1980521-beep.github.io/thinking-game/**
+
+- **STATUS = SMALL USER TEST PROTOTYPE**（`READY_FOR_SMALL_USER_TEST`。`PRODUCT_VALIDATED`ではない）
+- データはすべて各利用者の端末の`localStorage`のみに保存される（local-only）。運営側での自動収集は
+  行わない。テスト結果を集めたい場合は、協力者自身に`docs/USER_TEST_GUIDE.md`の画面を
+  スクリーンショット等で共有してもらう必要がある（KNOWN LIMITATION）。
+- 生成AI APIは使用していない（CASE DATAは事前定義）。外部analytics・ログイン・課金・広告は一切なし。
+- GitHub Actions（`.github/workflows/deploy.yml`）で`master`ブランチへのpush時に自動デプロイされる。
 
 ## Run: THINKING_GAME_PLAYABLE_VALIDATION_BUILD_V0_1
 
