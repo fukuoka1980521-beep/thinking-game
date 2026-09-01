@@ -7,11 +7,20 @@ import { CASES, getCaseById } from "../src/data/cases";
 import { loadCompletedLogs, loadInProgressSession } from "../src/lib/storage";
 import { loadMetricEvents } from "../src/lib/metrics";
 import { loadUserTestResponses } from "../src/lib/userTestResponses";
+import { markOnboardingSeen } from "../src/lib/onboarding";
 import { computeGrowthStats } from "../src/engine/growthAggregator";
 import type { CaseData } from "../src/types/case";
 
 const case001 = CASES[0]; // TRAINING
 const case005 = getCaseById("CASE-005")!; // AI_CALIBRATION
+
+// These flow tests exercise core gameplay, not first-play onboarding (that
+// has its own dedicated tests in tests/onboarding.test.tsx) — pre-seed the
+// onboarding flag so it doesn't intercept every case start here.
+function renderAppPastOnboarding() {
+  markOnboardingSeen();
+  return render(<App />);
+}
 
 async function goToCaseSelectAndOpen(user: ReturnType<typeof userEvent.setup>, title: string) {
   await user.click(screen.getByRole("button", { name: "ケースを選ぶ" }));
@@ -62,7 +71,7 @@ async function playThroughCase(
 describe("full case flow (CASE-001, TRAINING)", () => {
   it("walks from HOME through RESULT and records a trajectory log", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderAppPastOnboarding();
 
     await playThroughCase(user, {
       title: case001.title,
@@ -72,10 +81,24 @@ describe("full case flow (CASE-001, TRAINING)", () => {
       problemType: "情報不足",
     });
 
-    expect(screen.getByText("今回よかった点")).toBeInTheDocument();
+    // Section 8/9: decision trajectory is the primary content — first
+    // decision, new evidence, and second decision are all shown.
+    expect(screen.getByText("あなたの判断")).toBeInTheDocument();
+    expect(screen.getByText(`「${case001.availableChoices[0].label}」`, { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(`「${case001.availableChoices[3].label}」`, { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(case001.newFacts[0])).toBeInTheDocument();
+    expect(screen.getByText("判断を変更しました。")).toBeInTheDocument();
+    expect(screen.getByText("今回のポイント")).toBeInTheDocument();
+    expect(screen.getByText(case001.rubric.observableBehavior)).toBeInTheDocument();
+    expect(screen.getByText("よかった点")).toBeInTheDocument();
     expect(screen.getByText("確認したい点")).toBeInTheDocument();
-    expect(screen.getByText("次回のテーマ")).toBeInTheDocument();
+    // Section 14: no next-case skill preview.
+    expect(screen.queryByText("次回のテーマ")).not.toBeInTheDocument();
+    expect(screen.queryByText(case001.reflectionPoints.nextTheme)).not.toBeInTheDocument();
+    // Section 10/18: no pass/fail or internal-label leakage.
     expect(screen.queryByText(/正解|不正解/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/更新できなかった|失敗/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/appropriate_update|not_applicable/)).not.toBeInTheDocument();
 
     const logs = loadCompletedLogs();
     expect(logs).toHaveLength(1);
@@ -95,7 +118,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
 
   it("preserves entered data when navigating back", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderAppPastOnboarding();
 
     await goToCaseSelectAndOpen(user, case001.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
@@ -117,7 +140,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
 
   it("resumes an in-progress session after a simulated reload", async () => {
     const user = userEvent.setup();
-    const { unmount } = render(<App />);
+    const { unmount } = renderAppPastOnboarding();
 
     await goToCaseSelectAndOpen(user, case001.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
@@ -129,7 +152,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
 
     unmount();
 
-    render(<App />);
+    renderAppPastOnboarding();
     expect(await screen.findByRole("button", { name: "続きから再開する" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "続きから再開する" }));
     expect(screen.getByText(case001.aiIntervention)).toBeInTheDocument();
@@ -138,7 +161,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
   it("does not mix data between cases when switching mid-session", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
     const user = userEvent.setup();
-    render(<App />);
+    renderAppPastOnboarding();
 
     const case002 = CASES[1];
 
@@ -165,7 +188,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
 describe("full case flow (CASE-005, AI_CALIBRATION)", () => {
   it("shows the structured AI-action controls and records a calibration label", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderAppPastOnboarding();
 
     await playThroughCase(user, {
       title: case005.title,
@@ -176,9 +199,16 @@ describe("full case flow (CASE-005, AI_CALIBRATION)", () => {
       problemType: "因果関係の混同",
     });
 
-    expect(screen.getByText("今回よかった点")).toBeInTheDocument();
-    // CASE-005 always shows its trap explanation in RESULT.
+    expect(screen.getByText("よかった点")).toBeInTheDocument();
+    // CASE-005 always shows its trap explanation as the case-specific "今回のポイント".
+    expect(screen.getByText("今回のポイント")).toBeInTheDocument();
     expect(screen.getByText(case005.aiTrap.explanation!)).toBeInTheDocument();
+    // Section 10/12: kept the same choice both times — must read as a
+    // neutral "maintained," never as a failure to update.
+    expect(screen.getByText("判断を維持しました。")).toBeInTheDocument();
+    expect(screen.queryByText(/更新できなかった|失敗/)).not.toBeInTheDocument();
+    // Section 18/19 #14: internal calibration/trap labels never shown verbatim.
+    expect(screen.queryByText(/INCORRECT|CAUSALITY_ERROR|appropriate_rejection|not_applicable/)).not.toBeInTheDocument();
 
     const logs = loadCompletedLogs();
     expect(logs).toHaveLength(1);
@@ -191,7 +221,7 @@ describe("full case flow (CASE-005, AI_CALIBRATION)", () => {
 
   it("requires an AI-action selection (not just a problem-type selection) before proceeding", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderAppPastOnboarding();
 
     await goToCaseSelectAndOpen(user, case005.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
@@ -231,7 +261,7 @@ async function genericPlayThroughCurrentCase(user: ReturnType<typeof userEvent.s
 describe("play run: NEXT_CASE -> session summary -> user test (Section 5/7/8/9)", () => {
   it("drives 5 cases via 次の問題へ, then shows the session summary and records the user test", async () => {
     const user = userEvent.setup();
-    render(<App />);
+    renderAppPastOnboarding();
 
     await goToCaseSelectAndOpen(user, CASES[0].title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
@@ -254,7 +284,7 @@ describe("play run: NEXT_CASE -> session summary -> user test (Section 5/7/8/9)"
       "もう1問やってみたいと思いましたか？",
       "問題を考えること自体は面白かったですか？",
       "AIの意見を見たあと、自分の判断について考えましたか？",
-      "画面の操作は分かりやすかったですか？",
+      "何をすればよいゲームか分かりやすかったですか？",
       "また別の日に、このゲームを開きたいと思いますか？",
     ];
     for (const q of questions) {

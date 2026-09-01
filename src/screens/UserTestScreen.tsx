@@ -31,12 +31,18 @@ interface Props {
  * only one of the 5 questions where a higher number meant something bad —
  * flipped to "was it clear" so all 5 questions consistently read
  * higher = more positive.
+ *
+ * COMPREHENSION CLEANUP Run (Section 17): Q4 originally asked only about
+ * screen operation, which wouldn't have caught "I didn't understand this was
+ * a judgment game at all" — the actual observed feedback this Run responds
+ * to. Broadened to ask about understanding what to do, not just button
+ * operation (the field name `q4Clarity` still fits; only the label changed).
  */
 const QUESTIONS: { key: keyof Answers; label: string }[] = [
   { key: "q1WantMore", label: "もう1問やってみたいと思いましたか？" },
   { key: "q2Enjoyable", label: "問題を考えること自体は面白かったですか？" },
   { key: "q3QuestionedAi", label: "AIの意見を見たあと、自分の判断について考えましたか？" },
-  { key: "q4Clarity", label: "画面の操作は分かりやすかったですか？" },
+  { key: "q4Clarity", label: "何をすればよいゲームか分かりやすかったですか？" },
   { key: "q5WantReuse", label: "また別の日に、このゲームを開きたいと思いますか？" },
 ];
 

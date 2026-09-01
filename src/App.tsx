@@ -4,6 +4,7 @@ import { CASES, getCaseById, getTodaysCaseId } from "./data/cases";
 import { HomeScreen } from "./screens/HomeScreen";
 import { CaseSelectScreen } from "./screens/CaseSelectScreen";
 import { GrowthScreen } from "./screens/GrowthScreen";
+import { OnboardingScreen } from "./screens/OnboardingScreen";
 import { SessionSummaryScreen } from "./screens/SessionSummaryScreen";
 import { UserTestScreen } from "./screens/UserTestScreen";
 import { UserTestThanksScreen } from "./screens/UserTestThanksScreen";
@@ -14,6 +15,7 @@ import {
   createSessionId,
   createPlayRunId,
 } from "./lib/storage";
+import { hasSeenOnboarding, markOnboardingSeen } from "./lib/onboarding";
 import { recordMetricEvent } from "./lib/metrics";
 import { saveUserTestResponse } from "./lib/userTestResponses";
 import { computeSessionSummary } from "./engine/sessionSummary";
@@ -23,6 +25,7 @@ type View =
   | { kind: "HOME" }
   | { kind: "CASE_SELECT" }
   | { kind: "GROWTH" }
+  | { kind: "ONBOARDING" }
   | { kind: "SESSION" }
   | { kind: "SESSION_SUMMARY" }
   | { kind: "USER_TEST" }
@@ -44,15 +47,32 @@ export default function App() {
   // Ends (becomes null) whenever the player returns to Home, by any path.
   const [playRunId, setPlayRunId] = useState<string | null>(null);
   const [lastUserTestResponse, setLastUserTestResponse] = useState<UserTestResponse | null>(null);
+  // Section 3/4: shown once ever, before a player's first case. Separate
+  // from onboardingSeen's persisted flag — this just tracks in-memory which
+  // case start is waiting behind it.
+  const [onboardingSeen, setOnboardingSeen] = useState(true);
+  const [pendingOnboarding, setPendingOnboarding] = useState<{ caseId: string; runId: string } | null>(null);
 
   useEffect(() => {
     const inProgress = loadInProgressSession();
     setHomeInProgress(inProgress);
     setPlayRunId(inProgress?.playRunId ?? null);
     setLogs(loadCompletedLogs());
+    setOnboardingSeen(hasSeenOnboarding());
   }, []);
 
   function startCase(caseId: string, opts: { reuseRunId?: string } = {}) {
+    if (!onboardingSeen && !opts.reuseRunId) {
+      const runId = createPlayRunId();
+      setPendingOnboarding({ caseId, runId });
+      recordMetricEvent("ONBOARDING_SHOWN", runId, caseId);
+      setView({ kind: "ONBOARDING" });
+      return;
+    }
+    reallyStartCase(caseId, opts);
+  }
+
+  function reallyStartCase(caseId: string, opts: { reuseRunId?: string } = {}) {
     if (!opts.reuseRunId && homeInProgress && homeInProgress.caseId !== caseId) {
       const confirmed = window.confirm(
         "進行中のケースがあります。新しいケースを始めると、進行中の内容は失われます。続けますか？",
@@ -71,6 +91,16 @@ export default function App() {
     recordMetricEvent("CASE_START", runId, caseId);
     setActiveSession(fresh);
     setView({ kind: "SESSION" });
+  }
+
+  function completeOnboarding() {
+    if (!pendingOnboarding) return;
+    markOnboardingSeen();
+    setOnboardingSeen(true);
+    recordMetricEvent("ONBOARDING_COMPLETE", pendingOnboarding.runId, pendingOnboarding.caseId);
+    const { caseId, runId } = pendingOnboarding;
+    setPendingOnboarding(null);
+    reallyStartCase(caseId, { reuseRunId: runId });
   }
 
   function resumeCase() {
@@ -110,6 +140,18 @@ export default function App() {
 
     const next = CASES.find((c) => !playedCaseIds.includes(c.caseId)) ?? CASES[0];
     startCase(next.caseId, { reuseRunId: runId });
+  }
+
+  if (view.kind === "ONBOARDING") {
+    return (
+      <OnboardingScreen
+        onStart={completeOnboarding}
+        onBack={() => {
+          setPendingOnboarding(null);
+          setView({ kind: "HOME" });
+        }}
+      />
+    );
   }
 
   if (view.kind === "SESSION" && activeSession) {

@@ -10,7 +10,7 @@ const ROWS: { key: keyof UserTestResponse; label: string }[] = [
   { key: "q1WantMore", label: "もう1問やってみたいか" },
   { key: "q2Enjoyable", label: "考えること自体は面白かったか" },
   { key: "q3QuestionedAi", label: "AIの意見を見たあと自分でも考えたか" },
-  { key: "q4Clarity", label: "画面の操作は分かりやすかったか" },
+  { key: "q4Clarity", label: "何をすればよいゲームか分かりやすかったか" },
   { key: "q5WantReuse", label: "また別の日に開きたいか" },
 ];
 

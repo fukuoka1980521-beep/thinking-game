@@ -176,7 +176,11 @@ export type MetricEventType =
   | "CASE_COMPLETE"
   | "NEXT_CASE_CLICK"
   | "SESSION_COMPLETE"
-  | "USER_TEST_SUBMITTED";
+  | "USER_TEST_SUBMITTED"
+  // COMPREHENSION CLEANUP Run Section 16: onboarding funnel, additive only —
+  // H1's denominator/numerator (CASE_COMPLETE / NEXT_CASE_CLICK) is unchanged.
+  | "ONBOARDING_SHOWN"
+  | "ONBOARDING_COMPLETE";
 
 export interface MetricEvent {
   type: MetricEventType;

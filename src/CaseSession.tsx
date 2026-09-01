@@ -147,6 +147,8 @@ export function CaseSession({
       return (
         <ResultScreen
           caseData={caseData}
+          first={session.first}
+          second={session.second}
           reflection={reflection}
           onNextCase={onNextCase}
           onGoHome={onExitToHome}

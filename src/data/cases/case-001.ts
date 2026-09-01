@@ -26,7 +26,11 @@ export const case001: CaseData = {
     "あなたは同僚のミナさんに、明日の会議資料についてチャットで質問を送りました。",
     "3時間が経ちましたが、既読はついているのに返信がありません。",
   ],
-  initialQuestion: "この状況について、最も納得できる説明はどれだと思いますか？",
+  // COMPREHENSION CLEANUP Run Section 6: reworded so a first-time player can
+  // tell what they're judging (this situation) and when (right now, before
+  // any new information). No change to availableChoices, factCheck, or any
+  // rubric field — copy-only.
+  initialQuestion: "今ある情報だけで、この状況をどう考えますか？",
   availableChoices: [
     { id: "a", label: "ミナさんはあなたを無視している" },
     { id: "b", label: "ミナさんは今、手が離せないほど忙しい" },

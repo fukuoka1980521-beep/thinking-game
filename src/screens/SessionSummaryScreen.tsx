@@ -1,5 +1,6 @@
 import type { SessionSummary } from "../types/log";
 import { ScreenContainer } from "../components/ScreenContainer";
+import sessionCompleteImg from "../assets/session-complete-evening.png";
 
 interface Props {
   summary: SessionSummary;
@@ -10,6 +11,19 @@ interface Props {
 export function SessionSummaryScreen({ summary, onTakeSurvey, onSkip }: Props) {
   return (
     <ScreenContainer title="今回のプレイ">
+      <div className="screen-hero">
+        <img
+          src={sessionCompleteImg}
+          alt="一区切りついたことを示すイラスト"
+          className="screen-hero-image"
+          width={370}
+          height={320}
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+
       <p className="muted">今回、{summary.totalCases}問に取り組みました。</p>
 
       <div className="card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>

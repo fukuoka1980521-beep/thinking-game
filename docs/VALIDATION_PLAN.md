@@ -20,6 +20,16 @@ copy for `under_update` / `misaligned_change` outcomes specifically (do these re
 9; see `docs/USER_TEST_GUIDE.md` for the exact query) and User Test Q1/Q2/Q5. Still requires real users —
 no session has been run outside of this build's own automated tests.
 
+**Rule-understanding confound (addressed by THINKING_GAME_FIRST_PLAY_COMPREHENSION_AND_RESULT_FEEDBACK
+Run, not yet validated):** Two real playtesters reported (a) not knowing what the first question was asking
+them to judge, and (b) the RESULT screen reading like a graded scorecard rather than a game outcome. Either
+could suppress `NEXT_CASE_CLICK` for reasons that have nothing to do with whether the underlying judgment
+loop is engaging, confounding any reading of H1's current numbers. This Run added a rule-only ONBOARDING
+screen (no thinking-strategy content) and rebuilt RESULT around a decision-trajectory display instead of a
+rubric list, specifically to remove this confound before H1 is read again. **This change has not been
+validated as an improvement** — see the IMPORTANT note in `docs/DECISIONS.md`. The next real step is
+observing new, first-time players, not shipping further features.
+
 ## H2 — Does the AI trap increase calibration, or just blanket AI rejection?
 
 **Claim to test:** Encountering a flawed AI claim (CASE-005) increases *appropriate* calibration behavior

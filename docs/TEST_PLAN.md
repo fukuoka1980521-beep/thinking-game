@@ -1,10 +1,46 @@
 # TEST_PLAN — 思考整理ゲーム PLAYABLE_VALIDATION_BUILD_V0_1 / V0_2
 
-> **SPEC AMENDMENT適用済み（3段階）**：Section Wの追加検査項目、PLAYABLE_VALIDATION_BUILD Run
+> **SPEC AMENDMENT適用済み（4段階）**：Section Wの追加検査項目、PLAYABLE_VALIDATION_BUILD Run
 > （7ケースロード・NEXT_CASE遷移・session summary・user test回答保存・TRANSFER除外・
-> AI quality balance検査・320pxでの横overflowなし）、そしてFIRST_CASE_AND_CALIBRATION_SEMANTICS Run
-> （utteranceType整合性・calibrationEligible分離・priming除去・CASE-001不確実性選択肢・survey改訂）を
-> すべて追加した。
+> AI quality balance検査・320pxでの横overflowなし）、FIRST_CASE_AND_CALIBRATION_SEMANTICS Run
+> （utteranceType整合性・calibrationEligible分離・priming除去・CASE-001不確実性選択肢・survey改訂）、
+> そしてTHINKING_GAME_FIRST_PLAY_COMPREHENSION_AND_RESULT_FEEDBACK Run（ONBOARDING・RESULT decision
+> trajectory化・HOME/SESSION_SUMMARYのvisual追加）をすべて追加した。
+
+## THINKING_GAME_FIRST_PLAY_COMPREHENSION_AND_RESULT_FEEDBACK関連の追加テスト（本Run、`tests/onboarding.test.tsx` 9件 + `tests/flow.test.tsx` 更新）
+
+| # | 確認項目 | テストファイル |
+|---|---|---|
+| 64 | 初回プレイでは必ずONBOARDING画面が最初のケースの前に表示される | `tests/onboarding.test.tsx` |
+| 65 | ONBOARDINGに思考戦略・ケース内容のpriming語（事実と解釈／因果関係／罠／AIを疑う等）が含まれない | `tests/onboarding.test.tsx` |
+| 66 | ONBOARDING完了後、要求されたケースのCASE_INTROへ進み、`hasSeenOnboarding()`がtrueになる | `tests/onboarding.test.tsx` |
+| 67 | `ONBOARDING_SHOWN`→`ONBOARDING_COMPLETE`→`CASE_START`の順でイベントが記録され、CASE_START/CASE_COMPLETE自体の意味は変わらない | `tests/onboarding.test.tsx` |
+| 68 | 一度完了すれば、以降別のケースを開始してもONBOARDINGは再表示されない | `tests/onboarding.test.tsx` |
+| 69 | ONBOARDINGを「戻る」で離脱した場合は`hasSeenOnboarding()`がfalseのまま | `tests/onboarding.test.tsx` |
+| 70 | 過去のTrajectoryLogは存在するがONBOARDINGフラグを持たない「既存ユーザー」も、初回は必ずONBOARDINGを見る | `tests/onboarding.test.tsx` |
+| 71 | ONBOARDING状態は`thinking-game:onboarding:v1`という独立キーに保存され、TrajectoryLog等のゲームプレイデータと混在しない | `tests/onboarding.test.tsx` |
+| 72 | `markOnboardingSeen()`が外部から呼ばれていればONBOARDINGは完全にスキップされる | `tests/onboarding.test.tsx` |
+| 73 | CASE-001全体フロー・CASE-005全体フローとも、RESULTに「あなたの判断」（最初の判断→新しい事実→再判断）が実データから表示される | `tests/flow.test.tsx` |
+| 74 | RESULTの決定推移は「変更しました／維持しました」の中立語のみで、「変わらなかった」等の失敗枠組みを含まない | `tests/flow.test.tsx` |
+| 75 | RESULTに「今回のポイント」としてケース固有の根拠（`aiTrap.explanation`または`rubric.observableBehavior`）が表示される | `tests/flow.test.tsx` |
+| 76 | RESULTにINCORRECT/CAUSALITY_ERROR/appropriate_rejection等の内部ラベルが素の文字列として表示されない | `tests/flow.test.tsx` |
+| 77 | RESULTに「次回のテーマ」が一切存在しない | `tests/flow.test.tsx` |
+| 78 | 既存のCASE-005 Calibration判定（`utteranceType`/`isCalibrationEligible`/trapDetection/aiCalibration分離）・TRANSFER-001のQUESTION非対象扱いは本Runの変更後も無傷（回帰） | `tests/flow.test.tsx`（既存アサーション維持） |
+| 79 | User Testの質問文（Q4）更新後も、5問すべて回答するまで送信不可という制約は変わらない | `tests/flow.test.tsx` |
+
+## VISUAL ASSET追加に伴う手動・Playwright確認（本Run、Section 33-41）
+
+- `npx tsc --noEmit` / `npm run build` は追加した2画像（`src/assets/home-welcome-felt.png`、
+  `src/assets/session-complete-evening.png`）を含めてPASS。ビルド後の`dist/assets/`にハッシュ付き
+  ファイル名で正しく出力されることを確認（GitHub Pagesの`/thinking-game/`サブパス下で参照される
+  ファイル名と一致）。
+- 開発サーバーに対するPlaywrightで、HOME・SESSION_SUMMARY双方の画像が幅320/375/390/430pxいずれでも
+  読み込まれ（`img.complete && naturalWidth > 0`）、横overflowが発生しないことを確認。
+- 本番ビルド（`dist/`）を静的サーバーで配信した状態で、HOME画像のリクエストを意図的に失敗させ、
+  (1) `onError`により画像要素が`display:none`になる、(2) 主要CTA「今日の1問」が引き続き操作可能、
+  (3) 横overflowが発生しない、の3点を確認（＝画像読み込み失敗時もゲーム続行可能）。
+- 同じ静的配信環境でHOME→今日の1問クリックまでの通信先を記録し、`localhost`（自ホスト相当）以外への
+  通信が発生しないことを確認（NETWORK_PRIVACY_VERIFYの一部）。
 
 ## LIVE環境での確認（GITHUB_PAGES_TEST_DEPLOY Run、公開URLに対する実地確認・前Run分）
 
@@ -137,4 +173,5 @@ Section 13、およびFIRST_CASE_AND_CALIBRATION_SEMANTICS Run Section 19の追�
 
 ## 実行結果
 
-`npm run typecheck` / `npm run build` / `npm run test`（86件）はいずれもPASS（実行ログはCLOSE報告を参照）。
+`npm run typecheck` / `npm run build` / `npm run test`（95件＝旧86件＋ONBOARDING9件）はいずれもPASS
+（実行ログはCLOSE報告を参照）。

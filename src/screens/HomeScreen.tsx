@@ -1,3 +1,5 @@
+import homeWelcomeImg from "../assets/home-welcome-felt.png";
+
 interface Props {
   hasInProgress: boolean;
   onResume: () => void;
@@ -9,6 +11,19 @@ interface Props {
 export function HomeScreen({ hasInProgress, onResume, onTodaysCase, onSelectCase, onViewGrowth }: Props) {
   return (
     <div className="screen">
+      <div className="screen-hero">
+        <img
+          src={homeWelcomeImg}
+          alt="出迎えるキャラクターのイラスト"
+          className="screen-hero-image"
+          width={370}
+          height={320}
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+
       <div>
         <h1 className="screen-title">思考整理ゲーム</h1>
         <p className="muted">3分で終わる、小さな判断ゲーム。</p>
