@@ -38,6 +38,54 @@ Ownerご自身がGoogle Cloud Consoleで支払い方法を登録する必要が�
 完全に休眠状態であり、プレイヤー体験は前Run終了時点と一切変わらない（同意画面も表示されず、
 ネットワーク呼び出しも一切発生しない）ことを`tests/aiDialogueGateDormant.test.tsx`で保証している。
 
+### デプロイ後の実機テストで発見した2件の実バグ
+
+1. **Cloud Functions Gen 2は`GCP_PROJECT`/`GOOGLE_CLOUD_PROJECT`環境変数を自動設定しない**（Gen 1の
+   挙動を前提にしたコードの誤り）。結果、Vertex AIクライアントが`project: undefined`で初期化され、
+   `"projects/undefined"`という文字列に対する403 Permission deniedが発生した。`--set-env-vars`で
+   `GCP_PROJECT`を明示的に設定して解消。
+2. **`gemini-2.5-flash`は`thinkingConfig.thinkingBudget: 0`を無視するという、Google側の既知かつ
+   未解決のバグを持つ**（2025年10月に一度修正が展開されたと発表されたが、2025年12月時点でも
+   構造化出力やループ実行時に再発するとの報告が複数あり）。実機で確認した症状：`maxOutputTokens`
+   全量が内部の「thinking」に消費され、`finishReason: "MAX_TOKENS"`かつ可視の応答本文が0文字になる
+   （`thoughtsTokenCount`が予算のほぼ全量を占めていた）。
+
+### thinkingBudget: 0 の採用可否の検討（重要）
+
+上記バグにより、`thinkingBudget: 0`で「thinkingを完全に切る」というアプローチ自体が実機で機能
+しないことが判明した。したがって**本Runの最終実装はthinkingを無効化していない**——`thinkingConfig`
+指定を削除し、代わりに`maxOutputTokens`を1024→2048へ引き上げて、thinkingとvisible answerの両方に
+十分な余地を持たせる方式へ変更した。これは「応答を出すためだけにthinkingを切って意味理解の質を
+落とす」という判断ではなく、**thinkingは常に有効なまま**という点を明記しておく。実際の5-input
+semantic testで、同じ選択肢でも理由文の内容差（矛盾の指摘、声とチャットという媒体の不一致の指摘等）
+に応じて反証の切り口が具体的に変わることを確認しており（詳細は`docs/TEST_PLAN.md`）、意味理解の
+質がthinking有効のまま担保されていることを実測で確認済み。
+
+### 429 Resource Exhaustedの分類（推測ではなく実測に基づく）
+
+デプロイ直後の実機テストで2回連続の429 `RESOURCE_EXHAUSTED`（Vertex AI `generateContent`）が発生
+した。分類のために行ったこと：
+
+- Cloud Functions自身のログ（`gcloud functions logs read`）から、Vertex AI APIが返した生のエラー
+  本文とタイムスタンプを直接確認した（推測ではなく実際のAPIレスポンス）。
+- `gcloud alpha services quota list --service=aiplatform.googleapis.com`で静的なクォータ定義を
+  確認したが、`gemini-2.5-flash`（`gemini-2.5-flash-ga`）は`generate_content_requests_per_minute_
+  per_project_per_base_model`のリージョナル表にも`global_`表にも明示的なbase_modelエントリが存在
+  せず、両方とも先頭の`- {}`（未列挙モデル向けの既定バケット）にフォールバックしていることを確認
+  した。この既定バケットの具体的な数値上限はgcloudの静的出力からは読み取れなかった（正直に記録：
+  ここは実測できなかった箇所）。
+- 実測タイムスタンプ：1回目の429が00:43:20、2回目が00:44:16（約56秒後）。その後**約70秒待ってから
+  1回だけ**リトライしたところ成功し、以降は数秒〜十秒程度の間隔を空けた15件連続の呼び出しがすべて
+  成功した（MAX_TOKENS起因の空応答を除く）。
+- この時系列から、**RPM（1分あたりリクエスト数）クォータであり、ローリングウィンドウで回復する
+  タイプ**と分類した。token量ベースのクォータではない（後続のテストでより多くのトークンを消費した
+  リクエストも問題なく成功したため）。shared capacity起因やprovider側の一時的スロットリングである
+  可能性を完全には排除できないが、「一定時間待てば確実に回復する」という再現性のある挙動は、
+  ランダムな一時障害よりもクォータウィンドウの方が説明として自然である。
+- **正確な数値上限は未確認**であり、これ以上の特定にはCloud Consoleのクォータ画面での目視確認が
+  必要。Ownerの指示に従い、この不確実性を理由にした有料クォータ増加申請やモデル変更は行っていない
+  （現状のクォータでもOwner自身による低頻度の手動テスト用途には実測上十分機能している）。
+
 ### プライバシー境界の明示的な変更
 
 これまで全Runを通じて維持してきた「完全ローカル・外部通信ゼロ」という不変条件を、CASE-001に限り

@@ -10,7 +10,10 @@ import type { AiCharacterKey } from "../types/case";
  */
 export const DIALOGUE_ENDPOINT_URL = "";
 
-const REQUEST_TIMEOUT_MS = 12_000;
+// The server retries once internally on an empty model response (see
+// functions/dialogue/index.js), so the client timeout needs headroom for
+// two sequential ~9s model calls plus overhead, not just one.
+const REQUEST_TIMEOUT_MS = 25_000;
 
 export interface AiDialogueRequest {
   situation: string[];

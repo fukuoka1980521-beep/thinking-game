@@ -6,6 +6,14 @@ const { GoogleGenAI } = require("@google/genai");
 // anywhere in this codebase, this repo, or the deployed artifact.
 const PROJECT = process.env.GCP_PROJECT || process.env.GOOGLE_CLOUD_PROJECT;
 const LOCATION = process.env.DIALOGUE_LOCATION || "asia-northeast1";
+// gemini-2.5-flash has a documented, still-unresolved bug where
+// thinkingConfig.thinkingBudget:0 is ignored (confirmed via smoke test:
+// internal "thinking" consumed the token budget with zero visible output
+// every time). gemini-2.0-flash-001 would sidestep this, but is not
+// available in asia-northeast1 for this project (404 Publisher model not
+// found), and us-central1 adds latency for a Japan-facing product -- so the
+// workaround here is a generous maxOutputTokens (below) that leaves room
+// for both the (unavoidable) thinking tokens and the actual visible answer.
 const MODEL = process.env.DIALOGUE_MODEL || "gemini-2.5-flash";
 
 // Section 14: only this exact origin (plus local dev) may call the endpoint.
@@ -116,17 +124,29 @@ exports.dialogue = async (req, res) => {
   try {
     const client = getClient();
     const systemInstruction = `${BASE_SYSTEM_INSTRUCTION}\n\n${CHARACTER_INSTRUCTIONS[input.character]}`;
-    const response = await client.models.generateContent({
-      model: MODEL,
-      contents: buildPrompt(input),
-      config: {
-        systemInstruction,
-        temperature: 0.8,
-        maxOutputTokens: 200,
-      },
-    });
+    const generateOnce = () =>
+      client.models.generateContent({
+        model: MODEL,
+        contents: buildPrompt(input),
+        config: {
+          systemInstruction,
+          temperature: 0.8,
+          maxOutputTokens: 2048,
+        },
+      });
 
-    const text = (response.text || "").trim();
+    // gemini-2.5-flash's internal "thinking" occasionally consumes the
+    // entire token budget before producing any visible text (a documented,
+    // unresolved model-side issue -- see docs/DECISIONS.md). One
+    // transparent retry here is far cheaper than surfacing an intermittent
+    // failure to the player on every few requests.
+    let response = await generateOnce();
+    let text = (response.text || "").trim();
+    if (!text) {
+      response = await generateOnce();
+      text = (response.text || "").trim();
+    }
+
     if (!text) {
       res.status(502).json({ error: "empty_model_response" });
       return;
