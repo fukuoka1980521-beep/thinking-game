@@ -5,9 +5,11 @@ interface Props {
   newEvidence: string[];
   onBack: () => void;
   onNext: () => void;
+  /** FUN_FIRST_PROTOTYPE Run Section 6: frames the clue as a reward, not a re-quiz prompt, for simplified-flow cases. */
+  buttonLabel?: string;
 }
 
-export function NewFactScreen({ newEvidence, onBack, onNext }: Props) {
+export function NewFactScreen({ newEvidence, onBack, onNext, buttonLabel }: Props) {
   return (
     <ScreenContainer title="新しい情報" onBack={onBack}>
       <div className="card">
@@ -20,7 +22,7 @@ export function NewFactScreen({ newEvidence, onBack, onNext }: Props) {
       <p className="muted">この情報を踏まえて、もう一度考えてみましょう。</p>
       <div className="spacer" />
       <button type="button" className="btn btn-primary" onClick={onNext}>
-        再判断する
+        {buttonLabel ?? "再判断する"}
       </button>
     </ScreenContainer>
   );

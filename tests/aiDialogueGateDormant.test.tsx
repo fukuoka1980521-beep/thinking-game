@@ -29,8 +29,7 @@ describe("AI dialogue gate with no endpoint configured (current deployment state
     await user.click(screen.getByRole("button", { name: "ケースを選ぶ" }));
     await user.click(screen.getByRole("button", { name: new RegExp(case001.title) }));
     await user.click(screen.getByRole("button", { name: "はじめる" }));
-    await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
-    await user.click(screen.getByRole("button", { name: "次へ" }));
+    // FUN_FIRST_PROTOTYPE Run: OBSERVED_FACT is auto-skipped for CASE-001 (simplifiedFlow).
     await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
     await user.click(screen.getByRole("button", { name: "次へ" }));
 

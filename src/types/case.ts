@@ -4,7 +4,11 @@ export type AbilityKey =
   | "FALSIFICATION"
   | "UPDATING";
 
-export type AiCharacterKey = "DETECTIVE" | "DEVIL" | "OBSERVER" | "STRATEGIST";
+// FUN_FIRST_PROTOTYPE Run Section 5: "PARTNER" is a non-analytical AI
+// persona for the simplified-flow experience -- no role label implying
+// classification work (unlike DETECTIVE's "事実と解釈を分離する"). The
+// original four roles are kept for cases that still use the full flow.
+export type AiCharacterKey = "DETECTIVE" | "DEVIL" | "OBSERVER" | "STRATEGIST" | "PARTNER";
 
 export interface AiCharacterProfile {
   key: AiCharacterKey;
@@ -161,6 +165,8 @@ export interface DialogueBranch {
   devil: string;
   observer: string;
   strategist: string;
+  /** FUN_FIRST_PROTOTYPE Run: optional so existing branches (pre-PARTNER) stay valid without updating every case. */
+  partner?: string;
 }
 
 /**
@@ -214,4 +220,15 @@ export interface CaseData {
   reflectionPoints: ReflectionPoints;
   /** Section 3: implemented for CASE-001 only this Run. */
   personalizedDialogue?: PersonalizedDialogueConfig;
+  /**
+   * FUN_FIRST_PROTOTYPE Run Section 1/2: opt-in, additive flag. When true,
+   * CaseSession renders a shortened 6-step player-facing flow (SCENE / YOUR
+   * GUESS / AI PARTNER / NEW CLUE / CHANGE-OR-KEEP / REVEAL) instead of the
+   * full 8-screen flow -- auto-filling the skipped fields
+   * (ObservedFactInput, confidence, infoOptionsSelected, problemTypeSelected,
+   * reflectionNote) with defaults so TrajectoryLog/RubricResult keep their
+   * existing shape. Every case without this flag (the default) is
+   * completely unaffected. See docs/DECISIONS.md.
+   */
+  simplifiedFlow?: boolean;
 }

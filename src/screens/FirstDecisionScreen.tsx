@@ -10,9 +10,11 @@ interface Props {
   initial?: FirstDecisionInput;
   onBack: () => void;
   onSubmit: (input: FirstDecisionInput) => void;
+  /** FUN_FIRST_PROTOTYPE Run Section 1: hides confidence slider and info-options checklist (kept in the submitted schema via defaults). */
+  simplified?: boolean;
 }
 
-export function FirstDecisionScreen({ caseData, initial, onBack, onSubmit }: Props) {
+export function FirstDecisionScreen({ caseData, initial, onBack, onSubmit, simplified }: Props) {
   const [choiceId, setChoiceId] = useState<string | null>(initial?.choiceId ?? null);
   const [confidence, setConfidence] = useState(initial?.confidence ?? 50);
   const [reason, setReason] = useState(initial?.reason ?? "");
@@ -35,29 +37,33 @@ export function FirstDecisionScreen({ caseData, initial, onBack, onSubmit }: Pro
         <ChoiceList choices={caseData.availableChoices} selectedId={choiceId} onSelect={setChoiceId} />
       </div>
 
-      <ConfidenceSlider label={caseData.confidencePrompt} value={confidence} onChange={setConfidence} />
+      {!simplified && (
+        <>
+          <ConfidenceSlider label={caseData.confidencePrompt} value={confidence} onChange={setConfidence} />
 
-      <div className="field">
-        <label>どの情報を重要と考えましたか？（複数選択可）</label>
-        <div className="choice-list">
-          {caseData.infoOptions.map((option) => {
-            const selected = infoOptionsSelected.includes(option.id);
-            return (
-              <button
-                key={option.id}
-                type="button"
-                role="checkbox"
-                aria-checked={selected}
-                className={`btn btn-choice${selected ? " selected" : ""}`}
-                onClick={() => toggleInfoOption(option.id)}
-              >
-                {selected ? "✓ " : ""}
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+          <div className="field">
+            <label>どの情報を重要と考えましたか？（複数選択可）</label>
+            <div className="choice-list">
+              {caseData.infoOptions.map((option) => {
+                const selected = infoOptionsSelected.includes(option.id);
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={selected}
+                    className={`btn btn-choice${selected ? " selected" : ""}`}
+                    onClick={() => toggleInfoOption(option.id)}
+                  >
+                    {selected ? "✓ " : ""}
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="field">
         <label htmlFor="reason">そう考えた理由（任意）</label>

@@ -27,7 +27,12 @@ describe("dialogue Cloud Function system prompt (Section 5/14, real-AI Run)", ()
 
   it("still forbids revealing correctness/scoring and still bounds response length", () => {
     expect(promptSource).toContain("正解・不正解を明言せず");
-    expect(promptSource).toMatch(/60〜160文字/);
+    expect(promptSource).toMatch(/40〜100文字/);
+  });
+
+  it("defines the PARTNER persona without analytical/classification role framing (Section 5, FUN_FIRST_PROTOTYPE Run)", () => {
+    expect(promptSource).toContain("PARTNER");
+    expect(promptSource).not.toMatch(/PARTNER:[\s\S]{0,120}(分離する|分類)/);
   });
 
   it("never sends rubric ground truth in the request payload contract (evaluation firewall)", () => {

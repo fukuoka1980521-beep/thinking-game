@@ -30,6 +30,8 @@ function characterField(character: AiCharacterKey): keyof DialogueBranch {
       return "observer";
     case "STRATEGIST":
       return "strategist";
+    case "PARTNER":
+      return "partner";
   }
 }
 
@@ -61,7 +63,7 @@ export function getAiInterventionMessage(caseData: CaseData, first?: FirstDecisi
     }
   }
 
-  parts.push(branch[characterField(caseData.aiCharacter)]);
+  parts.push(branch[characterField(caseData.aiCharacter)] ?? caseData.aiIntervention);
 
   return parts.join("\n\n");
 }

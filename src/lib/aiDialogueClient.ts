@@ -11,9 +11,12 @@ import type { AiCharacterKey } from "../types/case";
 export const DIALOGUE_ENDPOINT_URL = "";
 
 // The server retries once internally on an empty model response (see
-// functions/dialogue/index.js), so the client timeout needs headroom for
-// two sequential ~9s model calls plus overhead, not just one.
-const REQUEST_TIMEOUT_MS = 25_000;
+// functions/dialogue/index.js), and a cold-started instance adds its own
+// latency on top -- observed a cold start + two sequential model calls
+// exceed 30s and get hard-killed by the function's own timeout. Client
+// timeout needs headroom past the function's timeout (60s, see
+// functions/dialogue/README.md), not just past one model call.
+const REQUEST_TIMEOUT_MS = 55_000;
 
 export interface AiDialogueRequest {
   situation: string[];

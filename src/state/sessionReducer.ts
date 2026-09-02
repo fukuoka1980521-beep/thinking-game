@@ -29,7 +29,8 @@ export type SessionAction =
   | { type: "ADVANCE_FROM_NEW_FACT" }
   | { type: "SUBMIT_SECOND_DECISION"; input: SecondDecisionInput }
   | { type: "SUBMIT_REFLECTION"; note: string }
-  | { type: "GO_BACK" };
+  | { type: "GO_BACK" }
+  | { type: "GO_BACK_TO_INTRO" };
 
 export function sessionReducer(
   state: InProgressSession,
@@ -61,6 +62,13 @@ export function sessionReducer(
       if (currentIndex <= 0) return state;
       return { ...state, screen: SCREEN_ORDER[currentIndex - 1] };
     }
+    // FUN_FIRST_PROTOTYPE Run Section 1: simplifiedFlow cases never render
+    // OBSERVED_FACT (it's auto-submitted), so going back from FIRST_DECISION
+    // must land on CASE_INTRO directly rather than the single-step GO_BACK,
+    // which would land on the invisible OBSERVED_FACT screen and get
+    // immediately re-forwarded by CaseSession's auto-skip effect.
+    case "GO_BACK_TO_INTRO":
+      return { ...state, screen: "CASE_INTRO" };
     default:
       return state;
   }

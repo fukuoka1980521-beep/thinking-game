@@ -35,7 +35,41 @@ async function goToCaseSelectAndOpen(user: ReturnType<typeof userEvent.setup>, t
   await user.click(screen.getByRole("button", { name: new RegExp(title) }));
 }
 
-/** Drives one full case from CASE_INTRO through RESULT. */
+/**
+ * Drives CASE-001's simplified 6-step flow (FUN_FIRST_PROTOTYPE Run):
+ * CASE_INTRO -> (OBSERVED_FACT auto-skipped) -> FIRST_DECISION (no
+ * confidence/info-options) -> AI_INTERVENTION (single continue button) ->
+ * NEW_FACT -> CHANGE-OR-KEEP -> (REFLECTION auto-skipped) -> RESULT.
+ */
+async function playThroughSimplifiedCase(
+  user: ReturnType<typeof userEvent.setup>,
+  opts: { title: string; firstChoiceLabel: string; keepAnswer: boolean; finalChoiceLabel?: string },
+) {
+  await goToCaseSelectAndOpen(user, opts.title);
+  await user.click(screen.getByRole("button", { name: "はじめる" }));
+
+  // FIRST_DECISION (OBSERVED_FACT is skipped automatically for simplifiedFlow cases)
+  await user.click(screen.getByRole("radio", { name: opts.firstChoiceLabel }));
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  // AI_INTERVENTION (simplified: message + single continue button)
+  await user.click(screen.getByRole("button", { name: "次の手がかりを見る" }));
+
+  // NEW_FACT
+  await user.click(screen.getByRole("button", { name: "次へ" }));
+
+  // CHANGE OR KEEP
+  if (opts.keepAnswer) {
+    await user.click(screen.getByRole("button", { name: "まだ同じ" }));
+  } else {
+    await user.click(screen.getByRole("button", { name: "変わった" }));
+    await user.click(screen.getByRole("radio", { name: opts.finalChoiceLabel! }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
+  }
+  // REFLECTION is skipped automatically -> RESULT
+}
+
+/** Drives one full (non-simplified) case from CASE_INTRO through RESULT. */
 async function playThroughCase(
   user: ReturnType<typeof userEvent.setup>,
   opts: {
@@ -76,37 +110,36 @@ async function playThroughCase(
   await user.click(screen.getByRole("button", { name: "結果を見る" }));
 }
 
-describe("full case flow (CASE-001, TRAINING)", () => {
-  it("walks from HOME through RESULT and records a trajectory log", async () => {
+describe("full case flow (CASE-001, TRAINING, FUN_FIRST_PROTOTYPE simplified flow)", () => {
+  it("walks from HOME through RESULT via the simplified 6-step flow and records a trajectory log", async () => {
     const user = userEvent.setup();
     renderAppPastOnboarding();
 
-    await playThroughCase(user, {
+    await playThroughSimplifiedCase(user, {
       title: case001.title,
-      factAnswer: "事実（確認できていること）",
       firstChoiceLabel: case001.availableChoices[0].label, // "a" — the critical-error choice
-      secondChoiceLabel: case001.availableChoices[2].label, // "c" — evidence-supported choice
-      problemType: "情報不足",
+      keepAnswer: false,
+      finalChoiceLabel: case001.availableChoices[2].label, // "c" — evidence-supported choice
     });
 
-    // Section 8/9: decision trajectory is the primary content — first
-    // decision, new evidence, and second decision are all shown.
+    // Section 8/9: decision trajectory is still the primary RESULT content.
     expect(screen.getByText("あなたの判断")).toBeInTheDocument();
     expect(screen.getByText(`「${case001.availableChoices[0].label}」`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`「${case001.availableChoices[2].label}」`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(case001.newFacts[0])).toBeInTheDocument();
     expect(screen.getByText("判断を変更しました。")).toBeInTheDocument();
-    expect(screen.getByText("今回のポイント")).toBeInTheDocument();
-    expect(screen.getByText(case001.rubric.observableBehavior)).toBeInTheDocument();
-    expect(screen.getByText("よかった点")).toBeInTheDocument();
-    expect(screen.getByText("確認したい点")).toBeInTheDocument();
-    // Section 14: no next-case skill preview.
+    // Section 1/8: simplified RESULT omits the rubric-derived bullet lists.
+    expect(screen.queryByText("今回のポイント")).not.toBeInTheDocument();
+    expect(screen.queryByText("よかった点")).not.toBeInTheDocument();
+    expect(screen.queryByText("確認したい点")).not.toBeInTheDocument();
     expect(screen.queryByText("次回のテーマ")).not.toBeInTheDocument();
-    expect(screen.queryByText(case001.reflectionPoints.nextTheme)).not.toBeInTheDocument();
     // Section 10/18: no pass/fail or internal-label leakage.
     expect(screen.queryByText(/正解|不正解/)).not.toBeInTheDocument();
     expect(screen.queryByText(/更新できなかった|失敗/)).not.toBeInTheDocument();
     expect(screen.queryByText(/appropriate_update|not_applicable/)).not.toBeInTheDocument();
+    // Section 1: no fact/interpretation quiz, no taxonomy jargon anywhere in this flow.
+    expect(screen.queryByText("根拠不足")).not.toBeInTheDocument();
+    expect(screen.queryByText("因果関係の混同")).not.toBeInTheDocument();
 
     const logs = loadCompletedLogs();
     expect(logs).toHaveLength(1);
@@ -116,6 +149,11 @@ describe("full case flow (CASE-001, TRAINING)", () => {
     expect(log.rubricResult.criticalErrorMade).toBe(true); // first choice was "a"
     expect(log.rubricResult.updateAppropriateness).toBe("appropriate_update"); // moved a -> c
     expect(log.rubricResult.aiCalibration).toBe("not_applicable"); // TRAINING case, no AI claim
+    // Section 1: skipped fields still populated with sensible defaults, not left undefined.
+    expect(log.firstDecision.confidence).toBe(50);
+    expect(log.firstDecision.infoOptionsSelected).toEqual([]);
+    expect(log.firstDecision.factCheckAnswer).toBe(case001.factCheck.correctAnswer);
+    expect(log.reflectionNote).toBe("");
     expect(loadInProgressSession()).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "成長を見る" }));
@@ -124,22 +162,35 @@ describe("full case flow (CASE-001, TRAINING)", () => {
     expect(within(observationRow).getByText("1 / 1 cases")).toBeInTheDocument();
   });
 
-  it("preserves entered data when navigating back", async () => {
+  it("'まだ同じ' keeps the first choice as the final choice without asking again", async () => {
+    const user = userEvent.setup();
+    renderAppPastOnboarding();
+
+    await playThroughSimplifiedCase(user, {
+      title: case001.title,
+      firstChoiceLabel: case001.availableChoices[2].label, // "c" — evidence-aligned already
+      keepAnswer: true,
+    });
+
+    expect(screen.getByText("判断を維持しました。")).toBeInTheDocument();
+    const logs = loadCompletedLogs();
+    expect(logs[0].decisionChanged).toBe(false);
+    expect(logs[0].secondDecision.choiceId).toBe("c");
+  });
+
+  it("preserves submitted data when navigating back, including back past the auto-skipped OBSERVED_FACT", async () => {
     const user = userEvent.setup();
     renderAppPastOnboarding();
 
     await goToCaseSelectAndOpen(user, case001.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
-    await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
-    await user.click(screen.getByRole("button", { name: "次へ" }));
 
     await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
     await user.type(screen.getByLabelText("そう考えた理由（任意）"), "残ってほしい理由");
     await user.click(screen.getByRole("button", { name: "次へ" }));
 
-    // PERSONALIZED_DIALOGUE Run Section 4/5: the shown message is no longer
-    // the static aiIntervention string — it's composed from this player's
-    // actual choice, info options, and (verbatim) reason text.
+    // PERSONALIZED_DIALOGUE Run Section 4/5: the shown message is composed
+    // from this player's actual choice and (verbatim) reason text.
     const expectedMessage = getAiInterventionMessage(case001, {
       choiceId: case001.availableChoices[0].id,
       confidence: 50,
@@ -148,11 +199,22 @@ describe("full case flow (CASE-001, TRAINING)", () => {
     });
     expect(expectedMessage).not.toBe(case001.aiIntervention);
     expect(screen.getByText("「残ってほしい理由」――そう考えたんですね。", { exact: false })).toBeInTheDocument();
-    expect(
-      screen.getByText(`あなたは「${case001.availableChoices[0].label}」を選びましたね。`, { exact: false }),
-    ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "戻る" }));
 
+    // Going back from AI_INTERVENTION (one normal step) lands on FIRST_DECISION with the submitted data intact.
+    await user.click(screen.getByRole("button", { name: "戻る" }));
+    expect(screen.getByDisplayValue("残ってほしい理由")).toBeInTheDocument();
+    expect(
+      screen.getByRole("radio", { name: case001.availableChoices[0].label }),
+    ).toHaveAttribute("aria-checked", "true");
+
+    // Going back again, from FIRST_DECISION itself, must land on CASE_INTRO
+    // directly rather than bouncing off the invisible auto-skipped
+    // OBSERVED_FACT screen -- and the submitted data must still survive.
+    await user.click(screen.getByRole("button", { name: "戻る" }));
+    expect(screen.getByText(case001.title)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "はじめる" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "はじめる" }));
     expect(screen.getByDisplayValue("残ってほしい理由")).toBeInTheDocument();
     expect(
       screen.getByRole("radio", { name: case001.availableChoices[0].label }),
@@ -165,8 +227,6 @@ describe("full case flow (CASE-001, TRAINING)", () => {
 
     await goToCaseSelectAndOpen(user, case001.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
-    await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
-    await user.click(screen.getByRole("button", { name: "次へ" }));
     await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
     await user.click(screen.getByRole("button", { name: "次へ" }));
     // No reason text this time — the reason-quote line should not appear,
@@ -192,14 +252,11 @@ describe("full case flow (CASE-001, TRAINING)", () => {
 
     await goToCaseSelectAndOpen(user, case001.title);
     await user.click(screen.getByRole("button", { name: "はじめる" }));
-    await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
-    await user.click(screen.getByRole("button", { name: "次へ" }));
     await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
     await user.type(screen.getByLabelText("そう考えた理由（任意）"), "CASE-001の理由");
 
-    await user.click(screen.getByRole("button", { name: "戻る" }));
-    await user.click(screen.getByRole("button", { name: "戻る" }));
-    await user.click(screen.getByRole("button", { name: "戻る" }));
+    await user.click(screen.getByRole("button", { name: "戻る" })); // FIRST_DECISION -> CASE_INTRO (skips OBSERVED_FACT)
+    await user.click(screen.getByRole("button", { name: "戻る" })); // CASE_INTRO -> HOME (via onExitToHome)
     await goToCaseSelectAndOpen(user, case002.title);
 
     expect(screen.getByText(case002.initialSituation[0])).toBeInTheDocument();
@@ -261,8 +318,17 @@ describe("full case flow (CASE-005, AI_CALIBRATION)", () => {
   });
 });
 
-/** Mechanically completes whichever case is currently showing, regardless of case content. */
+/** Mechanically completes whichever case is currently showing, regardless of case content or flow shape. */
 async function genericPlayThroughCurrentCase(user: ReturnType<typeof userEvent.setup>, caseData: CaseData) {
+  if (caseData.simplifiedFlow) {
+    await user.click(screen.getByRole("radio", { name: caseData.availableChoices[0].label }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
+    await user.click(screen.getByRole("button", { name: "次の手がかりを見る" }));
+    await user.click(screen.getByRole("button", { name: "次へ" }));
+    await user.click(screen.getByRole("button", { name: "まだ同じ" }));
+    return;
+  }
+
   await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
   await user.click(screen.getByRole("button", { name: "次へ" }));
 

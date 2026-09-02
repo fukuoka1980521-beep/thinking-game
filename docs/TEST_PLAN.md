@@ -8,10 +8,51 @@
 > trajectory化・HOME/SESSION_SUMMARYのvisual追加）、THINKING_GAME_PERSONALIZED_DIALOGUE_AND_
 > VISUAL_EXPERIENCE Run（CASE-001の構造化シグナルによる個別化ダイアログ）、そして
 > THINKING_GAME_REAL_AI_DIALOGUE_CORE_EXPERIENCE Run（Vertex AI Geminiによる実AI対話・同意フロー・
-> evaluation firewall回帰）、そしてTHINKING_GAME_CORE_GAMEPLAY_REDESIGN Run（CASE-001の設問・選択肢の
-> 同一軸再設計、intervention mode多様化）をすべて追加した。
+> evaluation firewall回帰）、THINKING_GAME_CORE_GAMEPLAY_REDESIGN Run（CASE-001の設問・選択肢の
+> 同一軸再設計、intervention mode多様化）、そしてTHINKING_GAME_FUN_FIRST_PROTOTYPE Run
+> （simplifiedFlowによる6ステップ化、ケース題材の全面差し替え、PARTNERペルソナ導入）をすべて追加した。
 
-## THINKING_GAME_CORE_GAMEPLAY_REDESIGN関連の追加テスト（本Run）
+## THINKING_GAME_FUN_FIRST_PROTOTYPE関連の追加テスト（本Run）
+
+CASE-001は`simplifiedFlow: true`となり、OBSERVED_FACT・confidence・infoOptions・AI problem
+taxonomy・REFLECTION入力をplayer-facingでは非表示にした（内部schemaは既定値で維持）。既存の
+CASE-001依存テスト（`tests/flow.test.tsx`、`tests/aiDialogueGate.test.tsx`、
+`tests/aiDialogueGateDormant.test.tsx`）はすべて新しい6ステップフローに合わせて書き換えた
+（既存の86＋αの回帰テストは他ケース経由でそのまま維持）。
+
+| # | 確認項目 | テストファイル |
+|---|---|---|
+| 109 | simplifiedFlowのCASE-001が、OBSERVED_FACT・REFLECTIONを実際に画面表示せず、RESULT到達までの
+      trajectoryLogに`factCheckAnswer`（既定でcorrectAnswer）・`confidence`（既定50）・
+      `infoOptionsSelected`（既定[]）・`reflectionNote`（既定""）が正しく補完されていることを確認 | `tests/flow.test.tsx` |
+| 110 | 「まだ同じ」を選ぶと再回答を要求せず、最初の選択がそのまま最終選択になる | `tests/flow.test.tsx` |
+| 111 | FIRST_DECISION自体から「戻る」を押すと、auto-skipされる不可視のOBSERVED_FACT画面で
+      跳ね返されずCASE_INTROへ直接戻る（新設の`GO_BACK_TO_INTRO`アクションの回帰） | `tests/flow.test.tsx` |
+| 112 | AI_INTERVENTION（simplified）が単一の続行ボタンのみを表示し、taxonomy選択・自由記述欄が
+      一切存在しない | `tests/aiDialogueGate.test.tsx`、`tests/aiDialogueGateDormant.test.tsx` |
+| 113 | RESULT（simplified）が「今回のポイント」「振り返り」の rubric由来ブロックを一切表示せず、
+      判断トラジェクトリのみを表示する | `tests/flow.test.tsx` |
+| 114 | CASE-001以外の全ケースは`simplifiedFlow`が未設定のままフル8画面フローで動作し続ける（回帰、
+      CASE-005・「5ケース連続プレイ」テストで確認） | `tests/flow.test.tsx` |
+
+## 実際のVertex AI呼び出しによる受け入れテスト（新ケース題材・新プロンプト、Section 13、実測）
+
+**REAL MODEL SMOKE**：デプロイ済みCloud Functionへ新しいケース文面（「既読スルーが続く友達」）を
+送信し、正常なレスポンスを確認。デプロイ直後のコールドスタート＋サーバー側の空応答リトライが
+重なり関数タイムアウト（30秒）を超える事例を実測で発見し、タイムアウトを60秒へ、クライアント側
+タイムアウトを55秒へ引き上げて解消した。
+
+**5-INPUT SEMANTIC TEST**：新しい同一軸の5選択肢に対応する5種類の理由文を送信し、5/5とも意味的に
+異なる応答を確認。PARTNERペルソナが「相棒（一緒に考える）」という非分析的なラベルで表示され、
+専門用語（前提・根拠等）を使わないカジュアルな口調で、かつ具体的な理由内容を参照した応答を返す
+ことを確認した。
+
+**UI手動確認（Playwright、一時スクリプト、実行後削除）**：390px幅でCASE_INTRO→（OBSERVED_FACT
+auto-skip）→FIRST_DECISION（confidence/情報選択欄が実際に存在しないことを確認）→同意画面→実際の
+AI応答表示（taxonomy選択欄が存在しないことを確認）→NEW_FACT→CHANGE_OR_KEEP→（REFLECTION
+auto-skip）→RESULT（rubric由来ブロックが存在しないことを確認）まで一連の遷移を確認、各画面で横
+overflowなし・console errorなし。320/375/390/430pxいずれもCASE_INTRO・FIRST_DECISION・同意画面・
+AI_INTERVENTION（フォールバック）・NEW_FACT・CHANGE_OR_KEEP・RESULTで横overflowなしを確認。
 
 CASE-001の選択肢id（a〜e）は維持し、意味内容のみ差し替えたため、既存テストの大部分は
 `case001.availableChoices[N].label`のような動的参照のまま無変更で通過した。`evidenceSupportsChoiceId`
@@ -341,7 +382,7 @@ Section 13、およびFIRST_CASE_AND_CALIBRATION_SEMANTICS Run Section 19の追�
 
 ## 実行結果
 
-`npm run typecheck` / `npm run build` / `npm run test`（127件＝旧122件＋dialogueFunctionPrompt回帰
-5件）はいずれもPASS（実行ログはCLOSE報告を参照）。`functions/dialogue/`はこのビルドとは別の
-デプロイ物であり、`npm test`の対象には含まれない（ローカルスモークテスト・実際のVertex AI呼び出し
-による手動受け入れテストは上記参照）。
+`npm run typecheck` / `npm run build` / `npm run test`（129件、既存127件をCASE-001の新しい
+6ステップフローに合わせて更新し純増は僅少）はいずれもPASS（実行ログはCLOSE報告を参照）。
+`functions/dialogue/`はこのビルドとは別のデプロイ物であり、`npm test`の対象には含まれない
+（ローカルスモークテスト・実際のVertex AI呼び出しによる手動受け入れテストは上記参照）。

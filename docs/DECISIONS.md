@@ -1,6 +1,60 @@
 # DECISIONS — 思考整理ゲーム MVP v0.1
 
-## THINKING_GAME_CORE_GAMEPLAY_REDESIGN関連の意思決定（本Run）
+## THINKING_GAME_FUN_FIRST_PROTOTYPE関連の意思決定（本Run）
+
+### CORE_GAMEPLAY_V0_2_FAILED
+
+Owner実機評価：「少しは良くなっているがゲームとしての楽しみはない。それとわかりにくい。」
+
+V0.2（設問・選択肢の同一軸化、intervention mode多様化）はOwnerに追加の修正依頼ではなく**却下**
+された。V0.2で行った改善それ自体が無駄だったとは書かない（実際、AIが個別の入力に反応している
+という感触はOwnerからも得られていた）が、それだけでは「ゲームとしての楽しみ」を作るには不十分
+だったという事実として扱う。
+
+**原因仮説（仮説であり確定原因ではない）**：measurement-first UI overload——1ケースが要求する認知
+操作（事実／解釈の分類、確信度入力、情報オプションの複数選択、自由記述理由、AI応答、問題分類、
+新事実、再判断、確信度再入力、振り返り記述、RESULT）が多すぎ、「思考データを測るための画面」に
+なっており、「遊んだ結果として思考データが残るゲーム」になっていない。V0.2はこの構造そのものには
+手をつけず、各画面の文言・AI応答の多様性だけを直したため、体験の重さ自体は変わらなかった。
+
+### Section 4: CASE-001候補の比較（教育的価値ではなく「続きが気になるか」で選定）
+
+**候補A（現状維持・改稿）— 日常ミステリー**：同僚が既読無視。真相は自動既読設定。低リスクで手堅いが、
+賭け金（何を失う／得るか）が低く、「気になる」度合いが弱い。
+
+**候補B（新規）— 仕事上の判断**：部下が急に在宅勤務に切り替えた理由を考える。真相は交通機関の遅延と
+いう単純な話。オチとしては悪くないが、入口の状況（「今日は在宅で作業します」）自体に感情的なフックが
+弱く、続きを見たいという牽引力が候補A・Cより弱いと判断した。
+
+**候補C（新規）— 人間関係のすれちがい**：仲の良い友達グループで、親友が既読はつくのに1週間反応が
+ない。「自分が何かしてしまったのでは」という関係不安に触れるため、他の2候補より感情的な牽引力が強い。
+真相は「本人が別の事情（資格試験の追い込み）でスマホどころではなかった」——「自分たちが原因」という
+思い込みから「本人の事情」への視点の反転があり、「え、そうだったの？」に加えて安堵・共感という
+感情の動きも作れる。医療・犯罪等の高リスク題材（`docs/SAFETY_PRINCIPLES.md`）には触れない。
+
+**結論**：候補Cを採用。CASE-001のタイトル・状況・選択肢・新事実をすべて候補Cへ差し替える。
+`transferTarget`で参照されるTRANSFER-001は別の題材（ニュースアプリの通知）で完全に独立しており、
+CASE-001のストーリーを変更してもTRANSFER-001側への影響はない。
+
+### Section 5: AI = PARTNER（実装前の結論）
+
+4キャラクター（DETECTIVE/DEVIL/OBSERVER/STRATEGIST）のインフラは撤去しない（前Runの結論を維持）
+が、CASE-001が実際に使うキャラクターを新設の`PARTNER`（相棒）に切り替える。理由：既存の
+「探偵（事実と解釈を分離する）」という役職表示自体がAIメッセージの吹き出しに常時表示されており、
+これ自体が「わかりにくい」の一因になり得る、分析的な役職ラベルだったため。`PARTNER`は役職ラベルを
+「一緒に考える」という非分析的な表現にし、応答も2〜3文・分類用語なしのカジュアルな口調へ調整する。
+
+### Section 1: REMOVE BEFORE ADD（CASE-001のplayer-facing flowから今回外したもの）
+
+OBSERVED FACT独立画面／confidence slider／infoOptions複数選択／AI problem taxonomy／reflection
+入力を、CASE-001に限り非表示にする。内部schema（`ObservedFactInput.factCheckAnswer`、
+`FirstDecisionInput.confidence`/`infoOptionsSelected`、`AiActionInput.problemTypeSelected`、
+`reflectionNote`）は削除せず、既定値を自動的に補完してTrajectoryLog/RubricResultの構造は維持する
+（`CaseData.simplifiedFlow: true`というopt-inフラグで分岐、CASE-002〜005・TRANSFERは無変更）。
+これにより、前Run・前々Runで「共有UIのため変更できない」と記録していたAI_INTERVENTION画面の
+専門用語taxonomy（根拠不足／因果関係の混同等）も、CASE-001に限りついに解消できた。
+
+## THINKING_GAME_CORE_GAMEPLAY_REDESIGN関連の意思決定（前Run）
 
 ### CORE_GAMEPLAY_FAILURE_EVIDENCE（Owner実機評価、そのまま記録）
 

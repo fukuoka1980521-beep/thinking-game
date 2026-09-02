@@ -25,4 +25,13 @@ export const AI_CHARACTERS: Record<string, AiCharacterProfile> = {
     role: "現実で何を確認すればよいか考える",
     sampleLine: "何を確認すれば、2つの仮説を区別できますか？",
   },
+  // FUN_FIRST_PROTOTYPE Run Section 5: deliberately no analytical role
+  // label (unlike "探偵（事実と解釈を分離する）") -- this persona is a
+  // casual thinking companion, not a classification role.
+  PARTNER: {
+    key: "PARTNER",
+    name: "相棒",
+    role: "一緒に考える",
+    sampleLine: "その見方、面白いね。",
+  },
 };

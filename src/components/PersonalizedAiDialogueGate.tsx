@@ -139,6 +139,13 @@ export function PersonalizedAiDialogueGate({ caseData, first, initial, onBack, o
   }
 
   return (
-    <AiInterventionScreen caseData={caseData} message={state.message} initial={initial} onBack={onBack} onSubmit={onSubmit} />
+    <AiInterventionScreen
+      caseData={caseData}
+      message={state.message}
+      initial={initial}
+      onBack={onBack}
+      onSubmit={onSubmit}
+      simplified={caseData.simplifiedFlow}
+    />
   );
 }

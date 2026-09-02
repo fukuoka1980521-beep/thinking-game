@@ -28,8 +28,7 @@ async function toCase001FirstDecisionSubmitted(user: ReturnType<typeof userEvent
   await user.click(screen.getByRole("button", { name: "ケースを選ぶ" }));
   await user.click(screen.getByRole("button", { name: new RegExp(case001.title) }));
   await user.click(screen.getByRole("button", { name: "はじめる" })); // CASE_INTRO
-  await user.click(screen.getByRole("button", { name: "事実（確認できていること）" }));
-  await user.click(screen.getByRole("button", { name: "次へ" }));
+  // FUN_FIRST_PROTOTYPE Run: OBSERVED_FACT is auto-skipped for CASE-001 (simplifiedFlow).
   await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
   await user.click(screen.getByRole("button", { name: "次へ" }));
 }
@@ -136,12 +135,12 @@ describe("AI dialogue consent gate once an endpoint is configured (Section 14/16
     await user.click(screen.getByRole("button", { name: "同意して続ける" }));
     await screen.findByText("生成されたテスト応答です");
 
-    await user.click(screen.getByRole("radio", { name: "問題なし" }));
+    // FUN_FIRST_PROTOTYPE Run: simplified AI_INTERVENTION has a single
+    // continue button (no taxonomy selector); NEW_FACT -> CHANGE-OR-KEEP ->
+    // REFLECTION is auto-skipped straight to RESULT.
+    await user.click(screen.getByRole("button", { name: "次の手がかりを見る" }));
     await user.click(screen.getByRole("button", { name: "次へ" }));
-    await user.click(screen.getByRole("button", { name: "再判断する" }));
-    await user.click(screen.getByRole("radio", { name: case001.availableChoices[0].label }));
-    await user.click(screen.getByRole("button", { name: "次へ" }));
-    await user.click(screen.getByRole("button", { name: "結果を見る" }));
+    await user.click(screen.getByRole("button", { name: "まだ同じ" }));
 
     const logs = loadCompletedLogs();
     expect(logs).toHaveLength(1);

@@ -13,6 +13,14 @@ interface Props {
   initial?: AiActionInput;
   onBack: () => void;
   onSubmit: (input: AiActionInput) => void;
+  /**
+   * FUN_FIRST_PROTOTYPE Run Section 1/6: hides the trap-taxonomy classification
+   * field and the free-text field -- just the AI's message and a single
+   * continue button, framed as moving on to the reward (NEW CLUE), not a
+   * classification exercise. Submits {playerAction: null, problemTypeSelected:
+   * "NONE", freeText: ""} so the schema stays intact.
+   */
+  simplified?: boolean;
 }
 
 const PLAYER_AI_ACTIONS: { id: PlayerAiAction; label: string }[] = [
@@ -22,7 +30,7 @@ const PLAYER_AI_ACTIONS: { id: PlayerAiAction; label: string }[] = [
   { id: "REJECT", label: "拒否する" },
 ];
 
-export function AiInterventionScreen({ caseData, message, initial, onBack, onSubmit }: Props) {
+export function AiInterventionScreen({ caseData, message, initial, onBack, onSubmit, simplified }: Props) {
   // Decoupled from caseType: whether the AI intervention is an evaluable
   // claim/recommendation (vs. a Socratic question) is a content property of
   // this specific case (utteranceType + aiResponseGroundTruth), not a
@@ -35,6 +43,22 @@ export function AiInterventionScreen({ caseData, message, initial, onBack, onSub
     initial?.problemTypeSelected ?? null,
   );
   const [freeText, setFreeText] = useState(initial?.freeText ?? "");
+
+  if (simplified) {
+    return (
+      <ScreenContainer title="AIの意見" onBack={onBack}>
+        <AiMessage character={caseData.aiCharacter} message={message} />
+        <div className="spacer" />
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => onSubmit({ playerAction: null, problemTypeSelected: "NONE", freeText: "" })}
+        >
+          次の手がかりを見る
+        </button>
+      </ScreenContainer>
+    );
+  }
 
   const canSubmit = problemTypeSelected !== null && (!hasEvaluableClaim || playerAction !== null);
 

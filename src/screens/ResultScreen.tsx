@@ -11,6 +11,8 @@ interface Props {
   onNextCase: () => void;
   onGoHome: () => void;
   onViewGrowth: () => void;
+  /** FUN_FIRST_PROTOTYPE Run Section 8: reveal + trajectory only, no rubric-derived bullet lists (Section 1's "REMOVE BEFORE ADD"). */
+  simplified?: boolean;
 }
 
 function choiceLabel(caseData: CaseData, choiceId: string): string {
@@ -27,7 +29,16 @@ function choiceLabel(caseData: CaseData, choiceId: string): string {
  * (Section 14). No pass/fail framing: "変更しました" / "維持しました" only
  * (Section 10) — never "正解/不正解" or "変わらなかった" as a failure.
  */
-export function ResultScreen({ caseData, first, second, reflection, onNextCase, onGoHome, onViewGrowth }: Props) {
+export function ResultScreen({
+  caseData,
+  first,
+  second,
+  reflection,
+  onNextCase,
+  onGoHome,
+  onViewGrowth,
+  simplified,
+}: Props) {
   const decisionChanged = first.choiceId !== second.choiceId;
   // Section 11: one piece of case-specific grounding, reusing existing
   // fields only — never new case content. Prefer the trap explanation where
@@ -59,30 +70,34 @@ export function ResultScreen({ caseData, first, second, reflection, onNextCase, 
         </p>
       </div>
 
-      <div className="card">
-        <h3 style={{ margin: "0 0 6px" }}>今回のポイント</h3>
-        <p style={{ margin: 0 }}>{keyEvidence}</p>
-      </div>
+      {!simplified && (
+        <>
+          <div className="card">
+            <h3 style={{ margin: "0 0 6px" }}>今回のポイント</h3>
+            <p style={{ margin: 0 }}>{keyEvidence}</p>
+          </div>
 
-      <div className="card">
-        <h3 style={{ margin: "0 0 10px" }}>振り返り</h3>
-        <div className="reflection-section good">
-          <h3>よかった点</h3>
-          <ul>
-            {reflection.goodPoints.map((point, i) => (
-              <li key={`good-${i}`}>{point}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="reflection-section check" style={{ marginTop: 10 }}>
-          <h3>確認したい点</h3>
-          <ul>
-            {reflection.checkPoints.map((point, i) => (
-              <li key={`check-${i}`}>{point}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
+          <div className="card">
+            <h3 style={{ margin: "0 0 10px" }}>振り返り</h3>
+            <div className="reflection-section good">
+              <h3>よかった点</h3>
+              <ul>
+                {reflection.goodPoints.map((point, i) => (
+                  <li key={`good-${i}`}>{point}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="reflection-section check" style={{ marginTop: 10 }}>
+              <h3>確認したい点</h3>
+              <ul>
+                {reflection.checkPoints.map((point, i) => (
+                  <li key={`check-${i}`}>{point}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="spacer" />
       <button type="button" className="btn btn-primary" onClick={onNextCase}>
