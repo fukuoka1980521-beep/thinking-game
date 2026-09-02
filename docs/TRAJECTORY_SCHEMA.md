@@ -38,6 +38,7 @@ interface TrajectoryLog {
   };
   aiIntervention: {
     message: string;                // dialogue content, for record-keeping only
+    messageSource?: "static" | "personalized_fallback" | "real_ai";  // REAL_AI_DIALOGUE Run — where `message` came from; optional so pre-existing logs keep loading; purely descriptive, read by nothing in the Evaluation Engine
     playerAction: PlayerAiAction | null;   // ACCEPT/VERIFY/HOLD/REJECT, only when the case has an evaluable AI claim (independent of caseType — see docs/AI_CALIBRATION.md)
     problemTypeSelected: AiTrapType | null;
     freeText: string;               // optional, auxiliary
@@ -77,7 +78,8 @@ interface RubricResult {
 
 | Producer | Fields |
 |---|---|
-| Dialogue Engine (`src/engine/dialogueEngine.ts`) | `aiIntervention.message`, `newEvidence`. `newEvidence` is read straight from `CaseData`. `aiIntervention.message` is read straight from `CaseData.aiIntervention` for every case **except** ones with `personalizedDialogue` set (CASE-001 only, PERSONALIZED_DIALOGUE Run): there, it's deterministically composed from the player's own `FirstDecisionInput` (choice, info options, verbatim reason text) plus one pre-authored per-character challenge fragment — never a generative-model call, and never fed back into `rubricResult` (see docs/DECISIONS.md). |
+| Dialogue Engine (`src/engine/dialogueEngine.ts`) | `aiIntervention.message`, `newEvidence`. `newEvidence` is read straight from `CaseData`. `aiIntervention.message` is read straight from `CaseData.aiIntervention` for every case **except** ones with `personalizedDialogue` set (CASE-001 only, PERSONALIZED_DIALOGUE Run): there, it's deterministically composed from the player's own `FirstDecisionInput` (choice, info options, verbatim reason text) plus one pre-authored per-character challenge fragment. |
+| Personalized AI Dialogue Gate (`src/components/PersonalizedAiDialogueGate.tsx`, REAL_AI_DIALOGUE Run) | For CASE-001 only, and only once the Owner has consented and `DIALOGUE_ENDPOINT_URL` is configured: attempts a real Vertex AI Gemini call (`src/lib/aiDialogueClient.ts`) and, on success, `aiIntervention.message`/`messageSource` reflect that generated text (`"real_ai"`) instead of the Dialogue Engine's local fallback. On decline, no endpoint, or a failed/retried call, falls back to the Dialogue Engine's output (`"personalized_fallback"` / `"static"`). Never fed back into `rubricResult` regardless of source (see docs/DECISIONS.md, `tests/evaluationFirewall.test.ts`). |
 | Player Action Logger (`src/engine/playerActionLogger.ts`) | Assembles the whole `TrajectoryLog` from the finished `InProgressSession` plus the `RubricResult` it's handed. |
 | Evaluation Engine (`src/engine/evaluationEngine.ts`) | `rubricResult`, `abilityObservations` — computed only from structured fields (never `reason` / `freeText`). |
 | Growth Aggregator (`src/engine/growthAggregator.ts`) | Reads `abilityObservations` and `aiIntervention.playerAction` only; never touches `reason`/`freeText`/`message`. |

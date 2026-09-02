@@ -1,5 +1,6 @@
 import type {
   AiActionInput,
+  AiMessageSource,
   FirstDecisionInput,
   InProgressSession,
   ObservedFactInput,
@@ -23,6 +24,7 @@ export type SessionAction =
   | { type: "ADVANCE_FROM_INTRO" }
   | { type: "SUBMIT_OBSERVED_FACT"; input: ObservedFactInput }
   | { type: "SUBMIT_FIRST_DECISION"; input: FirstDecisionInput }
+  | { type: "SET_SHOWN_AI_MESSAGE"; message: string; source: AiMessageSource }
   | { type: "SUBMIT_AI_ACTION"; input: AiActionInput }
   | { type: "ADVANCE_FROM_NEW_FACT" }
   | { type: "SUBMIT_SECOND_DECISION"; input: SecondDecisionInput }
@@ -42,6 +44,10 @@ export function sessionReducer(
       return { ...state, observedFact: action.input, screen: "FIRST_DECISION" };
     case "SUBMIT_FIRST_DECISION":
       return { ...state, first: action.input, screen: "AI_INTERVENTION" };
+    case "SET_SHOWN_AI_MESSAGE":
+      // Does not advance the screen -- just records what AI_INTERVENTION is
+      // actually displaying, for accurate RESULT-time logging (Section 26).
+      return { ...state, shownAiMessage: action.message, aiMessageSource: action.source };
     case "SUBMIT_AI_ACTION":
       return { ...state, aiAction: action.input, screen: "NEW_FACT" };
     case "ADVANCE_FROM_NEW_FACT":

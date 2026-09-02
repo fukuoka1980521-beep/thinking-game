@@ -8,6 +8,7 @@ import { loadCompletedLogs, loadInProgressSession } from "../src/lib/storage";
 import { loadMetricEvents } from "../src/lib/metrics";
 import { loadUserTestResponses } from "../src/lib/userTestResponses";
 import { markOnboardingSeen } from "../src/lib/onboarding";
+import { setAiDialogueConsent } from "../src/lib/aiDialogueConsent";
 import { computeGrowthStats } from "../src/engine/growthAggregator";
 import { getAiInterventionMessage } from "../src/engine/dialogueEngine";
 import type { CaseData } from "../src/types/case";
@@ -18,8 +19,14 @@ const case005 = getCaseById("CASE-005")!; // AI_CALIBRATION
 // These flow tests exercise core gameplay, not first-play onboarding (that
 // has its own dedicated tests in tests/onboarding.test.tsx) — pre-seed the
 // onboarding flag so it doesn't intercept every case start here.
+// These flow tests exercise core gameplay, not the real-AI dialogue consent
+// gate (that has its own dedicated tests in tests/aiDialogueGate.test.tsx) —
+// decline once up front so CASE-001's AI_INTERVENTION renders its local
+// personalized-fallback message immediately, exactly as before this Run,
+// with zero network attempted (DIALOGUE_ENDPOINT_URL is also unset).
 function renderAppPastOnboarding() {
   markOnboardingSeen();
+  setAiDialogueConsent("declined");
   return render(<App />);
 }
 

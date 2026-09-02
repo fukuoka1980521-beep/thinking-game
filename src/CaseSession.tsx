@@ -10,6 +10,7 @@ import { CaseIntroScreen } from "./screens/CaseIntroScreen";
 import { ObservedFactScreen } from "./screens/ObservedFactScreen";
 import { FirstDecisionScreen } from "./screens/FirstDecisionScreen";
 import { AiInterventionScreen } from "./screens/AiInterventionScreen";
+import { PersonalizedAiDialogueGate } from "./components/PersonalizedAiDialogueGate";
 import { NewFactScreen } from "./screens/NewFactScreen";
 import { SecondDecisionScreen } from "./screens/SecondDecisionScreen";
 import { ReflectionScreen } from "./screens/ReflectionScreen";
@@ -59,8 +60,9 @@ export function CaseSession({
         session.aiAction,
         session.second,
       );
-      const shownMessage = getAiInterventionMessage(caseData, session.first);
-      const log = finalizeTrajectory(caseData, session, rubricResult, shownMessage);
+      const shownMessage = session.shownAiMessage ?? getAiInterventionMessage(caseData, session.first);
+      const messageSource = session.aiMessageSource ?? (caseData.personalizedDialogue ? "personalized_fallback" : "static");
+      const log = finalizeTrajectory(caseData, session, rubricResult, shownMessage, messageSource);
       onCompleted(log);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,10 +99,22 @@ export function CaseSession({
         />
       );
     case "AI_INTERVENTION":
+      if (caseData.personalizedDialogue && session.first) {
+        return (
+          <PersonalizedAiDialogueGate
+            caseData={caseData}
+            first={session.first}
+            initial={session.aiAction}
+            onBack={onBack}
+            onSubmit={(input) => dispatch({ type: "SUBMIT_AI_ACTION", input })}
+            onMessageResolved={(message, source) => dispatch({ type: "SET_SHOWN_AI_MESSAGE", message, source })}
+          />
+        );
+      }
       return (
         <AiInterventionScreen
           caseData={caseData}
-          message={getAiInterventionMessage(caseData, session.first)}
+          message={getAiInterventionMessage(caseData)}
           initial={session.aiAction}
           onBack={onBack}
           onSubmit={(input) => dispatch({ type: "SUBMIT_AI_ACTION", input })}

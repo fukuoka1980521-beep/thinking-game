@@ -22,6 +22,13 @@ export interface FirstDecisionInput {
   infoOptionsSelected: string[];
 }
 
+/**
+ * Where the AI_INTERVENTION message actually shown to the player came from
+ * (real-AI dialogue Run, Section 26). Purely descriptive metadata for
+ * accurate logging -- never read by the Evaluation Engine.
+ */
+export type AiMessageSource = "static" | "personalized_fallback" | "real_ai";
+
 export interface AiActionInput {
   /** Only meaningful when the case's rubric.aiResponseGroundTruth is non-null (an evaluable AI claim exists); null for Socratic-question cases. */
   playerAction: PlayerAiAction | null;
@@ -48,6 +55,9 @@ export interface InProgressSession {
   aiAction?: AiActionInput;
   second?: SecondDecisionInput;
   reflectionNote?: string;
+  /** Set once the AI_INTERVENTION message is resolved (Section 26), so RESULT-time logging reflects what was actually shown, not a value recomputed later. */
+  shownAiMessage?: string;
+  aiMessageSource?: AiMessageSource;
 }
 
 /** Whether the second decision converged toward what the new evidence supports. */
@@ -129,6 +139,8 @@ export interface TrajectoryLog {
   };
   aiIntervention: {
     message: string;
+    /** Where `message` came from (real-AI dialogue Run, Section 29) — descriptive only, read by nothing in the Evaluation Engine. Optional so older persisted logs (pre-dating this field) keep loading without a migration. */
+    messageSource?: AiMessageSource;
     /** Snapshotted from the case's rubric at completion time — see isCalibrationEligible. */
     utteranceType: UtteranceType;
     /** True iff utteranceType !== "QUESTION" && the case has a non-null aiResponseGroundTruth. */

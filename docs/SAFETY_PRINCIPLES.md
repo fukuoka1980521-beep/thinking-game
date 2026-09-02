@@ -3,13 +3,22 @@
 ## 個人情報・通信
 
 - 個人情報を取得しない。
-- 外部サーバーへデータを送信しない。すべての進行状況・記録は `localStorage` にのみ保存する（`src/lib/storage.ts`、
+- ゲームプレイの進行状況・記録は引き続き全て `localStorage` にのみ保存する（`src/lib/storage.ts`、
   `thinking-game:in-progress:v2` / `thinking-game:completed-logs:v2`）。
-- 生成AI API（OpenAI／Anthropic／Gemini等）を一切呼び出さない。`tests/safety.test.ts` で `fetch` /
-  `XMLHttpRequest` / `WebSocket` の不使用と、生成AI関連パッケージ名の不参照を自動検証している。
+- **本Run（REAL_AI_DIALOGUE）で唯一の明示的な例外を追加**：CASE-001に限り、Ownerが明示的に同意した
+  場合のみ（`thinking-game:ai-dialogue-consent:v1`、オンボーディングとは別の独立した同意画面）、
+  プレイヤーが書いた理由文と選択内容をVertex AI Gemini（`functions/dialogue/`、APIキーを持たず
+  サービスアカウントIDのみで認証）へ送信する。それ以外の6ケース、および同意しなかった場合・通信が
+  失敗した場合は、これまで通り外部通信ゼロのまま（前Runが実装した構造化個別化ダイアログへ安全に
+  フォールバックする）。詳細は`docs/DATA_BOUNDARY.md`・`docs/DECISIONS.md`を参照。
+  `tests/aiDialogueGateDormant.test.tsx`が「エンドポイント未設定の現在のデプロイ状態では、この機構は
+  完全に休眠し、同意画面もネットワーク通信も一切発生しない」ことを検証している。
+- `tests/safety.test.ts` で、上記CASE-001用の1箇所（`src/lib/aiDialogueClient.ts`）を除き `fetch` /
+  `XMLHttpRequest` / `WebSocket` がフロントエンド全体に存在しないこと、生成AI関連パッケージ名が
+  フロントエンドのバンドルに含まれないこと（`functions/dialogue/`はビルドに含まれない別デプロイ物）、
+  APIキー・Bearerトークンがハードコードされていないことを自動検証している。
 - 将来クラウド保存・データ再利用を検討する際の3分類（GAMEPLAY DATA / OPTIONAL TEXT / REAL WORLD
-  SENSITIVE DATA）と目的分離の原則は `docs/DATA_BOUNDARY.md` に記載。本MVPは全てローカル保存のため
-  同意UIは未実装。
+  SENSITIVE DATA）と目的分離の原則は `docs/DATA_BOUNDARY.md` に記載。
 - **本Run追加**：セッション振り返り（`thinking-game:metrics:v1`）とユーザーテスト回答
   （`thinking-game:user-test-responses:v1`）も同様にローカル保存のみで、外部analyticsや自動集計
   サーバーへは送信しない。集計はテスト実施者が本人の端末でdevtoolsから手動で行う

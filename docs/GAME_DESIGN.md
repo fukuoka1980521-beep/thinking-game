@@ -148,15 +148,23 @@ Case Content
      v
 Game Engine (CaseSession.tsx)
      |
-     +---- Dialogue Engine   (src/engine/dialogueEngine.ts)      … ケース文面をそのまま返すだけ
+     +---- Dialogue Engine   (src/engine/dialogueEngine.ts)      … 6ケースはケース文面をそのまま返す。
+     |                                                              CASE-001のみ選択肢×選択情報×理由の
+     |                                                              引用による構造化個別化（fallback）
+     +---- Personalized AI Dialogue Gate (src/components/PersonalizedAiDialogueGate.tsx, REAL_AI_DIALOGUE
+     |     Run) … CASE-001のみ、同意済みならVertex AI Geminiへ実際に問い合わせ、失敗時は上記
+     |     Dialogue Engineの構造化フォールバックへ安全に戻る。他の6ケースはこのゲートを一切経由しない。
      +---- Player Action Logger (src/engine/playerActionLogger.ts) … 構造化アクションを記録
      +---- Evaluation Engine (src/engine/evaluationEngine.ts)    … rubricとの照合のみ、対話内容に非依存
      +---- Growth Aggregator (src/engine/growthAggregator.ts)    … 集計済みシグナルのみ読む
 ```
 
-Evaluation EngineはDialogue Engineの出力（`aiIntervention`のテキスト等）を評価根拠として使わない
-（`tests/evaluationEngine.test.ts` の「dialogue outputがevaluation resultを直接決定しない」で検証）。
-Growth Aggregatorは自由記述を直接読まない。詳細は `docs/RUBRIC_DESIGN.md`。
+Evaluation EngineはDialogue Engine／Personalized AI Dialogue Gateの出力（`aiIntervention`のテキスト等、
+実際のAI生成テキストを含む）を評価根拠として使わない（`tests/evaluationEngine.test.ts`の
+「dialogue outputがevaluation resultを直接決定しない」、および`tests/evaluationFirewall.test.ts`の
+「同一の構造化入力に対し、表示されたAIメッセージが何であってもrubricResultは完全に同一」で検証）。
+Growth Aggregatorは自由記述を直接読まない。詳細は `docs/RUBRIC_DESIGN.md`、実AI統合の詳細は
+`docs/DECISIONS.md`・`functions/dialogue/README.md`。
 
 ## AI TRAP（CASE-005）
 

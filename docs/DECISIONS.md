@@ -1,6 +1,67 @@
 # DECISIONS — 思考整理ゲーム MVP v0.1
 
-## THINKING_GAME_PERSONALIZED_DIALOGUE_AND_VISUAL_EXPERIENCE関連の意思決定（本Run）
+## THINKING_GAME_REAL_AI_DIALOGUE_CORE_EXPERIENCE関連の意思決定（本Run）
+
+### OWNER_PRODUCT_JUDGMENT_RECORDED / PREVIOUS_APPROACH_REJECTED
+
+前Run（THINKING_GAME_PERSONALIZED_DIALOGUE_AND_VISUAL_EXPERIENCE）が実装した構造化シグナルのみに
+よる個別化ダイアログについて、Ownerは実際にプレイした上で「この状態なら利用者が使用するとは思えない」
+と明確に判断した。理由は前Run自身がKNOWN_LIMITとして記録した通りで、同じ選択肢であれば書いた理由の
+内容が変わっても反証・問い返し本体が一切変わらないという制約が、実際に触ってみると致命的に感じられた
+ため。この判断を受けて本Runでは、構造化シグナルへの追加のテンプレートや分岐を増やすアプローチを
+明示的に放棄し、本物の生成AI（Vertex AI Gemini）による意味理解を伴う対話へ切り替えた。
+
+BASELINE_GENERICITY_REPRODUCED：着手前に、CASE-001で同じ選択肢に対し意味的に大きく異なる3種類の
+理由文（意図の帰属／慎重な不確実性／環境要因）を入力し、反証・問い返し本体が3パターンとも完全に
+同一であることを再現・記録した（前Runと同じ結論の再確認）。
+
+### なぜGoogle Cloud（Vertex AI Gemini）を選んだのか
+
+DISCOVERの結果、この環境にはOwnerのGoogle Cloudアカウントがすでに認証済みで存在していた
+（プロジェクト`gas-test-runner-20260620-wjxf`、本来はGoogle Apps Script/BigQuery用）。Vertex AI
+経由でGeminiを呼ぶ場合、Cloud Functions自身のサービスアカウントIDでVertex AIへ認証できる
+（Application Default Credentials）ため、**手入力・保存が必要なAPIキー文字列が一切存在しない**
+という、他プロバイダのAPIキー方式より一段安全な構成が取れる。この点を理由に、OpenAI等の別プロバイダ
+より優先してVertex AIを選んだ。
+
+### 課金・請求先アカウントの壁（OWNER_ACTION_REQUIRED_FOR_REAL_AI）
+
+上記GCPプロジェクトを実際に調べたところ、請求先アカウント（billing account）がそもそも一切
+紐付けられていないことが判明した。Vertex AI・Cloud Functions・Cloud Run等の有料APIを有効化するには
+Ownerご自身がGoogle Cloud Consoleで支払い方法を登録する必要があり、これは代行できない操作
+（決済情報の入力）である。この点をOwnerに確認したところ、「既存GCPプロジェクトでVertex AIを
+有効化して使う」との回答を得たが、請求先アカウントの登録自体はOwnerご自身の操作待ちとなっている。
+
+この待機中、安全に進められる範囲（サーバー側Cloud Function本体のコード、フロントエンドの同意画面・
+ローディング・リトライ・フォールバックの全機構、evaluation firewallの回帰テスト）はすべて実装・
+テスト済みとした。`DIALOGUE_ENDPOINT_URL`が空文字列である現在のデプロイ状態では、この新しい機構は
+完全に休眠状態であり、プレイヤー体験は前Run終了時点と一切変わらない（同意画面も表示されず、
+ネットワーク呼び出しも一切発生しない）ことを`tests/aiDialogueGateDormant.test.tsx`で保証している。
+
+### プライバシー境界の明示的な変更
+
+これまで全Runを通じて維持してきた「完全ローカル・外部通信ゼロ」という不変条件を、CASE-001に限り
+明示的に破る決定をした（Owner自身の明示的な製品判断、Section 0参照）。この変更をユーザーから隠さ
+ないため、初回の実際のAI呼び出しの直前に、オンボーディングとは別の独立したバージョン管理キー
+（`thinking-game:ai-dialogue-consent:v1`）で同意を取得する画面を追加した。同意しない選択（「AIなし
+で続ける」）は今後もずっと有効な選択として保存され、毎回聞き直すことはしない。
+
+### なぜ構造化個別化（前Run実装）をフォールバックとして残したのか
+
+同意しなかった場合、およびAI呼び出しが失敗しリトライも失敗した場合に、何も表示しない・エラー画面の
+ままにする、という選択肢もあったが、前Run実装した構造化個別化ダイアログ（プレイヤーの選択・選択した
+情報・書いた理由の引用を反映する）は、real AIには及ばないとはいえ完全な固定文言よりは具体的であり、
+すでに実装・テスト済みの安全な資産である。これをそのままフォールバックとして再利用した。
+
+### 実装していないもの（レート制限）
+
+`functions/dialogue/index.js`にはCORSオリジン制限とCloud Functionsの`--max-instances`設定以外の
+レート制限を実装していない。認証なしの公開エンドポイントである以上、悪用や異常なアクセス増加による
+予期しない課金のリスクが残る。Cloud Billingの予算アラート設定をOwnerに推奨する
+（`functions/dialogue/README.md`参照）。より本格的なレート制限（IPベース・Firestoreベースのカウンタ
+等）は次Run以降の課題として残す。
+
+## THINKING_GAME_PERSONALIZED_DIALOGUE_AND_VISUAL_EXPERIENCE関連の意思決定（前Run）
 
 ### OWNER_OBSERVATION
 

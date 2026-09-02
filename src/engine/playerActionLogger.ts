@@ -1,5 +1,5 @@
 import type { CaseData } from "../types/case";
-import type { InProgressSession, RubricResult, TrajectoryLog } from "../types/log";
+import type { AiMessageSource, InProgressSession, RubricResult, TrajectoryLog } from "../types/log";
 import { computeAbilityObservations, isCalibrationEligible } from "./evaluationEngine";
 import { appendCompletedLog, clearInProgressSession } from "../lib/storage";
 
@@ -17,6 +17,7 @@ export function finalizeTrajectory(
    * from `caseData.aiIntervention` when `personalizedDialogue` applies).
    * Defaults to the static string for callers that don't pass one. */
   shownAiMessage: string = caseData.aiIntervention,
+  messageSource: AiMessageSource = "static",
 ): TrajectoryLog {
   if (!session.observedFact || !session.first || !session.aiAction || !session.second) {
     throw new Error("Cannot finalize an incomplete session");
@@ -46,6 +47,7 @@ export function finalizeTrajectory(
     },
     aiIntervention: {
       message: shownAiMessage,
+      messageSource,
       utteranceType: caseData.rubric.utteranceType,
       calibrationEligible: isCalibrationEligible(caseData),
       playerAction: session.aiAction.playerAction,

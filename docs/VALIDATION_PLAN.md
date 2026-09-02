@@ -58,6 +58,32 @@ unilaterally. **Do not read a positive H5 signal from user testing as validating
 hypothesis** — re-run the Section 18 comparison test on any future dialogue change to check whether that
 gap has actually closed.
 
+**UPDATE (THINKING_GAME_REAL_AI_DIALOGUE_CORE_EXPERIENCE Run):** the Owner reviewed the shipped structured
+personalization directly and judged it insufficient ("この状態なら利用者が使用するとは思えない") for
+exactly the gap identified above. That Run's own re-run of the Section 18 comparison confirmed the gap had
+not closed (`BASELINE_GENERICITY_REPRODUCED`, see `docs/DECISIONS.md`). Rather than add more pre-authored
+branches, that Run replaced the mechanism for CASE-001 with a real Vertex AI Gemini call (`H5-REAL`, below)
+gated behind explicit consent, with the structured version from this Run kept only as a safe fallback.
+
+## H5-REAL — Does a real generative AI dialogue call (not structured templates) close the H5 gap? (added by THINKING_GAME_REAL_AI_DIALOGUE_CORE_EXPERIENCE Run)
+
+**Claim to test:** A Vertex AI Gemini call that receives the player's actual choice, selections, and written
+reason, and is prompted with an explicit anti-generic contract and per-character behavior (Section 6/7 of
+that Run), produces a response for each of 5 semantically distinct reason texts that (a) concretely
+references what was written, not just what was clicked, and (b) does not collapse into an interchangeable
+generic paragraph across those 5 inputs — the manual acceptance gate in Section 24 of that Run
+("5_INPUT_SEMANTIC_TEST", "EXPERIENCE_ACCEPTANCE_4_OF_5").
+
+**Status:** `NOT_YET_TESTABLE`. Deployment requires a billing account linked to the GCP project used for
+Vertex AI, which is an Owner action (entering payment details) that cannot be automated. As of this Run's
+CLOSE, that step was still pending — see `OWNER_ACTION_REQUIRED_FOR_REAL_AI` in the CLOSE report and
+`docs/DECISIONS.md`. The consent flow, request/response handling, retry/fallback behavior, and the
+evaluation-firewall guarantee are all implemented and tested (`tests/aiDialogueGate.test.tsx`,
+`tests/evaluationFirewall.test.ts`) and dormant (`tests/aiDialogueGateDormant.test.tsx` proves zero behavior
+change while `DIALOGUE_ENDPOINT_URL` is unset) — but the actual model call, and therefore this hypothesis
+itself, has not been exercised even once. **Do not mark this hypothesis tested, in either direction, until
+the Section 23/24 manual comparison has actually been run against a live deployed endpoint.**
+
 ## H2 — Does the AI trap increase calibration, or just blanket AI rejection?
 
 **Claim to test:** Encountering a flawed AI claim (CASE-005) increases *appropriate* calibration behavior

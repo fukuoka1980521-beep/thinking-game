@@ -1,14 +1,43 @@
 # TEST_PLAN — 思考整理ゲーム PLAYABLE_VALIDATION_BUILD_V0_1 / V0_2
 
-> **SPEC AMENDMENT適用済み（5段階）**：Section Wの追加検査項目、PLAYABLE_VALIDATION_BUILD Run
+> **SPEC AMENDMENT適用済み（6段階）**：Section Wの追加検査項目、PLAYABLE_VALIDATION_BUILD Run
 > （7ケースロード・NEXT_CASE遷移・session summary・user test回答保存・TRANSFER除外・
 > AI quality balance検査・320pxでの横overflowなし）、FIRST_CASE_AND_CALIBRATION_SEMANTICS Run
 > （utteranceType整合性・calibrationEligible分離・priming除去・CASE-001不確実性選択肢・survey改訂）、
 > THINKING_GAME_FIRST_PLAY_COMPREHENSION_AND_RESULT_FEEDBACK Run（ONBOARDING・RESULT decision
-> trajectory化・HOME/SESSION_SUMMARYのvisual追加）、そしてTHINKING_GAME_PERSONALIZED_DIALOGUE_AND_
-> VISUAL_EXPERIENCE Run（CASE-001の構造化シグナルによる個別化ダイアログ）をすべて追加した。
+> trajectory化・HOME/SESSION_SUMMARYのvisual追加）、THINKING_GAME_PERSONALIZED_DIALOGUE_AND_
+> VISUAL_EXPERIENCE Run（CASE-001の構造化シグナルによる個別化ダイアログ）、そして
+> THINKING_GAME_REAL_AI_DIALOGUE_CORE_EXPERIENCE Run（Vertex AI Geminiによる実AI対話・同意フロー・
+> evaluation firewall回帰）をすべて追加した。
 
-## THINKING_GAME_PERSONALIZED_DIALOGUE_AND_VISUAL_EXPERIENCE関連の追加テスト（本Run、`tests/dialogueEngine.test.ts` 7件追加＋`tests/flow.test.tsx`更新）
+## THINKING_GAME_REAL_AI_DIALOGUE_CORE_EXPERIENCE関連の追加テスト（本Run、5ファイル・25件追加）
+
+| # | 確認項目 | テストファイル |
+|---|---|---|
+| 90 | エンドポイント未設定（現在のデプロイ状態）では、performDialogueFetchの各失敗パターン（malformed／empty／non-2xx／timeout／network error）を安全に処理し、成功時はメッセージをtrimして返す（Section 25 #5/#9） | `tests/aiDialogueClient.test.ts` |
+| 91 | 送信ペイロードに、ケース文面・選択肢・自信度・理由・選択情報・キャラクターの8フィールドのみが含まれ、trajectory・Growth・端末識別子等は一切含まれない（Section 15、データ最小化） | `tests/aiDialogueClient.test.ts` |
+| 92 | `DIALOGUE_ENDPOINT_URL`が空の現在のデプロイ状態では、CASE-001でも同意画面が一切表示されず、fetchも一切呼ばれず、これまで通りの構造化フォールバックが即座に表示される（Section 28、回帰防止の要） | `tests/aiDialogueGateDormant.test.tsx` |
+| 93 | エンドポイント設定済みの状態で、初回のみ同意画面が表示される（Section 14） | `tests/aiDialogueGate.test.tsx` |
+| 94 | 同意しない選択が今後もずっと有効に保存され、通信を一切試みずローカルフォールバックへ進む（Section 16） | `tests/aiDialogueGate.test.tsx` |
+| 95 | 同意した場合、実際に呼び出しを行い成功時はモデルの応答をそのまま表示する | `tests/aiDialogueGate.test.tsx` |
+| 96 | 呼び出し失敗時は「もう一度試す」「AIなしで続ける」を提示し、内容を静かにすり替えない（Section 16） | `tests/aiDialogueGate.test.tsx` |
+| 97 | リトライが実際に再試行し、2回目で成功すれば正しく表示を切り替える | `tests/aiDialogueGate.test.tsx` |
+| 98 | 失敗後の「AIなしで続ける」は一時的なもので、同意状態を「declined」に書き換えない（同意画面での明示的な拒否とは区別、Section 16） | `tests/aiDialogueGate.test.tsx` |
+| 99 | `TrajectoryLog.aiIntervention.messageSource`が実際の経路（real_ai／personalized_fallback）を正確に記録する（Section 26） | `tests/aiDialogueGate.test.tsx` |
+| 100 | CASE-001以外のケースは同意ゲートを一切経由せず、これまで通り静的メッセージへ直行する（回帰） | `tests/aiDialogueGate.test.tsx` |
+| 101-102 | 同一の構造化入力（`first`/`aiAction`/`second`）に対し、表示されたAIメッセージが`static`／`real_ai`のどちらでも`rubricResult`・`abilityObservations`・`decisionChanged`・`confidenceChange`が完全に同一。`computeRubricResult`のシグネチャ自体がダイアログ文字列を一切受け取らない構造的保証も確認（Section 17、evaluation firewall） | `tests/evaluationFirewall.test.ts` |
+| 103 | `src/lib/aiDialogueClient.ts`以外のフロントエンド全ファイルに`fetch`/`XMLHttpRequest`が存在しない（更新） | `tests/safety.test.ts` |
+| 104 | `PersonalizedAiDialogueGate.tsx`が`DIALOGUE_ENDPOINT_URL`未設定時に呼び出しを行わないガード文を持つ（更新） | `tests/safety.test.ts` |
+| 105 | 生成AI関連パッケージ名がフロントエンドバンドルに一切参照されない（`functions/dialogue/`はビルド対象外の別デプロイ物である旨を明記して更新） | `tests/safety.test.ts` |
+
+**functions/dialogue/index.js のローカルスモークテスト（コミット対象外の一時スクリプト、Section 25）**：
+Vertex AI呼び出し（`getClient()`）に一切到達しない範囲で、OPTIONSプリフライトの204応答・許可オリジンへの
+CORSヘッダー付与・許可外オリジンへのCORSヘッダー非付与・GETの405拒否・必須フィールド欠落時の400拒否
+（欠落フィールド名を含む）・理由文が400文字を超えた場合の`reason_too_long`拒否・不正なキャラクター名の
+`invalid_character`拒否を、モックの`req`/`res`に対して直接検証し、全8項目PASS。**実際のVertex AI呼び出し
+そのものは、課金設定待ちのため未検証**（`functions/dialogue/README.md`参照）。
+
+## THINKING_GAME_PERSONALIZED_DIALOGUE_AND_VISUAL_EXPERIENCE関連の追加テスト（前Run、`tests/dialogueEngine.test.ts` 7件追加＋`tests/flow.test.tsx`更新）
 
 | # | 確認項目 | テストファイル |
 |---|---|---|
@@ -212,5 +241,6 @@ Section 13、およびFIRST_CASE_AND_CALIBRATION_SEMANTICS Run Section 19の追�
 
 ## 実行結果
 
-`npm run typecheck` / `npm run build` / `npm run test`（102件＝旧95件＋dialogueEngine個別化7件）は
-いずれもPASS（実行ログはCLOSE報告を参照）。
+`npm run typecheck` / `npm run build` / `npm run test`（122件＝旧102件＋real-AI dialogue関連20件、
+5ファイル追加）はいずれもPASS（実行ログはCLOSE報告を参照）。`functions/dialogue/`はこのビルドとは
+別のデプロイ物であり、`npm test`の対象には含まれない（ローカルスモークテストのみ、上記参照）。
