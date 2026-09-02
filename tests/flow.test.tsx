@@ -85,7 +85,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
       title: case001.title,
       factAnswer: "事実（確認できていること）",
       firstChoiceLabel: case001.availableChoices[0].label, // "a" — the critical-error choice
-      secondChoiceLabel: case001.availableChoices[3].label, // "d" — evidence-supported choice
+      secondChoiceLabel: case001.availableChoices[2].label, // "c" — evidence-supported choice
       problemType: "情報不足",
     });
 
@@ -93,7 +93,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
     // decision, new evidence, and second decision are all shown.
     expect(screen.getByText("あなたの判断")).toBeInTheDocument();
     expect(screen.getByText(`「${case001.availableChoices[0].label}」`, { exact: false })).toBeInTheDocument();
-    expect(screen.getByText(`「${case001.availableChoices[3].label}」`, { exact: false })).toBeInTheDocument();
+    expect(screen.getByText(`「${case001.availableChoices[2].label}」`, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(case001.newFacts[0])).toBeInTheDocument();
     expect(screen.getByText("判断を変更しました。")).toBeInTheDocument();
     expect(screen.getByText("今回のポイント")).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe("full case flow (CASE-001, TRAINING)", () => {
     expect(log.caseId).toBe(case001.caseId);
     expect(log.decisionChanged).toBe(true);
     expect(log.rubricResult.criticalErrorMade).toBe(true); // first choice was "a"
-    expect(log.rubricResult.updateAppropriateness).toBe("appropriate_update"); // moved a -> d
+    expect(log.rubricResult.updateAppropriateness).toBe("appropriate_update"); // moved a -> c
     expect(log.rubricResult.aiCalibration).toBe("not_applicable"); // TRAINING case, no AI claim
     expect(loadInProgressSession()).toBeNull();
 

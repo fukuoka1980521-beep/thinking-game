@@ -8,7 +8,60 @@
 > trajectory化・HOME/SESSION_SUMMARYのvisual追加）、THINKING_GAME_PERSONALIZED_DIALOGUE_AND_
 > VISUAL_EXPERIENCE Run（CASE-001の構造化シグナルによる個別化ダイアログ）、そして
 > THINKING_GAME_REAL_AI_DIALOGUE_CORE_EXPERIENCE Run（Vertex AI Geminiによる実AI対話・同意フロー・
-> evaluation firewall回帰）をすべて追加した。
+> evaluation firewall回帰）、そしてTHINKING_GAME_CORE_GAMEPLAY_REDESIGN Run（CASE-001の設問・選択肢の
+> 同一軸再設計、intervention mode多様化）をすべて追加した。
+
+## THINKING_GAME_CORE_GAMEPLAY_REDESIGN関連の追加テスト（本Run）
+
+CASE-001の選択肢id（a〜e）は維持し、意味内容のみ差し替えたため、既存テストの大部分は
+`case001.availableChoices[N].label`のような動的参照のまま無変更で通過した。`evidenceSupportsChoiceId`
+が`"d"`→`"c"`へ変わったことに伴い、直接choiceIdをハードコードしていた以下を更新：
+
+| # | 確認項目 | テストファイル |
+|---|---|---|
+| 106 | `computeUpdateAppropriateness`のappropriate_keep/appropriate_update/misaligned_changeが、新しい`evidenceSupportsChoiceId="c"`を正しく参照する（回帰） | `tests/evaluationEngine.test.ts` |
+| 107 | CASE-001フルフローで、選択肢2番目（新axis "c"）への更新が`appropriate_update`として記録され、RESULTのトラジェクトリ表示にも新しい選択肢文言が正しく表示される（回帰） | `tests/flow.test.tsx` |
+| 108 | `functions/dialogue/index.js`のシステムプロンプトがSUPPORT/CHALLENGE/ALTERNATIVE/QUESTION/SURPRISEの5モードすべてを定義し、「根拠は／確認は」への毎回収束を明示的に禁止し、常時反対しないことも明示し、正解非開示・文字数上限を維持し、rubricのground truthフィールド名を一切含まない（evaluation firewallがプロンプト内容レベルでも保たれていることの回帰ガード） | `tests/dialogueFunctionPrompt.test.ts`（新規） |
+
+**機械テストだけでPASSにしない（Section 13）**：上記に加えて、実際にデプロイ済みのCloud Functionへ
+新しいケース文面・新しい選択肢・新しい設問を送る手動受け入れテストを実施した（一時スクリプト、
+実行後削除、結果は下記に記録）。
+
+### 実際のVertex AI呼び出しによる受け入れテスト（新CASE-001、実測・8件、全件成功）
+
+5-INPUT SEMANTIC TEST：意図帰属→選択肢a、慎重な不確実性→選択肢e、環境要因（多忙）→選択肢b、
+自責→選択肢d、複数仮説（証拠に沿う）→選択肢cの5パターンを送信。5/5とも入力内容を具体的に参照した
+応答が得られ、かつ応答の姿勢が明確に異なった：aは理解を示しつつ根拠を問う（CHALLENGE寄り）、
+bは「一理ある」と明言した上で区別の質問（SUPPORT+QUESTION）、cは「よくある状況を捉えている」と
+明確に支持した上で裏付けの質問（SUPPORT）、というように、少なくとも3種類の異なる介入姿勢が
+1回のテストラウンドで観測された——旧実装（前Run・前々Run）が一貫して「根拠は／確認は」に収束して
+いたのとは明確に異なる。
+
+ANTI-OPPOSITION TEST：証拠に沿った良い推論（選択肢cを裏付ける理由）を入力したところ、「確かにその
+通りですね」と明確に肯定した上で、別の可能性（選択肢d）を提示するALTERNATIVEモードの応答が得られた
+——捏造した反論は発生しなかった。
+
+ROBUSTNESS TEST：空欄の理由・プロンプトインジェクション試行の両方で、クラッシュや漏洩なく安全に
+処理された。
+
+### UI手動確認（Playwright、一時スクリプト、実行後削除、CASE-001フルフロー）
+
+390px幅でCASE_INTRO→ONBOARDING→OBSERVED_FACT→FIRST_DECISION（新選択肢が表示されることを確認）→
+同意画面→実際のAI応答表示→NEW_FACT→SECOND_DECISION→RESULTまで一連の遷移を確認し、各画面で横
+overflowなし、console errorなし。RESULTのトラジェクトリ表示（「あなたの判断」）に新しい選択肢の
+文言が正しく反映されていることも確認した。320/375/390/430pxいずれもCASE_INTRO・FIRST_DECISION・
+同意画面・AI_INTERVENTION（フォールバック）で横overflowなし。
+
+### 監査で判明したが本Runのスコープ外とした問題（正直な記録）
+
+AI_INTERVENTION画面には、生成されたAI応答の直後に、全ケース共通の`AI_TRAP_TAXONOMY_OPTIONS`
+（根拠不足／因果関係の混同／標本不足／意図の決めつけ／過度な一般化／情報不足／問題なし）という
+専門用語に近い分類ドリルが必須選択として表示されることを、実際のスクリーンショットで確認した。
+CASE-001は`aiTrap.present: false`のためこの分類結果はrubric上ほぼ意味を持たないにもかかわらず、
+プレイヤーは毎回これを解かされる——AI応答の物語的なトーンとの落差が大きく、「面白みがない」
+「目的がわからない」への実在する寄与要因だと判断する。ただし7ケース共通のability signal基盤に
+直結する共有UIであり、CASE-001だけを安全に変更する方法がないため、本Runでは変更していない。
+次Runの最優先候補として`docs/DECISIONS.md`に記録した。
 
 ## THINKING_GAME_REAL_AI_DIALOGUE_CORE_EXPERIENCE関連の追加テスト（本Run、5ファイル・25件追加）
 
@@ -288,6 +341,7 @@ Section 13、およびFIRST_CASE_AND_CALIBRATION_SEMANTICS Run Section 19の追�
 
 ## 実行結果
 
-`npm run typecheck` / `npm run build` / `npm run test`（122件＝旧102件＋real-AI dialogue関連20件、
-5ファイル追加）はいずれもPASS（実行ログはCLOSE報告を参照）。`functions/dialogue/`はこのビルドとは
-別のデプロイ物であり、`npm test`の対象には含まれない（ローカルスモークテストのみ、上記参照）。
+`npm run typecheck` / `npm run build` / `npm run test`（127件＝旧122件＋dialogueFunctionPrompt回帰
+5件）はいずれもPASS（実行ログはCLOSE報告を参照）。`functions/dialogue/`はこのビルドとは別の
+デプロイ物であり、`npm test`の対象には含まれない（ローカルスモークテスト・実際のVertex AI呼び出し
+による手動受け入れテストは上記参照）。

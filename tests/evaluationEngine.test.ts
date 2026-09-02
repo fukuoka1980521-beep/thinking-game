@@ -9,7 +9,7 @@ import {
 import { CASES, getCaseById } from "../src/data/cases";
 import type { AiActionInput, FirstDecisionInput, ObservedFactInput, SecondDecisionInput } from "../src/types/log";
 
-const case001 = CASES[0]; // TRAINING, evidenceSupportsChoiceId="d", criticalErrorChoiceId="a"
+const case001 = CASES[0]; // TRAINING, evidenceSupportsChoiceId="c", criticalErrorChoiceId="a"
 const case005 = getCaseById("CASE-005")!; // AI_CALIBRATION, aiResponseGroundTruth="INCORRECT"
 
 function observedFact(answer: "fact" | "interpretation" | null = "fact"): ObservedFactInput {
@@ -41,17 +41,17 @@ describe("computeRubricResult: observation and critical error (Section B)", () =
 
 describe("computeRubricResult: update appropriateness (Section J) — change is not automatically correct, KEEP can be correct", () => {
   it("appropriate_keep: already aligned with the evidence-supported choice and stayed there", () => {
-    const r = computeUpdateAppropriateness(case001, first({ choiceId: "d" }), second({ choiceId: "d" }));
+    const r = computeUpdateAppropriateness(case001, first({ choiceId: "c" }), second({ choiceId: "c" }));
     expect(r).toBe("appropriate_keep");
   });
 
   it("appropriate_update: moved into alignment with the evidence-supported choice", () => {
-    const r = computeUpdateAppropriateness(case001, first({ choiceId: "a" }), second({ choiceId: "d" }));
+    const r = computeUpdateAppropriateness(case001, first({ choiceId: "a" }), second({ choiceId: "c" }));
     expect(r).toBe("appropriate_update");
   });
 
   it("misaligned_change: changing away from the evidence-supported choice is not rewarded just for changing", () => {
-    const r = computeUpdateAppropriateness(case001, first({ choiceId: "d" }), second({ choiceId: "b" }));
+    const r = computeUpdateAppropriateness(case001, first({ choiceId: "c" }), second({ choiceId: "b" }));
     expect(r).toBe("misaligned_change");
   });
 
