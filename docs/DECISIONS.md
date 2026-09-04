@@ -1,6 +1,272 @@
 # DECISIONS — 思考整理ゲーム MVP v0.1
 
-## THINKING_GAME_FUN_FIRST_PROTOTYPE関連の意思決定（本Run）
+## PHASE 4.7：CASE1 LIMITED EXTERNAL TEST RELEASE（Owner承認・独立レビュー反映）
+
+Owner承認によりmasterへpush・GitHub Pages自動デプロイを実施したRun。push前の独立レビュー
+（本標準§3の重大停止条件外だが、公開・外部送信を伴うRELEASE区分としてCode自身が1回実施）が
+2件の実害あるギャップを検出し、いずれも同一Run内で修正した。
+
+### なぜtopbarの「やめる」ボタンをstandalone対応させたのか
+
+独立レビュー指摘：`onExit`を無条件に呼んでおり、`?case1test`経由の外部テスターが試験途中で
+「やめる」を押すと、DONE画面のstandalone分岐（Section5対応）を経由せずHomeScreenへ遷移して
+しまっていた。DONE画面だけを直したことで、終了ルートの一つを直し忘れていた。`handleQuit`を
+新設し、standalone時は`onExit`を呼ばずDONE画面（既存の結果コピー機能を含む）でその場終了する
+よう修正。Owner自身がHome経由で遊ぶ非standaloneの動作は変更していない。
+
+### なぜepisodes/・pilot/を今回のcommit対象から外したのか
+
+独立レビュー指摘：(1) `src/screens/HomeScreen.tsx`のepisodes/pilotボタンは、CASE1テスター用の
+`?case1test`直リンクとは無関係に、常時・無条件で表示される——今回のpushで初めてこのHome画面が
+公開される以上、「CASE1以外は非公開」という前提が成立していなかった。(2) 実際に
+`src/episodes/steps/CompanionCommentStepView.tsx`のCOMPANION_COMMENTステップに、
+`DIALOGUE_ENDPOINT_URL=""`（今回の本番設定）かつ初回PLAYER（consent未設定＝null）という、
+実際に誰もが最初に踏む組み合わせで無限ローディングに陥るデッドエンドが存在した——
+`eligibleForRealAi`がfalseになる分岐と、`consent !== null`のときのみ`run()`する分岐の間に
+穴があり、両方ともfalseになるケースが放置されていた。episodes/pilot関連のテスト
+（`tests/pilot.test.tsx`・`tests/scriptFirstStory.test.tsx`）がこのデッドエンドを検出できな
+かったのは、テスト側が`vi.mock`で`DIALOGUE_ENDPOINT_URL`を非空文字列にスタブしていたため
+（`tests/realCompanionDialogue.test.tsx`の手法を踏襲）、実際の本番設定（空文字列）经路を
+一度も通していなかったためである。
+
+Owner指示（Section1「公開対象の目的はCASE1のみ」）とこの実バグを踏まえ、episodes/・pilot/・
+関連データ/lib/テストファイル一式を**今回のcommitから除外**した——ソースコード自体は削除せず
+作業ツリーにそのまま残し、`src/App.tsx`・`src/screens/HomeScreen.tsx`からの配線（import・
+View分岐・Home上のボタン）のみを外した。再度組み込む場合はこの2ファイルへ配線を戻すだけで
+よい。あわせて`docs/product/`のうちCASE1と直接関係しない全体プロダクト戦略文書
+（`MONETIZATION_MODEL_V1.md`・`PRODUCT_AUDIT_V1_1.md`・`SEASON1_SCENARIO_BIBLE_V1.md`・
+`THINKING_GAME_PRODUCT_SPEC_V1.md`）も同じ理由でcommit対象から外した
+（`CASE1_C_COMPLETE_DESIGN_V1.md`・`CASE1_EXTERNAL_TEST_REVISION_V1.md`・
+`CHARACTER_BIBLE_V1.md`はCASE1自体の設計文書または既存コードコメントから直接参照されている
+ため対象に含めた）。
+
+### なぜ検証を「作業ディレクトリ全体」ではなく「staged内容のみ」に対して行ったのか
+
+`git add`で個別ファイルを指定してstageした後、`git stash push --keep-index -u`で未stage分
+（episodes/・pilot/等）を一時退避し、staged内容だけの状態で`tsc --noEmit`・
+`npx vitest run`・`npm run build`をすべて実行してから`git stash pop`で復元した。ローカルの
+作業ディレクトリには常にepisodes/pilotの未commit差分が残っているため、それらを含めたまま
+検証すると「実際にpushされる内容」の健全性を検証したことにならない——CIはpushされたcommitの
+内容だけを見るため、ローカル検証もそれに合わせた。
+
+## PHASE 4.6：CASE1 SMALL EXTERNAL USER TEST PREPARATION（Owner GO判断）
+
+Owner GO判断（内部改善を止め、実際の第三者3〜5名へ触ってもらう）を受けたRun。CASE1のシナリオ・
+台詞・キャラクター・interaction・visualはFREEZEし、テストを成立させるための計測・保存・配布の
+インフラのみを追加した。「もっと良くできる」を理由にした変更は行っていない。
+
+### なぜCaseFileRecordを単一値保存から配列保存へ変えたのか
+
+`saveCase1CRecord`（`src/case1c/storage.ts`）はPHASE4.4まで`localStorage`へ単一オブジェクトとして
+上書き保存していた。3〜5名を同じ端末で連続プレイさせるという今回の運用では、2人目が完了した時点で
+1人目の記録が消える。`loadCase1CRecord()`（最新1件を返す）の既存契約は維持しつつ、内部保存形式を
+配列へ変更し、全件を読める`loadAllCase1CRecords()`を追加した。テスターごとの生データを個人差ごと
+残す（Owner Section14「平均点だけで個人差を消さない」）ための変更であり、CASE1本体のゲーム内容には
+無関係。
+
+### なぜsessionIdを新設したのか
+
+同じ端末で複数テスターが連続プレイするため、`Case1CMetricEvent`の平坦な配列だけでは「どのイベントが
+どのテスターのものか」を後から機械的に区別できない。`Case1CApp`のmountごとに1つ生成する`sessionId`
+（`newCase1CSessionId`、`crypto`非依存の簡易ID）を全metricsイベント・CaseFileRecord・
+FeedbackAnswersへ共通で持たせ、`src/case1c/testResults.ts`がこれをキーに1テスター＝1行へ集約する。
+新しい保存テーブルは作らず、既存の3つのstore（metrics/casefile/feedback）を読み合わせるだけに
+した——Owner Section12が要求するフィールド（tester_code、duration、optional_object_countなど）は
+すべてこの3ストアの既存データから導出可能で、冗長な保存を増やす理由がなかった。
+
+### なぜOWNER_ASSISTをtopbarの小さなボタンにしたのか
+
+Owner Section6/7は「Ownerが補助した場合はOWNER_ASSISTとして記録」を求めている。自動推定は誤検出の
+リスクがあり本質的に不可能（「補助した」はOwnerの主観的判断）なため、Owner自身が明示的に押す以外の
+実装を採らなかった。テスターの操作フローには一切介在しない場所（topbar、常時表示だが物語画面としては
+機能しないゲームchrome領域）に、目立たない小さなボタンとして置いた——テスターが誤タップしても
+ゲーム進行に影響しない設計。
+
+### なぜ`?case1test`と`?case1results`という直リンクを追加したのか
+
+HomeScreen（`src/screens/HomeScreen.tsx`）は「今日の1問」「実話でためす」「事件簿 Pilot」など
+CASE1以外の未完成プロトタイプへの入口を複数持つ。Owner Section19/20の配布監査で、外部テスターが
+ホーム経由でCASE1へ到達すると、この他の未完成機能へ誤って迷い込むリスクが明確になった。
+HomeScreenの構成自体を変更する（ボタンを消す・並べ替える）のは今回のFREEZE対象外の変更が広範囲に
+及ぶため避け、代わりにURLクエリパラメータで直接CASE1（`?case1test`）または結果閲覧
+（`?case1results`）へ入る経路を追加した。どちらもHomeScreen等のどの画面からもリンクされていない
+ため、テスターは配布されたURLを直接開かない限り到達できない。
+
+### なぜOwner result viewを新しい保存先を作らず既存3ストアの読み合わせにしたのか
+
+Section13は「豪華なdashboard不要、集計値だけでなくRAW結果を残す」ことを求めている。
+`Case1TestResultsScreen`は`testResults.ts`が返す行をテーブル表示し、行ごとに生JSONを展開できる
+だけの単純な画面とした。PASS/FAIL/success rateのような自動判定は一切行わず（Section15）、
+数値をそのまま並べるに留めている——最終判断はOwnerと参謀が行うという指示に対応するため。
+
+## PHASE 4.5：外部テスト直前ファイナルポリッシュ（Owner再評価対応）
+
+Owner再評価（GAME/CURIOSITY/INVESTIGATION/AHA/NEXTすべて前進、ただし「探偵が早く意味付けする」
+「最後の台詞が状況に噛み合わない」「キャラクター精度が要改善」の3点を明確な問題として指摘）を
+受けたfinal-polish Run。CASE1本体のシナリオ・謎の構造は変更していない（Owner指示の
+「CASE1大幅scenario変更禁止」に従う）。
+
+### なぜdetectiveの予想反応台詞をREVEAL画面内で後ろへ移動したのか
+
+`detectiveReactionToPrediction`（`src/case1c/companionLines.ts`）の各分岐、特に固まる予想時の
+「案外すぐ謝ってきたな」が、修正前は自転車の持ち主（親）自身の謝罪台詞「すみません、図書館の
+返却が今日までで……」より**先に**画面へ出ていた。これは探偵がPLAYERより先に「もう謝った」という
+結末を言葉にしてしまっており、Owner指摘「PLAYERより先に探偵が真相を理解しない」に反する。
+台詞の文言（3分岐とも）は変更せず、`Case1CApp.tsx`のREVEAL画面内での描画順序だけを、
+親の謝罪＋任意のシール発言の**後**に探偵の反応が来るよう入れ替えた。文言はそのままでも、
+出す順序を変えるだけで「PLAYERが読み終えた出来事に対する相槌」に意味が変わる。
+
+### なぜSHIFT（ENDING直前）の探偵の台詞を「まったくだ。」から変更したのか
+
+Owner指摘②「最後の台詞が、その時点の出来事・人物心理と意味的に合っていない」への対応。
+「まったくだ。」はおじさんの自嘲（「いやあ、泥棒は言い過ぎたな」）への相槌として平板で、
+探偵というキャラクター固有の情報を何も持っていなかった。探偵は序盤で早合点したおじさんを
+「まだ分からないだろ、それは。」と制止した張本人であるため、終盤で「ほら、言った通りだろ。」と
+その伏線を回収する形に変更した。真相の解釈を新たに追加するConclusionではなく、あくまで
+「おじさんの早合点癖」という既知のキャラクター特性への軽いツッコミに留めている。
+
+### なぜHUMAN PREDICTIONの設問文を「気づいたら、どうすると思う？」から変更したのか
+
+Owner指摘「予想か設問か未解決」への軽微対応（全面改造はしない指示のため）。「あなたはどう
+思いますか」型そのものではなかったが、「〜と思う？」という語尾がPLAYER自身への意見聴取に
+近い響きを持っていたため、「気づいたら、どう動く？」というscene上の出来事の帰結を尋ねる
+表現へ寄せた。外部テスターでも同じ違和感が出るか確認する価値があるため、これ以上は変更しない。
+
+### なぜOjisanFigureをSVGから既存PNGアセットへ置き換えたのか
+
+Owner指摘「既にキャラクター素材を提供している。それを無視して新しい仮キャラを完成形にしない
+こと」への対応。`src/assets/ossan-cheerful.png`・`ossan-listening.png`（透過PNG、185×320、
+`src/episodes/steps/*StepView.tsx`で既に採用実績あり）をOjisanFigureの正式な描画に採用し、
+`src/case1c/`内のCASE1シーン（PARK_A・PARK_C・SHIFT）へ反映した。探偵・店主・皆川さん・大将・
+親子はOwner提供素材が存在しないため、引き続きSVGプレースホルダーのまま——新規キャラクターを
+勝手に正本化しないという指示に従い、代替素材を作らず既存のまま維持した。
+
+**既知の不足（新規作成せず報告のみ）**：おじさん用の提供済みポーズは「cheerful（笑って手を
+振る）」「listening（手を組んで聞く）」の2種のみで、「早合点して驚く」表情・ポーズは存在しない
+（`StoryStepView.tsx`のV0.5監査コメントで既出の既知の限界と同一）。PARK_Aの「こ、こりゃ泥棒だ！」
+場面ではlisteningを、それ以外の落ち着いた場面ではcheerfulを暫定的に充てている。
+
+## THINKING_GAME_NARRATIVE_PIVOT_AND_3CASE_PILOT関連の意思決定（前Run、CLOSE未実施）
+
+> **重要**：本節が記録するepisodes/pilot実装（`src/episodes/`・`src/pilot/`・
+> `src/data/episodes/`）は、本項作成時点で**未コミット**である。技術テスト
+> （vitest 226件全PASS・`tsc --noEmit`クリーン・`vite build`成功）は通っているが、
+> これは「ゲームとして成立している」ことの証明ではない。最終的な成功条件は
+> Ownerが実機で「もう1事件やりたい」と感じるかどうかであり、それが確認できる
+> までこのRunをCLOSEしない。push・GitHub Pages反映も行っていない。
+
+### なぜ「設問→選択→AI介入→再判断」という構造そのものを離れたのか
+
+`THINKING_GAME_FUN_FIRST_PROTOTYPE`（V0.2、上節）までの改善は、AI応答の多様化や
+画面文言の調整を重ねても、Owner実プレイのたびに同じ種類の指摘が繰り返された：
+「何をしているゲームか分かりにくい」「アンケート/教材感が強い」「AI会話を良くしても
+ゲームとして弱い」「固定質問を磨くだけでは利用したくならない」。局所改善では
+解決しないという判断に至り、「考えさせるために質問する」という設計の起点自体を、
+「物語の続きを知りたい」「手掛かりを自分で探したい」「この人は次にどうするか
+予想したい」という欲求から出発し、結果として考えてしまう構造へ転換した。
+
+### episodes/（物語型episode engine）
+
+この方向転換を試すために新設した機構。共通ステップ種別として story／explore／clue／
+prediction／companion／new information／re-prediction／ending／reviewを持つ。
+HYP-001〜007・REAL-002〜004として試行錯誤した資産群であり、**この物語構造自体を
+最終製品として確定したわけではない**——後述のpilot/がそのための縮小模型である。
+
+### companionの設計意図（AIは相棒であり神ではない）
+
+相棒AIを教師・採点者として設計しない。プレイヤーの回答に対し別の見方を短く提示する
+「ゲーム世界内の同行者」とし、以下を明示的にAIの権限外とした：正解を決める／
+プレイヤーを評価する／能力診断する／未来のstory factを知る／endingを決める／
+progressionを決める。story facts・clues・ending・progressionはすべてdeterministic側
+（静的ケースデータ）が管理し、AIはそこに介入しない。
+
+### なぜepisodes実装を止めてpilot/（3話の縮小模型）を作ったのか
+
+episodesを作り続けた結果、「部品ばかり作っていて最終製品像が見えない」という
+Owner判断が出た。そこで新規episode追加を止め、FINAL PRODUCT BLUEPRINT →
+3話完全脚本 → 3話PLAYER JOURNEY → 必要state → data model → Pilot実装、という
+順に手順を変えた。`src/pilot/`はepisodes/の既存ステップ種別・コンポーネントを
+**無改変のまま**再利用する追加モジュールであり（`src/pilot/types.ts`冒頭コメント
+参照）、目的は新機能の実装ではなく、Owner自身がCASE1→CASE2→CASE3を一本のゲームとして
+遊び、最重要仮説「もう1事件やりたいと思うか」を検証することにある。
+
+### Pilotの成長設計（数値化しない）
+
+XP・level・score・ranking・能力値・性格診断のような数値化を明示的に禁止した。
+代わりに「遊んだ結果、世界と選択肢が増える」という手触りを試している：CASE1完了で
+虫眼鏡を獲得し事件簿1件目が記録され観察者がunlockされる、CASE2完了でCASE3がunlockする、
+CASE3では複数情報源を扱う、という設計。
+
+### 1回目のOwner実プレイ結果と、それを受けたPHASE 2.1
+
+3話Pilot実装後のOwner実プレイでの評価は「GOOD：かなり雰囲気は良くなっている」/
+「PROBLEM：ゲーム感をもう少し強くした方がよい、目的が分からない」だった。全面却下では
+なく、物語型への方向転換自体には改善信号が出た一方、プレイヤーが「自分は何者か」
+「何をするゲームなのか」「今何を追っているのか」「事件完了によって何が起きたのか」を
+十分理解できない問題が残っていた。
+
+この指摘を受け、PHASE 2.1（PLAYER PURPOSE + GAME FEEDBACK）として以下を実装済み
+（`src/pilot/screens/PilotIntroScreen.tsx` Section1/2、`PilotCaseIntroScreen.tsx`
+Section3、`ExploreStepView.tsx`/`ToolUseStepView.tsx`/`StoryStepView.tsx`のCLUE FOUND
+Section4、`ToolAcquireStepView.tsx`のNEW TOOL Section5、`PilotCaseFileAddedScreen.tsx`の
+CASE CLOSED/NEW COMPANION Section6/7、`PilotHomeScreen.tsx`のworld-entry framing
+Section8/9）：プレイヤーロール（「事件簿係」）とゲーム目的の明示、ケースごとの
+hook/objectiveLine表示、手がかり発見・道具獲得・ケース完了・相棒unlockの各瞬間を
+reward-tag（CLUE FOUND／NEW TOOL／CASE CLOSED／NEW COMPANION）で明示するフィードバック、
+HOME画面を「ダッシュボードではなく世界の入口」として再構成。数値報酬・XP・レベル・
+バッジ等は今回も使っていない。`tests/pilot.test.tsx`にPHASE 2.1 Section1〜9それぞれの
+自動テストがあり、3ケース通しプレイ・ロック画面直接アクセスガード・AI既知事実
+ファイアウォール・モバイル320px横スクロール無しまで含めて全件PASS。
+
+**この実装はOwnerの1回目の実プレイ後に書かれたものであり、Owner自身はまだこの
+PHASE 2.1版を実際にプレイしていない。** 技術テストのPASSは「目的が分かるようになったか」
+「ゲーム感が強くなったか」というOwnerの体感の代わりにはならない。次に必要なのは
+追加実装ではなく、Owner自身によるこのPHASE 2.1版の再プレイと評価である
+（CHECKPOINT: `OWNER_PILOT_PURPOSE_GAMEFEEL_READY`）。
+
+### PHASE 2.1のOwner再プレイ結果 = FAIL（PHASE 3への移行）
+
+Owner自身がPHASE 2.1版（役割/目的表示＋CLUE FOUND/NEW TOOL/CASE CLOSED/NEW COMPANIONの
+reward-tagフィードバック一式）を実際に再プレイした。判定は`OWNER_PILOT_PURPOSE_GAMEFEEL_READY`
+= **FAIL**。全面否定ではなく、以下を事実として記録する。
+
+改善が確認できた点：雰囲気は以前よりかなり良くなった。
+
+FAILの内容：
+- 目的表示を追加しても「ゲーム」だと感じにくく、「ただのアンケートを工夫した感じ」という
+  評価だった。
+- 基本体験が依然として「文章→選択肢→文章→選択肢」のままであり、CLUE FOUND/NEW TOOL/
+  CASE CLOSEDのreward-tagを足しても、その下にあるアンケート型の構造自体は変わっていない
+  ことが根本原因と判断された。
+- 具体的な不具合（1）：companion（探偵）の発言がプレイヤー発言の要約・言い換えに見え、
+  会話として不自然。実装を確認したところ、原因は`src/data/companions.ts`の
+  `frameInsight: (insight) => "整理すると、${insight}"`と、各episodeのテーマ定義
+  （例：`src/data/episodes/hyp-007.ts`の`THEME_TIMING.insight`）が最初から「プレイヤーの
+  発言を要約した一文」として書かれている点にある。**この構造は4キャラクター全員の
+  `frameInsight`実装（探偵/あまのじゃく/観察者/作戦家）に共通しており、CASE1固有の
+  バグではなく`companions.ts`という共有基盤の問題**であることが判明した。
+- 具体的な不具合（2）：CASE2で、プレイヤーがまだ世界内で認識していない人物（田中さん／
+  八百屋さん／佐藤さん）が前触れなく選択肢として提示され、選ぶ理由がない。
+- 具体的な不具合（3）：CASE3で、メール返信が遅い程度の出来事から聞き込み等の調査行動へ
+  進む動機が弱い。
+- 画像がもっと欲しいという要望があった。
+
+Ownerの指示により、(2)(3)（CASE2/CASE3自体の変更）は今回のスコープに含めない
+（変更禁止・追加ケース禁止として明示された）。今回はCASE1のみを対象に、「文章→選択肢」
+という基本構造そのものを「画面内の世界を見る→触る→発見する→道具を使う→手掛かりを集める
+→予想する」という直接操作型（ライトアドベンチャー）へ作り替える仮説を、**まずコードでは
+なくstoryboardとして設計検証する**フェーズへ移行する（PHASE 3）。
+
+### PHASE 3の成功条件と禁止事項
+
+成功条件はコードが書けることではなく、storyboardをOwnerが見て「これなら前よりゲームに
+見える」「実際に触ってみたい」と思えることである。ここを通過するまで実装しない。
+
+本Runで明示的に禁止された事項：CASE2/CASE3の変更、CASE4の追加、既存Pilotの改修、
+production codeの変更、commit、push、deploy、GCP変更。CHECKPOINT
+`OWNER_CASE1_INTERACTIVE_STORYBOARD_READY`のOwner承認前に実装へ進まない。
+
+## THINKING_GAME_FUN_FIRST_PROTOTYPE関連の意思決定（前Run）
 
 ### CORE_GAMEPLAY_V0_2_FAILED
 

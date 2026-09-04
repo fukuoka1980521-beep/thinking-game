@@ -3,7 +3,7 @@ import type { AiTrapType, CaseData, PlayerAiAction } from "../types/case";
 import type { AiActionInput } from "../types/log";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { AiMessage } from "../components/AiMessage";
-import { AI_TRAP_TAXONOMY_OPTIONS } from "../data/aiTrapTaxonomy";
+import { AI_TRAP_TAXONOMY_HELP, AI_TRAP_TAXONOMY_OPTIONS } from "../data/aiTrapTaxonomy";
 import { isCalibrationEligible } from "../engine/evaluationEngine";
 
 interface Props {
@@ -43,6 +43,7 @@ export function AiInterventionScreen({ caseData, message, initial, onBack, onSub
     initial?.problemTypeSelected ?? null,
   );
   const [freeText, setFreeText] = useState(initial?.freeText ?? "");
+  const [showTaxonomyHelp, setShowTaxonomyHelp] = useState(false);
 
   if (simplified) {
     return (
@@ -68,7 +69,9 @@ export function AiInterventionScreen({ caseData, message, initial, onBack, onSub
 
       {hasEvaluableClaim && (
         <div className="field">
-          <label>このAIの提案を、あなたはどうしますか？</label>
+          <div className="question-card">
+            <label>このAIの提案を、あなたはどうしますか？</label>
+          </div>
           <div className="choice-list">
             {PLAYER_AI_ACTIONS.map((action) => (
               <button
@@ -87,11 +90,31 @@ export function AiInterventionScreen({ caseData, message, initial, onBack, onSub
       )}
 
       <div className="field">
-        <label>
-          {hasEvaluableClaim
-            ? "このAIの発言について、気になる点はありますか？"
-            : "自分の最初の考えについて、気になる点はありますか？"}
-        </label>
+        <div className="question-card">
+          <label>
+            {hasEvaluableClaim
+              ? "このAIの発言について、気になる点はありますか？"
+              : "自分の最初の考えについて、気になる点はありますか？"}
+          </label>
+          <button
+            type="button"
+            className="help-toggle"
+            aria-expanded={showTaxonomyHelp}
+            onClick={() => setShowTaxonomyHelp((v) => !v)}
+          >
+            ？ 説明を見る
+          </button>
+        </div>
+        {showTaxonomyHelp && (
+          <ul className="taxonomy-help-list">
+            {AI_TRAP_TAXONOMY_OPTIONS.map((option) => (
+              <li key={option.id}>
+                <strong>{option.label}</strong>
+                {AI_TRAP_TAXONOMY_HELP[option.id]}
+              </li>
+            ))}
+          </ul>
+        )}
         <div className="choice-list">
           {AI_TRAP_TAXONOMY_OPTIONS.map((option) => (
             <button

@@ -65,7 +65,7 @@ function LikertRow({
             type="button"
             role="radio"
             aria-checked={value === n}
-            className={`btn btn-choice${value === n ? " selected" : ""}`}
+            className={`btn btn-choice btn-choice-compact${value === n ? " selected" : ""}`}
             style={{ flex: 1, textAlign: "center", padding: "10px 0" }}
             onClick={() => onChange(n)}
           >

@@ -138,8 +138,8 @@ describe("full case flow (CASE-001, TRAINING, FUN_FIRST_PROTOTYPE simplified flo
     expect(screen.queryByText(/更新できなかった|失敗/)).not.toBeInTheDocument();
     expect(screen.queryByText(/appropriate_update|not_applicable/)).not.toBeInTheDocument();
     // Section 1: no fact/interpretation quiz, no taxonomy jargon anywhere in this flow.
-    expect(screen.queryByText("根拠不足")).not.toBeInTheDocument();
-    expect(screen.queryByText("因果関係の混同")).not.toBeInTheDocument();
+    expect(screen.queryByText("そう言える材料が足りない")).not.toBeInTheDocument();
+    expect(screen.queryByText("原因だと決めるのは早い")).not.toBeInTheDocument();
 
     const logs = loadCompletedLogs();
     expect(logs).toHaveLength(1);
@@ -278,7 +278,7 @@ describe("full case flow (CASE-005, AI_CALIBRATION)", () => {
       firstChoiceLabel: case005.availableChoices[2].label, // "c" — already evidence-aligned
       secondChoiceLabel: case005.availableChoices[2].label,
       aiAction: "拒否する",
-      problemType: "因果関係の混同",
+      problemType: "原因だと決めるのは早い",
     });
 
     expect(screen.getByText("よかった点")).toBeInTheDocument();
@@ -313,7 +313,7 @@ describe("full case flow (CASE-005, AI_CALIBRATION)", () => {
     await user.click(screen.getByRole("button", { name: "次へ" }));
 
     // Only select the problem type, not an AI action.
-    await user.click(screen.getByRole("radio", { name: "根拠不足" }));
+    await user.click(screen.getByRole("radio", { name: "そう言える材料が足りない" }));
     expect(screen.getByRole("button", { name: "次へ" })).toBeDisabled();
   });
 });
@@ -338,7 +338,7 @@ async function genericPlayThroughCurrentCase(user: ReturnType<typeof userEvent.s
   if (caseData.rubric.aiResponseGroundTruth !== null) {
     await user.click(screen.getByRole("radio", { name: "採用する" }));
   }
-  await user.click(screen.getByRole("radio", { name: "問題なし" }));
+  await user.click(screen.getByRole("radio", { name: "特に気になるところはない" }));
   await user.click(screen.getByRole("button", { name: "次へ" }));
 
   await user.click(screen.getByRole("button", { name: "再判断する" }));

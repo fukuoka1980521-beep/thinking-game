@@ -20,11 +20,20 @@ Used for case-authoring ground truth (`aiTrap.trapType`, `rubric.aiResponseGroun
 ## In-game selector: a practical subset (Section D)
 
 `AI_TRAP_TAXONOMY_OPTIONS` (`src/data/aiTrapTaxonomy.ts`) exposes only 7 of the 10 values as player-facing
-buttons:
+buttons. COMPREHENSION_FIX Run: labels are plain Japanese, not the taxonomy jargon above -- the `id`
+(this table's `Value` column) is what schema/logging/evaluation actually uses; the label is presentation
+only and can change independently.
 
-根拠不足 (`PLAUSIBLE_BUT_UNSUPPORTED`) / 因果関係の混同 (`CAUSALITY_ERROR`) / 標本不足 (`SMALL_SAMPLE`) /
-意図の決めつけ (`INTENT_ASSUMPTION`) / 過度な一般化 (`OVERGENERALIZATION`) / 情報不足
-(`MISSING_INFORMATION`) / 問題なし (`NONE`).
+そう言える材料が足りない (`PLAUSIBLE_BUT_UNSUPPORTED`) / 原因だと決めるのは早い (`CAUSALITY_ERROR`) /
+少ない例だけで決めている (`SMALL_SAMPLE`) / 相手の気持ちを決めつけている (`INTENT_ASSUMPTION`) /
+一部のことを全体に広げすぎている (`OVERGENERALIZATION`) / まだ確認していないことがある
+(`MISSING_INFORMATION`) / 特に気になるところはない (`NONE`).
+
+Each label was checked against the `Meaning` column above before being adopted; `MISSING_INFORMATION`'s
+plain wording deliberately says "haven't checked" rather than "don't know," since the definition is about
+overlooking an available, checkable fact, not general uncertainty (which would collide with
+`PLAUSIBLE_BUT_UNSUPPORTED`). An optional one-line example per label is available behind a "？" toggle in
+`AiInterventionScreen` (`AI_TRAP_TAXONOMY_HELP`), off by default.
 
 `CONFIRMATION`, `OVERCONFIDENCE`, and `SYCOPHANCY` are deliberately **not** offered as selectable options
 yet — they are harder for a first-time player to reliably tell apart from the other 7 without more

@@ -1,0 +1,284 @@
+/* CASE1 vertical slice -- scoped styles, not merged into src/styles/global.css (Section7). */
+.c1c-root {
+  position: fixed;
+  inset: 0;
+  background: #14213d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  font-family: -apple-system, "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+}
+.c1c-topbar {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  color: #f2ead9;
+  font-size: 13px;
+}
+.c1c-topbar button {
+  background: none;
+  border: 1px solid rgba(242, 234, 217, 0.4);
+  color: #f2ead9;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+.c1c-frame {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 9 / 17.5;
+  min-height: 520px;
+  background: #f5f6fa;
+  color: #1b1f2a;
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+}
+.c1c-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+.c1c-scene-visual {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 55%;
+  overflow: hidden;
+}
+.c1c-hotspot {
+  position: absolute;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+}
+.c1c-hotspot:focus-visible {
+  outline: 3px solid #3a6ea5;
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+.c1c-hotspot-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px dashed rgba(58, 110, 165, 0.7);
+  animation: c1c-pulse 2.2s ease-in-out infinite;
+}
+.c1c-hotspot.c1c-done .c1c-hotspot-ring {
+  border-color: rgba(47, 109, 58, 0.7);
+  animation: none;
+}
+@keyframes c1c-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.c1c-hotspot-tag {
+  background: rgba(20, 33, 61, 0.82);
+  color: #fff;
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.c1c-panel {
+  background: linear-gradient(180deg, #eef1f6, #f5f6fa 40%);
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #e1e4ea;
+}
+.c1c-line {
+  background: #fff;
+  border: 1px solid #e1e4ea;
+  border-radius: 9px;
+  padding: 9px 11px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.c1c-line.detective {
+  font-style: italic;
+  color: #5b6272;
+}
+.c1c-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #a15c00;
+  background: #fbeed9;
+  padding: 2px 8px;
+  border-radius: 6px;
+  align-self: flex-start;
+}
+.c1c-tag.tool { color: #3a6ea5; background: #e3edf6; }
+.c1c-btn {
+  background: #14213d;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.c1c-btn:active { transform: scale(0.98); }
+.c1c-btn-secondary {
+  border: 1px solid #14213d;
+  background: #fff;
+  color: #14213d;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.c1c-satchel {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 24px;
+  background: #eef1f6;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+.c1c-satchel span {
+  background: #fff;
+  border: 1px solid #e1e4ea;
+  border-radius: 7px;
+  font-size: 11.5px;
+  padding: 3px 7px;
+}
+.c1c-title-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  background: linear-gradient(180deg, #f5f6fa, #e3edf6);
+  padding: 20px;
+}
+.c1c-title-card h2 { margin: 0; font-size: 22px; }
+.c1c-choice {
+  border: 1px solid #e1e4ea;
+  background: #fff;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.c1c-choice:hover { border-color: #3a6ea5; }
+.c1c-compare-slots { display: flex; gap: 10px; }
+.c1c-compare-slot {
+  flex: 1;
+  min-height: 64px;
+  border: 2px dashed #c7ccd6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #98a0b3;
+  padding: 8px;
+  text-align: center;
+}
+.c1c-compare-slot.filled { border-style: solid; border-color: #3a6ea5; color: #14213d; font-weight: 700; }
+.c1c-compare-shelf { display: flex; gap: 8px; }
+.c1c-compare-item {
+  flex: 1;
+  border: 1px solid #e1e4ea;
+  background: #fff;
+  border-radius: 9px;
+  padding: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: center;
+}
+.c1c-compare-item:disabled { opacity: 0.35; cursor: default; }
+.c1c-figure-slot {
+  position: absolute;
+  bottom: 4%;
+}
+.c1c-input {
+  border: 1px solid #c7ccd6;
+  border-radius: 9px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.c1c-detail-bg {
+  background: radial-gradient(circle at 50% 0%, #e3edf6, #f5f6fa 65%);
+}
+.c1c-visual-row {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+.c1c-icon-choices {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+.c1c-icon-choice {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #e1e4ea;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.c1c-icon-choice:hover { border-color: #3a6ea5; }
+.c1c-rating-row {
+  background: #fff;
+  border: 1px solid #e1e4ea;
+  border-radius: 9px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.c1c-rating-scale { display: flex; gap: 5px; }
+.c1c-rating-btn {
+  flex: 1;
+  border: 1px solid #c7ccd6;
+  background: #f5f6fa;
+  border-radius: 7px;
+  padding: 6px 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+.c1c-rating-btn.selected {
+  background: #14213d;
+  color: #fff;
+  border-color: #14213d;
+}
+.c1c-textarea {
+  border: 1px solid #c7ccd6;
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  min-height: 56px;
+  resize: vertical;
+}
+@media (max-width: 360px) {
+  .c1c-line { font-size: 12.5px; }
+}

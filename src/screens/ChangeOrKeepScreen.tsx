@@ -37,7 +37,9 @@ export function ChangeOrKeepScreen({ caseData, first, onBack, onSubmit }: Props)
   return (
     <ScreenContainer title="再判断" onBack={onBack}>
       <div className="field">
-        <label>この手がかりを見て、考えは変わった？</label>
+        <div className="question-card">
+          <label>この手がかりを見て、考えは変わった？</label>
+        </div>
       </div>
       <div className="spacer" />
       <button type="button" className="btn btn-primary" onClick={() => setAskingFinalPick(true)}>
@@ -60,7 +62,9 @@ function FinalPickScreen({ caseData, first, onBack, onSubmit }: Props) {
   return (
     <ScreenContainer title="再判断" onBack={onBack}>
       <div className="field">
-        <label>{caseData.finalQuestion}</label>
+        <div className="question-card">
+          <label>{caseData.finalQuestion}</label>
+        </div>
         <ChoiceList choices={caseData.availableChoices} selectedId={choiceId} onSelect={setChoiceId} />
       </div>
       <button

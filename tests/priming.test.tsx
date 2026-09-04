@@ -24,6 +24,7 @@ describe("no AI-distrust priming on the decision screens (Section 9/10)", () => 
         onTodaysCase={() => {}}
         onSelectCase={() => {}}
         onViewGrowth={() => {}}
+        onPlayCase1C={() => {}}
       />,
     );
     const text = container.textContent ?? "";

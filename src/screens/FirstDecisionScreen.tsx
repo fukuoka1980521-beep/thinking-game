@@ -33,7 +33,9 @@ export function FirstDecisionScreen({ caseData, initial, onBack, onSubmit, simpl
   return (
     <ScreenContainer title="第一判断" onBack={onBack}>
       <div className="field">
-        <label>{caseData.initialQuestion}</label>
+        <div className="question-card">
+          <label>{caseData.initialQuestion}</label>
+        </div>
         <ChoiceList choices={caseData.availableChoices} selectedId={choiceId} onSelect={setChoiceId} />
       </div>
 

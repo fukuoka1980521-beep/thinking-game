@@ -6,9 +6,17 @@ interface Props {
   onTodaysCase: () => void;
   onSelectCase: () => void;
   onViewGrowth: () => void;
+  onPlayCase1C: () => void;
 }
 
-export function HomeScreen({ hasInProgress, onResume, onTodaysCase, onSelectCase, onViewGrowth }: Props) {
+export function HomeScreen({
+  hasInProgress,
+  onResume,
+  onTodaysCase,
+  onSelectCase,
+  onViewGrowth,
+  onPlayCase1C,
+}: Props) {
   return (
     <div className="screen">
       <div className="screen-hero">
@@ -39,6 +47,12 @@ export function HomeScreen({ hasInProgress, onResume, onTodaysCase, onSelectCase
           続きから再開する
         </button>
       )}
+
+      <div className="card" style={{ borderColor: "#3a6ea5", borderWidth: 2 }}>
+        <button type="button" className="btn btn-primary" onClick={onPlayCase1C}>
+          🚲 テスト版 CASE1
+        </button>
+      </div>
 
       <div className="choice-list">
         <button type="button" className="btn" onClick={onTodaysCase}>

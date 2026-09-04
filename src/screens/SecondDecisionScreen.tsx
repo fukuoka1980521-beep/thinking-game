@@ -22,7 +22,9 @@ export function SecondDecisionScreen({ caseData, initial, onBack, onSubmit }: Pr
   return (
     <ScreenContainer title="再判断" onBack={onBack}>
       <div className="field">
-        <label>{caseData.finalQuestion}</label>
+        <div className="question-card">
+          <label>{caseData.finalQuestion}</label>
+        </div>
         <ChoiceList choices={caseData.availableChoices} selectedId={choiceId} onSelect={setChoiceId} />
       </div>
 

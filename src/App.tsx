@@ -9,6 +9,8 @@ import { SessionSummaryScreen } from "./screens/SessionSummaryScreen";
 import { UserTestScreen } from "./screens/UserTestScreen";
 import { UserTestThanksScreen } from "./screens/UserTestThanksScreen";
 import { CaseSession } from "./CaseSession";
+import { Case1CApp } from "./case1c/Case1CApp";
+import { Case1TestResultsScreen } from "./case1c/Case1TestResultsScreen";
 import {
   loadInProgressSession,
   loadCompletedLogs,
@@ -29,13 +31,44 @@ type View =
   | { kind: "SESSION" }
   | { kind: "SESSION_SUMMARY" }
   | { kind: "USER_TEST" }
-  | { kind: "USER_TEST_THANKS" };
+  | { kind: "USER_TEST_THANKS" }
+  | { kind: "CASE1C" }
+  | { kind: "CASE1C_RESULTS" };
 
 // Section 7: after roughly this many cases in one sitting, offer the play-run summary.
 const SESSION_SUMMARY_THRESHOLD = 5;
 
+/**
+ * PHASE 4.6 (Section19/20): a tester reaching HomeScreen directly would see every other
+ * entry point on Home, including the old case-select flow -- exactly the "既存未完成機能へ
+ * 簡単に迷い込む" risk the external-test package must avoid. These 2 query-param direct links
+ * (for the tester invite / for Owner's own result-checking, respectively) bypass HomeScreen
+ * entirely. Neither is linked from any screen -- only from the invite text/Owner's own bookmark --
+ * so a tester or casual visitor can never stumble into either by clicking.
+ *
+ * PHASE 4.7 (independent-review finding): episodes/ and pilot/ (separate, still-unfinished
+ * prototypes with their own open bugs -- e.g. a companion step that dead-ends when no AI
+ * endpoint is configured, which is this deployment's actual production config) are deliberately
+ * NOT wired into this build. Owner's release directive scopes this external test to CASE1 only;
+ * wiring them back in only requires restoring the 2 imports/routes/HomeScreen props this Run
+ * removed -- their source under src/episodes/ and src/pilot/ is untouched.
+ */
+function initialViewFromLocation(): View {
+  if (typeof window === "undefined") return { kind: "HOME" };
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("case1results")) return { kind: "CASE1C_RESULTS" };
+  if (params.has("case1test")) return { kind: "CASE1C" };
+  return { kind: "HOME" };
+}
+
 export default function App() {
-  const [view, setView] = useState<View>({ kind: "HOME" });
+  const [view, setView] = useState<View>(initialViewFromLocation);
+  // PHASE 4.7 (Section5): whether THIS page load started from the external-test direct link --
+  // stays fixed for the life of the tab even if `view` later changes, so Case1CApp's ending can
+  // tell "opened via the tester URL" apart from "Owner clicked the Home button internally".
+  const [enteredViaCase1TestLink] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("case1test"),
+  );
   // The persisted in-progress session, used only to drive Home's "resume" button
   // and to seed a resumed session. Not touched while a session is actively playing.
   const [homeInProgress, setHomeInProgress] = useState<InProgressSession | null>(null);
@@ -222,6 +255,14 @@ export default function App() {
     return <UserTestThanksScreen response={lastUserTestResponse} onGoHome={endPlayRunAndGoHome} />;
   }
 
+  if (view.kind === "CASE1C") {
+    return <Case1CApp onExit={() => setView({ kind: "HOME" })} standalone={enteredViaCase1TestLink} />;
+  }
+
+  if (view.kind === "CASE1C_RESULTS") {
+    return <Case1TestResultsScreen onExit={() => setView({ kind: "HOME" })} />;
+  }
+
   return (
     <HomeScreen
       hasInProgress={homeInProgress !== null}
@@ -229,6 +270,7 @@ export default function App() {
       onTodaysCase={() => startCase(getTodaysCaseId())}
       onSelectCase={() => setView({ kind: "CASE_SELECT" })}
       onViewGrowth={() => setView({ kind: "GROWTH" })}
+      onPlayCase1C={() => setView({ kind: "CASE1C" })}
     />
   );
 }
