@@ -58,7 +58,8 @@ export const ACTION_OWNERSHIP_REGISTRY: Record<string, ActionOwnershipEntry> = {
   },
   ASK_SALES_SCENE: {
     owner: "PRODUCT",
-    sceneJustification: "asking how sales went is a legitimate follow-up to the festival, independent of the pending request",
+    sceneJustification:
+      "asking how sales went is a legitimate contextual follow-up once the festival has come up in conversation (PHASE 11.13: gated by its own SCENE ELIGIBILITY precondition, HAS_ASKED_FESTIVAL, not offered upfront merely because the engine can answer it)",
     testPurpose: null,
   },
   ASK_WEATHER_SCENE: {

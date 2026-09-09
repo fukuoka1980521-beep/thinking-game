@@ -8,9 +8,33 @@ import { openPendingReply, type PendingReplyEventSpec } from "./engine";
 import type { ActionContractV2, ContractV2State, Precondition } from "./types";
 import type { LifeMaterial } from "../life-material-7day/types";
 import { resolveYoheiSourceEvent, authoringSufficiencyGate } from "./yoheiSourceEvents";
-import { PLAYER_ACCEPTS_REQUEST, PLAYER_DECLINES_REQUEST } from "./pendingReplyContracts";
+import { PLAYER_ACCEPTS_REQUEST, PLAYER_DECLINES_REQUEST, PENDING_REPLY_OPEN } from "./pendingReplyContracts";
 
 const ALWAYS: Precondition = { id: "always", check: () => true };
+
+/**
+ * PHASE 11.13 (product repair, directive Section 10): ASK_WHAT is a ONE-SHOT reveal, not a
+ * permanently-repeatable FAQ entry -- once the player has already been told what the errand is,
+ * asking again has nothing left to supply. Reuses the exact `concreteContent` string
+ * `ASK_WHAT_HELP_NEEDED.actorExperienceWrite` below writes -- Single Precondition Authority, no
+ * second independently-authored copy of "was this already asked" exists.
+ */
+const NOT_YET_ASKED_WHAT: Precondition = {
+  id: "not_yet_asked_what",
+  check: (s) => !s.experienceLog.some((e) => e.concreteContent === "洋平に、何を手伝えばいいか尋ねた"),
+};
+
+/**
+ * PHASE 11.13 (product repair, directive Section 10/11): ASK_SALES is a CONTEXTUAL follow-up --
+ * it must not be offered merely because the engine can answer it (directive Section 11's explicit
+ * instruction). It becomes askable only once the preceding conversation (asking about the
+ * festival) has actually created the conversational context for it. Reuses
+ * `ASK_FESTIVAL_SCENE.actorExperienceWrite`'s own `concreteContent` string.
+ */
+const HAS_ASKED_FESTIVAL: Precondition = {
+  id: "has_asked_festival",
+  check: (s) => s.experienceLog.some((e) => e.concreteContent === "洋平に祭りについて聞いた"),
+};
 
 const SOURCE_EVENT_ID = "YOHEI_ASKS_HELP_MOVE_LEFTOVER_STOCK";
 
@@ -36,20 +60,27 @@ export const LEFTOVER_STOCK_MOVED: Precondition = {
   check: (s) => s.materials.some((m) => m.id === "leftover_stock_moved" && m.status === "ACTIVE"),
 };
 
-/** ACCEPT_HELP: resolves the PendingReply AND, in the same dispatch, admits the concrete
- *  consequence material -- reuses PHASE 11.8's promise-promotion `material` field, not a new
- *  mechanism. The postcondition (box moved) becomes actually true via State Admission, not merely
- *  narrated (directive Section 9). */
+/**
+ * PHASE 11.13 (product repair, directive Section 6/7): ACCEPT_HELP now narrates the physical
+ * consequence AND the reveal as one continuous, authored (not LLM-invented) event -- the player
+ * moves the box, it is set down at the discount shelf, and it is opened, so its contents (festival-
+ * patterned hand towels) become visible. Deliberately does NOT say the towels are specifically
+ * "残り" (leftover/unsold surplus, i.e. `祭りの残り`) -- that specific characterization is Yohei's
+ * own confirmed knowledge, not something visible from the towels alone, and is exactly what the
+ * newly-eligible follow-up question legitimately supplies (see CAUSALITY_COUNTERFACTUAL_
+ * INVARIANT_V1.md / REAL_CAUSALITY_GATE_AUDIT_V1.md's chosen evidence source, State Admission,
+ * unchanged mechanism -- only this narration/material text changed).
+ */
 export const PLAYER_ACCEPTS_HELP_MOVE_STOCK: PendingReplyEventSpec = {
   ...PLAYER_ACCEPTS_REQUEST,
-  narration: (s) => {
-    const event = resolveYoheiSourceEvent(s.pendingReply?.sourceEventId ?? "");
-    return event ? [`「分かった、運ぶよ」と答えた。洋平と二人で、${event.requestSubject}のを手伝った。`] : ["「分かった」と答えた。"];
-  },
+  narration: () => [
+    "「分かった、運ぶよ」と答えた。洋平と二人で、箱を値引き用の棚まで運んだ。",
+    "棚に置いて蓋を開けると、中には祭りの柄の手ぬぐいがたくさん入っていた。",
+  ],
   material: (s): LifeMaterial => ({
     id: "leftover_stock_moved",
     type: "SHARED_EVENT",
-    concreteContent: "洋平と一緒に、祭りの残りの手ぬぐいの箱を値引き用の陳列スペースまで運んだ",
+    concreteContent: "洋平と一緒に箱を値引き用の陳列スペースまで運び、蓋を開けると中には祭りの柄の手ぬぐいがたくさん入っていた",
     origin: "PLAYER_ACTION:ACCEPT_HELP_MOVE_STOCK",
     dayCreated: s.day,
     authority: "PLAYER_CHOSEN_FACT",
@@ -59,9 +90,19 @@ export const PLAYER_ACCEPTS_HELP_MOVE_STOCK: PendingReplyEventSpec = {
   }),
 };
 
-/** DECLINE_HELP: reuses the existing PLAYER_DECLINES_REQUEST spec verbatim -- no guilt language,
- *  no scene-specific override needed (directive Section 8's rule already covers this generically). */
-export const PLAYER_DECLINES_HELP_MOVE_STOCK: PendingReplyEventSpec = PLAYER_DECLINES_REQUEST;
+/**
+ * PHASE 11.13 (product repair, directive Section 12): DECLINE_HELP now narrates TWO distinct
+ * lines -- PLAYER's own decline utterance (unchanged from `PLAYER_DECLINES_REQUEST`) AND Yohei's
+ * short, non-punitive acknowledgment, kept as two separate array entries (rendered as two separate
+ * paragraphs by `NewlifePlayable11App.tsx`'s existing `entry.narration.map(...)`) so the SOCIAL
+ * RESPONSE is visibly distinct from the separately-rendered NPC-independent-continuation line
+ * (`yoheiContinuesLeftoverStockWorkNarration`, below, unchanged) -- directive's explicit
+ * instruction not to merge the two concepts.
+ */
+export const PLAYER_DECLINES_HELP_MOVE_STOCK: PendingReplyEventSpec = {
+  ...PLAYER_DECLINES_REQUEST,
+  narration: () => ["「ごめん、今日はちょっと」と、答えた。", "「ああ、分かった。じゃあ俺でやるよ」と、洋平は言った。"],
+};
 
 // ---------------------------------------------------------------------------
 // Ordinary conversational actions -- never touch pendingReply (proven by omission, same pattern
@@ -75,7 +116,7 @@ export const PLAYER_DECLINES_HELP_MOVE_STOCK: PendingReplyEventSpec = PLAYER_DEC
 export const ASK_WHAT_HELP_NEEDED: ActionContractV2 = {
   actionId: "ASK_WHAT_HELP_NEEDED",
   playerIntent: "ASK_WHAT",
-  eligibility: [ALWAYS],
+  eligibility: [PENDING_REPLY_OPEN, NOT_YET_ASKED_WHAT],
   playerVisiblePromise: "何を手伝えばいいか尋ねる",
   failurePostcondition: null,
   authoritativeEvent: "ASK_WHAT_HELP_NEEDED",
@@ -105,7 +146,7 @@ export const ASK_FESTIVAL_SCENE: ActionContractV2 = {
 export const ASK_SALES_SCENE: ActionContractV2 = {
   actionId: "ASK_SALES_SCENE",
   playerIntent: "ASK_SALES",
-  eligibility: [ALWAYS],
+  eligibility: [HAS_ASKED_FESTIVAL],
   playerVisiblePromise: "売れ行きについて聞く",
   failurePostcondition: null,
   authoritativeEvent: "ASK_FESTIVAL_SALES_RESULT",
@@ -132,6 +173,50 @@ export const ASK_WEATHER_SCENE: ActionContractV2 = {
   conditionalFollowUpAffordance: () => "NONE",
 };
 
+/**
+ * PHASE 11.13B mistakenly put the NPC's response record inside THIS contract's own `stateDelta`
+ * -- meaning it committed inside the exact same `resolveAction` call that represents the PLAYER's
+ * own ask dispatch (QUESTION DISPATCH), not as a genuinely separate NPC RESPONSE EVENT. PHASE
+ * 11.13C corrected this: this contract's ONLY authoritative responsibility is recording that the
+ * PLAYER asked (QUESTION_ASKED, via `actorExperienceWrite` below). The NPC response -- whether it
+ * confirms, denies, or does not resolve the target fact -- is committed separately, at the
+ * response-delivery seam, by `npcResponseCommit.ts`'s `commitNpcResponseIfApplicable`, called from
+ * `NewlifePlayable11App.tsx` strictly AFTER this action resolves. See docs/research/evaluation/
+ * phase-11-13c/NPC_RESPONSE_COMMIT_POINT_V1.md for the real event-order trace.
+ *
+ * PHASE 11.13D CORRECTION (see docs/research/evaluation/phase-11-13d/
+ * STRUCTURED_RESPONSE_SEMANTICS_V1.md): PHASE 11.13C still used ONE material id
+ * ("leftover_question_answered") for every possible NPC response outcome, distinguishing CONFIRM
+ * from UNKNOWN by substring-searching `concreteContent` -- human-readable prose determining
+ * authoritative semantic truth, exactly what this phase exists to remove. Replaced with THREE
+ * structurally distinct material ids, one per possible outcome (`LEFTOVER_RESPONSE_MATERIAL_IDS`)
+ * -- the material's OWN id (a structural fact, authored at commit time, never re-derived from its
+ * text) now IS the semantic signal. `concreteContent` remains for audit/history display only and
+ * is never read by any authoritative decision.
+ */
+export type StructuredResponseOutcome = "CONFIRM" | "DENY" | "UNKNOWN";
+
+export const LEFTOVER_RESPONSE_MATERIAL_IDS: Record<StructuredResponseOutcome, string> = {
+  CONFIRM: "leftover_question_response_confirm",
+  DENY: "leftover_question_response_deny",
+  UNKNOWN: "leftover_question_response_unknown",
+};
+
+/**
+ * PHASE 11.13E (see docs/research/evaluation/phase-11-13e/STRUCTURED_REVEAL_SEMANTICS_V1.md): the
+ * LAST remaining Product-authoritative prose-parser was `causalUnlockInvariant.ts` substring-
+ * searching THIS material's own `concreteContent` to decide whether the physical reveal already
+ * establishes the target fact. Fixed the same way PHASE 11.13D fixed NPC responses: the fact-tag
+ * list is now authored HERE, once, by a human verifying the real narration text in
+ * `PLAYER_ACCEPTS_HELP_MOVE_STOCK` below -- a static design property of this one reveal, keyed by
+ * material id, never re-derived from `concreteContent` at evaluation time. Extensible: if a future
+ * reveal variant is ever added, it gets its own id and its own registry entry, exactly like
+ * `LEFTOVER_RESPONSE_MATERIAL_IDS` above.
+ */
+export const REVEAL_MATERIAL_ASSERTED_FACTS: Record<string, string[]> = {
+  leftover_stock_moved: ["GOING_TO_DISCOUNT_SHELF"], // deliberately does NOT include IS_FESTIVAL_LEFTOVER -- verified against the real narration text below, which withholds it until the follow-up question is answered
+};
+
 /** The new possibility (directive Section 13) -- eligible ONLY once LEFTOVER_STOCK_MOVED is
  *  active, i.e. only after ACCEPT_HELP actually happened. */
 export const ASK_ABOUT_LEFTOVER_STOCK: ActionContractV2 = {
@@ -144,7 +229,10 @@ export const ASK_ABOUT_LEFTOVER_STOCK: ActionContractV2 = {
   successPostcondition: { id: "ask_about_leftover_stock_occurs", check: () => true },
   partialSuccessPostcondition: null,
   visibleFeedback: () => ({ onSuccess: [], onPartialSuccess: null, onFailure: null }),
-  stateDelta: () => [],
+  // PHASE 11.13C: no response state here -- this action's stateDelta represents ONLY what the
+  // PLAYER's own dispatch authoritatively accomplishes (nothing, for a question), never the NPC's
+  // response, which is a separate event committed elsewhere (see comment above).
+  stateDelta: (): LifeMaterial[] => [],
   actorExperienceWrite: () => [{ actorId: "player", mode: "PARTICIPATED", concreteContent: "運んだ箱が祭りの残りかどうか、洋平に尋ねた" }],
   conditionalFollowUpAffordance: () => "NONE",
 };
@@ -154,7 +242,7 @@ export const ASK_ABOUT_LEFTOVER_STOCK: ActionContractV2 = {
  *  still open, and after DECLINE. */
 export function yoheiContinuesLeftoverStockWorkNarration(s: ContractV2State): string[] {
   return LEFTOVER_STOCK_MOVED.check(s)
-    ? ["残りの手ぬぐいは、すでに値引き用の棚に並んでいる。"]
+    ? ["運んだ手ぬぐいは、すでに値引き用の棚に並んでいる。"]
     : ["洋平は、一人で値引き用の棚の準備を続けている。"];
 }
 
