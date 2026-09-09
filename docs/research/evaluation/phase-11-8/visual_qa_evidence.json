@@ -1,0 +1,92 @@
+{
+  "evidence": [
+    {
+      "name": "visualA_00_yohei_asks_for_help",
+      "path": "C:/Users/user/ClaudeWork/thinking-game/docs/research/evaluation/phase-11-8/screenshots/visualA_00_yohei_asks_for_help.png"
+    },
+    {
+      "name": "visualA_01_after_small_talk",
+      "path": "C:/Users/user/ClaudeWork/thinking-game/docs/research/evaluation/phase-11-8/screenshots/visualA_01_after_small_talk.png"
+    },
+    {
+      "name": "visualB_00_after_greeting",
+      "path": "C:/Users/user/ClaudeWork/thinking-game/docs/research/evaluation/phase-11-8/screenshots/visualB_00_after_greeting.png"
+    },
+    {
+      "name": "visualC_00_after_leave",
+      "path": "C:/Users/user/ClaudeWork/thinking-game/docs/research/evaluation/phase-11-8/screenshots/visualC_00_after_leave.png"
+    },
+    {
+      "name": "visualC_01_debug_panel_status_open",
+      "path": "C:/Users/user/ClaudeWork/thinking-game/docs/research/evaluation/phase-11-8/screenshots/visualC_01_debug_panel_status_open.png"
+    },
+    {
+      "name": "visualD_00_customer_arrives",
+      "path": "C:/Users/user/ClaudeWork/thinking-game/docs/research/evaluation/phase-11-8/screenshots/visualD_00_customer_arrives.png"
+    },
+    {
+      "name": "visualD_01_customer_leaves_answer_restored",
+      "path": "C:/Users/user/ClaudeWork/thinking-game/docs/research/evaluation/phase-11-8/screenshots/visualD_01_customer_leaves_answer_restored.png"
+    }
+  ],
+  "results": [
+    {
+      "name": "VISUAL A pre-check: Yohei's question is visible before any reply",
+      "pass": true
+    },
+    {
+      "name": "VISUAL A: the original question is not visually erased after small talk",
+      "pass": true
+    },
+    {
+      "name": "VISUAL A: ACCEPT/DECLINE/DEFER are still offered (Yohei has not acted as if answered)",
+      "pass": true
+    },
+    {
+      "name": "VISUAL A: no language implies the pending question was already answered",
+      "pass": true
+    },
+    {
+      "name": "VISUAL B: conversation does not restart -- ACCEPT/DECLINE/DEFER still offered after greeting",
+      "pass": true
+    },
+    {
+      "name": "VISUAL B: scenario picker/begin screen did not reappear (no reinitialization)",
+      "pass": true
+    },
+    {
+      "name": "VISUAL C: PLAYER_LEAVES is not presented as answering/resolving the question",
+      "pass": true
+    },
+    {
+      "name": "VISUAL C: the leaving narration itself renders",
+      "pass": true
+    },
+    {
+      "name": "VISUAL C: debug panel confirms PendingReply.status is still OPEN after leaving",
+      "pass": true
+    },
+    {
+      "name": "VISUAL D: Yohei visibly continues shop activity (serving the customer)",
+      "pass": true
+    },
+    {
+      "name": "VISUAL D: PLAYER cannot answer while Yohei is unavailable (buttons withdrawn, not just ignored)",
+      "pass": true
+    },
+    {
+      "name": "VISUAL D: pending context survives the interruption (debug panel still shows OPEN, not null)",
+      "pass": true
+    },
+    {
+      "name": "VISUAL D: PLAYER can answer again once the interruption ends",
+      "pass": true
+    },
+    {
+      "name": "INTERNALS: player-facing narration/choice area never exposes PendingReply/status/contractId/eligibility/State Admission internals",
+      "pass": true
+    }
+  ],
+  "baseUrl": "http://localhost:5177/?newlifecontractv2=1",
+  "allPass": true
+}

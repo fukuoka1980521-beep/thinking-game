@@ -1,0 +1,514 @@
+{
+  "RUN_SIMPLE_PURCHASE": [
+    {
+      "contractId": "VISIT_YOHEI_SIMPLE_PURCHASE",
+      "initialIntent": "ORDINARY_SHOP_VISIT",
+      "interpretedIntent": "ORDINARY_SHOP_VISIT",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "洋平商店で買い物を済ませる",
+      "selectedAction": "VISIT_YOHEI_SIMPLE_PURCHASE",
+      "authoritativeEvent": "ORDINARY_TRANSACTION",
+      "stateDelta": [],
+      "conditionalAffordances": "NONE",
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "PARTICIPATED",
+          "concreteContent": "洋平商店で買い物をした"
+        }
+      ],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [],
+        "day": 1
+      }
+    }
+  ],
+  "RUN_JIN_OBSERVE_ONLY": [
+    {
+      "contractId": "EXPLORE_HALL_JIN_WORKING",
+      "initialIntent": "OBSERVE",
+      "interpretedIntent": "OBSERVE",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "近所を歩いてみる",
+      "selectedAction": "EXPLORE_HALL_JIN_WORKING",
+      "authoritativeEvent": "OBSERVE_HALL",
+      "stateDelta": [],
+      "conditionalAffordances": [
+        "OFFER_HELP"
+      ],
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "WITNESSED",
+          "concreteContent": "公民館で長机を運ぶ仕事をしている迅を見かけた"
+        },
+        {
+          "actorId": "jin",
+          "mode": "PARTICIPATED",
+          "concreteContent": "一人で長机を運んでいた"
+        }
+      ],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [],
+        "day": 1
+      }
+    }
+  ],
+  "RUN_JIN_HELP": [
+    {
+      "contractId": "EXPLORE_HALL_JIN_WORKING",
+      "initialIntent": "OBSERVE",
+      "interpretedIntent": "OBSERVE",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "近所を歩いてみる",
+      "selectedAction": "EXPLORE_HALL_JIN_WORKING",
+      "authoritativeEvent": "OBSERVE_HALL",
+      "stateDelta": [],
+      "conditionalAffordances": [
+        "OFFER_HELP"
+      ],
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "WITNESSED",
+          "concreteContent": "公民館で長机を運ぶ仕事をしている迅を見かけた"
+        },
+        {
+          "actorId": "jin",
+          "mode": "PARTICIPATED",
+          "concreteContent": "一人で長机を運んでいた"
+        }
+      ],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [],
+        "day": 1
+      }
+    },
+    {
+      "contractId": "OFFER_HELP",
+      "initialIntent": "HELP_JIN",
+      "interpretedIntent": "HELP_JIN",
+      "canonicalPreconditionId": "jin_helper_absent_today",
+      "eligibilityResult": [
+        {
+          "id": "jin_helper_absent_today",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "手伝う",
+      "selectedAction": "OFFER_HELP",
+      "authoritativeEvent": "HELP_MOVE_TABLE",
+      "stateDelta": [
+        "helped_jin_move_table"
+      ],
+      "conditionalAffordances": "NONE",
+      "followUpChoice": "OFFER_HELP",
+      "stateAdmissionDecision": [
+        {
+          "sourceEvent": "HELP_MOVE_TABLE",
+          "provenanceClass": "PLAYER_CHOSEN_FACT",
+          "admissionDecision": "ADMIT_AUTOMATICALLY"
+        }
+      ],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "PARTICIPATED",
+          "concreteContent": "迅の長机運びを手伝った"
+        },
+        {
+          "actorId": "jin",
+          "mode": "PARTICIPATED",
+          "concreteContent": "プレイヤーに長机運びを手伝ってもらった"
+        }
+      ],
+      "lifeMaterialDelta": [
+        "helped_jin_move_table"
+      ],
+      "resultingState": {
+        "materials": [
+          "helped_jin_move_table"
+        ],
+        "day": 1
+      }
+    }
+  ],
+  "RUN_JIN_DECLINE": [
+    {
+      "contractId": "EXPLORE_HALL_JIN_WORKING",
+      "initialIntent": "OBSERVE",
+      "interpretedIntent": "OBSERVE",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "近所を歩いてみる",
+      "selectedAction": "EXPLORE_HALL_JIN_WORKING",
+      "authoritativeEvent": "OBSERVE_HALL",
+      "stateDelta": [],
+      "conditionalAffordances": [
+        "OFFER_HELP"
+      ],
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "WITNESSED",
+          "concreteContent": "公民館で長机を運ぶ仕事をしている迅を見かけた"
+        },
+        {
+          "actorId": "jin",
+          "mode": "PARTICIPATED",
+          "concreteContent": "一人で長机を運んでいた"
+        }
+      ],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [],
+        "day": 1
+      }
+    },
+    null
+  ],
+  "RUN_JIN_NO_HELP_NEEDED": [
+    {
+      "contractId": "EXPLORE_HALL_JIN_WORKING",
+      "initialIntent": "OBSERVE",
+      "interpretedIntent": "OBSERVE",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "近所を歩いてみる",
+      "selectedAction": "EXPLORE_HALL_JIN_WORKING",
+      "authoritativeEvent": "OBSERVE_HALL",
+      "stateDelta": [],
+      "conditionalAffordances": "NONE",
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "WITNESSED",
+          "concreteContent": "公民館で長机を運ぶ仕事をしている迅を見かけた"
+        },
+        {
+          "actorId": "jin",
+          "mode": "PARTICIPATED",
+          "concreteContent": "もう一人の手伝いと長机を運んでいた"
+        }
+      ],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [],
+        "day": 1
+      }
+    }
+  ],
+  "RUN_REST": [
+    {
+      "contractId": "REST",
+      "initialIntent": "DISENGAGE",
+      "interpretedIntent": "DISENGAGE",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "休む",
+      "selectedAction": "REST",
+      "authoritativeEvent": "REST_QUIETLY",
+      "stateDelta": [],
+      "conditionalAffordances": "NONE",
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [],
+        "day": 1
+      }
+    }
+  ],
+  "RUN_TRASH_BAG_REGRESSION": [
+    {
+      "contractId": "VISIT_YOHEI_WITH_BAG_TASK",
+      "initialIntent": "ORDINARY_SHOP_VISIT",
+      "interpretedIntent": "ORDINARY_SHOP_VISIT",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "洋平商店で買い物を済ませる",
+      "selectedAction": "VISIT_YOHEI_WITH_BAG_TASK",
+      "authoritativeEvent": "ORDINARY_TRANSACTION",
+      "stateDelta": [],
+      "conditionalAffordances": [
+        "BUY_BAGS"
+      ],
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "PARTICIPATED",
+          "concreteContent": "洋平商店を訪れた"
+        }
+      ],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [
+          "trash_bags_needed"
+        ],
+        "day": 6
+      }
+    },
+    {
+      "contractId": "BUY_BAGS",
+      "initialIntent": "RESOLVE_PENDING_BAG_TASK",
+      "interpretedIntent": "RESOLVE_PENDING_BAG_TASK",
+      "canonicalPreconditionId": "trash_bags_needed_active",
+      "eligibilityResult": [
+        {
+          "id": "trash_bags_needed_active",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "指定のゴミ袋を買いに行く",
+      "selectedAction": "BUY_BAGS",
+      "authoritativeEvent": "BUY_TRASH_BAGS",
+      "stateDelta": [
+        "trash_bags_needed",
+        "trash_bags_owned"
+      ],
+      "conditionalAffordances": "NONE",
+      "followUpChoice": "BUY_BAGS",
+      "stateAdmissionDecision": [
+        {
+          "sourceEvent": "BUY_TRASH_BAGS",
+          "provenanceClass": "PLAYER_CHOSEN_FACT",
+          "admissionDecision": "ADMIT_AUTOMATICALLY"
+        },
+        {
+          "sourceEvent": "BUY_TRASH_BAGS",
+          "provenanceClass": "PLAYER_CHOSEN_FACT",
+          "admissionDecision": "ADMIT_AUTOMATICALLY"
+        }
+      ],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "PARTICIPATED",
+          "concreteContent": "指定のゴミ袋を買った"
+        },
+        {
+          "actorId": "yohei",
+          "mode": "PARTICIPATED",
+          "concreteContent": "指定のゴミ袋を売った"
+        }
+      ],
+      "lifeMaterialDelta": [
+        "trash_bags_needed",
+        "trash_bags_owned"
+      ],
+      "resultingState": {
+        "materials": [
+          "trash_bags_owned"
+        ],
+        "day": 6
+      }
+    }
+  ],
+  "RUN_FREE_TEXT_ALLOWED": {
+    "exploreTrace": {
+      "contractId": "EXPLORE_HALL_JIN_WORKING",
+      "initialIntent": "OBSERVE",
+      "interpretedIntent": "OBSERVE",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "近所を歩いてみる",
+      "selectedAction": "EXPLORE_HALL_JIN_WORKING",
+      "authoritativeEvent": "OBSERVE_HALL",
+      "stateDelta": [],
+      "conditionalAffordances": [
+        "OFFER_HELP"
+      ],
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "WITNESSED",
+          "concreteContent": "公民館で長机を運ぶ仕事をしている迅を見かけた"
+        },
+        {
+          "actorId": "jin",
+          "mode": "PARTICIPATED",
+          "concreteContent": "一人で長机を運んでいた"
+        }
+      ],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [],
+        "day": 1
+      }
+    },
+    "candidate": {
+      "text": "手が足りないなら少し手伝おうか？",
+      "interpretedIntentId": "OFFER_HELP",
+      "legitimate": true,
+      "matchedAffordance": {
+        "id": "OFFER_HELP",
+        "label": "手伝う",
+        "eligibility": [
+          {
+            "id": "jin_helper_absent_today"
+          }
+        ]
+      },
+      "ifNotConfirmedOrIllegitimate": [
+        "（申し出は取り消された）"
+      ]
+    },
+    "resolvedTrace": {
+      "contractId": "OFFER_HELP",
+      "initialIntent": "HELP_JIN",
+      "interpretedIntent": "OFFER_HELP",
+      "canonicalPreconditionId": "jin_helper_absent_today",
+      "eligibilityResult": [
+        {
+          "id": "jin_helper_absent_today",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "手伝う",
+      "selectedAction": "OFFER_HELP",
+      "authoritativeEvent": "HELP_MOVE_TABLE",
+      "stateDelta": [
+        "helped_jin_move_table"
+      ],
+      "conditionalAffordances": "NONE",
+      "followUpChoice": "OFFER_HELP",
+      "stateAdmissionDecision": [
+        {
+          "sourceEvent": "HELP_MOVE_TABLE",
+          "provenanceClass": "PLAYER_CHOSEN_FACT",
+          "admissionDecision": "ADMIT_AUTOMATICALLY"
+        }
+      ],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "PARTICIPATED",
+          "concreteContent": "迅の長机運びを手伝った"
+        },
+        {
+          "actorId": "jin",
+          "mode": "PARTICIPATED",
+          "concreteContent": "プレイヤーに長机運びを手伝ってもらった"
+        }
+      ],
+      "lifeMaterialDelta": [
+        "helped_jin_move_table"
+      ],
+      "resultingState": {
+        "materials": [
+          "helped_jin_move_table"
+        ],
+        "day": 1
+      }
+    }
+  },
+  "RUN_FREE_TEXT_NOT_ALLOWED": {
+    "exploreTrace": {
+      "contractId": "EXPLORE_HALL_JIN_WORKING",
+      "initialIntent": "OBSERVE",
+      "interpretedIntent": "OBSERVE",
+      "canonicalPreconditionId": "always",
+      "eligibilityResult": [
+        {
+          "id": "always",
+          "passed": true
+        }
+      ],
+      "visiblePromise": "近所を歩いてみる",
+      "selectedAction": "EXPLORE_HALL_JIN_WORKING",
+      "authoritativeEvent": "OBSERVE_HALL",
+      "stateDelta": [],
+      "conditionalAffordances": "NONE",
+      "followUpChoice": "NOT_APPLICABLE",
+      "stateAdmissionDecision": [],
+      "actorExperienceDelta": [
+        {
+          "actorId": "player",
+          "mode": "WITNESSED",
+          "concreteContent": "公民館で長机を運ぶ仕事をしている迅を見かけた"
+        },
+        {
+          "actorId": "jin",
+          "mode": "PARTICIPATED",
+          "concreteContent": "もう一人の手伝いと長机を運んでいた"
+        }
+      ],
+      "lifeMaterialDelta": [],
+      "resultingState": {
+        "materials": [],
+        "day": 1
+      }
+    },
+    "candidate": {
+      "text": "手が足りないなら少し手伝おうか？",
+      "interpretedIntentId": "OFFER_HELP",
+      "legitimate": false,
+      "matchedAffordance": null,
+      "ifNotConfirmedOrIllegitimate": [
+        "「ありがとう、でも今日は大丈夫そうだ」と、迅が言った。"
+      ]
+    },
+    "confirmedContractWasNull": true
+  }
+}

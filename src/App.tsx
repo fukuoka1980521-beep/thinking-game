@@ -11,6 +11,7 @@ import { UserTestThanksScreen } from "./screens/UserTestThanksScreen";
 import { CaseSession } from "./CaseSession";
 import { Case1CApp } from "./case1c/Case1CApp";
 import { Case1TestResultsScreen } from "./case1c/Case1TestResultsScreen";
+import { NewlifeContractV2App } from "./newlifecontractv2/NewlifeContractV2App";
 import {
   loadInProgressSession,
   loadCompletedLogs,
@@ -33,7 +34,8 @@ type View =
   | { kind: "USER_TEST" }
   | { kind: "USER_TEST_THANKS" }
   | { kind: "CASE1C" }
-  | { kind: "CASE1C_RESULTS" };
+  | { kind: "CASE1C_RESULTS" }
+  | { kind: "NEWLIFE_CONTRACT_V2" };
 
 // Section 7: after roughly this many cases in one sitting, offer the play-run summary.
 const SESSION_SUMMARY_THRESHOLD = 5;
@@ -58,6 +60,7 @@ function initialViewFromLocation(): View {
   const params = new URLSearchParams(window.location.search);
   if (params.has("case1results")) return { kind: "CASE1C_RESULTS" };
   if (params.has("case1test")) return { kind: "CASE1C" };
+  if (params.has("newlifecontractv2")) return { kind: "NEWLIFE_CONTRACT_V2" };
   return { kind: "HOME" };
 }
 
@@ -261,6 +264,10 @@ export default function App() {
 
   if (view.kind === "CASE1C_RESULTS") {
     return <Case1TestResultsScreen onExit={() => setView({ kind: "HOME" })} />;
+  }
+
+  if (view.kind === "NEWLIFE_CONTRACT_V2") {
+    return <NewlifeContractV2App onExit={() => setView({ kind: "HOME" })} />;
   }
 
   return (
