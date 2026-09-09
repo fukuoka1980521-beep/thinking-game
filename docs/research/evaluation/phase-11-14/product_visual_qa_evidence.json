@@ -1,0 +1,84 @@
+{
+  "results": [
+    {
+      "name": "pre-scene paragraph grounds the relationship (顔なじみ)",
+      "pass": true,
+      "detail": "祭りの翌日。顔なじみの洋平の店を訪れた。洋平は、値引き用の棚の準備をしている。店に入る"
+    },
+    {
+      "name": "opening: exact 5-action set (accept/decline/what/festival/leave)",
+      "pass": true,
+      "detail": "[\"playable11-accept\",\"playable11-decline\",\"playable11-ask-what\",\"playable11-ask-festival\",\"playable11-leave\"]"
+    },
+    {
+      "name": "opening narration uses 話しかけてきた, not the old 洋平が言った framing",
+      "pass": true,
+      "detail": "値引き用の棚を整理していた洋平が、話しかけてきた。「ちょっと手伝ってくれる？」"
+    },
+    {
+      "name": "festival response contains the real captured sales result",
+      "pass": true,
+      "detail": "「8割くらいは売れたよ。残りは今値引きして出す準備してるところだ。」"
+    },
+    {
+      "name": "SEMANTIC OPTION EXHAUSTION: ask-festival disappears (one-shot, already selected)",
+      "pass": true,
+      "detail": "[\"playable11-accept\",\"playable11-decline\",\"playable11-ask-what\",\"playable11-leave\"]"
+    },
+    {
+      "name": "REDUNDANT QUESTION SUPPRESSION: ask-sales never appears (target already resolved by the festival answer)",
+      "pass": true,
+      "detail": "[\"playable11-accept\",\"playable11-decline\",\"playable11-ask-what\",\"playable11-leave\"]"
+    },
+    {
+      "name": "ask-what remains (independent target, not yet asked)",
+      "pass": true,
+      "detail": "[\"playable11-accept\",\"playable11-decline\",\"playable11-ask-what\",\"playable11-leave\"]"
+    },
+    {
+      "name": "PLAYER acceptance line uses the action-grounded rewrite",
+      "pass": true,
+      "detail": "値引き用の棚を整理していた洋平が、話しかけてきた。「ちょっと手伝ってくれる？」「8割くらいは売れたよ。残りは今値引きして出す準備してるところだ。」「OKです。この棚に置きますね」と答え、洋平と二人で箱を値引き用の棚まで運んだ。棚に置いて蓋を開けると、中には祭りの柄の手ぬぐいがたくさん入っていた。"
+    },
+    {
+      "name": "physical reveal narrates the towels becoming visible",
+      "pass": true,
+      "detail": "値引き用の棚を整理していた洋平が、話しかけてきた。「ちょっと手伝ってくれる？」「8割くらいは売れたよ。残りは今値引きして出す準備してるところだ。」「OKです。この棚に置きますね」と答え、洋平と二人で箱を値引き用の棚まで運んだ。棚に置いて蓋を開けると、中には祭りの柄の手ぬぐいがたくさん入っていた。"
+    },
+    {
+      "name": "REDUNDANT QUESTION SUPPRESSION: ask-leftover never appears (its target was already resolved by the earlier festival answer, PATH B/C)",
+      "pass": true,
+      "detail": "[\"playable11-leave\"]"
+    },
+    {
+      "name": "ask-what gone (request resolved by accept)",
+      "pass": true,
+      "detail": "[\"playable11-leave\"]"
+    },
+    {
+      "name": "debug evidence shows targetStatus KNOWN_TRUE, resolved via the festival response",
+      "pass": true
+    },
+    {
+      "name": "no debug/research text (targetStatus/KNOWN_TRUE/etc) leaks onto the primary player surface",
+      "pass": true
+    },
+    {
+      "name": "PATH D: ask-leftover remains legitimately eligible (festival never asked, target still open)",
+      "pass": true,
+      "detail": "[\"playable11-ask-festival\",\"playable11-ask-leftover\",\"playable11-leave\"]"
+    },
+    {
+      "name": "PATH D: direct leftover question still genuinely confirms the target",
+      "pass": true,
+      "detail": "「ああ、そうだ。祭りの残りだよ。値引きで出すから、棚に並べるんだ。」"
+    },
+    {
+      "name": "PATH C: ask-leftover disappears once its own target is resolved",
+      "pass": true,
+      "detail": "[\"playable11-ask-festival\",\"playable11-leave\"]"
+    }
+  ],
+  "baseUrl": "http://localhost:5211/?newlifeplayable11=1",
+  "allPass": true
+}

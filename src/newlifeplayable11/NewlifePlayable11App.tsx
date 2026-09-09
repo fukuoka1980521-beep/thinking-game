@@ -105,7 +105,11 @@ export function NewlifePlayable11App({ onExit }: { onExit: () => void }) {
 
   function begin() {
     setStarted(true);
-    setLog([{ narration: state.narration.length ? state.narration : ["「ちょっと手伝ってくれる？」と、洋平が言った。"], yoheiLine: null }]);
+    // PHASE 11.14: single-sourced from `openYoheiLeftoverStockRequest`'s own narration (set at
+    // component construction, always populated by then) -- no second, independently hand-typed
+    // copy of the opening line here anymore (that duplication is what let the two drift out of
+    // sync during the Owner Play language repair).
+    setLog([{ narration: state.narration, yoheiLine: null }]);
   }
 
   function pushLog(narration: string[], yoheiLine: string | null) {
@@ -183,7 +187,7 @@ export function NewlifePlayable11App({ onExit }: { onExit: () => void }) {
       <div className="ns-stage">
         {!started && (
           <div className="ns-choices" data-testid="playable11-begin-choice">
-            <p>祭りの翌日。洋平商店を訪れた。洋平は、値引き用の棚の準備をしている。</p>
+            <p>祭りの翌日。顔なじみの洋平の店を訪れた。洋平は、値引き用の棚の準備をしている。</p>
             <button className="ns-choice-button" onClick={begin} data-testid="playable11-begin">
               店に入る
             </button>

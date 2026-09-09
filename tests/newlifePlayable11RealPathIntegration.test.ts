@@ -7,21 +7,34 @@ import {
   ASK_FESTIVAL_SCENE,
   ASK_WHAT_HELP_NEEDED,
   ASK_WEATHER_SCENE,
+  ASK_ABOUT_LEFTOVER_STOCK,
   buildYoheiPacket,
 } from "../src/research/action-contract-v2/playableSceneContracts";
 import { buildAskCandidates, applyCausalityGate } from "../src/newlifeplayable11/NewlifePlayable11App";
 import { evaluateProductSurface, ACTION_OWNERSHIP_REGISTRY } from "../src/research/action-contract-v2/productSurface";
 import { evaluateRealLeftoverStockCausalClaim } from "../src/research/action-contract-v2/causalUnlockInvariant";
-import type { ActionContractV2 } from "../src/research/action-contract-v2/types";
+import { commitNpcResponseIfApplicable } from "../src/research/action-contract-v2/npcResponseCommit";
+import type { ActionContractV2, ContractV2State } from "../src/research/action-contract-v2/types";
 
 function baseState() {
   return openYoheiLeftoverStockRequest(createInitialState(), "real-path-test");
 }
 
-function realComposedActionIds(state: ReturnType<typeof baseState>) {
+function realComposedActionIds(state: ContractV2State) {
   const causalVerdict = evaluateRealLeftoverStockCausalClaim(state);
   const candidates = applyCausalityGate(buildAskCandidates(state), causalVerdict);
   return evaluateProductSurface(candidates).accepted.map((a) => a.actionId);
+}
+
+/** PHASE 11.14: mirrors `NewlifePlayable11App.tsx`'s real `askQuestion` pipeline in full --
+ *  `resolveAction` (the PLAYER's own ask dispatch) THEN the response-commit seam
+ *  (`commitNpcResponseIfApplicable`) -- so tests exercising "after asking X" see exactly what the
+ *  real scene sees, including the NPC response's own structural target-resolution effects
+ *  (directive Section 8/10), not merely the ask dispatch half of it. */
+function askInFull(state: ContractV2State, contract: ActionContractV2, utterance: string): ContractV2State {
+  const { state: afterAsk } = resolveAction(state, contract);
+  const packet = buildYoheiPacket(afterAsk, utterance, contract.playerIntent);
+  return commitNpcResponseIfApplicable(contract.actionId, afterAsk, packet);
 }
 
 describe("PHASE 11.13: the REAL composition path, product-repaired content", () => {
@@ -37,10 +50,33 @@ describe("PHASE 11.13: the REAL composition path, product-repaired content", () 
     expect(candidates.map((c) => c.actionId)).toContain("ASK_WEATHER_SCENE");
   });
 
-  it("after ASK_FESTIVAL: ASK_SALES becomes a real candidate (contextual unlock), ASK_WHAT remains available (not yet asked)", () => {
-    const afterFestival = resolveAction(baseState(), ASK_FESTIVAL_SCENE).state;
+  it("PHASE 11.14 (directive Section 8/11, Option B): after the REAL ASK_FESTIVAL response commits, ASK_FESTIVAL itself disappears (one-shot, Section 7) AND ASK_SALES never becomes offerable -- the real captured festival answer already states the sales result, so its target is resolved by the SAME response, not by asking ASK_SALES directly", () => {
+    const afterFestival = askInFull(baseState(), ASK_FESTIVAL_SCENE, "祭りどうだった？");
     const ids = realComposedActionIds(afterFestival);
-    expect(ids).toEqual(["ASK_WHAT_HELP_NEEDED", "ASK_FESTIVAL_SCENE", "ASK_SALES_SCENE"]);
+    expect(ids).not.toContain("ASK_FESTIVAL_SCENE");
+    expect(ids).not.toContain("ASK_SALES_SCENE");
+    expect(ids).toEqual(["ASK_WHAT_HELP_NEEDED"]);
+  });
+
+  it("PHASE 11.14 (directive Section 8/10): ONE response resolves multiple question targets -- the real ASK_FESTIVAL response also resolves LEFTOVER_STATUS (the same structural fact ASK_ABOUT_LEFTOVER_STOCK's CONFIRM outcome represents), so asking about the festival BEFORE accepting help means the leftover follow-up never becomes offerable even though the player never asked it directly", () => {
+    const afterFestival = askInFull(baseState(), ASK_FESTIVAL_SCENE, "祭りどうだった？");
+    const accepted = resolvePendingReplyEvent(afterFestival, PLAYER_ACCEPTS_HELP_MOVE_STOCK).state;
+    const ids = realComposedActionIds(accepted);
+    expect(ids).not.toContain("ASK_ABOUT_LEFTOVER_STOCK");
+    expect(accepted.materials.some((m) => m.id === "leftover_question_response_confirm")).toBe(true);
+  });
+
+  it("PATH D (directive Section 12/16): if the player has NOT asked about the festival and only sees the physical reveal, ASK_ABOUT_LEFTOVER_STOCK remains legitimately eligible -- path-dependent, not a static menu", () => {
+    const accepted = resolvePendingReplyEvent(baseState(), PLAYER_ACCEPTS_HELP_MOVE_STOCK).state;
+    const ids = realComposedActionIds(accepted);
+    expect(ids).toContain("ASK_ABOUT_LEFTOVER_STOCK");
+  });
+
+  it("PATH C: asking ASK_ABOUT_LEFTOVER_STOCK directly (its own real CONFIRM response) also removes it from the candidate list afterward, via the same LEFTOVER_TARGET_UNRESOLVED gate -- not merely a separate ad hoc 'already asked' flag", () => {
+    const accepted = resolvePendingReplyEvent(baseState(), PLAYER_ACCEPTS_HELP_MOVE_STOCK).state;
+    const afterAsked = askInFull(accepted, ASK_ABOUT_LEFTOVER_STOCK, "これ、祭りの残り？");
+    const ids = realComposedActionIds(afterAsked);
+    expect(ids).not.toContain("ASK_ABOUT_LEFTOVER_STOCK");
   });
 
   it("after ASK_WHAT: that exact action disappears (one-shot -- the information has already been supplied), independent of accept/decline", () => {
@@ -82,11 +118,11 @@ describe("PHASE 11.13: the REAL composition path, product-repaired content", () 
     expect(ids).not.toContain("ASK_WEATHER_SCENE");
   });
 
-  it("after DECLINE with ASK_FESTIVAL asked first: ASK_SALES remains available (independently valid contextual conversation, unaffected by the resolved request)", () => {
-    const afterFestival = resolveAction(baseState(), ASK_FESTIVAL_SCENE).state;
+  it("PHASE 11.14: after DECLINE with ASK_FESTIVAL asked (and answered) first, no ask-actions remain -- ASK_FESTIVAL is one-shot (already asked), ASK_SALES's target is already resolved by that same response, ASK_WHAT is request-dependent (request resolved by decline), and ASK_ABOUT_LEFTOVER_STOCK requires the physical reveal that decline never produces", () => {
+    const afterFestival = askInFull(baseState(), ASK_FESTIVAL_SCENE, "祭りどうだった？");
     const declined = resolvePendingReplyEvent(afterFestival, PLAYER_DECLINES_HELP_MOVE_STOCK).state;
     const ids = realComposedActionIds(declined);
-    expect(ids).toEqual(["ASK_FESTIVAL_SCENE", "ASK_SALES_SCENE"]);
+    expect(ids).toEqual([]);
   });
 
   it("PATH D: ACCEPT pressed immediately without ASK_WHAT remains valid, and still yields the legitimate contextual question (PLAYER-HIDDEN != WORLD-UNDEFINED, directive Section 14)", () => {

@@ -43,7 +43,7 @@ describe("PHASE 11.13: real ?newlifeplayable11=1 render, product-repaired throug
     expect(ids).not.toContain("playable11-ask-what");
   });
 
-  it("ASK_FESTIVAL unlocks the contextual ASK_SALES follow-up -- absent before, present after", async () => {
+  it("PHASE 11.14 (Owner Play repair, directive Section 8/11): asking ASK_FESTIVAL removes ASK_FESTIVAL itself (one-shot) AND never surfaces ASK_SALES -- the real festival answer already states the sales result, so the redundant follow-up never becomes visible", async () => {
     window.history.pushState({}, "", "/?newlifeplayable11=1");
     const { container } = render(<App />);
     const user = userEvent.setup();
@@ -51,7 +51,21 @@ describe("PHASE 11.13: real ?newlifeplayable11=1 render, product-repaired throug
     expect(actionButtonTestIds(container)).not.toContain("playable11-ask-sales");
 
     await user.click(await screen.findByTestId("playable11-ask-festival"));
-    expect(actionButtonTestIds(container)).toContain("playable11-ask-sales");
+    expect(actionButtonTestIds(container)).not.toContain("playable11-ask-sales");
+    expect(actionButtonTestIds(container)).not.toContain("playable11-ask-festival");
+  });
+
+  it("PHASE 11.14 (directive Section 8/12): asking ASK_FESTIVAL before ACCEPT also suppresses the leftover follow-up after the physical reveal -- one response resolving a target the player never asked about directly", async () => {
+    window.history.pushState({}, "", "/?newlifeplayable11=1");
+    const { container } = render(<App />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByTestId("playable11-begin"));
+    await user.click(await screen.findByTestId("playable11-ask-festival"));
+    await user.click(await screen.findByTestId("playable11-accept"));
+
+    const log = screen.getByTestId("playable11-log");
+    expect(log.textContent).toMatch(/手ぬぐい/);
+    expect(actionButtonTestIds(container)).not.toContain("playable11-ask-leftover");
   });
 
   it("after ACCEPT: the physical reveal is narrated, the leftover-stock follow-up NOW renders (real counterfactual causality gate passes on the repaired content), and the resolved-request ASK_WHAT is gone", async () => {
@@ -91,7 +105,7 @@ describe("PHASE 11.13: real ?newlifeplayable11=1 render, product-repaired throug
     await user.click(await screen.findByTestId("playable11-decline"));
 
     const log = screen.getByTestId("playable11-log");
-    expect(log.textContent).toContain("「ごめん、今日はちょっと」と、答えた。");
+    expect(log.textContent).toContain("「今日はちょっと、やめておきます」と答えた。");
     expect(log.textContent).toContain("「ああ、分かった。じゃあ俺でやるよ」と、洋平は言った。");
 
     const worldContinuity = screen.getByTestId("playable11-world-continuity");

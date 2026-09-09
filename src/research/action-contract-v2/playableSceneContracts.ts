@@ -36,6 +36,57 @@ const HAS_ASKED_FESTIVAL: Precondition = {
   check: (s) => s.experienceLog.some((e) => e.concreteContent === "洋平に祭りについて聞いた"),
 };
 
+/**
+ * PHASE 11.14 (Owner Play directive Section 7): ASK_FESTIVAL had NO one-shot gate at all --
+ * `eligibility: [ALWAYS]` meant it stayed in the action list forever, including after the player
+ * already asked it. Same pattern as `NOT_YET_ASKED_WHAT` above (Actor Experience / QUESTION_ASKED,
+ * not State Admission) -- "I already asked this" is a genuinely different fact from "its target is
+ * now known" (see `questionTargetUnresolved`/`LEFTOVER_TARGET_UNRESOLVED` below for the latter).
+ * Both dimensions gate independently; this one alone is sufficient to satisfy Section 7's minimum
+ * ("an action already selected should disappear") without depending on the response-commit step.
+ */
+const NOT_YET_ASKED_FESTIVAL: Precondition = {
+  id: "not_yet_asked_festival",
+  check: (s) => !s.experienceLog.some((e) => e.concreteContent === "洋平に祭りについて聞いた"),
+};
+
+/**
+ * PHASE 11.14 (Owner Play directive Section 8/9/10): the Owner's strongest finding -- a question
+ * must also disappear when its TARGET has already been resolved by ANOTHER legitimate NPC
+ * response, not merely by asking that exact question. Real authored content: the real captured
+ * ASK_FESTIVAL response ("8割くらいは売れたよ。残りは今値引きして出す準備してるところだ。") already
+ * states the sales result, so once it has been delivered, ASK_SALES has nothing left to add.
+ * Structural, not prose-based: a human verified this once against the real captured text
+ * (`capturedYoheiLines.ts`), and the fact is recorded as a plain State Admission material,
+ * admitted at the response-commit seam (`npcResponseCommit.ts`) -- never re-derived from
+ * `concreteContent` at evaluation time, same principle as `LEFTOVER_RESPONSE_MATERIAL_IDS`/
+ * `REVEAL_MATERIAL_ASSERTED_FACTS` (PHASE 11.13D/E).
+ */
+export type QuestionTarget = "FESTIVAL_SALES_STATUS";
+
+/** Which action's response commit resolves which simple (non-branching, always-KNOWN) question
+ *  target(s) -- authored once, read by `npcResponseCommit.ts`'s commit step, never derived from
+ *  the response's own display text. One response may resolve more than one target (directive
+ *  Section 8/10's explicit requirement) -- see `ASK_FESTIVAL_SCENE`'s entry. */
+export const RESPONSE_RESOLVES_SIMPLE_TARGETS: Record<string, QuestionTarget[]> = {
+  ASK_FESTIVAL_SCENE: ["FESTIVAL_SALES_STATUS"],
+  ASK_SALES_SCENE: ["FESTIVAL_SALES_STATUS"],
+};
+
+/** Single-sourced material id format -- both the eligibility check below and
+ *  `npcResponseCommit.ts`'s commit step reference this ONE function, never two independently
+ *  hand-typed copies of the same template string. */
+export function questionTargetKnownMaterialId(target: QuestionTarget): string {
+  return `question_target_known:${target}`;
+}
+
+function questionTargetUnresolved(target: QuestionTarget): Precondition {
+  return {
+    id: `question_target_unresolved:${target}`,
+    check: (s) => !s.materials.some((m) => m.id === questionTargetKnownMaterialId(target) && m.status === "ACTIVE"),
+  };
+}
+
 const SOURCE_EVENT_ID = "YOHEI_ASKS_HELP_MOVE_LEFTOVER_STOCK";
 
 /** Directive Section 6: fails closed. Never opens a PendingReply, never touches the LLM, if the
@@ -49,7 +100,7 @@ export function openYoheiLeftoverStockRequest(state: ContractV2State, idSuffix: 
   return openPendingReply(
     state,
     { id: `yohei_leftover_stock_request_${idSuffix}`, sourceEventId: SOURCE_EVENT_ID, npcId: "yohei", status: "OPEN", expectedReplyClass: "ACCEPT_DECLINE" },
-    ["「ちょっと手伝ってくれる？」と、洋平が言った。"],
+    ["値引き用の棚を整理していた洋平が、話しかけてきた。「ちょっと手伝ってくれる？」"],
   );
 }
 
@@ -74,7 +125,7 @@ export const LEFTOVER_STOCK_MOVED: Precondition = {
 export const PLAYER_ACCEPTS_HELP_MOVE_STOCK: PendingReplyEventSpec = {
   ...PLAYER_ACCEPTS_REQUEST,
   narration: () => [
-    "「分かった、運ぶよ」と答えた。洋平と二人で、箱を値引き用の棚まで運んだ。",
+    "「OKです。この棚に置きますね」と答え、洋平と二人で箱を値引き用の棚まで運んだ。",
     "棚に置いて蓋を開けると、中には祭りの柄の手ぬぐいがたくさん入っていた。",
   ],
   material: (s): LifeMaterial => ({
@@ -101,7 +152,7 @@ export const PLAYER_ACCEPTS_HELP_MOVE_STOCK: PendingReplyEventSpec = {
  */
 export const PLAYER_DECLINES_HELP_MOVE_STOCK: PendingReplyEventSpec = {
   ...PLAYER_DECLINES_REQUEST,
-  narration: () => ["「ごめん、今日はちょっと」と、答えた。", "「ああ、分かった。じゃあ俺でやるよ」と、洋平は言った。"],
+  narration: () => ["「今日はちょっと、やめておきます」と答えた。", "「ああ、分かった。じゃあ俺でやるよ」と、洋平は言った。"],
 };
 
 // ---------------------------------------------------------------------------
@@ -131,7 +182,7 @@ export const ASK_WHAT_HELP_NEEDED: ActionContractV2 = {
 export const ASK_FESTIVAL_SCENE: ActionContractV2 = {
   actionId: "ASK_FESTIVAL_SCENE",
   playerIntent: "ASK_FESTIVAL",
-  eligibility: [ALWAYS],
+  eligibility: [NOT_YET_ASKED_FESTIVAL],
   playerVisiblePromise: "祭りについて聞く",
   failurePostcondition: null,
   authoritativeEvent: "ASK_FESTIVAL",
@@ -146,7 +197,7 @@ export const ASK_FESTIVAL_SCENE: ActionContractV2 = {
 export const ASK_SALES_SCENE: ActionContractV2 = {
   actionId: "ASK_SALES_SCENE",
   playerIntent: "ASK_SALES",
-  eligibility: [HAS_ASKED_FESTIVAL],
+  eligibility: [HAS_ASKED_FESTIVAL, questionTargetUnresolved("FESTIVAL_SALES_STATUS")],
   playerVisiblePromise: "売れ行きについて聞く",
   failurePostcondition: null,
   authoritativeEvent: "ASK_FESTIVAL_SALES_RESULT",
@@ -217,12 +268,30 @@ export const REVEAL_MATERIAL_ASSERTED_FACTS: Record<string, string[]> = {
   leftover_stock_moved: ["GOING_TO_DISCOUNT_SHELF"], // deliberately does NOT include IS_FESTIVAL_LEFTOVER -- verified against the real narration text below, which withholds it until the follow-up question is answered
 };
 
+/**
+ * PHASE 11.14 (Owner Play directive Section 8/12): the leftover question must ALSO disappear once
+ * its target is resolved by a DIFFERENT response (the real ASK_FESTIVAL answer already states
+ * "残りは今値引きして出す準備してるところだ" -- Yohei confirming, in his own authoritative response,
+ * that the remaining stock is exactly what is being prepared for the discount shelf). Reuses the
+ * EXISTING three-outcome material system (`LEFTOVER_RESPONSE_MATERIAL_IDS`, PHASE 11.13D) rather
+ * than inventing a second, parallel "known" tracker for the same underlying fact -- any of the
+ * three outcomes being ACTIVE means the target is no longer open, regardless of which action
+ * committed it. Structural (material id membership), never prose-based.
+ */
+const LEFTOVER_TARGET_UNRESOLVED: Precondition = {
+  id: "leftover_target_unresolved",
+  check: (s) => !Object.values(LEFTOVER_RESPONSE_MATERIAL_IDS).some((id) => s.materials.some((m) => m.id === id && m.status === "ACTIVE")),
+};
+
 /** The new possibility (directive Section 13) -- eligible ONLY once LEFTOVER_STOCK_MOVED is
- *  active, i.e. only after ACCEPT_HELP actually happened. */
+ *  active, i.e. only after ACCEPT_HELP actually happened, AND only while its own target remains
+ *  unresolved (PHASE 11.14, directive Section 8/12 -- PATH D: still legitimate if the player has
+ *  only seen the physical reveal and never received the festival answer; gone once either
+ *  response has resolved it). */
 export const ASK_ABOUT_LEFTOVER_STOCK: ActionContractV2 = {
   actionId: "ASK_ABOUT_LEFTOVER_STOCK",
   playerIntent: "ASK_ABOUT_LEFTOVER_STOCK",
-  eligibility: [LEFTOVER_STOCK_MOVED],
+  eligibility: [LEFTOVER_STOCK_MOVED, LEFTOVER_TARGET_UNRESOLVED],
   playerVisiblePromise: "運んだ箱について尋ねる",
   failurePostcondition: null,
   authoritativeEvent: "ASK_ABOUT_LEFTOVER_STOCK",

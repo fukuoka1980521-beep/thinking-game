@@ -33,10 +33,10 @@ export const PRODUCT_FIXTURE_LINES: ProductFixtureLine[] = [
     // CONTRACT'S playerIntent ("ASK_WHAT"), NOT its actionId ("ASK_WHAT_HELP_NEEDED") -- see
     // buildYoheiPacket's caller in NewlifePlayable11App.tsx / languageAdapter.ts's packetKey().
     packetKey: "ASK_WHAT::KNOWN",
-    text: "店先の箱を、値引き用の棚まで運んでくれるか。",
+    text: "店先の箱を、値引き用の棚まで運んでくれる？",
     source: "SYSTEM_AUTHORED_PRODUCT_FIXTURE",
     reason:
-      'the real captured Vertex line for this packet key ("店先にある祭りの手ぬぐいの箱、値引き用の棚まで運んでくれるか") names festival/towels before the physical reveal; the repaired product flow requires that fact to stay hidden until after ACCEPT (see docs/research/evaluation/phase-11-13/PRODUCT_SCENE_REPAIR_SPEC_V1.md)',
+      'the real captured Vertex line for this packet key ("店先にある祭りの手ぬぐいの箱、値引き用の棚まで運んでくれるか") names festival/towels before the physical reveal; the repaired product flow requires that fact to stay hidden until after ACCEPT (see docs/research/evaluation/phase-11-13/PRODUCT_SCENE_REPAIR_SPEC_V1.md). PHASE 11.14 (Owner Play directive Section 4): also reworded the request-verb register from the stiffer "くれるか" to "くれる？", matching the established Yohei voice bible (docs/product/NEWLIFE_JAPANESE_CHARACTER_VOICE_BIBLE_V1.md -- casual once past a first meeting, but explicitly "not rough")',
   },
 ];
 
