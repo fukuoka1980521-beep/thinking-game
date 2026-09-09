@@ -1,0 +1,49 @@
+{
+  "results": [
+    {
+      "name": "initial screen: exactly 6 real buttons, in the expected order",
+      "pass": true,
+      "detail": "playable11-accept,playable11-decline,playable11-ask-what,playable11-ask-festival,playable11-ask-sales,playable11-leave"
+    },
+    {
+      "name": "QA weather probe ABSENT from real rendered button list",
+      "pass": true
+    },
+    {
+      "name": "Vertex/replay disclosure sentence ABSENT from primary player surface (initial)",
+      "pass": true
+    },
+    {
+      "name": "Vertex/replay disclosure sentence ABSENT from primary player surface (after ASK_WHAT)",
+      "pass": true
+    },
+    {
+      "name": "after ACCEPT: leftover-followup button ABSENT (real counterfactual causality gate rejected the historical claim)",
+      "pass": true,
+      "detail": "playable11-ask-what,playable11-ask-festival,playable11-ask-sales,playable11-leave"
+    },
+    {
+      "name": "after ACCEPT: weather probe still ABSENT",
+      "pass": true
+    },
+    {
+      "name": "after ACCEPT: exactly 4 real buttons remain (down from PHASE 11.11's 6)",
+      "pass": true,
+      "detail": "playable11-ask-what,playable11-ask-festival,playable11-ask-sales,playable11-leave"
+    },
+    {
+      "name": "dev-only disclosure IS present inside the debug/evidence surface (this is a dev build)",
+      "pass": true
+    },
+    {
+      "name": "product-surface gate evidence (rejected actions incl. ASK_WEATHER_SCENE) is present in debug panel",
+      "pass": true
+    },
+    {
+      "name": "primary player action surface itself contains no Vertex AI text even with debug panel open",
+      "pass": true
+    }
+  ],
+  "baseUrl": "http://localhost:5199/?newlifeplayable11=1",
+  "allPass": true
+}
