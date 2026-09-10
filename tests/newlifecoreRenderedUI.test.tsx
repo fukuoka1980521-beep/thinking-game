@@ -115,6 +115,25 @@ describe("NEW LIFE CORE: no raw technical state ever appears on screen", () => {
   });
 });
 
+describe("NEW LIFE CORE: Owner play does not require finding a dev-only toggle (directive NEW_LIFE_DAY1_OWNER_REVIEW_READY_V1 Section 4)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("the live-AI default is keyed off an actual `vite` dev server (MODE), not DEV -- DEV is also true under this very test run, so a regression back to DEV alone would make every rendered-UI test fetch a nonexistent endpoint", async () => {
+    // This test's own successful, fast completion is direct evidence the default stayed off here
+    // (MODE is "test", not "development") -- if it flipped on, free-text submission below would
+    // attempt a real fetch to /api/newlifecore-npc-dialogue and only resolve after that fetch
+    // rejects, rather than immediately via the deterministic adapter.
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    const toggle = screen.getByTestId("nlc-live-toggle") as HTMLInputElement;
+    expect(toggle.checked).toBe(false);
+  });
+});
+
 describe("mobile -- no horizontal overflow", () => {
   afterEach(() => {
     window.history.pushState({}, "", "/");

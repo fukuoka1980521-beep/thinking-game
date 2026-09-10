@@ -33,7 +33,16 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   const [activeConversation, setActiveConversation] = useState<NpcId | null>(null);
   const [freeTextInput, setFreeTextInput] = useState("");
   const [pending, setPending] = useState(false);
-  const [useLive, setUseLive] = useState(false);
+  // Owner play (directive NEW_LIFE_DAY1_OWNER_REVIEW_READY_V1 Section 4): defaults to live AI
+  // conversation whenever this is an actual `vite` dev-server session (the only place the live
+  // endpoint exists at all -- see liveAdapterClient.ts's same-origin, dev-only fetch target), so
+  // Owner never has to find and check a technical-looking box before NPC conversation works.
+  // Deliberately checks MODE, not DEV -- `import.meta.env.DEV` is also true under vitest (MODE
+  // "test"), and defaulting live there would make every rendered-UI test attempt a real fetch to a
+  // nonexistent endpoint. A production build has MODE "production", so this default is unchanged
+  // there -- no behavior change outside local dev. The checkbox below stays, now as an opt-out for
+  // troubleshooting rather than a required opt-in.
+  const [useLive, setUseLive] = useState<boolean>(() => import.meta.env.MODE === "development");
   const [specialResult, setSpecialResult] = useState<string | null>(null);
 
   function startGame() {
@@ -300,7 +309,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
         {import.meta.env.DEV && (
           <label className="nlc-dev-toggle" data-testid="nlc-live-toggle-label">
             <input type="checkbox" data-testid="nlc-live-toggle" checked={useLive} onChange={(ev) => setUseLive(ev.target.checked)} />
-            ライブAIを使う（開発者用）
+            AIとの会話（オフで簡易応答に切り替え）
           </label>
         )}
       </div>
