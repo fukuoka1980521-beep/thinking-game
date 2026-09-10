@@ -13,6 +13,7 @@ import { Case1CApp } from "./case1c/Case1CApp";
 import { Case1TestResultsScreen } from "./case1c/Case1TestResultsScreen";
 import { NewlifeContractV2App } from "./newlifecontractv2/NewlifeContractV2App";
 import { NewlifeV02App } from "./newlifev02/NewlifeV02App";
+import { NewlifeV03App } from "./newlifev03/NewlifeV03App";
 import {
   loadInProgressSession,
   loadCompletedLogs,
@@ -37,7 +38,8 @@ type View =
   | { kind: "CASE1C" }
   | { kind: "CASE1C_RESULTS" }
   | { kind: "NEWLIFE_CONTRACT_V2" }
-  | { kind: "NEWLIFE_V02" };
+  | { kind: "NEWLIFE_V02" }
+  | { kind: "NEWLIFE_V03" };
 
 // Section 7: after roughly this many cases in one sitting, offer the play-run summary.
 const SESSION_SUMMARY_THRESHOLD = 5;
@@ -64,6 +66,7 @@ function initialViewFromLocation(): View {
   if (params.has("case1test")) return { kind: "CASE1C" };
   if (params.has("newlifecontractv2")) return { kind: "NEWLIFE_CONTRACT_V2" };
   if (params.has("newlifev02")) return { kind: "NEWLIFE_V02" };
+  if (params.has("newlifev03")) return { kind: "NEWLIFE_V03" };
   return { kind: "HOME" };
 }
 
@@ -275,6 +278,10 @@ export default function App() {
 
   if (view.kind === "NEWLIFE_V02") {
     return <NewlifeV02App onExit={() => setView({ kind: "HOME" })} />;
+  }
+
+  if (view.kind === "NEWLIFE_V03") {
+    return <NewlifeV03App onExit={() => setView({ kind: "HOME" })} />;
   }
 
   return (
