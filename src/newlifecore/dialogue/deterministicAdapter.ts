@@ -20,6 +20,36 @@ const ABOUT_SELF_RE = /前は|以前|昔|元の仕事|辞めた/;
 const ABOUT_NPC_RE = /あなたは|そちらは|お店は|長いんですか|長いんです|昔から|いつから/;
 const UNCERTAIN_RE = /わからな|まだ決め|迷って|うーん|考え中/;
 const GREETING_RE = /こんにちは|おはよう|どうも|はじめまして/;
+const MENU_QUESTION_RE = /メニュー|何がありますか|何がある|何を売って|品揃え/;
+const ORDER_REQUEST_RE = /ください|ほしい|食べたい|くれ|お願いします|売って/;
+
+/**
+ * Directive Section 3/4/11 -- DIRECT QUESTION FIRST + BOUNDED MENU, enforced structurally in the
+ * deterministic (CI-safe) adapter too, not only via live-prompt instruction. If the player's text
+ * names a specific item, answer from the REAL catalog before falling through to any other bucket
+ * -- never a generic acknowledgment when a concrete question was asked.
+ */
+function menuReply(context: NpcAiContext): string | null {
+  if (!context.availableMenu) return null;
+  if (MENU_QUESTION_RE.test(context.playerInput)) {
+    const list = context.availableMenu.map((i) => i.label).join("、");
+    return context.npcId === "miyoko" ? `美代子は少し考えてから言った。「あるわよ。${list}、それくらいだけどね」` : `洋平は棚を指した。「${list}なら置いてるぞ」`;
+  }
+  const owned = context.availableMenu.find((i) => context.playerInput.includes(i.label.replace(/（.*）/, "")));
+  if (owned) {
+    return context.npcId === "miyoko" ? `美代子はうなずいた。「${owned.label}ね、あるわよ」` : `洋平はうなずいた。「${owned.label}だな、あるぞ」`;
+  }
+  // Directive Section 4 -- a concrete order for something NOT on the real catalog must be a
+  // natural, specific decline (never a silent "yes" and never a generic acknowledgment), still
+  // offering what actually exists here instead of just refusing.
+  if (ORDER_REQUEST_RE.test(context.playerInput)) {
+    const list = context.availableMenu.map((i) => i.label).join("、");
+    return context.npcId === "miyoko"
+      ? `美代子は少し困ったように言った。「ごめんなさいね、うちにはそれは置いてなくて。${list}くらいなら、すぐ出せるけど」`
+      : `洋平は少し首をひねった。「悪いな、うちには無いな。${list}くらいならあるが」`;
+  }
+  return null;
+}
 
 function classify(text: string): Bucket {
   if (OTHER_NPC_NAMES.test(text)) return "OTHER_NPC_MENTIONED";
@@ -91,6 +121,8 @@ function pick(list: string[], seed: number): string {
 }
 
 export function deterministicNpcReply(context: NpcAiContext): NpcReplyEnvelope {
+  const menu = menuReply(context);
+  if (menu) return { visibleUtterance: menu };
   const bucket = classify(context.playerInput);
   const list = REPLIES[context.npcId][bucket];
   const seed = context.memoryOfPlayer.length; // varies reply pick across repeated turns, still deterministic

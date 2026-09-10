@@ -1,5 +1,6 @@
 import type { ConversationTurn, LocationId, NpcId } from "../types";
 import type { NpcHiddenBackground } from "../npcDefs";
+import type { ShopItem } from "../content/shop";
 
 /** Directive Section 9 -- everything the AI is given per free-text turn. AI is only ever asked to
  *  perform ONE NPC's reply from this; it never receives or infers anything not listed here
@@ -28,6 +29,10 @@ export interface NpcAiContext {
   day: number;
   timeLabel: string;
   worldFactsRelevant: string[];
+  /** NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1 Section 11 -- BOUNDED, authored catalog;
+   *  `null` for NPCs who do not run a shop (Kamiya, Jin) so the prompt never invents a menu for
+   *  them either. The AI must answer product questions from this list only, never invent an item. */
+  availableMenu: ShopItem[] | null;
   playerInput: string;
 }
 

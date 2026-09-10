@@ -1,12 +1,13 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { advanceTime, addWorldFact, moveTo, recordConversationTurn } from "../src/newlifecore/engine";
+import { advanceTime, addWorldFact, canCookMeal, cookAndEat, moveTo, purchaseItems, recordConversationTurn } from "../src/newlifecore/engine";
 import { npcAvailabilityAt, npcLocationAt, npcsPresentAt } from "../src/newlifecore/schedule";
 import { buildNpcAiContext } from "../src/newlifecore/dialogue/contextBuilder";
 import { deterministicNpcReply } from "../src/newlifecore/dialogue/deterministicAdapter";
 import { liveNpcAdapter } from "../src/newlifecore/dialogue/liveAdapterClient";
 import { validateNpcReply } from "../src/newlifecore/dialogue/envelope";
 import { resolveWorldEvents } from "../src/newlifecore/content/day1WorldEvents";
-import { buildEndOfDayNarrative, buildLocationScene } from "../src/newlifecore/content/day1";
+import { buildEndOfDayNarrative, buildLocationScene, describeBelongings } from "../src/newlifecore/content/day1";
+import { menuForNpc } from "../src/newlifecore/content/shop";
 import { createInitialCoreState, DAY_START_MINUTES } from "../src/newlifecore/types";
 import type { CoreState } from "../src/newlifecore/types";
 
@@ -130,6 +131,19 @@ describe("NEW LIFE CORE: AI failure fallback (directive Section 30)", () => {
     expect(reply.visibleUtterance.length).toBeGreaterThan(0);
   });
 
+  it("a stalled call that never settles is aborted and falls back, instead of leaving the caller waiting forever (own root-cause fix for the Owner playtest Jin-turn hang)", async () => {
+    global.fetch = vi.fn((_url, opts) => {
+      return new Promise((_resolve, reject) => {
+        const signal = (opts as { signal?: AbortSignal }).signal;
+        signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+      });
+    }) as unknown as typeof fetch;
+    const s0 = createInitialCoreState();
+    const ctx = buildNpcAiContext("jin", s0, "元気ですか");
+    const reply = await liveNpcAdapter(ctx);
+    expect(reply.visibleUtterance.length).toBeGreaterThan(0);
+  }, 25000);
+
   it("envelope validation degrades an empty/invalid raw reply to a bounded per-NPC fallback line, never a blank line", () => {
     const s0 = createInitialCoreState();
     const ctx = buildNpcAiContext("miyoko", s0, "こんにちは");
@@ -171,7 +185,10 @@ describe("NEW LIFE CORE: context continuity (directive Section 14 -- the top-pri
     expect(s1.flags.shelfFixedWithPlayer).toBeFalsy();
     const scene = buildLocationScene({ ...s1, playerLocation: "YOHEI_STORE" });
     expect(scene.ambientLine).toMatch(/相馬が寄ってな/);
-    expect(scene.specialActions).toHaveLength(0);
+    // NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1 Section 19: the shelf thread being over
+    // does not mean the store itself has nothing left to do -- ordinary shopping remains available
+    // (previously this asserted 0 actions, back when the store had no purchase action at all).
+    expect(scene.specialActions.map((a) => a.id)).toEqual(["shop_here"]);
   });
 });
 
@@ -189,5 +206,123 @@ describe("NEW LIFE CORE: end-of-day reads as plain remaining facts, not a result
     const withMet = { ...s1, flags: { ...s1.flags, met_kamiya: true } };
     const lines = buildEndOfDayNarrative(withMet);
     expect(lines).toContain("神谷とは話が途中のままだ。");
+  });
+});
+
+describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: canonical purchase (Section 8/9/10 -- structural, never AI-driven)", () => {
+  it("purchasing real catalog items deducts money and adds inventory, in one canonical action", () => {
+    const s0 = createInitialCoreState();
+    const { state: s1, totalCost, purchasedLabels } = purchaseItems(s0, "yohei", ["rice", "meat", "vegetables"]);
+    expect(totalCost).toBe(1200 + 800 + 500);
+    expect(purchasedLabels).toEqual(["米（1袋）", "肉", "野菜"]);
+    expect(s1.money).toBe(s0.money - totalCost);
+    expect(s1.inventory.rice).toBe(1);
+    expect(s1.inventory.meat).toBe(1);
+    expect(s1.inventory.vegetables).toBe(1);
+    expect(s1.time).toBeGreaterThan(s0.time);
+    expect(s1.worldFacts.some((f) => f.knownBy.includes("yohei") && f.text.includes("米"))).toBe(true);
+  });
+
+  it("a purchase beyond the player's money is a no-op -- never a partial success or negative balance", () => {
+    const s0 = { ...createInitialCoreState(), money: 100 };
+    const { state: s1, purchasedLabels } = purchaseItems(s0, "yohei", ["rice"]);
+    expect(purchasedLabels).toEqual([]);
+    expect(s1).toEqual(s0);
+  });
+
+  it("an unregistered item id is silently ignored, never inventing a purchase for a product that does not exist", () => {
+    const s0 = createInitialCoreState();
+    const { state: s1, purchasedLabels } = purchaseItems(s0, "yohei", ["yakisoba"]);
+    expect(purchasedLabels).toEqual([]);
+    expect(s1).toEqual(s0);
+  });
+
+  it("each shop NPC has its own small, distinct, bounded catalog -- Kamiya and Jin have none", () => {
+    expect(menuForNpc("yohei")?.map((i) => i.id)).toEqual(["rice", "meat", "vegetables", "daily_goods"]);
+    expect(menuForNpc("miyoko")?.map((i) => i.id)).toEqual(["toast", "hot_sandwich", "coffee", "tea"]);
+    expect(menuForNpc("kamiya")).toBeNull();
+    expect(menuForNpc("jin")).toBeNull();
+  });
+});
+
+describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: trial-house living actions (Section 12/13)", () => {
+  it("cooking a meal requires actually owning a food ingredient -- never available from nothing", () => {
+    const empty = createInitialCoreState();
+    expect(canCookMeal(empty)).toBe(false);
+    expect(cookAndEat(empty)).toEqual(empty); // no-op, matches purchaseItems' own no-op discipline
+
+    const { state: withRice } = purchaseItems(empty, "yohei", ["rice"]);
+    expect(canCookMeal(withRice)).toBe(true);
+    const fed = cookAndEat(withRice);
+    expect(fed.flags.ateMeal).toBe(true);
+    expect(fed.time).toBeGreaterThan(withRice.time);
+  });
+
+  it("a daily-goods-only purchase (no food ingredient) still cannot cook a meal", () => {
+    const { state: s1 } = purchaseItems(createInitialCoreState(), "yohei", ["daily_goods"]);
+    expect(canCookMeal(s1)).toBe(false);
+  });
+
+  it("the trial house offers a small, state-dependent action list (2-6), not a fixed giant menu, and not zero", () => {
+    const bare = buildLocationScene({ ...createInitialCoreState(), visitedLocations: ["TRIAL_HOUSE"] });
+    expect(bare.specialActions.length).toBeGreaterThanOrEqual(2);
+    expect(bare.specialActions.length).toBeLessThanOrEqual(6);
+    expect(bare.specialActions.some((a) => a.id === "cook_and_eat")).toBe(false); // nothing to cook yet
+
+    const { state: withFood } = purchaseItems(createInitialCoreState(), "yohei", ["rice"]);
+    const afterShopping: CoreState = { ...withFood, playerLocation: "TRIAL_HOUSE", visitedLocations: [...withFood.visitedLocations, "TRIAL_HOUSE"], flags: { ...withFood.flags, met_kamiya: true } };
+    const richer = buildLocationScene(afterShopping);
+    expect(richer.specialActions.some((a) => a.id === "cook_and_eat")).toBe(true);
+    expect(richer.specialActions.some((a) => a.id === "think_about_form")).toBe(true); // met Kamiya, form not yet submitted
+    expect(richer.specialActions.length).toBeGreaterThan(bare.specialActions.length);
+  });
+
+  it("check_belongings reads real inventory as plain prose, never a raw object/JSON", () => {
+    expect(describeBelongings({})).not.toMatch(/[{}[\]]/);
+    const { state: s1 } = purchaseItems(createInitialCoreState(), "yohei", ["rice", "rice"].slice(0, 1)); // 1x rice
+    const described = describeBelongings(s1.inventory);
+    expect(described).toMatch(/米/);
+    expect(described).not.toMatch(/[{}[\]]/);
+  });
+});
+
+describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: one location supports multiple actions, never 1-location=1-event (Section 19)", () => {
+  it("Yohei's store offers shopping alongside whatever else the scene already offers", () => {
+    const s0 = createInitialCoreState();
+    const scene = buildLocationScene({ ...s0, playerLocation: "YOHEI_STORE" });
+    expect(scene.specialActions.some((a) => a.id === "shop_here")).toBe(true);
+  });
+
+  it("Cafe Nodoka offers ordering AND sitting down as two distinct real actions", () => {
+    const s0 = createInitialCoreState();
+    const scene = buildLocationScene({ ...s0, playerLocation: "CAFE_NODOKA" });
+    expect(scene.specialActions.map((a) => a.id)).toEqual(["order_menu", "sit_down"]);
+  });
+});
+
+describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: daily obligations are recorded facts, never a numeric score (Section 14/15/16)", () => {
+  it("an ignored intake form and an unfed day are both reflected as plain end-of-day facts, not a penalty number", () => {
+    const s0: CoreState = { ...createInitialCoreState(), flags: { met_kamiya: true }, visitedLocations: ["TRIAL_HOUSE", "CHALLENGE_CENTER"] };
+    const lines = buildEndOfDayNarrative(s0);
+    expect(lines).toContain("チャレンジセンターの用紙は、結局出さなかった。");
+    expect(lines).toContain("その日は、特に何も食べなかった。");
+    expect(lines.join("")).not.toMatch(/-?\d+点|スコア|ペナルティ|信用度/);
+  });
+
+  it("completing the same obligations reads as a different, equally plain fact -- never a reward number", () => {
+    const s0: CoreState = { ...createInitialCoreState(), flags: { met_kamiya: true, intakeFormSubmitted: true, ateMeal: true }, visitedLocations: ["TRIAL_HOUSE", "CHALLENGE_CENTER"] };
+    const lines = buildEndOfDayNarrative(s0);
+    expect(lines).not.toContain("チャレンジセンターの用紙は、結局出さなかった。");
+    expect(lines).toContain("帰って、買ってきた物で何か作って食べた。");
+    expect(lines.join("")).not.toMatch(/獲得|ポイント|\+\d+/);
+  });
+});
+
+describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: money/inventory change only through a confirmed canonical action (Section 8, extends the existing AI-cannot-mutate-state guarantee)", () => {
+  it("a free-text conversation claiming a purchase happened never itself changes money or inventory", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "yohei", "さっきお米を買いましたよね", "「そうだったか」");
+    expect(s1.money).toBe(s0.money);
+    expect(s1.inventory).toEqual(s0.inventory);
   });
 });

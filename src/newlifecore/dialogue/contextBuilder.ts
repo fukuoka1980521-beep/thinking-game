@@ -1,5 +1,6 @@
 import { NPC_DEFS, npcDisplayName } from "../npcDefs";
 import { npcAvailabilityAt } from "../schedule";
+import { menuForNpc } from "../content/shop";
 import { formatClock } from "../types";
 import type { CoreState, NpcId } from "../types";
 import type { NpcAiContext } from "./types";
@@ -52,6 +53,7 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
     day: 1,
     timeLabel: formatClock(state.time),
     worldFactsRelevant: relevantFacts,
+    availableMenu: menuForNpc(npc),
     playerInput,
   };
 }

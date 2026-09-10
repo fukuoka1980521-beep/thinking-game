@@ -1,4 +1,6 @@
 import { npcAvailabilityAt, npcsPresentAt } from "../schedule";
+import { canCookMeal } from "../engine";
+import { itemById } from "./shop";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 export const LOCATION_LABEL: Record<LocationId, string> = {
@@ -66,8 +68,11 @@ export interface LocationScene {
   location: LocationId;
   ambientLine: string;
   npcsHere: NpcId[];
-  /** Location-specific action other than "自由に話す" / "移動する" -- kept to 0-2 per directive
-   *  Section 17 ("巨大なコマンド一覧を作らない"). */
+  /** Location-specific action other than "自由に話す" / "移動する" -- a handful (2-6, directive
+   *  NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1 Section 12), driven by real state
+   *  (inventory/time/flags), never a fixed giant menu (directive Section 17's original "巨大な
+   *  コマンド一覧を作らない" discipline still applies -- this only widens 0-2 to a small,
+   *  context-dependent range for the trial house specifically). */
   specialActions: { id: string; label: string }[];
 }
 
@@ -76,7 +81,19 @@ export function buildLocationScene(state: CoreState): LocationScene {
   const npcsHere = npcsPresentAt(loc, state.time, state.flags);
 
   if (loc === "TRIAL_HOUSE") {
-    return { location: loc, ambientLine: state.visitedLocations.length <= 1 ? "仮住まいの部屋。鍵と、返却日を丸く囲んだ紙が置かれている。" : "静かな部屋に戻ってきた。", npcsHere: [], specialActions: [] };
+    const ambientLine = state.visitedLocations.length <= 1 ? "仮住まいの部屋。鍵と、返却日を丸く囲んだ紙が置かれている。" : "静かな部屋に戻ってきた。";
+    // Directive Section 12/13/14 -- real, state-dependent living actions, 2-4 of them, never a
+    // fixed giant list. Each either has a real result (cook -> ateMeal) or is a genuine, honest
+    // read of the current situation (belongings, the still-open Kamiya form) rather than a
+    // do-nothing flavor button pretending to be content.
+    const specialActions: { id: string; label: string }[] = [];
+    if (canCookMeal(state) && !state.flags.ateMeal) specialActions.push({ id: "cook_and_eat", label: "料理して食べる" });
+    specialActions.push({ id: "check_belongings", label: "荷物を確認する" });
+    if (state.visitedLocations.length > 1 && !state.flags.intakeFormSubmitted) {
+      specialActions.push({ id: "think_about_form", label: "チャレンジセンターの用紙のことを考える" });
+    }
+    specialActions.push({ id: "rest_a_while", label: "少し休む" });
+    return { location: loc, ambientLine, npcsHere: [], specialActions };
   }
 
   if (loc === "SHOPPING_STREET") {
@@ -104,13 +121,18 @@ export function buildLocationScene(state: CoreState): LocationScene {
     if (avail === "BUSY") return { location: loc, ambientLine: "洋平は伝票の整理で手が離せないようだった。", npcsHere: [], specialActions: [] };
     const jinAlsoHere = npcsHere.includes("jin");
 
+    // Directive Section 19 -- YOHEI_STORE must support more than one kind of action ("1 LOCATION
+    // = 1 EVENT を禁止"). Shopping is available in every non-closed/non-busy branch below,
+    // alongside whatever else that branch already offers (talk, shelf-help).
+    const SHOP_ACTION = { id: "shop_here", label: "買い物をする" };
+
     if (state.flags.shelfFixed) {
       // The shelf thread is over -- reached either by the player's own hands, or by Yohei and
       // Jin finishing it without the player (directive Section 20/21: a trace, never a badge).
       const ambientLine = state.flags.shelfFixedWithPlayer
         ? "洋平は棚を軽く叩いて確かめた。「うん、大丈夫そうだ」"
         : "棚を軽く小突くと、もう安定していた。「さっき相馬が寄ってな」洋平はそれだけ言った。";
-      return { location: loc, ambientLine, npcsHere: ["yohei"], specialActions: [] };
+      return { location: loc, ambientLine, npcsHere: ["yohei"], specialActions: [SHOP_ACTION] };
     }
 
     if (jinAlsoHere) {
@@ -120,23 +142,24 @@ export function buildLocationScene(state: CoreState): LocationScene {
         location: loc,
         ambientLine: "奥で相馬が棚の様子を見ていた。洋平が脇で見守っている。",
         npcsHere: ["yohei", "jin"],
-        specialActions: [{ id: "offer_help_shelf", label: "棚の修理を手伝う" }],
+        specialActions: [{ id: "offer_help_shelf", label: "棚の修理を手伝う" }, SHOP_ACTION],
       };
     }
 
     // Before 11:15: the problem exists but hasn't become anyone's business yet -- a quiet visual
-    // hint only, no action attached (nothing to "help" with until Yohei has actually done
-    // something about it). After 13:30 with shelfFixed still false should not occur (the
-    // world-event auto-resolves it by then) but the fallback below keeps this branch harmless if
-    // it ever does.
+    // hint only (nothing to "help" with until Yohei has actually done something about it), but
+    // shopping is ordinary daily commerce and stays available regardless. After 13:30 with
+    // shelfFixed still false should not occur (the world-event auto-resolves it by then) but the
+    // fallback below keeps this branch harmless if it ever does.
     const hint = state.time < 11 * 60 + 30 ? "棚の脚が少し傾いているのが、なんとなく目についた。" : "";
-    return { location: loc, ambientLine: hint, npcsHere: ["yohei"], specialActions: [] };
+    return { location: loc, ambientLine: hint, npcsHere: ["yohei"], specialActions: [SHOP_ACTION] };
   }
 
   if (loc === "CAFE_NODOKA") {
     const avail = npcAvailabilityAt("miyoko", state.time, state.flags);
     if (avail === "CLOSED") return { location: loc, ambientLine: "喫茶のどかは閉まっていた。", npcsHere: [], specialActions: [] };
-    return { location: loc, ambientLine: "", npcsHere: ["miyoko"], specialActions: [{ id: "sit_down", label: "コーヒーを頼んで座る" }] };
+    // Directive Section 19 -- ordering and simply sitting down are two different, real actions.
+    return { location: loc, ambientLine: "", npcsHere: ["miyoko"], specialActions: [{ id: "order_menu", label: "メニューを注文する" }, { id: "sit_down", label: "コーヒーを頼んで座る" }] };
   }
 
   // COMMUNITY_HALL -- must check where Jin actually IS (npcsHere, location-aware), never just
@@ -185,12 +208,47 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
     lines.push(state.npcMemory.kamiya.length > 0 ? "神谷とは話が途中のままだ。" : "神谷とは、まだあまり話していない。");
   }
 
+  // Directive Section 15/16 -- a生活上の事情の結果を、スコアではなく事実の一文として残す。「やらな
+  // かったら即ゲームオーバー」でも「やったら加点」でもない、ただの今日あった/なかったこと。
+  if (state.flags.met_kamiya && !state.flags.intakeFormSubmitted) {
+    lines.push("チャレンジセンターの用紙は、結局出さなかった。");
+  }
+  if (state.flags.ateMeal) {
+    lines.push("帰って、買ってきた物で何か作って食べた。");
+  } else if (state.visitedLocations.length > 1) {
+    lines.push("その日は、特に何も食べなかった。");
+  }
+
   if (lines.length === 0) {
     lines.push("誰とも、あまり話さない一日だった。");
   }
 
   lines.push("そして眠った。");
   return lines;
+}
+
+/** Directive Section 10 -- order -> pay -> receive should read as one short, concrete sentence,
+ *  never a long animation. `npc` picks the register (洋平's brusque "重いぞ" vs 美代子's softer
+ *  warmth), matching each NPC's own established speech style rather than one generic line. */
+export function buildPurchaseNarration(npc: NpcId, labels: string[]): string {
+  if (labels.length === 0) return "今は、これだけの持ち合わせがなかった。";
+  const joined = labels.join("、");
+  if (npc === "yohei") return `洋平は${joined}を袋にまとめた。「はい。重いぞ」`;
+  if (npc === "miyoko") return `美代子は${joined}をカウンターに置いた。「はい、どうぞ。気をつけてね」`;
+  return `${joined}を受け取った。`;
+}
+
+/** Directive Section 12 -- "荷物を確認する" reads real inventory as plain prose, never a raw list.
+ *  Item labels come from content/shop.ts's single catalog (itemById) -- never a second,
+ *  independently-authored copy of the same names. */
+export function describeBelongings(inventory: Record<string, number>): string {
+  const entries = Object.entries(inventory).filter(([, count]) => count > 0);
+  if (entries.length === 0) return "特に持ち帰った物はまだない。";
+  const parts = entries.map(([id, count]) => {
+    const label = itemById(id)?.label ?? id;
+    return count > 1 ? `${label}×${count}` : label;
+  });
+  return `持ち物を確認した：${parts.join("、")}。`;
 }
 
 const EMPLOYMENT_STATUS_LABEL: Record<IntakeForm["employmentStatus"], string> = {

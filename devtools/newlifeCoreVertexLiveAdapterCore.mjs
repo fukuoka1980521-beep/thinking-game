@@ -59,6 +59,10 @@ ${context.relationshipHistory.join(" / ") || "（特になし）"}
 
 【プレイヤーとのこれまでのやり取り（覚えている範囲）】
 ${context.memoryOfPlayer.length > 0 ? context.memoryOfPlayer.map((t) => `(${t.time}分) プレイヤー「${t.playerUtterance}」→ ${context.displayName}「${t.npcReply}」`).join("\n") : "（今日はまだ話していない）"}
+${context.memoryOfPlayer.length > 0 ? `\n直前の自分の発言（これと同じ情報・言い回しを、聞かれてもいないのに繰り返さないこと。特に約束・時刻・場所・別れの挨拶は連続する turn で再発言しない）:\n「${context.memoryOfPlayer[context.memoryOfPlayer.length - 1].npcReply}」` : ""}
+
+【${context.displayName}が実際に扱っている商品（これ以外は扱っていない。売っていない物は素直に「無い」と答え、他の品を勧めてよい）】
+${context.availableMenu ? context.availableMenu.map((i) => `${i.label}（${i.price}円）`).join(" / ") : "（この人物は店を持たない。商品の話は本来出てこない）"}
 
 【今の場面】
 ${context.currentScene}（DAY${context.day}, ${context.timeLabel}）
@@ -67,6 +71,19 @@ ${context.currentScene}（DAY${context.day}, ${context.timeLabel}）
 「${context.playerInput}」
 
 重要（絶対に守ること）:
+- 最優先（人間ならまずこうする）: プレイヤーの発言が具体的な質問（「〜ありますか」「〜できますか」
+  など）なら、まずその質問そのものに直接答えること。聞かれてもいない情報（観光案内、町の説明、営業
+  時間の由来など）を勝手に付け足して長く話し始めないこと。例えば「この町でおすすめの場所は？」に対
+  して町の魅力を一から説明し始めるのは不自然。「派手な観光地はないけど、住みやすいところよ」程度の
+  短い一言で十分。雑談を続けるかどうかはプレイヤー次第。
+- 仕草・動作の描写（「（手元を見る）」「（伝票を見る）」等）は禁止ではないが、毎回使わないこと。台
+  詞だけで済む turn の方が多くてよい。動作を書くのは、意味がある・感情が言葉に出ない・実際に物を動
+  かす・間を作る、といった理由がある時だけにすること。「人間らしく見せるための動作」を毎回付け足す
+  癖は禁止です。
+- ${context.displayName}の身の回りの物・持ち物・仕事道具・机や作業場の様子を描写する場合は、上記の
+  人物像・職業・今の場面に実際に矛盾しない範囲に限ること。この人物の設定に無い職場・道具・書類など
+  を、雰囲気作りのためだけに新しく発明してはいけません（例: 喫茶店のカウンターで働く人物が「自分の
+  机の書類」を話に出す、といった矛盾は禁止）。
 - ${context.displayName}は、プレイヤーを助けるために存在するアシスタントではありません。自分自身
   の一日、自分の用事、自分の気分を持つ、ただの一人の人間です。プレイヤーの発言は「対応すべき相談」
   ではなく、たまたま今話しかけられたことです。
@@ -97,6 +114,10 @@ ${context.currentScene}（DAY${context.day}, ${context.timeLabel}）
   る」といった、プレイヤー側に具体的な物理的行動を要求する新しい依頼を発明しないでください。そう
   いった行動は、この会話の外側にある実際のゲーム画面の操作として存在する場合にのみ起こります。会
   話はあくまで言葉のやり取り（話す・聞く・断る・冗談を言う・黙る等）に留めてください。
+- 同じ理由で、会話のセリフだけで売買・注文・受け渡しを完了させてはいけません。「ください」に対して
+  「はいよ」のように快く応じる一言までは自然ですが、実際に商品が渡った・代金を受け取った・在庫が減
+  った、というのは常にこの会話の外側にある実際の購入操作でのみ起こります。セリフの中で「これで
+  ○○円です」「はい、どうぞ」と取引そのものを完結させないでください。
 
 出力は必ず次の形の1つのJSONオブジェクトのみ:
 {"visibleUtterance": "${context.displayName}として話す、自然な日本語のセリフ（間や仕草の描写を含めてよい）"}`;
@@ -118,6 +139,14 @@ export function parseReplyJson(text) {
   }
 }
 
+// Observed in real Owner-playtest evidence gathering: an occasional Vertex call can stall well
+// past any reasonable reply time with no error, no timeout, and no response -- the server-side
+// fetch below previously had no bound on it at all, so a single stalled upstream call left that
+// request hanging indefinitely (the browser-side liveAdapterClient.ts timeout papers over the
+// symptom for the player, but the server should still fail closed promptly on its own side too,
+// rather than leaving an unbounded in-flight request).
+const VERTEX_CALL_TIMEOUT_MS = 15000;
+
 export async function callVertexGenerateContent(promptText) {
   const token = getAccessToken();
   const body = {
@@ -131,12 +160,28 @@ export async function callVertexGenerateContent(promptText) {
     // re-testing (see docs/research/evaluation/newlife-core-v1/NEW_LIFE_CORE_V1_CLOSE_V1.md).
     generationConfig: { temperature: 0.5, maxOutputTokens: 4096 },
   };
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const json = await res.json();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), VERTEX_CALL_TIMEOUT_MS);
+  let json;
+  let res;
+  try {
+    // The timeout must stay armed across BOTH the initial fetch() (response headers) AND the
+    // subsequent res.json() (response body) -- headers can arrive quickly while the body stream
+    // itself stalls, and an abort mid-body-read still needs to be caught here, not left to
+    // propagate uncaught. Clearing the timer right after fetch() resolves (a bug an earlier
+    // version of this function had) leaves that second stall completely unbounded.
+    res = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    json = await res.json();
+  } catch (err) {
+    return { ok: false, httpStatus: res?.status ?? null, raw: null, text: null, timedOut: err?.name === "AbortError" };
+  } finally {
+    clearTimeout(timeout);
+  }
   if (!res.ok) return { ok: false, httpStatus: res.status, raw: json, text: null };
   const finishReason = json.candidates?.[0]?.finishReason ?? null;
   const text = json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? null;

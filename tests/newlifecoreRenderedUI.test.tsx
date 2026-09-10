@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../src/App";
 
@@ -249,6 +249,118 @@ describe("NEW LIFE CORE: Owner play does not require finding a dev-only toggle (
     await user.click(await screen.findByTestId("nlc-go-challenge-center"));
     const toggle = screen.getByTestId("nlc-live-toggle") as HTMLInputElement;
     expect(toggle.checked).toBe(false);
+  });
+});
+
+describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: real purchase flow (Section 8/9/10/26)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("buying rice at Yohei's store deducts money, adds inventory, and shows a short receive narration -- never a raw JSON dump", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-move-YOHEI_STORE"));
+    await user.click(await screen.findByTestId("nlc-action-shop_here"));
+    expect(await screen.findByTestId("nlc-shopping-picker")).toBeInTheDocument();
+
+    await user.click(screen.getByTestId("nlc-shop-item-rice"));
+    expect(screen.getByTestId("nlc-shop-total").textContent).toMatch(/1200円/);
+    await user.click(screen.getByTestId("nlc-shop-confirm"));
+
+    expect(screen.queryByTestId("nlc-shopping-picker")).not.toBeInTheDocument();
+    const result = await screen.findByTestId("nlc-special-result");
+    expect(result.textContent).toMatch(/米/);
+    expect(result.textContent).not.toMatch(/[{}[\]]/);
+
+    // The purchase is real, structural state -- visible back at the trial house via a plain
+    // living action, not a debug field.
+    await user.click(await screen.findByTestId("nlc-move-TRIAL_HOUSE"));
+    await user.click(await screen.findByTestId("nlc-action-check_belongings"));
+    expect((await screen.findByTestId("nlc-special-result")).textContent).toMatch(/米/);
+  });
+
+  it("cancelling the shopping picker changes nothing", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-move-YOHEI_STORE"));
+    await user.click(await screen.findByTestId("nlc-action-shop_here"));
+    await user.click(await screen.findByTestId("nlc-shop-cancel"));
+    expect(screen.queryByTestId("nlc-shopping-picker")).not.toBeInTheDocument();
+    await user.click(await screen.findByTestId("nlc-move-TRIAL_HOUSE"));
+    await user.click(await screen.findByTestId("nlc-action-check_belongings"));
+    expect((await screen.findByTestId("nlc-special-result")).textContent).toMatch(/持ち帰った物はまだない/);
+  });
+
+  it("ordering at the cafe is a real, separate action from just sitting down", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-move-CAFE_NODOKA"));
+    expect(await screen.findByTestId("nlc-action-order_menu")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-action-sit_down")).toBeInTheDocument();
+    await user.click(screen.getByTestId("nlc-action-order_menu"));
+    await user.click(await screen.findByTestId("nlc-shop-item-toast"));
+    await user.click(screen.getByTestId("nlc-shop-confirm"));
+    expect((await screen.findByTestId("nlc-special-result")).textContent).toMatch(/トースト/);
+  });
+});
+
+describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: trial house has real, varied living actions (Section 12/13)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("returning to the trial house after venturing out shows more than one real action, not just leaving", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-move-TRIAL_HOUSE"));
+    const scene = await screen.findByTestId("nlc-location-scene");
+    expect(within(scene).getByTestId("nlc-action-check_belongings")).toBeInTheDocument();
+    expect(within(scene).getByTestId("nlc-action-rest_a_while")).toBeInTheDocument();
+  });
+});
+
+describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: a conversation survives the NPC leaving mid-conversation (own root-cause fix -- Owner playtest evidence gathering found this exact bug live)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("Jin's schedule takes him off BUSY/AWAY while the player is still mid-conversation with him -- the just-arrived reply must not vanish, and the move list must become reachable again after closing", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center")); // DAY_START_MINUTES 8:45 -> moveTo +15 = 9:00
+    await user.click(await screen.findByTestId("nlc-move-COMMUNITY_HALL")); // +15 = 9:15, jin AVAILABLE (8:00-9:30)
+    await user.click(await screen.findByTestId("nlc-talk-jin"));
+
+    await user.type(await screen.findByTestId("nlc-freetext-input-jin"), "こんにちは");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-jin")); // +10 = 9:25, still AVAILABLE
+    await screen.findByText("こんにちは");
+
+    // This second turn crosses 9:30 -- jin's schedule enters a BUSY block, and day1.ts's
+    // COMMUNITY_HALL scene explicitly returns npcsHere: [] while BUSY (see content/day1.ts).
+    await user.type(await screen.findByTestId("nlc-freetext-input-jin"), "器用なんですね");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-jin")); // +10 = 9:35, now BUSY
+    await screen.findByText("器用なんですね");
+
+    // The reply must still be visible -- not lost just because jin's card would otherwise vanish.
+    const log = await screen.findByTestId("nlc-conversation-log-jin");
+    expect(log.textContent).toMatch(/器用なんですね/);
+    // Further free-text input no longer makes sense once the npc has left -- it must not still be offered.
+    expect(screen.queryByTestId("nlc-freetext-input-jin")).not.toBeInTheDocument();
+    expect(await screen.findByTestId("nlc-npc-departed-jin")).toBeInTheDocument();
+
+    // Closing must actually return the player to a playable state -- the move list must reappear
+    // (previously it stayed hidden forever: gated on !activeConversation, which nothing ever cleared).
+    await user.click(await screen.findByTestId("nlc-conversation-close-jin"));
+    expect(await screen.findByTestId("nlc-movelist")).toBeInTheDocument();
+    expect(screen.queryByTestId("nlc-npc-card-jin")).not.toBeInTheDocument();
   });
 });
 

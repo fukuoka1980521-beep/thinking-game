@@ -5,19 +5,23 @@ import yoheiImg from "../assets/newlifev02/yohei.png";
 import miyokoImg from "../assets/newlifev02/miyoko.png";
 import jinImg from "../assets/newlifev02/soma-jin.png";
 import { IntakeForm } from "./IntakeForm";
+import { ShoppingPicker } from "./ShoppingPicker";
 import {
   LOCATION_LABEL,
   buildEndOfDayNarrative,
   buildIntakeFormWorldFacts,
   buildLocationScene,
+  buildPurchaseNarration,
+  describeBelongings,
   kamiyaIntakeReaction,
   openingLineFor,
   reachableLocations,
 } from "./content/day1";
+import { menuForLocation, shopNpcForLocation } from "./content/shop";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
 import { deterministicAdapter } from "./dialogue/deterministicAdapter";
 import { liveNpcAdapter } from "./dialogue/liveAdapterClient";
-import { addWorldFact, canSleep, doShortAction, moveTo, recordConversationTurn, sleep, timeRemainingLabel } from "./engine";
+import { addWorldFact, canSleep, cookAndEat, doShortAction, moveTo, purchaseItems, recordConversationTurn, sleep, timeRemainingLabel } from "./engine";
 import { npcDisplayName } from "./npcDefs";
 import { createInitialCoreState, formatClock } from "./types";
 import type { CoreState, IntakeForm as IntakeFormData, LocationId, NpcId } from "./types";
@@ -81,6 +85,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   const [phase, setPhase] = useState<"opening" | "guide" | "game">("opening");
   const [guideReopened, setGuideReopened] = useState(false);
   const [showIntakeForm, setShowIntakeForm] = useState(false);
+  const [showShoppingPicker, setShowShoppingPicker] = useState(false);
 
   function startGame() {
     setState((s) => ({ ...s, started: true }));
@@ -94,6 +99,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setActiveConversation(null);
     setSpecialResult(null);
     setShowIntakeForm(false);
+    setShowShoppingPicker(false);
     setState((s) => moveTo(s, location));
   }
 
@@ -161,7 +167,42 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     if (actionId === "sit_down") {
       setState((s) => doShortAction(s, 5));
       setSpecialResult("コーヒーを一杯もらって、カウンター脇の椅子に座った。");
+      return;
     }
+    if (actionId === "shop_here" || actionId === "order_menu") {
+      setSpecialResult(null);
+      setShowShoppingPicker(true);
+      return;
+    }
+    if (actionId === "cook_and_eat") {
+      setState((s) => cookAndEat(s));
+      setSpecialResult("買ってきた材料で、簡単に何か作って食べた。少し落ち着いた。");
+      return;
+    }
+    if (actionId === "check_belongings") {
+      setSpecialResult(describeBelongings(state.inventory));
+      return;
+    }
+    if (actionId === "think_about_form") {
+      setState((s) => doShortAction(s, 5));
+      setSpecialResult("チャレンジセンターの用紙のことが、ふと頭をよぎった。まだ出していない。");
+      return;
+    }
+    if (actionId === "rest_a_while") {
+      setState((s) => doShortAction(s, 15));
+      setSpecialResult("しばらく、何をするでもなく座っていた。");
+    }
+  }
+
+  // Directive Section 8/9/10 -- the ONLY place a purchase is confirmed. `itemIds` comes straight
+  // from the player's own picker selection, never parsed out of AI conversation text.
+  function confirmPurchase(itemIds: string[]) {
+    const npc = shopNpcForLocation(state.playerLocation);
+    if (!npc) return;
+    const result = purchaseItems(state, npc, itemIds);
+    setState(result.state);
+    setSpecialResult(buildPurchaseNarration(npc, result.purchasedLabels));
+    setShowShoppingPicker(false);
   }
 
   // Directive Section 4/7: real UI, not free text pretending. What gets written here is exactly
@@ -288,6 +329,14 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // who walks straight back to the trial house without engaging).
   const hasVenturedOut = state.visitedLocations.length > 1;
   const scene = state.playerLocation !== "TRIAL_HOUSE" || hasVenturedOut ? buildLocationScene(state) : null;
+  // A conversation's own 10-minute time cost can cross a schedule/world-event boundary that moves
+  // the npc elsewhere (time progressing through conversation is an intentionally KEPT feature).
+  // Without this, the npc's card simply vanishes from the DOM the instant their reply arrives --
+  // the just-arrived reply is lost from view, and the move list (gated on !activeConversation)
+  // never reappears since nothing ever clears activeConversation on its own. So the currently-open
+  // conversation always keeps rendering even once the npc has left; the only real difference is
+  // that free-text input closes off (see hasLeftMidConversation below).
+  const visibleNpcsHere = scene && activeConversation && !scene.npcsHere.includes(activeConversation) ? [...scene.npcsHere, activeConversation] : (scene?.npcsHere ?? []);
 
   return (
     <div className="nlc-frame" data-testid="nlc-frame">
@@ -325,68 +374,83 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {scene && !showIntakeForm && (
+        {scene && showShoppingPicker && (
+          <div className="nlc-scene-card" data-testid="nlc-location-scene">
+            <ShoppingPicker items={menuForLocation(state.playerLocation)} money={state.money} onConfirm={confirmPurchase} onCancel={() => setShowShoppingPicker(false)} />
+          </div>
+        )}
+
+        {scene && !showIntakeForm && !showShoppingPicker && (
           <div className="nlc-scene-card" data-testid="nlc-location-scene">
             {scene.ambientLine && <p className="nlc-ambient">{scene.ambientLine}</p>}
 
-            {scene.npcsHere.map((npc) => (
-              <div className="nlc-npc-card" key={npc} data-testid={`nlc-npc-card-${npc}`}>
-                <div className="nlc-npc-header">
-                  <Portrait npc={npc} />
-                  <div>
-                    <div className="nlc-npc-name">{npcDisplayName(npc)}</div>
-                    {activeConversation !== npc && (
-                      <p className="nlc-npc-line">{openingLineFor(npc, Boolean(state.flags[`met_${npc}`]), Boolean(state.flags.intakeFormSubmitted))}</p>
-                    )}
-                  </div>
-                </div>
-
-                {activeConversation === npc ? (
-                  <div className="nlc-conversation" data-testid={`nlc-conversation-${npc}`}>
-                    <div className="nlc-conversation-log" data-testid={`nlc-conversation-log-${npc}`}>
-                      {state.npcMemory[npc].map((t, i) => (
-                        <div key={i} className="nlc-turn">
-                          <p className="nlc-line-player">{t.playerUtterance}</p>
-                          <p className="nlc-line-npc">{t.npcReply}</p>
-                        </div>
-                      ))}
-                      {pending && (
-                        <p className="nlc-line-waiting" data-testid="nlc-waiting-indicator">
-                          <span>・</span>
-                          <span>・</span>
-                          <span>・</span>
-                        </p>
+            {visibleNpcsHere.map((npc) => {
+              const hasLeftMidConversation = activeConversation === npc && !scene.npcsHere.includes(npc);
+              return (
+                <div className="nlc-npc-card" key={npc} data-testid={`nlc-npc-card-${npc}`}>
+                  <div className="nlc-npc-header">
+                    <Portrait npc={npc} />
+                    <div>
+                      <div className="nlc-npc-name">{npcDisplayName(npc)}</div>
+                      {activeConversation !== npc && (
+                        <p className="nlc-npc-line">{openingLineFor(npc, Boolean(state.flags[`met_${npc}`]), Boolean(state.flags.intakeFormSubmitted))}</p>
                       )}
                     </div>
-                    <div className="nlc-conversation-input-row">
-                      <input
-                        className="nlc-freetext-input"
-                        data-testid={`nlc-freetext-input-${npc}`}
-                        value={freeTextInput}
-                        onChange={(ev) => setFreeTextInput(ev.target.value)}
-                        onKeyDown={(ev) => {
-                          if (ev.key === "Enter") submitFreeText();
-                        }}
-                        placeholder={`${npcDisplayName(npc)}に話す`}
-                        disabled={pending}
-                      />
-                      <button className="nlc-btn" onClick={submitFreeText} disabled={pending || !freeTextInput.trim()} data-testid={`nlc-freetext-submit-${npc}`}>
-                        送る
+                  </div>
+
+                  {activeConversation === npc ? (
+                    <div className="nlc-conversation" data-testid={`nlc-conversation-${npc}`}>
+                      <div className="nlc-conversation-log" data-testid={`nlc-conversation-log-${npc}`}>
+                        {state.npcMemory[npc].map((t, i) => (
+                          <div key={i} className="nlc-turn">
+                            <p className="nlc-line-player">{t.playerUtterance}</p>
+                            <p className="nlc-line-npc">{t.npcReply}</p>
+                          </div>
+                        ))}
+                        {pending && (
+                          <p className="nlc-line-waiting" data-testid="nlc-waiting-indicator">
+                            <span>・</span>
+                            <span>・</span>
+                            <span>・</span>
+                          </p>
+                        )}
+                      </div>
+                      {hasLeftMidConversation ? (
+                        <p className="nlc-npc-line" data-testid={`nlc-npc-departed-${npc}`}>
+                          {npcDisplayName(npc)}は、もうそこにいなかった。
+                        </p>
+                      ) : (
+                        <div className="nlc-conversation-input-row">
+                          <input
+                            className="nlc-freetext-input"
+                            data-testid={`nlc-freetext-input-${npc}`}
+                            value={freeTextInput}
+                            onChange={(ev) => setFreeTextInput(ev.target.value)}
+                            onKeyDown={(ev) => {
+                              if (ev.key === "Enter") submitFreeText();
+                            }}
+                            placeholder={`${npcDisplayName(npc)}に話す`}
+                            disabled={pending}
+                          />
+                          <button className="nlc-btn" onClick={submitFreeText} disabled={pending || !freeTextInput.trim()} data-testid={`nlc-freetext-submit-${npc}`}>
+                            送る
+                          </button>
+                        </div>
+                      )}
+                      <button className="nlc-leave-btn" onClick={closeConversation} data-testid={`nlc-conversation-close-${npc}`}>
+                        会話を終える
                       </button>
                     </div>
-                    <button className="nlc-leave-btn" onClick={closeConversation} data-testid={`nlc-conversation-close-${npc}`}>
-                      会話を終える
-                    </button>
-                  </div>
-                ) : (
-                  <div className="nlc-npc-actions">
-                    <button className="nlc-choice" onClick={() => openConversation(npc)} data-testid={`nlc-talk-${npc}`}>
-                      自由に話す
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+                  ) : (
+                    <div className="nlc-npc-actions">
+                      <button className="nlc-choice" onClick={() => openConversation(npc)} data-testid={`nlc-talk-${npc}`}>
+                        自由に話す
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {scene.specialActions.length > 0 && !activeConversation && (
               <div className="nlc-choices">
@@ -406,7 +470,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && (
+        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && !showShoppingPicker && (
           <div className="nlc-movelist" data-testid="nlc-movelist">
             <p className="nlc-summary-heading">どこへ行きますか（残り{timeRemainingLabel(state.time)}）</p>
             <div className="nlc-picklist">

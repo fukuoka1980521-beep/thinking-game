@@ -51,6 +51,11 @@ export interface IntakeForm {
   troubles: string;
 }
 
+/** NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1 -- an item the player actually owns,
+ *  bought through a real, structural purchase action (never inferred from AI conversation text,
+ *  directive Section 8). `itemId` keys into content/shop.ts's `SHOP_ITEMS` catalog. */
+export type Inventory = Record<string, number>;
+
 export interface CoreState {
   started: boolean;
   time: ClockMinutes;
@@ -61,6 +66,10 @@ export interface CoreState {
   npcImpression: Record<NpcId, number>;
   flags: Record<string, boolean>;
   intakeForm: IntakeForm | null;
+  /** Starting cash for the 30-day trial stay -- a modest, ordinary amount (ART/CONTENT DECISION,
+   *  not canon-specified), never displayed as a game-score, only as an ordinary yen amount. */
+  money: number;
+  inventory: Inventory;
   ended: boolean;
 }
 
@@ -81,6 +90,8 @@ export function createInitialCoreState(): CoreState {
     npcImpression: { kamiya: 0, yohei: 0, miyoko: 0, jin: 0 },
     flags: {},
     intakeForm: null,
+    money: 8000,
+    inventory: {},
     ended: false,
   };
 }
