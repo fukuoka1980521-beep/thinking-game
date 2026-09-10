@@ -31,11 +31,17 @@ const allSource = sourceFiles.map((f) => readFileSync(f, "utf-8")).join("\n");
 // the same explicit documentation.
 const DIALOGUE_CLIENT_FILE = join(SRC_DIR, "lib", "aiDialogueClient.ts");
 const BGW_LIVE_ADAPTER_CLIENT_FILE = join(SRC_DIR, "research", "bounded-generative-world", "liveAdapterClient.ts");
-const DOCUMENTED_NETWORK_FILES = [DIALOGUE_CLIENT_FILE, BGW_LIVE_ADAPTER_CLIENT_FILE];
+// NEW_LIFE_CORE_REDESIGN_V1: a THIRD documented, intentional network call, same pattern as the
+// other two -- newlifecore/dialogue/liveAdapterClient.ts calls only a same-origin, dev-server-only
+// local endpoint (`/api/newlifecore-npc-dialogue`), never a third-party host directly, never a
+// credential (guarded separately below, unchanged).
+const NEWLIFECORE_LIVE_ADAPTER_CLIENT_FILE = join(SRC_DIR, "newlifecore", "dialogue", "liveAdapterClient.ts");
+const DOCUMENTED_NETWORK_FILES = [DIALOGUE_CLIENT_FILE, BGW_LIVE_ADAPTER_CLIENT_FILE, NEWLIFECORE_LIVE_ADAPTER_CLIENT_FILE];
 const nonDialogueFiles = sourceFiles.filter((f) => !DOCUMENTED_NETWORK_FILES.includes(f));
 const nonDialogueSource = nonDialogueFiles.map((f) => readFileSync(f, "utf-8")).join("\n");
 const dialogueClientSource = readFileSync(DIALOGUE_CLIENT_FILE, "utf-8");
 const bgwLiveAdapterClientSource = readFileSync(BGW_LIVE_ADAPTER_CLIENT_FILE, "utf-8");
+const newlifecoreLiveAdapterClientSource = readFileSync(NEWLIFECORE_LIVE_ADAPTER_CLIENT_FILE, "utf-8");
 
 describe("safety: no external network usage outside the documented dialogue clients", () => {
   it("never calls fetch, XMLHttpRequest, or WebSocket anywhere in src/ except the 2 documented network client files", () => {
@@ -54,6 +60,13 @@ describe("safety: no external network usage outside the documented dialogue clie
     expect(fetchCalls).toHaveLength(1);
     expect(bgwLiveAdapterClientSource).toMatch(/fetch\("\/api\/bgw-npc-dialogue"/);
     expect(bgwLiveAdapterClientSource).not.toMatch(/https?:\/\//);
+  });
+
+  it("newlifecore/dialogue/liveAdapterClient.ts (NEW_LIFE_CORE_REDESIGN_V1) makes exactly one fetch call, to a same-origin relative path only (never a third-party host)", () => {
+    const fetchCalls = newlifecoreLiveAdapterClientSource.match(/\bfetch\s*\(/g) ?? [];
+    expect(fetchCalls).toHaveLength(1);
+    expect(newlifecoreLiveAdapterClientSource).toMatch(/fetch\("\/api\/newlifecore-npc-dialogue"/);
+    expect(newlifecoreLiveAdapterClientSource).not.toMatch(/https?:\/\//);
   });
 
   it("PersonalizedAiDialogueGate never attempts the network call while no endpoint URL is configured", () => {

@@ -1,0 +1,37 @@
+import type { ConversationTurn, LocationId, NpcId } from "../types";
+
+/** Directive Section 9 -- everything the AI is given per free-text turn. AI is only ever asked to
+ *  perform ONE NPC's reply from this; it never receives or infers anything not listed here
+ *  (knowledge-boundary enforcement starts at what this packet even contains, not just at prompt
+ *  wording). */
+export interface NpcAiContext {
+  npcId: NpcId;
+  displayName: string;
+  identity: string;
+  personality: string;
+  speechStyle: string;
+  values: string;
+  likes: string[];
+  dislikes: string[];
+  currentMood: string;
+  currentScheduleNote: string;
+  currentLocation: LocationId;
+  knownFacts: string[];
+  unknownFacts: string[];
+  memoryOfPlayer: ConversationTurn[];
+  relationshipHistory: string[];
+  currentScene: string;
+  day: number;
+  timeLabel: string;
+  worldFactsRelevant: string[];
+  playerInput: string;
+}
+
+/** Deliberately minimal -- directive Section 14: the AI's sentence never confirms game state by
+ *  itself, so the envelope carries nothing but the line it speaks. Whatever gets remembered from
+ *  this turn is the player's own utterance (verbatim), not an AI-authored summary. */
+export interface NpcReplyEnvelope {
+  visibleUtterance: string;
+}
+
+export type NpcAiAdapter = (context: NpcAiContext) => Promise<NpcReplyEnvelope>;

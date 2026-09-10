@@ -5,6 +5,8 @@ import react from "@vitejs/plugin-react";
 // client) -- untyped by design rather than adding a repo-wide allowJs/checkJs setting.
 // @ts-expect-error -- untyped plain-JS dev-only module, see comment above
 import { bgwVertexDevPlugin } from "./devtools/bgwVertexDevPlugin.mjs";
+// @ts-expect-error -- untyped plain-JS dev-only module, sibling to the one above (not a modification of it)
+import { newlifeCoreVertexDevPlugin } from "./devtools/newlifeCoreVertexDevPlugin.mjs";
 
 // GitHub Pages serves this project from https://<user>.github.io/thinking-game/,
 // so production builds need that subpath as the base. Dev/test stay at "/".
@@ -14,7 +16,7 @@ import { bgwVertexDevPlugin } from "./devtools/bgwVertexDevPlugin.mjs";
 // See docs/research/evaluation/phase-12-0/LIVE_VERTEX_LOCAL_ADAPTER_DESIGN_V1.md.
 export default defineConfig(({ command }) => ({
   base: command === "build" ? "/thinking-game/" : "/",
-  plugins: [react(), bgwVertexDevPlugin()],
+  plugins: [react(), bgwVertexDevPlugin(), newlifeCoreVertexDevPlugin()],
   test: {
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
