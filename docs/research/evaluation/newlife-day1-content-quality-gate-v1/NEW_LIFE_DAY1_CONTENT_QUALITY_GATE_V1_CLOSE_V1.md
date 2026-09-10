@@ -1,7 +1,7 @@
 # NEW_LIFE_DAY1_CONTENT_QUALITY_GATE_V1 -- CLOSE REPORT
 
 BASELINE COMMIT: `b209ffb8422d091fb1f62a9756ccbc5a9f4cab4e`
-FINAL COMMIT: (to be filled in after commit -- see bottom of this report)
+FINAL COMMIT: `bbfc754`
 
 This Run explicitly revoked the prior task's self-judgment "DAY1 EXPERIENCE: ACCEPT" and treated
 DAY1 as not yet good enough as a work. No DAY2, no new features, no new art, no career routes were
