@@ -10,7 +10,7 @@ import { createInitialCoreState, type NpcId } from "../src/newlifecore/types";
 // @ts-expect-error -- untyped plain-JS dev-only module (same pattern as vite.config.ts's own import of it)
 import { buildPrompt } from "../devtools/newlifeCoreVertexLiveAdapterCore.mjs";
 
-const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin"];
+const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "daisuke"];
 
 describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: NPC private context isolation (Section 5 -- structural guarantee, regression test)", () => {
   it("no NPC's built AI context or its real live prompt ever contains another NPC's hiddenBackground text", () => {
@@ -81,6 +81,37 @@ describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: dialogue precisi
     const ctx = buildNpcAiContext("yohei", createInitialCoreState(), "お米とお肉、野菜ください");
     const prompt = buildPrompt(ctx);
     expect(prompt).toMatch(/取引そのものを完結させないでください/);
+  });
+});
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: the Thinking Resident's prompt is distinct and non-clinical (Section F/G)", () => {
+  it("Daisuke's prompt explicitly forbids clinical/professional framing and any single fixed closing pattern", () => {
+    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "最近、仕事を先延ばしにしています");
+    const prompt = buildPrompt(ctx);
+    expect(prompt).toMatch(/医療従事者・心理士・カウンセラー・セラピストではなく/);
+    expect(prompt).toMatch(/「カウンセリング」「セラピー」「診断」「認知行動療法」「治療」「症状」「病気」/);
+    expect(prompt).toMatch(/一切使わないでください/);
+    expect(prompt).toMatch(/毎回、聞く→まとめる→行動提案、という同じパターンで終わらせてはいけません/);
+  });
+
+  it("Daisuke's prompt still carries the same banned-AI-assistant-phrase list every other NPC gets", () => {
+    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "こんにちは");
+    const prompt = buildPrompt(ctx);
+    expect(prompt).toMatch(/なるほど」「それは大変ですね」「つまり〜ということですね」/);
+  });
+
+  it("a normal NPC's prompt (e.g. Kamiya) never contains the Thinking Resident's clinical-framing instructions", () => {
+    const ctx = buildNpcAiContext("kamiya", createInitialCoreState(), "こんにちは");
+    const prompt = buildPrompt(ctx);
+    expect(prompt).not.toMatch(/医療従事者・心理士・カウンセラー・セラピスト/);
+    expect(prompt).not.toMatch(/思考整理の扱い方/);
+  });
+
+  it("Daisuke's prompt includes his own hiddenBackground and never presents him as omniscient about the player's inner life -- shares the standard 'don't read the player's mind' rule", () => {
+    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "こんにちは");
+    const prompt = buildPrompt(ctx);
+    expect(prompt).toMatch(/改装するかどうかを10年近く迷い続けている/);
+    expect(prompt).toMatch(/まだ起きていないことを知っているように振る舞ってはいけません/);
   });
 });
 

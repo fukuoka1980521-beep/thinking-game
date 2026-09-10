@@ -10,6 +10,7 @@ export const LOCATION_LABEL: Record<LocationId, string> = {
   CAFE_NODOKA: "喫茶のどか",
   COMMUNITY_HALL: "集会所",
   SHOPPING_STREET: "商店街",
+  BARBERSHOP: "理容店かどや",
 };
 
 export const REACHABLE_FROM_TRIAL_HOUSE: LocationId[] = ["CHALLENGE_CENTER", "YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL", "SHOPPING_STREET"];
@@ -50,6 +51,11 @@ const OPENING_LINES: Record<NpcId, NpcOpeningLine> = {
     npc: "jin",
     firstVisitLine: "相馬はこちらをちらっと見て、軽く顎を上げた。",
     laterVisitLine: "相馬は手を止めずに言った。「よう」",
+  },
+  daisuke: {
+    npc: "daisuke",
+    firstVisitLine: "鋏の音が止んだ。「いらっしゃい。……ああ、見ない顔だ」",
+    laterVisitLine: "大輔は鏡越しにちらっと視線をよこした。「よう」",
   },
 };
 
@@ -160,6 +166,19 @@ export function buildLocationScene(state: CoreState): LocationScene {
     if (avail === "CLOSED") return { location: loc, ambientLine: "喫茶のどかは閉まっていた。", npcsHere: [], specialActions: [] };
     // Directive Section 19 -- ordering and simply sitting down are two different, real actions.
     return { location: loc, ambientLine: "", npcsHere: ["miyoko"], specialActions: [{ id: "order_menu", label: "メニューを注文する" }, { id: "sit_down", label: "コーヒーを頼んで座る" }] };
+  }
+
+  if (loc === "BARBERSHOP") {
+    const avail = npcAvailabilityAt("daisuke", state.time, state.flags);
+    if (avail === "CLOSED") return { location: loc, ambientLine: "理容店かどやのシャッターは下りていた。", npcsHere: [], specialActions: [] };
+    if (avail === "BUSY") return { location: loc, ambientLine: "大輔は昼休みのようだった。", npcsHere: [], specialActions: [] };
+    // Directive Section H/M scenario 5 -- an open (not yet checked-in) intent from an earlier day
+    // surfaces here as a real action, not as a pushy notification the moment the day starts. Only
+    // offered once the player has actually come back to this location on a later day.
+    const hasOpenIntent = state.realWorldIntents.some((i) => i.npc === "daisuke" && !i.checkedIn && i.createdOnDay < state.day);
+    const specialActions: { id: string; label: string }[] = [{ id: "shop_here", label: "散髪してもらう" }];
+    if (hasOpenIntent) specialActions.unshift({ id: "check_in_intent", label: "その後の話をする" });
+    return { location: loc, ambientLine: "", npcsHere: ["daisuke"], specialActions };
   }
 
   // COMMUNITY_HALL -- must check where Jin actually IS (npcsHere, location-aware), never just

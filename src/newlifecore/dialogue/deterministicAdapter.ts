@@ -14,7 +14,7 @@ import type { NpcId } from "../types";
 
 type Bucket = "OTHER_NPC_MENTIONED" | "WORK_TALK" | "ABOUT_SELF" | "ABOUT_NPC" | "UNCERTAIN" | "GREETING" | "OTHER";
 
-const OTHER_NPC_NAMES = /洋平|美代子|相馬|神谷/;
+const OTHER_NPC_NAMES = /洋平|美代子|相馬|神谷|大輔/;
 const WORK_RE = /仕事|働|職|求人|給料|稼/;
 const ABOUT_SELF_RE = /前は|以前|昔|元の仕事|辞めた/;
 const ABOUT_NPC_RE = /あなたは|そちらは|お店は|長いんですか|長いんです|昔から|いつから/;
@@ -112,6 +112,22 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
       "相馬は軽く頷いただけだった。",
       "相馬は手を止めずに、「そうか」とだけ言った。",
       "相馬は工具を袋にしまいながら、短く息をついた。",
+    ],
+  },
+  // PHASE_12_3 -- the Thinking Resident's fallback bucket set. Deliberately still just a listener
+  // here (no "circuit" reasoning in the deterministic path -- that nuance is live-model-only,
+  // directive Section F/G); this only has to stay in-character and never diagnostic.
+  daisuke: {
+    OTHER_NPC_MENTIONED: ["大輔は鋏を動かす手を止めずに、「へえ」とだけ言った。"],
+    WORK_TALK: ["大輔は少し間を置いた。「まあ、焦らなくてもいいんじゃないですか」"],
+    ABOUT_SELF: ["大輔は鏡越しに小さく頷いた。「そうですか」"],
+    ABOUT_NPC: ["大輔は少し笑った。「ここを継いで、もう10年になりますね」"],
+    UNCERTAIN: ["大輔は静かに言った。「今すぐ決めなくてもいいと思いますよ」"],
+    GREETING: ["大輔は軽く会釈した。「いらっしゃい」"],
+    OTHER: [
+      "大輔は鋏の音だけを残して、しばらく黙っていた。",
+      "大輔は少し間を置いてから、「そうですか」と言った。",
+      "大輔は櫛を通しながら、「ふむ」とだけ返した。",
     ],
   },
 };

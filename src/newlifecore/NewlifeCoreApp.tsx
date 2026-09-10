@@ -6,6 +6,8 @@ import miyokoImg from "../assets/newlifev02/miyoko.png";
 import jinImg from "../assets/newlifev02/soma-jin.png";
 import { IntakeForm } from "./IntakeForm";
 import { ShoppingPicker } from "./ShoppingPicker";
+import { RealityBridgeOffer } from "./RealityBridgeOffer";
+import { RealityBridgeCheckIn } from "./RealityBridgeCheckIn";
 import {
   LOCATION_LABEL,
   buildEndOfDayNarrative,
@@ -18,13 +20,28 @@ import {
   reachableLocations,
 } from "./content/day1";
 import { menuForLocation, shopNpcForLocation } from "./content/shop";
+import { daisukeCheckInAcknowledgement, daisukeIntentConfirmReaction, looksLikeRealLifeConcern } from "./content/realityBridge";
+import { detectsCrisisSignal, SAFETY_ROUTE_MESSAGE } from "./content/safetyRoute";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
 import { deterministicAdapter } from "./dialogue/deterministicAdapter";
 import { liveNpcAdapter } from "./dialogue/liveAdapterClient";
-import { addWorldFact, canSleep, cookAndEat, doShortAction, moveTo, purchaseItems, recordConversationTurn, sleep, timeRemainingLabel } from "./engine";
+import {
+  addWorldFact,
+  canSleep,
+  checkInRealWorldIntent,
+  cookAndEat,
+  createRealWorldIntent,
+  doShortAction,
+  moveTo,
+  purchaseItems,
+  recordConversationTurn,
+  sleep,
+  startNewDay,
+  timeRemainingLabel,
+} from "./engine";
 import { npcDisplayName } from "./npcDefs";
 import { createInitialCoreState, formatClock } from "./types";
-import type { CoreState, IntakeForm as IntakeFormData, LocationId, NpcId } from "./types";
+import type { CoreState, IntakeForm as IntakeFormData, LocationId, NpcId, RealWorldIntent, UserUpdateResponse } from "./types";
 
 const PORTRAIT_SRC: Partial<Record<NpcId, string>> = { yohei: yoheiImg, miyoko: miyokoImg, jin: jinImg };
 
@@ -33,7 +50,17 @@ const PORTRAIT_SRC: Partial<Record<NpcId, string>> = { yohei: yoheiImg, miyoko: 
 // a tutorial -- the OPENING screen (below) carries what the 30 days mean; this is only mechanics.
 const PLAY_GUIDE_ITEMS = ["場所を選んで移動できます", "人がいれば自由に話せます", "その場でできる行動を選べます", "行動すると時間が進みます", "夜になったら一日を終えられます"];
 
-function PlayGuideCard({ ctaLabel, onContinue }: { ctaLabel: string; onContinue: () => void }) {
+function PlayGuideCard({
+  ctaLabel,
+  onContinue,
+  researchOptIn,
+  onToggleResearchOptIn,
+}: {
+  ctaLabel: string;
+  onContinue: () => void;
+  researchOptIn: boolean;
+  onToggleResearchOptIn: (checked: boolean) => void;
+}) {
   return (
     <div className="nlc-scene-card" data-testid="nlc-play-guide">
       <p className="nlc-summary-heading">この町では</p>
@@ -42,6 +69,18 @@ function PlayGuideCard({ ctaLabel, onContinue }: { ctaLabel: string; onContinue:
           <li key={item}>{item}</li>
         ))}
       </ul>
+      {/* Section I -- opt-in, off by default, entirely separate from play: gameplay itself never
+          reads this flag. Placed here (not a popup mid-conversation) so it's never a condition of
+          progressing. */}
+      <label className="nlc-dev-toggle" data-testid="nlc-research-optin-label">
+        <input
+          type="checkbox"
+          data-testid="nlc-research-optin"
+          checked={researchOptIn}
+          onChange={(ev) => onToggleResearchOptIn(ev.target.checked)}
+        />
+        研究目的でのプレイ内容の観察利用に協力する（任意。しなくても普通に遊べます）
+      </label>
       <button className="nlc-btn" onClick={onContinue} data-testid="nlc-guide-continue">
         {ctaLabel}
       </button>
@@ -86,6 +125,18 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   const [guideReopened, setGuideReopened] = useState(false);
   const [showIntakeForm, setShowIntakeForm] = useState(false);
   const [showShoppingPicker, setShowShoppingPicker] = useState(false);
+  // PHASE_12_3 Section E -- conversation UI rebuild: neither of these ever holds more than a
+  // boolean per active conversation (reset whenever the conversation changes), so opening an old
+  // conversation never silently carries yesterday's "expanded" state into today's.
+  const [showFullTodayLog, setShowFullTodayLog] = useState(false);
+  const [showPastLog, setShowPastLog] = useState(false);
+  // Section H -- an offer is only ever live for the conversation that produced it; switching NPCs
+  // or ending the conversation clears it (see move/closeConversation/openConversation below).
+  const [realityBridgeOffer, setRealityBridgeOffer] = useState<{ npc: NpcId; playerStatement: string } | null>(null);
+  const [showCheckIn, setShowCheckIn] = useState<RealWorldIntent | null>(null);
+  // Section J -- when true, replaces the active conversation's input with the fixed safety message
+  // (content/safetyRoute.ts). Never fed through any adapter; nothing here is AI-generated.
+  const [safetyRouteActive, setSafetyRouteActive] = useState(false);
 
   function startGame() {
     setState((s) => ({ ...s, started: true }));
@@ -100,36 +151,86 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setSpecialResult(null);
     setShowIntakeForm(false);
     setShowShoppingPicker(false);
+    setShowFullTodayLog(false);
+    setShowPastLog(false);
+    setRealityBridgeOffer(null);
+    setShowCheckIn(null);
+    setSafetyRouteActive(false);
     setState((s) => moveTo(s, location));
   }
 
   function openConversation(npc: NpcId) {
     setActiveConversation(npc);
+    setShowFullTodayLog(false);
+    setShowPastLog(false);
+    setRealityBridgeOffer(null);
+    setSafetyRouteActive(false);
     setState((s) => (s.flags[`met_${npc}`] ? s : { ...s, flags: { ...s.flags, [`met_${npc}`]: true } }));
   }
 
   function closeConversation() {
     setActiveConversation(null);
     setFreeTextInput("");
+    setRealityBridgeOffer(null);
+    setSafetyRouteActive(false);
   }
 
   async function submitFreeText() {
     if (!activeConversation || !freeTextInput.trim() || pending) return;
     const npc = activeConversation;
     const text = freeTextInput.trim();
+    // Section J -- checked before anything else, for every NPC. A serious signal never reaches an
+    // adapter (live or deterministic) at all; no NPC "handles" this in character.
+    if (detectsCrisisSignal(text)) {
+      setFreeTextInput("");
+      setSafetyRouteActive(true);
+      return;
+    }
     setPending(true);
     setFreeTextInput("");
+    setRealityBridgeOffer(null);
     const context = buildNpcAiContext(npc, state, text);
     const adapter = useLive ? liveNpcAdapter : deterministicAdapter;
     const reply = await adapter(context);
     setState((s) => recordConversationTurn(s, npc, text, reply.visibleUtterance));
     setPending(false);
+    // Section H -- offer is scoped to the Thinking Resident only (Section F/G: he alone runs the
+    // thinking-circuit register); a heuristic on the PLAYER's own words, never on the NPC reply.
+    if (npc === "daisuke" && looksLikeRealLifeConcern(text)) {
+      setRealityBridgeOffer({ npc, playerStatement: text });
+    }
+  }
+
+  function createIntentFromOffer(intentLabel: string) {
+    if (!realityBridgeOffer) return;
+    setState((s) => createRealWorldIntent(s, realityBridgeOffer.npc, realityBridgeOffer.playerStatement, intentLabel));
+    setSpecialResult(daisukeIntentConfirmReaction());
+    setRealityBridgeOffer(null);
+  }
+
+  function submitCheckIn(response: UserUpdateResponse, note: string) {
+    if (!showCheckIn) return;
+    setState((s) => checkInRealWorldIntent(s, showCheckIn.id, response, note));
+    setSpecialResult(daisukeCheckInAcknowledgement());
+    setShowCheckIn(null);
+  }
+
+  function goToNextDay() {
+    setState((s) => startNewDay(s));
   }
 
   function runSpecialAction(actionId: string) {
     if (actionId === "fill_intake_form") {
       setSpecialResult(null);
       setShowIntakeForm(true);
+      return;
+    }
+    if (actionId === "check_in_intent") {
+      const openIntent = state.realWorldIntents.find((i) => i.npc === "daisuke" && !i.checkedIn && i.createdOnDay < state.day);
+      if (openIntent) {
+        setSpecialResult(null);
+        setShowCheckIn(openIntent);
+      }
       return;
     }
     if (actionId === "offer_help_shelf") {
@@ -274,6 +375,8 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
               startGame();
               setPhase("game");
             }}
+            researchOptIn={state.researchOptIn}
+            onToggleResearchOptIn={(checked) => setState((s) => ({ ...s, researchOptIn: checked }))}
           />
         </div>
       </div>
@@ -293,7 +396,12 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </button>
         </div>
         <div className="nlc-panel">
-          <PlayGuideCard ctaLabel="閉じる" onContinue={() => setGuideReopened(false)} />
+          <PlayGuideCard
+            ctaLabel="閉じる"
+            onContinue={() => setGuideReopened(false)}
+            researchOptIn={state.researchOptIn}
+            onToggleResearchOptIn={(checked) => setState((s) => ({ ...s, researchOptIn: checked }))}
+          />
         </div>
       </div>
     );
@@ -316,6 +424,11 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                   {line}
                 </p>
               ))}
+            </div>
+            <div className="nlc-footer-actions">
+              <button className="nlc-btn" onClick={goToNextDay} data-testid="nlc-next-day">
+                次の日へ進む（DAY{state.day + 1}）
+              </button>
             </div>
           </div>
         </div>
@@ -343,7 +456,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
       <div className="nlc-topbar">
         <span className="nlc-topbar-label">チャレンジ町</span>
         <span className="nlc-clock" data-testid="nlc-clock">
-          DAY1 ・ {formatClock(state.time)}
+          DAY{state.day} ・ {formatClock(state.time)}
         </span>
         <button className="nlc-exit" onClick={() => setGuideReopened(true)} data-testid="nlc-guide-reopen">
           ？ 遊び方
@@ -380,7 +493,13 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {scene && !showIntakeForm && !showShoppingPicker && (
+        {scene && showCheckIn && (
+          <div className="nlc-scene-card" data-testid="nlc-location-scene">
+            <RealityBridgeCheckIn intent={showCheckIn} onSubmit={submitCheckIn} onCancel={() => setShowCheckIn(null)} />
+          </div>
+        )}
+
+        {scene && !showIntakeForm && !showShoppingPicker && !showCheckIn && (
           <div className="nlc-scene-card" data-testid="nlc-location-scene">
             {scene.ambientLine && <p className="nlc-ambient">{scene.ambientLine}</p>}
 
@@ -399,48 +518,107 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                   </div>
 
                   {activeConversation === npc ? (
-                    <div className="nlc-conversation" data-testid={`nlc-conversation-${npc}`}>
-                      <div className="nlc-conversation-log" data-testid={`nlc-conversation-log-${npc}`}>
-                        {state.npcMemory[npc].map((t, i) => (
-                          <div key={i} className="nlc-turn">
-                            <p className="nlc-line-player">{t.playerUtterance}</p>
-                            <p className="nlc-line-npc">{t.npcReply}</p>
+                    (() => {
+                      // Section E -- CONTINUE (earlier days, collapsed to a one-line summary by
+                      // default) vs TODAY (this day's own exchange, live). Neither ever dumps the
+                      // full backlog on screen by default -- directive: "画面上に過去全文を常時
+                      // 展開しない".
+                      const pastTurns = state.npcMemory[npc].filter((t) => t.day < state.day);
+                      const todayTurns = state.npcMemory[npc].filter((t) => t.day === state.day);
+                      const TODAY_VISIBLE_CAP = 4;
+                      const hiddenTodayCount = Math.max(0, todayTurns.length - TODAY_VISIBLE_CAP);
+                      const visibleTodayTurns = showFullTodayLog ? todayTurns : todayTurns.slice(-TODAY_VISIBLE_CAP);
+                      const lastPastTurn = pastTurns[pastTurns.length - 1];
+
+                      return (
+                        <div className="nlc-conversation" data-testid={`nlc-conversation-${npc}`}>
+                          {lastPastTurn && (
+                            <div className="nlc-past-summary" data-testid={`nlc-past-summary-${npc}`}>
+                              {!showPastLog ? (
+                                <>
+                                  <p className="nlc-npc-line">前回の話：「{lastPastTurn.playerUtterance}」について話した。</p>
+                                  <button className="nlc-leave-btn" onClick={() => setShowPastLog(true)} data-testid={`nlc-expand-past-${npc}`}>
+                                    会話履歴を見る
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="nlc-conversation-log">
+                                    {pastTurns.map((t, i) => (
+                                      <div key={i} className="nlc-turn">
+                                        <p className="nlc-line-player">{t.playerUtterance}</p>
+                                        <p className="nlc-line-npc">{t.npcReply}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <button className="nlc-leave-btn" onClick={() => setShowPastLog(false)} data-testid={`nlc-collapse-past-${npc}`}>
+                                    閉じる
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="nlc-conversation-log" data-testid={`nlc-conversation-log-${npc}`}>
+                            {!showFullTodayLog && hiddenTodayCount > 0 && (
+                              <button className="nlc-leave-btn" onClick={() => setShowFullTodayLog(true)} data-testid={`nlc-expand-today-${npc}`}>
+                                この日の会話をもっと見る（{hiddenTodayCount}件）
+                              </button>
+                            )}
+                            {visibleTodayTurns.map((t, i) => (
+                              <div key={i} className="nlc-turn">
+                                <p className="nlc-line-player">{t.playerUtterance}</p>
+                                <p className="nlc-line-npc">{t.npcReply}</p>
+                              </div>
+                            ))}
+                            {pending && (
+                              <p className="nlc-line-waiting" data-testid="nlc-waiting-indicator">
+                                <span>・</span>
+                                <span>・</span>
+                                <span>・</span>
+                              </p>
+                            )}
                           </div>
-                        ))}
-                        {pending && (
-                          <p className="nlc-line-waiting" data-testid="nlc-waiting-indicator">
-                            <span>・</span>
-                            <span>・</span>
-                            <span>・</span>
-                          </p>
-                        )}
-                      </div>
-                      {hasLeftMidConversation ? (
-                        <p className="nlc-npc-line" data-testid={`nlc-npc-departed-${npc}`}>
-                          {npcDisplayName(npc)}は、もうそこにいなかった。
-                        </p>
-                      ) : (
-                        <div className="nlc-conversation-input-row">
-                          <input
-                            className="nlc-freetext-input"
-                            data-testid={`nlc-freetext-input-${npc}`}
-                            value={freeTextInput}
-                            onChange={(ev) => setFreeTextInput(ev.target.value)}
-                            onKeyDown={(ev) => {
-                              if (ev.key === "Enter") submitFreeText();
-                            }}
-                            placeholder={`${npcDisplayName(npc)}に話す`}
-                            disabled={pending}
-                          />
-                          <button className="nlc-btn" onClick={submitFreeText} disabled={pending || !freeTextInput.trim()} data-testid={`nlc-freetext-submit-${npc}`}>
-                            送る
+
+                          {safetyRouteActive ? (
+                            <div className="nlc-result" data-testid="nlc-safety-route">
+                              {SAFETY_ROUTE_MESSAGE.split("\n").map((line, i) => (
+                                <p key={i}>{line}</p>
+                              ))}
+                            </div>
+                          ) : hasLeftMidConversation ? (
+                            <p className="nlc-npc-line" data-testid={`nlc-npc-departed-${npc}`}>
+                              {npcDisplayName(npc)}は、もうそこにいなかった。
+                            </p>
+                          ) : (
+                            <>
+                              <div className="nlc-conversation-input-row">
+                                <input
+                                  className="nlc-freetext-input"
+                                  data-testid={`nlc-freetext-input-${npc}`}
+                                  value={freeTextInput}
+                                  onChange={(ev) => setFreeTextInput(ev.target.value)}
+                                  onKeyDown={(ev) => {
+                                    if (ev.key === "Enter") submitFreeText();
+                                  }}
+                                  placeholder={`${npcDisplayName(npc)}に話す`}
+                                  disabled={pending}
+                                />
+                                <button className="nlc-btn" onClick={submitFreeText} disabled={pending || !freeTextInput.trim()} data-testid={`nlc-freetext-submit-${npc}`}>
+                                  送る
+                                </button>
+                              </div>
+                              {npc === "daisuke" && realityBridgeOffer && (
+                                <RealityBridgeOffer onCreate={createIntentFromOffer} onDismiss={() => setRealityBridgeOffer(null)} />
+                              )}
+                            </>
+                          )}
+                          <button className="nlc-leave-btn" onClick={closeConversation} data-testid={`nlc-conversation-close-${npc}`}>
+                            会話を終える
                           </button>
                         </div>
-                      )}
-                      <button className="nlc-leave-btn" onClick={closeConversation} data-testid={`nlc-conversation-close-${npc}`}>
-                        会話を終える
-                      </button>
-                    </div>
+                      );
+                    })()
                   ) : (
                     <div className="nlc-npc-actions">
                       <button className="nlc-choice" onClick={() => openConversation(npc)} data-testid={`nlc-talk-${npc}`}>
@@ -470,7 +648,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && !showShoppingPicker && (
+        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && !showShoppingPicker && !showCheckIn && (
           <div className="nlc-movelist" data-testid="nlc-movelist">
             <p className="nlc-summary-heading">どこへ行きますか（残り{timeRemainingLabel(state.time)}）</p>
             <div className="nlc-picklist">

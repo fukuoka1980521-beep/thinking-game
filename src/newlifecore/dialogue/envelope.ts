@@ -10,6 +10,7 @@ const FALLBACK_BY_NPC: Record<string, string> = {
   yohei: "洋平は少し首をかしげた。「悪い、もう一回言ってくれるか」",
   miyoko: "美代子は手を止めて、こちらを見た。「ごめんなさい、聞き取れなかったわ」",
   jin: "相馬は軽く眉を上げた。「悪い、もう一回」",
+  daisuke: "大輔は鋏を止めて、少し考えた。「……すみません、聞き逃しました」",
 };
 
 export function validateNpcReply(raw: Partial<NpcReplyEnvelope> | null | undefined, context: NpcAiContext): NpcReplyEnvelope {

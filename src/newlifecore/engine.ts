@@ -5,8 +5,8 @@
  */
 import { resolveWorldEvents } from "./content/day1WorldEvents";
 import { itemById } from "./content/shop";
-import { DAY_FORCE_SLEEP_MINUTES, DAY_SLEEP_AVAILABLE_FROM } from "./types";
-import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, WorldFact } from "./types";
+import { DAY_FORCE_SLEEP_MINUTES, DAY_SLEEP_AVAILABLE_FROM, DAY_START_MINUTES } from "./types";
+import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, RealWorldIntent, UserUpdateResponse, WorldFact } from "./types";
 
 export function advanceTime(state: CoreState, minutes: number): CoreState {
   const prevTime = state.time;
@@ -29,7 +29,7 @@ export function moveTo(state: CoreState, location: LocationId): CoreState {
 
 export function recordConversationTurn(state: CoreState, npc: NpcId, playerUtterance: string, npcReply: string): CoreState {
   const withTime = advanceTime(state, 10); // one free-text exchange costs real in-world minutes -- a soft bound against infinite chat (directive Section 7's "無制限AIチャットにはしない")
-  const turn: ConversationTurn = { time: withTime.time, playerUtterance, npcReply };
+  const turn: ConversationTurn = { day: withTime.day, time: withTime.time, playerUtterance, npcReply };
   return {
     ...withTime,
     npcMemory: { ...withTime.npcMemory, [npc]: [...withTime.npcMemory[npc], turn] },
@@ -97,6 +97,87 @@ export function canSleep(state: CoreState): boolean {
 
 export function sleep(state: CoreState): CoreState {
   return { ...state, ended: true };
+}
+
+/**
+ * PHASE_12_3 Section H/M -- the one function that crosses a day boundary. Persists everything that
+ * should read as "the town remembers" (worldFacts, npcMemory, realWorldIntents, money, inventory,
+ * intakeForm, all flags) and only resets what is genuinely day-scoped: the clock, location, and the
+ * two flags that describe THIS day's own events (`ateMeal` -- a new day is a new question of
+ * whether the player ate; `isRaining` -- yesterday's weather doesn't carry over). `flags` like
+ * `met_*`, `intakeFormSubmitted`, `shelfFixed`, `jinCalledToYohei`, `rainHappened` persist
+ * unchanged, which is also why day1WorldEvents.ts's one-time triggers correctly never refire on a
+ * later day (their `!flags.x` guards are already false).
+ */
+export function startNewDay(state: CoreState): CoreState {
+  const { ateMeal: _ateMeal, isRaining: _isRaining, ...persistentFlags } = state.flags;
+  return {
+    ...state,
+    day: state.day + 1,
+    time: DAY_START_MINUTES,
+    playerLocation: "TRIAL_HOUSE",
+    visitedLocations: ["TRIAL_HOUSE"],
+    flags: persistentFlags,
+    ended: false,
+  };
+}
+
+/**
+ * PHASE_12_3 Section H -- the ONLY place a RealWorldIntent is created. Called strictly from a real
+ * UI confirm action (RealityBridgeOffer.tsx), never inferred from the conversation content itself
+ * (mirrors purchaseItems' "structural action, not parsed AI text" discipline). Records exactly what
+ * the player wrote as `playerStatement`/`intentLabel` -- no inferred label is ever constructed here
+ * or anywhere else in this codebase.
+ */
+export function createRealWorldIntent(state: CoreState, npc: NpcId, playerStatement: string, intentLabel: string): CoreState {
+  const withTime = advanceTime(state, 5);
+  const intent: RealWorldIntent = {
+    id: `intent_${npc}_${withTime.time}_${withTime.realWorldIntents.length}`,
+    npc,
+    createdOnDay: withTime.day,
+    createdAt: withTime.time,
+    playerStatement,
+    intentLabel,
+    checkedIn: false,
+  };
+  return addWorldFact(
+    { ...withTime, realWorldIntents: [...withTime.realWorldIntents, intent] },
+    { id: `${intent.id}_created`, time: withTime.time, text: `PLAYERは「${intentLabel}」を試してみると話した。`, knownBy: [npc] },
+  );
+}
+
+/**
+ * PHASE_12_3 Section H -- "その後どうだった？" answered through a real UI (RealityBridgeCheckIn.tsx,
+ * the six-option/free-text panel), never scored. `USER_UPDATE`, not `ACTION_RESULT` -- no
+ * success/failure framing is stored or derivable from this record; `response` is a plain category
+ * of what happened, and `note` (optional) is the player's own words if they chose 自由記述.
+ */
+const USER_UPDATE_LABEL: Record<UserUpdateResponse, string> = {
+  did_it: "やってみた",
+  did_not: "やらなかった",
+  partially: "少しだけやった",
+  changed: "状況が変わった",
+  undecided: "まだ決めていない",
+  other: "自由記述",
+};
+
+export function checkInRealWorldIntent(state: CoreState, intentId: string, response: UserUpdateResponse, note: string): CoreState {
+  const target0 = state.realWorldIntents.find((i) => i.id === intentId);
+  if (!target0 || target0.checkedIn) return state; // true no-op, mirrors addWorldFact's dedupe discipline
+  const withTime = advanceTime(state, 5);
+  const target = withTime.realWorldIntents.find((i) => i.id === intentId)!;
+  const updated: RealWorldIntent = { ...target, checkedIn: true, userUpdate: { day: withTime.day, response, note } };
+  const withIntent = {
+    ...withTime,
+    realWorldIntents: withTime.realWorldIntents.map((i) => (i.id === intentId ? updated : i)),
+  };
+  const detail = note.trim() ? `「${note.trim()}」` : `「${USER_UPDATE_LABEL[response]}」`;
+  return addWorldFact(withIntent, {
+    id: `${intentId}_checked_in`,
+    time: withTime.time,
+    text: `PLAYERは、以前の「${target.intentLabel}」について、${detail}と話した。`,
+    knownBy: [target.npc],
+  });
 }
 
 export function timeRemainingLabel(time: ClockMinutes): string {

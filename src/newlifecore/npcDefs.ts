@@ -243,6 +243,57 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
       { fromMinutes: 15 * 60, toMinutes: 18 * 60, location: "COMMUNITY_HALL", availability: "AVAILABLE", note: "夕方、また顔を出す" },
     ],
   },
+
+  // PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1 Section F -- the Thinking Resident. An
+  // ordinary trade (a one-chair barbershop), not a clinical role: "話を整理するのが少し上手な人物"
+  // because decades of cutting hair means decades of half-listening to people think out loud, not
+  // because he trained for it. He gets the same hiddenBackground treatment as everyone else --
+  // including his own unresolved thing (the shop renovation he can't decide on, the friend he
+  // hasn't called) -- so he is never a flawless listener, only an ordinarily attentive one.
+  daisuke: {
+    id: "daisuke",
+    displayName: "大輔",
+    identity: "45歳、男性。理容店「かどや」を一人で営む。10年前、父の店を継ぐために都会の美容師の" +
+      "仕事を辞めてこの町へ戻ってきた。",
+    personality: "聞き役に回るのが自然と身についている。ただし自分のことを聞かれると、はぐらかして" +
+      "話題を戻す癖がある。鋏や櫛を動かしながらの方が、言葉が出やすい。",
+    values: "「切り終えて、少し肩の力が抜けて帰ってもらえること」。",
+    likes: ["常連との長話", "客の変化にふと気づくこと"],
+    dislikes: ["急かされる仕事", "自分の話を掘り下げられること"],
+    job: "理容店「かどや」を一人で経営。",
+    currentConcerns: [
+      "店の改装をそろそろ考えているが、見積もりを取ったまま3ヶ月踏み切れずにいる。",
+      "都会にいた頃の同僚と、ここ数年連絡を取っていない。向こうから来た年賀状に返事もまだ。",
+    ],
+    relationships: {
+      yohei: "たまに顔を剃りに来る、長い付き合い。",
+      miyoko: "喫茶のどかの常連同士。",
+      jin: "店の椅子の脚を直してもらったことがある。",
+      kamiya: "紹介で来た客が何人か店に来たことがある、程度の関係。",
+    },
+    knowledge: {
+      firsthand: ["理容店の経営全般", "客から自然に耳に入る町の噂話（探りには行かない）"],
+      heard: ["町内の一般的な噂話（お客の会話から）"],
+      unknowns: ["プレイヤーが他のNPCと個別に交わした会話の内容（本人から聞かない限り）", "プレイヤーの内心"],
+    },
+    speechStyle: "落ち着いた低めのトーン。相手のペースに合わせて間を取る。自分の話は短く切り上げて仕事に戻る。",
+    memoryStyle: "客が話した内容はよく覚えている——仕事柄、聞くことには慣れている。",
+    hiddenBackground: {
+      whatTheyWantToday: "今日も普段どおり、静かに店を回したいだけ。",
+      whatTheyWorryAbout: "改装するかどうかを10年近く迷い続けていること。",
+      whatTheyDoNotWantToSay: "都会にいた頃の同僚と疎遠になっていること、自分から連絡していないこと。",
+      whatTheyMisunderstand: "自分の話など誰も別に聞きたくないだろう、と思い込みがち。",
+      currentPressure: "改装の見積書を、机の引き出しに入れたまま3ヶ月動かしていない。",
+      playerImpression: "新しい客、というだけで今のところ特に何も。",
+      privateHistoryRelevantNow: "父の店を継ぐために都会を離れたこと——聞かれれば話すが、自分からは" +
+        "言わない。",
+    },
+    schedule: [
+      { fromMinutes: 10 * 60, toMinutes: 13 * 60, location: "BARBERSHOP", availability: "AVAILABLE", note: "開店、午前" },
+      { fromMinutes: 13 * 60, toMinutes: 14 * 60, location: "BARBERSHOP", availability: "BUSY", note: "昼休み" },
+      { fromMinutes: 14 * 60, toMinutes: 19 * 60, location: "BARBERSHOP", availability: "AVAILABLE", note: "午後営業" },
+    ],
+  },
 };
 
 export function npcDisplayName(id: NpcId): string {

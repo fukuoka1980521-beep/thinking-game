@@ -7,9 +7,9 @@
  * career-score-driven state ("単純スコアで人生を決めない").
  */
 
-export type LocationId = "TRIAL_HOUSE" | "CHALLENGE_CENTER" | "YOHEI_STORE" | "CAFE_NODOKA" | "COMMUNITY_HALL" | "SHOPPING_STREET";
+export type LocationId = "TRIAL_HOUSE" | "CHALLENGE_CENTER" | "YOHEI_STORE" | "CAFE_NODOKA" | "COMMUNITY_HALL" | "SHOPPING_STREET" | "BARBERSHOP";
 
-export type NpcId = "kamiya" | "yohei" | "miyoko" | "jin";
+export type NpcId = "kamiya" | "yohei" | "miyoko" | "jin" | "daisuke";
 
 /** Minutes since 00:00. */
 export type ClockMinutes = number;
@@ -30,8 +30,11 @@ export interface WorldFact {
 }
 
 /** One free-text conversation turn, stored verbatim -- memory is the record of what was actually
- *  said, not an AI-generated summary (directive: "数値点数ではなく、出来事/発言記録を優先する"). */
+ *  said, not an AI-generated summary (directive: "数値点数ではなく、出来事/発言記録を優先する").
+ *  `day` (PHASE_12_3) lets the conversation UI show today's exchange live while collapsing earlier
+ *  days behind a short summary, instead of an ever-growing single column (directive Section E). */
 export interface ConversationTurn {
+  day: number;
   time: ClockMinutes;
   playerUtterance: string;
   npcReply: string;
@@ -56,7 +59,39 @@ export interface IntakeForm {
  *  directive Section 8). `itemId` keys into content/shop.ts's `SHOP_ITEMS` catalog. */
 export type Inventory = Record<string, number>;
 
+/**
+ * PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1, Section H -- created ONLY through a real UI
+ * confirmation (RealityBridgeOffer, never inferred from free text alone -- directive Section 1's
+ * "world/action consistency" principle applies here too: saying "I'll try it" in chat is not the
+ * same as the player pressing the button that actually creates this record). `playerStatement` and
+ * `intentLabel` are always the player's own words, verbatim -- never an AI-generated summary or
+ * diagnosis (Section 7/I: "PLAYER is lazy" style inference is never constructed anywhere in this
+ * codebase). Scoped to `npc: "daisuke"` for V1 -- only the Thinking Resident runs this loop.
+ */
+export type UserUpdateResponse = "did_it" | "did_not" | "partially" | "changed" | "undecided" | "other";
+
+export interface RealWorldIntent {
+  id: string;
+  npc: NpcId;
+  createdOnDay: number;
+  createdAt: ClockMinutes;
+  /** The player's own free-text turn that read as a real-life concern -- quoted, not paraphrased. */
+  playerStatement: string;
+  /** The small thing the player chose to try, in their own words. */
+  intentLabel: string;
+  checkedIn: boolean;
+  userUpdate?: {
+    day: number;
+    response: UserUpdateResponse;
+    note: string;
+  };
+}
+
 export interface CoreState {
+  /** PHASE_12_3 -- starts at 1. Only `startNewDay` (engine.ts) advances it; nothing else in this
+   *  codebase is allowed to write it directly (mirrors the "only engine.ts mutates CoreState"
+   *  discipline already documented at the top of engine.ts). */
+  day: number;
   started: boolean;
   time: ClockMinutes;
   playerLocation: LocationId;
@@ -70,6 +105,11 @@ export interface CoreState {
    *  not canon-specified), never displayed as a game-score, only as an ordinary yen amount. */
   money: number;
   inventory: Inventory;
+  realWorldIntents: RealWorldIntent[];
+  /** Section I -- defaults false. Gameplay (including the Reality Bridge loop itself) never checks
+   *  this flag; it only gates whether `content/research.ts`'s `deriveResearchObservation` is ever
+   *  called from the UI. Opting out changes nothing about how the game plays. */
+  researchOptIn: boolean;
   ended: boolean;
 }
 
@@ -81,17 +121,20 @@ export const DAY_SLEEP_AVAILABLE_FROM = 20 * 60; // 20:00, player may choose to 
 
 export function createInitialCoreState(): CoreState {
   return {
+    day: 1,
     started: false,
     time: DAY_START_MINUTES,
     playerLocation: "TRIAL_HOUSE",
     visitedLocations: ["TRIAL_HOUSE"],
     worldFacts: [],
-    npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [] },
-    npcImpression: { kamiya: 0, yohei: 0, miyoko: 0, jin: 0 },
+    npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [], daisuke: [] },
+    npcImpression: { kamiya: 0, yohei: 0, miyoko: 0, jin: 0, daisuke: 0 },
     flags: {},
     intakeForm: null,
     money: 8000,
     inventory: {},
+    realWorldIntents: [],
+    researchOptIn: false,
     ended: false,
   };
 }

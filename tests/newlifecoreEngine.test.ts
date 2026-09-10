@@ -1,5 +1,16 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { advanceTime, addWorldFact, canCookMeal, cookAndEat, moveTo, purchaseItems, recordConversationTurn } from "../src/newlifecore/engine";
+import {
+  advanceTime,
+  addWorldFact,
+  canCookMeal,
+  checkInRealWorldIntent,
+  cookAndEat,
+  createRealWorldIntent,
+  moveTo,
+  purchaseItems,
+  recordConversationTurn,
+  startNewDay,
+} from "../src/newlifecore/engine";
 import { npcAvailabilityAt, npcLocationAt, npcsPresentAt } from "../src/newlifecore/schedule";
 import { buildNpcAiContext } from "../src/newlifecore/dialogue/contextBuilder";
 import { deterministicNpcReply } from "../src/newlifecore/dialogue/deterministicAdapter";
@@ -7,6 +18,9 @@ import { liveNpcAdapter } from "../src/newlifecore/dialogue/liveAdapterClient";
 import { validateNpcReply } from "../src/newlifecore/dialogue/envelope";
 import { resolveWorldEvents } from "../src/newlifecore/content/day1WorldEvents";
 import { buildEndOfDayNarrative, buildLocationScene, describeBelongings } from "../src/newlifecore/content/day1";
+import { looksLikeRealLifeConcern } from "../src/newlifecore/content/realityBridge";
+import { detectsCrisisSignal } from "../src/newlifecore/content/safetyRoute";
+import { deriveResearchObservation } from "../src/newlifecore/content/research";
 import { menuForNpc } from "../src/newlifecore/content/shop";
 import { createInitialCoreState, DAY_START_MINUTES } from "../src/newlifecore/types";
 import type { CoreState } from "../src/newlifecore/types";
@@ -324,5 +338,125 @@ describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: money/inventory 
     const s1 = recordConversationTurn(s0, "yohei", "さっきお米を買いましたよね", "「そうだったか」");
     expect(s1.money).toBe(s0.money);
     expect(s1.inventory).toEqual(s0.inventory);
+  });
+});
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: day transition (Section H/M scenario 4/5)", () => {
+  it("startNewDay advances the day, resets the clock/location, but persists worldFacts, npcMemory, money, inventory, and flags like met_* / intakeFormSubmitted", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "kamiya", "今日はここまでです", "「そうですか」");
+    const s2 = addWorldFact(s1, { id: "shelf_fixed", time: s1.time, text: "洋平の棚は直った", knownBy: ["yohei"] });
+    const s3: CoreState = { ...s2, flags: { ...s2.flags, met_kamiya: true, intakeFormSubmitted: true, ateMeal: true, isRaining: true }, money: 5000, ended: true };
+    const s4 = startNewDay(s3);
+    expect(s4.day).toBe(2);
+    expect(s4.time).toBe(DAY_START_MINUTES);
+    expect(s4.playerLocation).toBe("TRIAL_HOUSE");
+    expect(s4.visitedLocations).toEqual(["TRIAL_HOUSE"]);
+    expect(s4.ended).toBe(false);
+    // persisted
+    expect(s4.worldFacts).toEqual(s3.worldFacts);
+    expect(s4.npcMemory.kamiya).toHaveLength(1);
+    expect(s4.money).toBe(5000);
+    expect(s4.flags.met_kamiya).toBe(true);
+    expect(s4.flags.intakeFormSubmitted).toBe(true);
+    // day-scoped flags reset
+    expect(s4.flags.ateMeal).toBeFalsy();
+    expect(s4.flags.isRaining).toBeFalsy();
+  });
+
+  it("a one-time world event (e.g. Yohei calling Jin) does not refire on a later day -- its own guard is already satisfied", () => {
+    const s0 = createInitialCoreState();
+    const s1 = advanceTime(s0, 3 * 60); // fires jinCalledToYohei during day 1
+    expect(s1.flags.jinCalledToYohei).toBe(true);
+    const s2 = startNewDay({ ...s1, ended: true });
+    const s3 = advanceTime(s2, 3 * 60); // same clock window on day 2
+    // still true (persisted), and no duplicate world fact was appended
+    expect(s3.worldFacts.filter((f) => f.id === "jin_called_to_yohei")).toHaveLength(1);
+  });
+
+  it("recordConversationTurn stamps every turn with the CURRENT day", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "miyoko", "day1の発言", "「そう」");
+    const s2 = startNewDay({ ...s1, ended: true });
+    const s3 = recordConversationTurn(s2, "miyoko", "day2の発言", "「あら」");
+    expect(s3.npcMemory.miyoko[0].day).toBe(1);
+    expect(s3.npcMemory.miyoko[1].day).toBe(2);
+  });
+});
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: Reality Bridge loop (Section H) -- created only via a real action, never scored", () => {
+  it("createRealWorldIntent records exactly the player's own words, never an inferred label, and is known only to the Thinking Resident", () => {
+    const s0 = createInitialCoreState();
+    const s1 = createRealWorldIntent(s0, "daisuke", "最近仕事を先延ばしにしています", "明日、一件だけ手をつけてみる");
+    expect(s1.realWorldIntents).toHaveLength(1);
+    const intent = s1.realWorldIntents[0];
+    expect(intent.playerStatement).toBe("最近仕事を先延ばしにしています");
+    expect(intent.intentLabel).toBe("明日、一件だけ手をつけてみる");
+    expect(intent.checkedIn).toBe(false);
+    expect(intent.createdOnDay).toBe(1);
+    const fact = s1.worldFacts.find((f) => f.id.endsWith("_created"));
+    expect(fact?.knownBy).toEqual(["daisuke"]);
+    expect(fact?.text).toContain("明日、一件だけ手をつけてみる");
+    expect(fact?.text).not.toMatch(/lazy|procrastinat|怠け|やる気がない/);
+
+    const ctxDaisuke = buildNpcAiContext("daisuke", s1, "こんにちは");
+    const ctxYohei = buildNpcAiContext("yohei", s1, "こんにちは");
+    expect(ctxDaisuke.knownFacts.join(" ")).toContain("明日、一件だけ手をつけてみる");
+    expect(ctxYohei.knownFacts.join(" ")).not.toContain("明日、一件だけ手をつけてみる");
+  });
+
+  it("checkInRealWorldIntent marks the intent checked-in, stores a plain USER_UPDATE category (not a success/failure score), and is idempotent", () => {
+    const s0 = createInitialCoreState();
+    const s1 = createRealWorldIntent(s0, "daisuke", "運動が続かない", "今週、1回だけ歩く");
+    const intentId = s1.realWorldIntents[0].id;
+    const s2 = checkInRealWorldIntent(s1, intentId, "partially", "");
+    expect(s2.realWorldIntents[0].checkedIn).toBe(true);
+    expect(s2.realWorldIntents[0].userUpdate?.response).toBe("partially");
+    const fact = s2.worldFacts.find((f) => f.id.endsWith("_checked_in"));
+    expect(fact?.knownBy).toEqual(["daisuke"]);
+    expect(fact?.text.toLowerCase()).not.toMatch(/成功|失敗|success|failure|score/);
+
+    const s3 = checkInRealWorldIntent(s2, intentId, "did_it", "");
+    expect(s3).toBe(s2); // true no-op on an already-checked-in intent, including no extra time cost
+  });
+
+  it("deriveResearchObservation reflects state accurately without computing any personality/diagnosis score", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "daisuke", "最近仕事を先延ばしにしています", "「そうか」");
+    const s2 = createRealWorldIntent(s1, "daisuke", "最近仕事を先延ばしにしています", "明日1件だけやる");
+    const obs = deriveResearchObservation(s2);
+    expect(obs.freeTextTurnCount).toBe(1);
+    expect(obs.freeTextTurnCountByNpc.daisuke).toBe(1);
+    expect(obs.chosePersonalAction).toBe(true);
+    expect(obs.realWorldIntentCount).toBe(1);
+    expect(obs.returnedNextDay).toBe(false);
+    expect(JSON.stringify(obs)).not.toMatch(/score|diagnosis|personality/i);
+  });
+
+  it("BARBERSHOP offers the check-in action only once the player returns on a LATER day, not the same day the intent was created", () => {
+    const s0 = createInitialCoreState();
+    const s1 = createRealWorldIntent({ ...s0, playerLocation: "BARBERSHOP", time: 12 * 60 }, "daisuke", "x", "y");
+    const sceneSameDay = buildLocationScene({ ...s1, playerLocation: "BARBERSHOP", time: 12 * 60 + 30 });
+    expect(sceneSameDay.specialActions.map((a) => a.id)).not.toContain("check_in_intent");
+
+    const s2 = startNewDay({ ...s1, ended: true });
+    const sceneNextDay = buildLocationScene({ ...s2, playerLocation: "BARBERSHOP", time: 12 * 60 });
+    expect(sceneNextDay.specialActions.map((a) => a.id)).toContain("check_in_intent");
+  });
+});
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: deterministic classifiers (Section H offer heuristic, Section J safety gate)", () => {
+  it("looksLikeRealLifeConcern matches plausible real-life-concern phrasing and does not match ordinary small talk", () => {
+    expect(looksLikeRealLifeConcern("最近、仕事を先延ばしにしています")).toBe(true);
+    expect(looksLikeRealLifeConcern("上司に言いたいことがあるけど言えなくて")).toBe(true);
+    expect(looksLikeRealLifeConcern("この町の天気はどうですか")).toBe(false);
+    expect(looksLikeRealLifeConcern("散髪お願いします")).toBe(false);
+  });
+
+  it("detectsCrisisSignal matches explicit self-harm/crisis language and does not match ordinary negative language", () => {
+    expect(detectsCrisisSignal("もう死にたい")).toBe(true);
+    expect(detectsCrisisSignal("消えてしまいたい")).toBe(true);
+    expect(detectsCrisisSignal("今日は疲れた、もう嫌だ")).toBe(false);
+    expect(detectsCrisisSignal("仕事を辞めたい")).toBe(false);
   });
 });

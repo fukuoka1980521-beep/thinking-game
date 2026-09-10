@@ -364,6 +364,223 @@ describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: a conversation s
   });
 });
 
+async function goToBarbershop(user: U) {
+  // Daisuke's schedule opens at 10:00 -- burn enough travel time to land exactly on opening.
+  await user.click(await screen.findByTestId("nlc-go-challenge-center")); // 8:45 -> 9:00
+  await user.click(await screen.findByTestId("nlc-move-YOHEI_STORE")); // -> 9:15
+  await user.click(await screen.findByTestId("nlc-move-CAFE_NODOKA")); // -> 9:30
+  await user.click(await screen.findByTestId("nlc-move-COMMUNITY_HALL")); // -> 9:45
+  await user.click(await screen.findByTestId("nlc-move-BARBERSHOP")); // -> 10:00, exactly opening
+}
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: the Thinking Resident coexists with the rest of the town (Section F, M scenario 8)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("Daisuke is present at BARBERSHOP with both free conversation and an ordinary second action (a haircut), same pattern as every other shop NPC", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await goToBarbershop(user);
+    expect(await screen.findByTestId("nlc-npc-card-daisuke")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-talk-daisuke")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-action-shop_here")).toBeInTheDocument();
+  });
+});
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: Reality Bridge loop, real UI end to end (Section H, M scenario 3/4/5)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("a real-life-concern-shaped message offers the bridge; declining leaves no trace, accepting requires the player's own words and creates a real record", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await goToBarbershop(user);
+    await user.click(await screen.findByTestId("nlc-talk-daisuke"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-daisuke"), "最近、仕事を先延ばしにしています");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-daisuke"));
+
+    expect(await screen.findByTestId("nlc-reality-bridge-offer")).toBeInTheDocument();
+    // Declining removes the offer without creating anything.
+    await user.click(screen.getByTestId("nlc-bridge-offer-dismiss"));
+    expect(screen.queryByTestId("nlc-reality-bridge-offer")).not.toBeInTheDocument();
+
+    // Ask again and this time accept -- creation requires the player's OWN typed words; the confirm
+    // button must stay disabled until something is actually written (never auto-created from the offer alone).
+    await user.type(screen.getByTestId("nlc-freetext-input-daisuke"), "やっぱり気になります");
+    await user.click(screen.getByTestId("nlc-freetext-submit-daisuke"));
+    // "気になります" alone doesn't match the concern heuristic, so re-trigger with concern language again.
+    await user.type(screen.getByTestId("nlc-freetext-input-daisuke"), "先延ばしにしているのを何とかしたい");
+    await user.click(screen.getByTestId("nlc-freetext-submit-daisuke"));
+    await user.click(await screen.findByTestId("nlc-bridge-offer-accept"));
+    const confirm = screen.getByTestId("nlc-bridge-intent-confirm");
+    expect(confirm).toBeDisabled();
+    await user.type(screen.getByTestId("nlc-bridge-intent-input"), "明日、1件だけ手をつけてみる");
+    expect(confirm).toBeEnabled();
+    await user.click(confirm);
+
+    expect(screen.queryByTestId("nlc-reality-bridge-compose")).not.toBeInTheDocument();
+    const result = await screen.findByTestId("nlc-special-result");
+    expect(result.textContent).not.toMatch(/lazy|procrastinat|怠け/);
+  });
+
+  it("the check-in offer appears the day after an intent was created, and answering it produces a plain, non-scored record", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await goToBarbershop(user);
+    await user.click(await screen.findByTestId("nlc-talk-daisuke"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-daisuke"), "運動が続かないのが悩みです");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-daisuke"));
+    await user.click(await screen.findByTestId("nlc-bridge-offer-accept"));
+    await user.type(screen.getByTestId("nlc-bridge-intent-input"), "今週、1回だけ歩く");
+    await user.click(screen.getByTestId("nlc-bridge-intent-confirm"));
+    await user.click(screen.getByTestId("nlc-conversation-close-daisuke"));
+
+    // No check-in offer on the SAME day.
+    expect(screen.queryByTestId("nlc-action-check_in_intent")).not.toBeInTheDocument();
+
+    // Fast-forward to a sleepable time, end the day, and advance to day 2.
+    let guard = 0;
+    while (!(await screen.queryByTestId("nlc-sleep")) && guard < 60) {
+      await user.click(screen.getByTestId(`nlc-move-${guard % 2 === 0 ? "YOHEI_STORE" : "CAFE_NODOKA"}`));
+      guard++;
+    }
+    await user.click(await screen.findByTestId("nlc-sleep"));
+    await user.click(await screen.findByTestId("nlc-next-day"));
+    expect(screen.getByTestId("nlc-clock").textContent).toMatch(/DAY2/);
+
+    await goToBarbershop(user);
+    expect(await screen.findByTestId("nlc-action-check_in_intent")).toBeInTheDocument();
+    await user.click(screen.getByTestId("nlc-action-check_in_intent"));
+    expect(await screen.findByTestId("nlc-reality-bridge-checkin")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-checkin-submit")).toBeDisabled();
+    await user.click(screen.getByTestId("nlc-checkin-response-partially"));
+    await user.click(screen.getByTestId("nlc-checkin-submit"));
+
+    expect(screen.queryByTestId("nlc-reality-bridge-checkin")).not.toBeInTheDocument();
+    // Checked in -- the action must not be offered a second time.
+    expect(screen.queryByTestId("nlc-action-check_in_intent")).not.toBeInTheDocument();
+    const result = await screen.findByTestId("nlc-special-result");
+    expect(result.textContent).not.toMatch(/成功|失敗|success|failure/);
+  }, 30000);
+});
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: safety route (Section J)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("a crisis-shaped message never reaches an NPC reply -- the fixed safety message shows instead, and nothing is recorded in conversation memory", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "もう死にたいです");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+
+    expect(await screen.findByTestId("nlc-safety-route")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-safety-route").textContent).toMatch(/119番/);
+    // The normal input row must be gone -- this is not just another AI turn.
+    expect(screen.queryByTestId("nlc-freetext-input-kamiya")).not.toBeInTheDocument();
+    const log = screen.getByTestId("nlc-conversation-log-kamiya");
+    expect(log.textContent).not.toMatch(/死にたい/);
+  });
+
+  it("closing the conversation after a safety-route trigger and reopening it behaves normally again", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "消えてしまいたいと思うことがあります");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    await screen.findByTestId("nlc-safety-route");
+    await user.click(screen.getByTestId("nlc-conversation-close-kamiya"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    expect(screen.queryByTestId("nlc-safety-route")).not.toBeInTheDocument();
+    expect(await screen.findByTestId("nlc-freetext-input-kamiya")).toBeInTheDocument();
+  });
+});
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: conversation UI no longer dumps the full backlog by default (Section E)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("only the last few of today's exchanges render by default; older ones collapse behind an expand action", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    for (let i = 0; i < 6; i++) {
+      await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), `発言${i}`);
+      await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+      await screen.findByText(`発言${i}`);
+    }
+    // 6 turns sent, only the most recent 4 should render without expanding.
+    expect(screen.queryByText("発言0")).not.toBeInTheDocument();
+    expect(screen.queryByText("発言1")).not.toBeInTheDocument();
+    expect(screen.getByText("発言5")).toBeInTheDocument();
+    expect(await screen.findByTestId("nlc-expand-today-kamiya")).toBeInTheDocument();
+    await user.click(screen.getByTestId("nlc-expand-today-kamiya"));
+    expect(screen.getByText("発言0")).toBeInTheDocument();
+  });
+
+  it("reopening a conversation on a later day shows a short one-line summary of the earlier day, not the full transcript, until expanded", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "初日の発言です");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    await screen.findByText("初日の発言です");
+    await user.click(screen.getByTestId("nlc-conversation-close-kamiya"));
+
+    let guard = 0;
+    while (!(await screen.queryByTestId("nlc-sleep")) && guard < 60) {
+      await user.click(screen.getByTestId(`nlc-move-${guard % 2 === 0 ? "YOHEI_STORE" : "CAFE_NODOKA"}`));
+      guard++;
+    }
+    await user.click(await screen.findByTestId("nlc-sleep"));
+    await user.click(await screen.findByTestId("nlc-next-day"));
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+
+    expect(await screen.findByTestId("nlc-past-summary-kamiya")).toBeInTheDocument();
+    expect(screen.queryByText("初日の発言です")).not.toBeInTheDocument();
+    await user.click(screen.getByTestId("nlc-expand-past-kamiya"));
+    expect(screen.getByText("初日の発言です")).toBeInTheDocument();
+  }, 30000);
+});
+
+describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: research opt-in is off by default and separate from gameplay (Section I)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("the opt-in checkbox defaults unchecked, and free conversation works identically whether toggled or not", async () => {
+    const user = userEvent.setup();
+    window.history.pushState({}, "", "/?newlifecore=1");
+    render(<App />);
+    await user.click(await screen.findByTestId("nlc-start"));
+    const checkbox = screen.getByTestId("nlc-research-optin") as HTMLInputElement;
+    expect(checkbox.checked).toBe(false);
+    await user.click(checkbox);
+    expect(checkbox.checked).toBe(true);
+    await user.click(await screen.findByTestId("nlc-guide-continue"));
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "こんにちは");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    expect(await screen.findByTestId("nlc-conversation-log-kamiya")).toHaveTextContent("こんにちは");
+  });
+});
+
 describe("mobile -- no horizontal overflow", () => {
   afterEach(() => {
     window.history.pushState({}, "", "/");

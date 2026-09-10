@@ -1,6 +1,7 @@
 import { NPC_DEFS, npcDisplayName } from "../npcDefs";
 import { npcAvailabilityAt } from "../schedule";
 import { menuForNpc } from "../content/shop";
+import { LOCATION_LABEL } from "../content/day1";
 import { formatClock } from "../types";
 import type { CoreState, NpcId } from "../types";
 import type { NpcAiContext } from "./types";
@@ -12,18 +13,6 @@ function describeMood(npc: NpcId, state: CoreState): string {
   if (availability === "BUSY") return "少し立て込んでいて、余裕がない";
   if (state.time >= 17 * 60) return "一日の終わりが近く、少し疲れている";
   return "落ち着いている";
-}
-
-function locationLabel(loc: string): string {
-  const names: Record<string, string> = {
-    TRIAL_HOUSE: "仮住まい",
-    CHALLENGE_CENTER: "チャレンジセンター",
-    YOHEI_STORE: "洋平商店",
-    CAFE_NODOKA: "喫茶のどか",
-    COMMUNITY_HALL: "集会所",
-    SHOPPING_STREET: "商店街",
-  };
-  return names[loc] ?? loc;
 }
 
 export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: string): NpcAiContext {
@@ -49,8 +38,8 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
     memoryOfPlayer: memory,
     relationshipHistory: Object.entries(def.relationships).map(([otherId, desc]) => `${npcDisplayName(otherId as NpcId)}: ${desc}`),
     hiddenBackground: def.hiddenBackground,
-    currentScene: `${locationLabel(state.playerLocation)}で、プレイヤーと向き合っている`,
-    day: 1,
+    currentScene: `${LOCATION_LABEL[state.playerLocation]}で、プレイヤーと向き合っている`,
+    day: state.day,
     timeLabel: formatClock(state.time),
     worldFactsRelevant: relevantFacts,
     availableMenu: menuForNpc(npc),
