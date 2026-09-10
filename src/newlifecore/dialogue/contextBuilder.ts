@@ -47,6 +47,7 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
     unknownFacts: def.knowledge.unknowns,
     memoryOfPlayer: memory,
     relationshipHistory: Object.entries(def.relationships).map(([otherId, desc]) => `${npcDisplayName(otherId as NpcId)}: ${desc}`),
+    hiddenBackground: def.hiddenBackground,
     currentScene: `${locationLabel(state.playerLocation)}で、プレイヤーと向き合っている`,
     day: 1,
     timeLabel: formatClock(state.time),

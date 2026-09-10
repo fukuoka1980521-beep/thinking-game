@@ -31,6 +31,23 @@ export interface NpcKnowledge {
   unknowns: string[];
 }
 
+/**
+ * CONTENT QUALITY GATE V1, Section 2 -- never shown to the player as an explanation. Exists so a
+ * line of dialogue is the RESULT of something (a want, a worry, a thing left unsaid, a private
+ * misreading, a pressure, a first impression), not a personality trait bolted onto a sentence.
+ * Consumed only by NewlifeV02App... no -- by dialogue/contextBuilder.ts (feeds the live prompt)
+ * and by content authors writing content/day1.ts's scripted lines.
+ */
+export interface NpcHiddenBackground {
+  whatTheyWantToday: string;
+  whatTheyWorryAbout: string;
+  whatTheyDoNotWantToSay: string;
+  whatTheyMisunderstand: string;
+  currentPressure: string;
+  playerImpression: string;
+  privateHistoryRelevantNow: string;
+}
+
 export interface NpcDefinition {
   id: NpcId;
   displayName: string;
@@ -45,6 +62,7 @@ export interface NpcDefinition {
   knowledge: NpcKnowledge;
   speechStyle: string;
   memoryStyle: string;
+  hiddenBackground: NpcHiddenBackground;
   schedule: ScheduleBlock[];
 }
 
@@ -86,6 +104,19 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
     },
     speechStyle: "丁寧語基調。だが型どおりの相談トークと、素の反応が時々ずれて出る。長電話や私生活の話には短く答えて切り上げようとする。",
     memoryStyle: "相談内容（求人の話、悩みの話）はよく覚えている。雑談は忘れることがある。",
+    hiddenBackground: {
+      whatTheyWantToday: "今日の初回面談を、型どおりでいいから一通り終わらせたい。ただし今回は少しだけ、" +
+        "本当に相手を見てみようという気持ちも混じっている（2年前の反省から）。",
+      whatTheyWorryAbout: "今年度のプログラム実績がまだ弱いこと。今日の相手も、また同じパターン（結局動か" +
+        "ない）になるのではという不安。",
+      whatTheyDoNotWantToSay: "プログラムの予算が実績次第だという内部事情。2年前に担当が5週間で去った件を、" +
+        "まだ消化しきれていないこと。",
+      whatTheyMisunderstand: "初対面の受け答えの曖昧さだけで、相手を『動かないタイプ』と早合点しがち。",
+      currentPressure: "年度末の予算会議が近い。机には赤い付箋のついた書類が何枚か重なっている。",
+      playerImpression: "まだ『型』で見ている段階——具体的な言動があれば崩れる余地は十分にある。",
+      privateHistoryRelevantNow: "自分自身も7年前、知り合いのいない土地に来たよそ者だった。今のところ言う" +
+        "つもりはない。",
+    },
     schedule: [
       { fromMinutes: 9 * 60, toMinutes: 12 * 60, location: "CHALLENGE_CENTER", availability: "AVAILABLE", note: "窓口対応" },
       { fromMinutes: 12 * 60, toMinutes: 13 * 60, location: "CHALLENGE_CENTER", availability: "BUSY", note: "昼、電話や書類で立て込みがち" },
@@ -116,6 +147,17 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
     knowledge: { firsthand: NPC_CANON.yohei.firsthand, heard: NPC_CANON.yohei.heard, unknowns: NPC_CANON.yohei.unknowns },
     speechStyle: NPC_CANON.yohei.speechRegister,
     memoryStyle: "昔の話はよく覚えているが、日付や細かい時間には弱い。",
+    hiddenBackground: {
+      whatTheyWantToday: "祭りの仕入れの算段をつけたい。今日は特に誰かに深入りする気はない。",
+      whatTheyWorryAbout: "店の跡継ぎがいないこと。ただし今日それを話すつもりはまったくない。",
+      whatTheyDoNotWantToSay: "息子と1年以上まともに話していないこと。妻のことは聞かれもしないのに自分か" +
+        "ら言うことはない。",
+      whatTheyMisunderstand: "新しく来た人間は大体すぐいなくなる、という長年の経験則。今回もそうだろうと" +
+        "決めてかかっている。",
+      currentPressure: "来月の祭りの出店準備——仕入れが普段より多く、伝票が溜まっている。",
+      playerImpression: "まだ『今月だけの新顔』程度。実務的に役立つかどうかでしか、今のところ見ていない。",
+      privateHistoryRelevantNow: "先代の頃からの店だということ、それ以上は聞かれなければ話さない。",
+    },
     schedule: [
       { fromMinutes: 8 * 60, toMinutes: 12 * 60 + 30, location: "YOHEI_STORE", availability: "AVAILABLE", note: "開店、午前の接客" },
       { fromMinutes: 12 * 60 + 30, toMinutes: 13 * 60 + 30, location: "YOHEI_STORE", availability: "BUSY", note: "昼、伝票整理などで手が離せないことがある" },
@@ -147,6 +189,19 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
     knowledge: { firsthand: NPC_CANON.miyoko.firsthand, heard: NPC_CANON.miyoko.heard, unknowns: NPC_CANON.miyoko.unknowns },
     speechStyle: NPC_CANON.miyoko.speechRegister,
     memoryStyle: "人の話をよく覚えているが、時々誰から聞いた話かを混同する。",
+    hiddenBackground: {
+      whatTheyWantToday: "膝の調子次第。誰かと話したい日と、そっとしておいてほしい日がある——今日がどちら" +
+        "かは、正直本人もその場にならないと分からない。",
+      whatTheyWorryAbout: "娘に店をたたんで近くに越すよう言われ続けていること。",
+      whatTheyDoNotWantToSay: "本当は少し心細いことがある、とは誰にも言わない。",
+      whatTheyMisunderstand: "カウンター越しに聞いた話を、誰が言ったか・何のことだったか、時々取り違える。" +
+        "悪気はまったくない。",
+      currentPressure: "週末の手伝いが来られないことがあり、一人で回すのが大変な日がある。膝も本調子では" +
+        "ない。",
+      playerImpression: "新しい顔というだけでまず嬉しい——ただしこれは誰にでも向ける態度であり、主人公" +
+        "個人への特別な好意とはまだ別のもの。",
+      privateHistoryRelevantNow: "夫と二人でやっていた店だということは、聞かれれば話すが自分からは言わない。",
+    },
     schedule: [
       { fromMinutes: 8 * 60, toMinutes: 13 * 60, location: "CAFE_NODOKA", availability: "AVAILABLE", note: "開店、朝の常連対応" },
       { fromMinutes: 13 * 60, toMinutes: 18 * 60, location: "CAFE_NODOKA", availability: "AVAILABLE", note: "午後営業" },
@@ -168,8 +223,22 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
     knowledge: { firsthand: NPC_CANON.jin.firsthand, heard: NPC_CANON.jin.heard, unknowns: NPC_CANON.jin.unknowns },
     speechStyle: NPC_CANON.jin.speechRegister,
     memoryStyle: "世間話は忘れがちだが、頼まれた仕事の中身と出来は覚えている。",
+    hiddenBackground: {
+      whatTheyWantToday: "目の前の仕事を片付けたいだけ。それ以上の予定は特にない。",
+      whatTheyWorryAbout: "特に何も口には出さない——ただ、一人でやっていく今のやり方をこのまま続けるのか" +
+        "は、本人も時々分からなくなる。",
+      whatTheyDoNotWantToSay: "誰かと組んでやる方が楽かもしれない、とは言わない。プライドというより、そも" +
+        "そもあまり考えたことがない。",
+      whatTheyMisunderstand: "説明しなくても見れば分かるだろう、という思い込み。相手が本当に分かっている" +
+        "かどうかを、あまり確認しない。",
+      currentPressure: "特になし。今週は少し手が空いている。",
+      playerImpression: "まだ判断していない——言葉より、実際どう動くかを見てから判断するタイプ。",
+      privateHistoryRelevantNow: "特に語ることはない、というのもまた本人らしい。",
+    },
     schedule: [
-      { fromMinutes: 8 * 60, toMinutes: 11 * 60, location: "COMMUNITY_HALL", availability: "AVAILABLE", note: "朝、集会所周りの雑務" },
+      { fromMinutes: 8 * 60, toMinutes: 9 * 60 + 30, location: "COMMUNITY_HALL", availability: "AVAILABLE", note: "朝、集会所周りの雑務" },
+      { fromMinutes: 9 * 60 + 30, toMinutes: 9 * 60 + 45, location: "COMMUNITY_HALL", availability: "BUSY", note: "仕事の電話中" },
+      { fromMinutes: 9 * 60 + 45, toMinutes: 11 * 60, location: "COMMUNITY_HALL", availability: "AVAILABLE", note: "朝の続き" },
       { fromMinutes: 11 * 60, toMinutes: 15 * 60, location: null, availability: "AWAY", note: "町内のその日の仕事先——場所は流動的" },
       { fromMinutes: 15 * 60, toMinutes: 18 * 60, location: "COMMUNITY_HALL", availability: "AVAILABLE", note: "夕方、また顔を出す" },
     ],

@@ -86,10 +86,34 @@ export function buildLocationScene(state: CoreState): LocationScene {
     if (avail === "CLOSED") return { location: loc, ambientLine: "洋平商店のシャッターは下りていた。", npcsHere: [], specialActions: [] };
     if (avail === "BUSY") return { location: loc, ambientLine: "洋平は伝票の整理で手が離せないようだった。", npcsHere: [], specialActions: [] };
     const jinAlsoHere = npcsHere.includes("jin");
-    const shelfActions = !state.flags.shelfFixed
-      ? [{ id: "offer_help_shelf", label: jinAlsoHere ? "棚の修理を手伝う" : "何か手伝うことは、と聞く" }]
-      : [];
-    return { location: loc, ambientLine: jinAlsoHere ? "奥で相馬が棚の様子を見ていた。洋平が脇で見守っている。" : "", npcsHere: jinAlsoHere ? ["yohei", "jin"] : ["yohei"], specialActions: shelfActions };
+
+    if (state.flags.shelfFixed) {
+      // The shelf thread is over -- reached either by the player's own hands, or by Yohei and
+      // Jin finishing it without the player (directive Section 20/21: a trace, never a badge).
+      const ambientLine = state.flags.shelfFixedWithPlayer
+        ? "洋平は棚を軽く叩いて確かめた。「うん、大丈夫そうだ」"
+        : "棚を軽く小突くと、もう安定していた。「さっき相馬が寄ってな」洋平はそれだけ言った。";
+      return { location: loc, ambientLine, npcsHere: ["yohei"], specialActions: [] };
+    }
+
+    if (jinAlsoHere) {
+      // 11:15-13:30 only: Jin is physically here (schedule.ts's world-event override), so helping
+      // is a real, present-tense option -- never offered outside this window.
+      return {
+        location: loc,
+        ambientLine: "奥で相馬が棚の様子を見ていた。洋平が脇で見守っている。",
+        npcsHere: ["yohei", "jin"],
+        specialActions: [{ id: "offer_help_shelf", label: "棚の修理を手伝う" }],
+      };
+    }
+
+    // Before 11:15: the problem exists but hasn't become anyone's business yet -- a quiet visual
+    // hint only, no action attached (nothing to "help" with until Yohei has actually done
+    // something about it). After 13:30 with shelfFixed still false should not occur (the
+    // world-event auto-resolves it by then) but the fallback below keeps this branch harmless if
+    // it ever does.
+    const hint = state.time < 11 * 60 + 30 ? "棚の脚が少し傾いているのが、なんとなく目についた。" : "";
+    return { location: loc, ambientLine: hint, npcsHere: ["yohei"], specialActions: [] };
   }
 
   if (loc === "CAFE_NODOKA") {
@@ -98,10 +122,56 @@ export function buildLocationScene(state: CoreState): LocationScene {
     return { location: loc, ambientLine: "", npcsHere: ["miyoko"], specialActions: [{ id: "sit_down", label: "コーヒーを頼んで座る" }] };
   }
 
-  // COMMUNITY_HALL
-  const jinAvail = npcAvailabilityAt("jin", state.time, state.flags);
-  if (jinAvail === "AVAILABLE" || jinAvail === "BUSY") {
+  // COMMUNITY_HALL -- must check where Jin actually IS (npcsHere, location-aware), never just
+  // whether he is "available" in the abstract: during the 11:30-13:30 shelf-repair window his
+  // status is AVAILABLE but his location is YOHEI_STORE, not here. Using raw availability here
+  // was a real bug -- it let him appear present in two places in the same instant.
+  if (npcsHere.includes("jin")) {
+    const jinAvail = npcAvailabilityAt("jin", state.time, state.flags);
+    if (jinAvail === "BUSY") {
+      // The explicit "on the phone, can't talk" texture -- present, but not a conversation.
+      return { location: loc, ambientLine: "相馬は電話中だった。片手を挙げて、待ってろという仕草をした。", npcsHere: [], specialActions: [{ id: "wait_jin", label: "電話が終わるまで待つ" }] };
+    }
     return { location: loc, ambientLine: "", npcsHere: ["jin"], specialActions: [] };
   }
+  if (state.flags.jinCalledToYohei && !state.flags.shelfFixed && state.time < 13 * 60 + 30) {
+    // A trace of where he went, not an announcement (directive Section 20).
+    return { location: loc, ambientLine: "掲示板の脇に、相馬の工具袋だけが置かれていた。少し出ているようだった。", npcsHere: [], specialActions: [] };
+  }
   return { location: loc, ambientLine: "集会所には誰もいないようだった。掲示板だけが静かに並んでいる。", npcsHere: [], specialActions: [] };
+}
+
+/** Directive Section 21: end-of-day must read as a handful of remaining facts in plain sentences
+ *  -- never a results list, score, or acquired-abilities panel. Modeled directly on the
+ *  directive's own example ("相馬は明日も朝が早いらしい。洋平の棚は直っていた。神谷とは話が途中の
+ *  ままだ。そして寝る。"): short, unresolved-feeling, no "you accomplished X" framing. */
+export function buildEndOfDayNarrative(state: CoreState): string[] {
+  const lines: string[] = [];
+
+  if (state.flags.shelfFixedWithPlayer) {
+    lines.push("洋平の店の棚は、手伝って直した。");
+  } else if (state.flags.shelfFixed) {
+    lines.push("洋平の店の棚は、いつの間にか直っていた。");
+  } else if (state.flags.met_yohei) {
+    lines.push("洋平の店の棚は、まだ少し傾いたままだった。");
+  }
+
+  if (state.flags.met_jin) {
+    lines.push(state.npcMemory.jin.length > 0 ? "相馬とは少し話した。明日も朝が早いらしい。" : "相馬とはすれ違っただけだった。");
+  }
+
+  if (state.flags.met_miyoko) {
+    lines.push(state.npcMemory.miyoko.length > 0 ? "喫茶のどかで、美代子と少し話した。" : "喫茶のどかに、少しだけ顔を出した。");
+  }
+
+  if (state.flags.met_kamiya) {
+    lines.push(state.npcMemory.kamiya.length > 0 ? "神谷とは話が途中のままだ。" : "神谷とは、まだあまり話していない。");
+  }
+
+  if (lines.length === 0) {
+    lines.push("誰とも、あまり話さない一日だった。");
+  }
+
+  lines.push("そして眠った。");
+  return lines;
 }

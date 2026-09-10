@@ -5,6 +5,8 @@ import { buildNpcAiContext } from "../src/newlifecore/dialogue/contextBuilder";
 import { deterministicNpcReply } from "../src/newlifecore/dialogue/deterministicAdapter";
 import { liveNpcAdapter } from "../src/newlifecore/dialogue/liveAdapterClient";
 import { validateNpcReply } from "../src/newlifecore/dialogue/envelope";
+import { resolveWorldEvents } from "../src/newlifecore/content/day1WorldEvents";
+import { buildEndOfDayNarrative, buildLocationScene } from "../src/newlifecore/content/day1";
 import { createInitialCoreState, DAY_START_MINUTES } from "../src/newlifecore/types";
 import type { CoreState } from "../src/newlifecore/types";
 
@@ -141,5 +143,51 @@ describe("NEW LIFE CORE: DAY_START_MINUTES sanity", () => {
   it("the day begins at a plausible morning hour, timed so the first Challenge Center visit lands exactly at Kamiya's opening time", () => {
     expect(DAY_START_MINUTES).toBe(8 * 60 + 45);
     expect(DAY_START_MINUTES + 15).toBe(9 * 60); // +15min travel cost = 09:00, his schedule start
+  });
+});
+
+describe("NEW LIFE CORE: context continuity (directive Section 14 -- the top-priority defect category)", () => {
+  it("Jin is never shown present at both the community hall and Yohei's store in the same instant", () => {
+    const s0: CoreState = { ...createInitialCoreState(), time: 12 * 60, flags: { jinCalledToYohei: true } };
+    const hallScene = buildLocationScene({ ...s0, playerLocation: "COMMUNITY_HALL" });
+    const storeScene = buildLocationScene({ ...s0, playerLocation: "YOHEI_STORE" });
+    expect(hallScene.npcsHere).not.toContain("jin");
+    expect(storeScene.npcsHere).toContain("jin");
+  });
+
+  it("the shelf-help action is only ever offered while Jin is actually, physically at the store", () => {
+    const beforeCall: CoreState = { ...createInitialCoreState(), time: 10 * 60, flags: {} };
+    const duringCall: CoreState = { ...createInitialCoreState(), time: 12 * 60, flags: { jinCalledToYohei: true } };
+    const beforeScene = buildLocationScene({ ...beforeCall, playerLocation: "YOHEI_STORE" });
+    const duringScene = buildLocationScene({ ...duringCall, playerLocation: "YOHEI_STORE" });
+    expect(beforeScene.specialActions.some((a) => a.id === "offer_help_shelf")).toBe(false);
+    expect(duringScene.specialActions.some((a) => a.id === "offer_help_shelf")).toBe(true);
+  });
+
+  it("the shelf resolves itself by 13:30 even if the player never helps, and reads as a trace rather than an announcement", () => {
+    const s0: CoreState = { ...createInitialCoreState(), time: 11 * 60 + 30, flags: { jinCalledToYohei: true } };
+    const s1 = resolveWorldEvents(11 * 60, { ...s0, time: 13 * 60 + 45 });
+    expect(s1.flags.shelfFixed).toBe(true);
+    expect(s1.flags.shelfFixedWithPlayer).toBeFalsy();
+    const scene = buildLocationScene({ ...s1, playerLocation: "YOHEI_STORE" });
+    expect(scene.ambientLine).toMatch(/相馬が寄ってな/);
+    expect(scene.specialActions).toHaveLength(0);
+  });
+});
+
+describe("NEW LIFE CORE: end-of-day reads as plain remaining facts, not a results list (directive Section 21)", () => {
+  it("an untouched day still produces a non-empty, non-scored closing line", () => {
+    const lines = buildEndOfDayNarrative(createInitialCoreState());
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines[lines.length - 1]).toBe("そして眠った。");
+    expect(lines.join("")).not.toMatch(/獲得|スコア|ポイント|達成/);
+  });
+
+  it("an unfinished conversation with Kamiya reads as unresolved, not as a summary of what was learned", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "kamiya", "まだ何も決めてません", "「そうですか」");
+    const withMet = { ...s1, flags: { ...s1.flags, met_kamiya: true } };
+    const lines = buildEndOfDayNarrative(withMet);
+    expect(lines).toContain("神谷とは話が途中のままだ。");
   });
 });

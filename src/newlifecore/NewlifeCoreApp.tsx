@@ -4,7 +4,7 @@ import townImg from "../assets/newlifev02/challenge-town.png";
 import yoheiImg from "../assets/newlifev02/yohei.png";
 import miyokoImg from "../assets/newlifev02/miyoko.png";
 import jinImg from "../assets/newlifev02/soma-jin.png";
-import { LOCATION_LABEL, buildLocationScene, openingLineFor, reachableLocations } from "./content/day1";
+import { LOCATION_LABEL, buildEndOfDayNarrative, buildLocationScene, openingLineFor, reachableLocations } from "./content/day1";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
 import { deterministicAdapter } from "./dialogue/deterministicAdapter";
 import { liveNpcAdapter } from "./dialogue/liveAdapterClient";
@@ -78,9 +78,11 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
       setState((s) => {
         const helped = doShortAction(s, 45);
         const withFact = addWorldFact(helped, { id: "shelf_fixed", time: helped.time, text: "主人公が洋平の店の棚を直すのを手伝った", knownBy: ["yohei", "jin"] });
-        return { ...withFact, flags: { ...withFact.flags, shelfFixed: true } };
+        return { ...withFact, flags: { ...withFact.flags, shelfFixed: true, shelfFixedWithPlayer: true } };
       });
-      setSpecialResult("相馬が「持って」と工具を渡してきた。三人で少し棚を直した。洋平は「助かった」とだけ言った。");
+      setSpecialResult(
+        "相馬は工具箱から何か取り出して、無言で渡してきた。使い方はよく分からないまま、言われた通り押さえていると、相馬が手早く直してしまった。洋平は棚を軽く叩いて、「まあ、助かった」とだけ言った。",
+      );
       return;
     }
     if (actionId === "view_jobs") {
@@ -93,9 +95,15 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
       setSpecialResult("「近日、何か始めます」——それだけで、誰が何を始めるのかは書かれていない。");
       return;
     }
-    if (actionId === "wait_out_rain" || actionId === "wait_kamiya") {
+    if (actionId === "wait_out_rain" || actionId === "wait_kamiya" || actionId === "wait_jin") {
       setState((s) => doShortAction(s, 20));
-      setSpecialResult(actionId === "wait_out_rain" ? "20分ほど、雨がやむのを待った。特に何も起きなかった。" : "少し待つと、神谷の電話が終わった。");
+      const line =
+        actionId === "wait_out_rain"
+          ? "20分ほど、雨がやむのを待った。特に何も起きなかった。"
+          : actionId === "wait_kamiya"
+            ? "少し待つと、神谷の電話が終わった。"
+            : "相馬はしばらく電話で誰かと言い合っていた。終わると、そのことには触れずに掲示板へ向き直った。";
+      setSpecialResult(line);
       return;
     }
     if (actionId === "sit_down") {
@@ -145,21 +153,13 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
         </div>
         <div className="nlc-panel">
           <div className="nlc-scene-card" data-testid="nlc-day-end">
-            <p className="nlc-summary-heading">今日、あったこと</p>
-            <ul className="nlc-summary-list" data-testid="nlc-worldfacts-list">
-              {state.worldFacts.length ? (
-                state.worldFacts.filter((f) => f.text).map((f) => (
-                  <li className="nlc-summary-item" key={f.id}>
-                    {f.text}
-                  </li>
-                ))
-              ) : (
-                <li className="nlc-summary-item">特に大きな出来事はなかった。それでも、町の何人かと話した一日だった。</li>
-              )}
-            </ul>
-            <p className="nlc-intro-copy" data-testid="nlc-ending-note">
-              DAY1が終わった。続きは、また今度。
-            </p>
+            <div className="nlc-summary-list" data-testid="nlc-worldfacts-list">
+              {buildEndOfDayNarrative(state).map((line, i) => (
+                <p className="nlc-summary-item" key={i}>
+                  {line}
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       </div>

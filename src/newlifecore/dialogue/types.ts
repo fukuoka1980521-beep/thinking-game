@@ -1,9 +1,12 @@
 import type { ConversationTurn, LocationId, NpcId } from "../types";
+import type { NpcHiddenBackground } from "../npcDefs";
 
 /** Directive Section 9 -- everything the AI is given per free-text turn. AI is only ever asked to
  *  perform ONE NPC's reply from this; it never receives or infers anything not listed here
  *  (knowledge-boundary enforcement starts at what this packet even contains, not just at prompt
- *  wording). */
+ *  wording). `hiddenBackground` (CONTENT QUALITY GATE V1 Section 2) is the reason a line comes
+ *  out the way it does -- never itself spoken or summarized by the NPC, only what shapes the
+ *  reply underneath. */
 export interface NpcAiContext {
   npcId: NpcId;
   displayName: string;
@@ -20,6 +23,7 @@ export interface NpcAiContext {
   unknownFacts: string[];
   memoryOfPlayer: ConversationTurn[];
   relationshipHistory: string[];
+  hiddenBackground: NpcHiddenBackground;
   currentScene: string;
   day: number;
   timeLabel: string;
