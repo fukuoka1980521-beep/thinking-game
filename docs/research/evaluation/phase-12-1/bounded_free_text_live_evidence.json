@@ -1,0 +1,387 @@
+{
+  "purpose": "PHASE 12.1 Section 5/7: bounded free-text NG/suggestion/false-assertion cases, real live Vertex output",
+  "model": "gemini-2.5-flash",
+  "results": [
+    {
+      "label": "A_UNAUTHORED_FEASIBLE_SUGGESTION",
+      "description": "A reasonable, in-world suggestion to Miyoko that has NO pre-authored dialogue response and NO registered consequence id at all for her.",
+      "packet": {
+        "npcId": "miyoko",
+        "canon": {
+          "id": "miyoko",
+          "displayName": "美代子",
+          "role": "喫茶店（喫茶のどか）の店主。ゆっくりした会話の窓口。",
+          "firsthand": [
+            "自分の店の営業のこと",
+            "今月、豆の仕入れ先を変えようとしていること"
+          ],
+          "heard": [
+            "カウンター越しに聞く町の噂話"
+          ],
+          "unknowns": [
+            "洋平の店の在庫の詳細",
+            "チャレンジセンターや役所の内部事情",
+            "プレイヤーの私生活"
+          ],
+          "wants": "人が実際に座りたいと思える店であること。ささやかで正直なやりとりに満足を感じる。",
+          "constraints": "頼まれなければ自分から立ち入った話はしない。洋平と同じく、直接聞いたか自然に耳にしたことしか知らない。",
+          "speechRegister": "温かく親しみやすい。踏み込みすぎない。"
+        },
+        "worldFacts": [
+          "プレイヤーは57歳の男性で、長年勤めた仕事を辞めた",
+          "次の仕事や方向性はまだ決めていない",
+          "自分の意志でチャレンジ町の30日間トライアル滞在に応募した",
+          "DAY30には仮住まいの鍵を返す必要がある"
+        ],
+        "npcCurrentActivity": "美代子は、いつも通り店を開けている。",
+        "npcLocation": "CAFE_NODOKA",
+        "npcRelationshipToPlayer": "今月チャレンジ町に来た新しい滞在者として、顔を合わせたことがある程度の間柄",
+        "currentLocation": "CAFE_NODOKA",
+        "recentRelevantExperience": [],
+        "playerUtterance": "豆の仕入れ先を変えるなら、味の感想とか聞かせてよ。今度感想言うよ。",
+        "allowedClassifications": [
+          "IN_SCOPE",
+          "NPC_KNOWLEDGE_GAP",
+          "NOT_FEASIBLE_NOW",
+          "OUT_OF_WORLD_SCOPE",
+          "INSUFFICIENT_CONTEXT"
+        ],
+        "allowedConsequenceIds": []
+      },
+      "envelope": {
+        "classification": "IN_SCOPE",
+        "npcResponseIntent": "ACKNOWLEDGE_OFFER",
+        "proposedConsequenceId": null,
+        "visibleUtterance": "あら、ありがとうございます。そう言っていただけると嬉しいです。楽しみにしていてくださいね。"
+      },
+      "httpStatus": 200,
+      "finishReason": "STOP",
+      "usageMetadata": {
+        "promptTokenCount": 711,
+        "candidatesTokenCount": 69,
+        "totalTokenCount": 2420,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 711
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 69
+          }
+        ],
+        "thoughtsTokenCount": 1640
+      },
+      "latencyMs": 10168
+    },
+    {
+      "label": "B_NPC_KNOWLEDGE_GAP",
+      "description": "Ask Yohei something specifically outside his firsthand/heard knowledge (Miyoko's own new supplier detail).",
+      "packet": {
+        "npcId": "yohei",
+        "canon": {
+          "id": "yohei",
+          "displayName": "洋平",
+          "role": "商店主。町で一番の高頻度な実用の窓口。",
+          "firsthand": [
+            "自分の店の在庫と配達スケジュール",
+            "今月、商店街の祭りの出店用に特別な仕入れを頼んだこと",
+            "自分の店の日々の商売のこと"
+          ],
+          "heard": [
+            "商店街の寄り合いで聞いた話"
+          ],
+          "unknowns": [
+            "チャレンジセンターや役所の内部事情",
+            "プレイヤーが来る前の私生活",
+            "他人の個人的な事情（本人から直接聞いていない限り）",
+            "美代子の店の仕入れ先の詳細"
+          ],
+          "wants": "店を滞りなく回すこと。ひやかしではなく、必要な物を素直に聞いてくれる客がいること。",
+          "constraints": "直接聞いたか、商売の場で自然に耳にしたことしか知らない。プレイヤーについて特別な洞察は持たない。",
+          "speechRegister": "初対面は短く実務的。親しくなるとくだけた「〜だな」「〜だよ」に落ちるが、乱暴ではない。過度な説明はしない。"
+        },
+        "worldFacts": [
+          "プレイヤーは57歳の男性で、長年勤めた仕事を辞めた",
+          "次の仕事や方向性はまだ決めていない",
+          "自分の意志でチャレンジ町の30日間トライアル滞在に応募した",
+          "DAY30には仮住まいの鍵を返す必要がある"
+        ],
+        "npcCurrentActivity": "洋平は、いつも通り店番をしている。",
+        "npcLocation": "YOHEI_STORE",
+        "npcRelationshipToPlayer": "今月チャレンジ町に来た新しい滞在者として、顔を合わせたことがある程度の間柄",
+        "currentLocation": "YOHEI_STORE",
+        "recentRelevantExperience": [],
+        "playerUtterance": "美代子さんの新しいコーヒー豆の仕入れ先、正確にはどこの会社？",
+        "allowedClassifications": [
+          "IN_SCOPE",
+          "NPC_KNOWLEDGE_GAP",
+          "NOT_FEASIBLE_NOW",
+          "OUT_OF_WORLD_SCOPE",
+          "INSUFFICIENT_CONTEXT"
+        ],
+        "allowedConsequenceIds": []
+      },
+      "envelope": {
+        "classification": "NPC_KNOWLEDGE_GAP",
+        "npcResponseIntent": "KnowledgeGap",
+        "proposedConsequenceId": null,
+        "visibleUtterance": "美代子さんの仕入れ先ねぇ。悪いが、俺はそこまでは知らないな。"
+      },
+      "httpStatus": 200,
+      "finishReason": "STOP",
+      "usageMetadata": {
+        "promptTokenCount": 752,
+        "candidatesTokenCount": 71,
+        "totalTokenCount": 2654,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 752
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 71
+          }
+        ],
+        "thoughtsTokenCount": 1831
+      },
+      "latencyMs": 10742
+    },
+    {
+      "label": "C_OUTSIDE_NPC_SCOPE",
+      "description": "Ask Miyoko something outside HER channel specifically (Yohei's own exact inventory count).",
+      "packet": {
+        "npcId": "miyoko",
+        "canon": {
+          "id": "miyoko",
+          "displayName": "美代子",
+          "role": "喫茶店（喫茶のどか）の店主。ゆっくりした会話の窓口。",
+          "firsthand": [
+            "自分の店の営業のこと",
+            "今月、豆の仕入れ先を変えようとしていること"
+          ],
+          "heard": [
+            "カウンター越しに聞く町の噂話"
+          ],
+          "unknowns": [
+            "洋平の店の在庫の詳細",
+            "チャレンジセンターや役所の内部事情",
+            "プレイヤーの私生活"
+          ],
+          "wants": "人が実際に座りたいと思える店であること。ささやかで正直なやりとりに満足を感じる。",
+          "constraints": "頼まれなければ自分から立ち入った話はしない。洋平と同じく、直接聞いたか自然に耳にしたことしか知らない。",
+          "speechRegister": "温かく親しみやすい。踏み込みすぎない。"
+        },
+        "worldFacts": [
+          "プレイヤーは57歳の男性で、長年勤めた仕事を辞めた",
+          "次の仕事や方向性はまだ決めていない",
+          "自分の意志でチャレンジ町の30日間トライアル滞在に応募した",
+          "DAY30には仮住まいの鍵を返す必要がある"
+        ],
+        "npcCurrentActivity": "美代子は、いつも通り店を開けている。",
+        "npcLocation": "CAFE_NODOKA",
+        "npcRelationshipToPlayer": "今月チャレンジ町に来た新しい滞在者として、顔を合わせたことがある程度の間柄",
+        "currentLocation": "CAFE_NODOKA",
+        "recentRelevantExperience": [],
+        "playerUtterance": "洋平さんの店の今の在庫、正確に何個か知ってる？",
+        "allowedClassifications": [
+          "IN_SCOPE",
+          "NPC_KNOWLEDGE_GAP",
+          "NOT_FEASIBLE_NOW",
+          "OUT_OF_WORLD_SCOPE",
+          "INSUFFICIENT_CONTEXT"
+        ],
+        "allowedConsequenceIds": []
+      },
+      "envelope": {
+        "classification": "NPC_KNOWLEDGE_GAP",
+        "npcResponseIntent": "CannotAnswerOtherStoreInventory",
+        "proposedConsequenceId": null,
+        "visibleUtterance": "あら、洋平さんのところの在庫のことですか？ごめんなさいね、私にはちょっと分からないわ。詳しいことは、洋平さんに直接お聞きになった方が良いかもしれませんね。"
+      },
+      "httpStatus": 200,
+      "finishReason": "STOP",
+      "usageMetadata": {
+        "promptTokenCount": 702,
+        "candidatesTokenCount": 92,
+        "totalTokenCount": 1580,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 702
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 92
+          }
+        ],
+        "thoughtsTokenCount": 786
+      },
+      "latencyMs": 5700
+    },
+    {
+      "label": "D_OUTSIDE_WORLD_SCOPE",
+      "description": "Wildly out-of-world question with no referent in the authored world at all.",
+      "packet": {
+        "npcId": "yohei",
+        "canon": {
+          "id": "yohei",
+          "displayName": "洋平",
+          "role": "商店主。町で一番の高頻度な実用の窓口。",
+          "firsthand": [
+            "自分の店の在庫と配達スケジュール",
+            "今月、商店街の祭りの出店用に特別な仕入れを頼んだこと",
+            "自分の店の日々の商売のこと"
+          ],
+          "heard": [
+            "商店街の寄り合いで聞いた話"
+          ],
+          "unknowns": [
+            "チャレンジセンターや役所の内部事情",
+            "プレイヤーが来る前の私生活",
+            "他人の個人的な事情（本人から直接聞いていない限り）",
+            "美代子の店の仕入れ先の詳細"
+          ],
+          "wants": "店を滞りなく回すこと。ひやかしではなく、必要な物を素直に聞いてくれる客がいること。",
+          "constraints": "直接聞いたか、商売の場で自然に耳にしたことしか知らない。プレイヤーについて特別な洞察は持たない。",
+          "speechRegister": "初対面は短く実務的。親しくなるとくだけた「〜だな」「〜だよ」に落ちるが、乱暴ではない。過度な説明はしない。"
+        },
+        "worldFacts": [
+          "プレイヤーは57歳の男性で、長年勤めた仕事を辞めた",
+          "次の仕事や方向性はまだ決めていない",
+          "自分の意志でチャレンジ町の30日間トライアル滞在に応募した",
+          "DAY30には仮住まいの鍵を返す必要がある"
+        ],
+        "npcCurrentActivity": "洋平は、いつも通り店番をしている。",
+        "npcLocation": "YOHEI_STORE",
+        "npcRelationshipToPlayer": "今月チャレンジ町に来た新しい滞在者として、顔を合わせたことがある程度の間柄",
+        "currentLocation": "YOHEI_STORE",
+        "recentRelevantExperience": [],
+        "playerUtterance": "ところで、宇宙人っているのかな？",
+        "allowedClassifications": [
+          "IN_SCOPE",
+          "NPC_KNOWLEDGE_GAP",
+          "NOT_FEASIBLE_NOW",
+          "OUT_OF_WORLD_SCOPE",
+          "INSUFFICIENT_CONTEXT"
+        ],
+        "allowedConsequenceIds": []
+      },
+      "envelope": {
+        "classification": "NPC_KNOWLEDGE_GAP",
+        "npcResponseIntent": "ExpressLackOfKnowledge",
+        "proposedConsequenceId": null,
+        "visibleUtterance": "宇宙人？ さあな、俺は店のことで手一杯でな。"
+      },
+      "httpStatus": 200,
+      "finishReason": "STOP",
+      "usageMetadata": {
+        "promptTokenCount": 741,
+        "candidatesTokenCount": 54,
+        "totalTokenCount": 2611,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 741
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 54
+          }
+        ],
+        "thoughtsTokenCount": 1816
+      },
+      "latencyMs": 11205
+    },
+    {
+      "label": "E_FALSE_PLAYER_WORLD_ASSERTION",
+      "description": "PLAYER asserts a false world-history fact that never happened in this state.",
+      "packet": {
+        "npcId": "yohei",
+        "canon": {
+          "id": "yohei",
+          "displayName": "洋平",
+          "role": "商店主。町で一番の高頻度な実用の窓口。",
+          "firsthand": [
+            "自分の店の在庫と配達スケジュール",
+            "今月、商店街の祭りの出店用に特別な仕入れを頼んだこと",
+            "自分の店の日々の商売のこと"
+          ],
+          "heard": [
+            "商店街の寄り合いで聞いた話"
+          ],
+          "unknowns": [
+            "チャレンジセンターや役所の内部事情",
+            "プレイヤーが来る前の私生活",
+            "他人の個人的な事情（本人から直接聞いていない限り）",
+            "美代子の店の仕入れ先の詳細"
+          ],
+          "wants": "店を滞りなく回すこと。ひやかしではなく、必要な物を素直に聞いてくれる客がいること。",
+          "constraints": "直接聞いたか、商売の場で自然に耳にしたことしか知らない。プレイヤーについて特別な洞察は持たない。",
+          "speechRegister": "初対面は短く実務的。親しくなるとくだけた「〜だな」「〜だよ」に落ちるが、乱暴ではない。過度な説明はしない。"
+        },
+        "worldFacts": [
+          "プレイヤーは57歳の男性で、長年勤めた仕事を辞めた",
+          "次の仕事や方向性はまだ決めていない",
+          "自分の意志でチャレンジ町の30日間トライアル滞在に応募した",
+          "DAY30には仮住まいの鍵を返す必要がある"
+        ],
+        "npcCurrentActivity": "洋平は、いつも通り店番をしている。",
+        "npcLocation": "YOHEI_STORE",
+        "npcRelationshipToPlayer": "今月チャレンジ町に来た新しい滞在者として、顔を合わせたことがある程度の間柄",
+        "currentLocation": "YOHEI_STORE",
+        "recentRelevantExperience": [],
+        "playerUtterance": "さっき、倉庫の鍵を渡してくれたよね？",
+        "allowedClassifications": [
+          "IN_SCOPE",
+          "NPC_KNOWLEDGE_GAP",
+          "NOT_FEASIBLE_NOW",
+          "OUT_OF_WORLD_SCOPE",
+          "INSUFFICIENT_CONTEXT"
+        ],
+        "allowedConsequenceIds": []
+      },
+      "envelope": {
+        "classification": "NPC_KNOWLEDGE_GAP",
+        "npcResponseIntent": "Deny knowledge",
+        "proposedConsequenceId": null,
+        "visibleUtterance": "倉庫の鍵？いや、俺は渡してないが。"
+      },
+      "httpStatus": 200,
+      "finishReason": "STOP",
+      "usageMetadata": {
+        "promptTokenCount": 746,
+        "candidatesTokenCount": 55,
+        "totalTokenCount": 2306,
+        "trafficType": "ON_DEMAND",
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 746
+          }
+        ],
+        "candidatesTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 55
+          }
+        ],
+        "thoughtsTokenCount": 1505
+      },
+      "latencyMs": 9406
+    }
+  ]
+}

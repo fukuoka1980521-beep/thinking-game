@@ -1,0 +1,51 @@
+{
+  "results": [
+    {
+      "name": "opening text present",
+      "pass": true
+    },
+    {
+      "name": "map shows current location (TRIAL_HOUSE)",
+      "pass": true
+    },
+    {
+      "name": "MAP x NPC INTERSECTION: Yohei's store shows both Yohei and Jin present without clicking Jin from a menu",
+      "pass": true
+    },
+    {
+      "name": "Jin's covering activity is narrated (state-derived, not menu-derived)",
+      "pass": true
+    },
+    {
+      "name": "no raw classification/prompt text visible on primary surface before debug toggle",
+      "pass": true
+    },
+    {
+      "name": "real live response rendered on the primary surface (not a fixture placeholder)",
+      "pass": true,
+      "detail": "洋平「いや、大丈夫だよ。相馬さんが見てくれてるから。」"
+    },
+    {
+      "name": "PERSISTENT CONSEQUENCE: returning to Yohei's store shows the changed activity line if the promise was committed, or an unchanged line if not -- recorded honestly either way",
+      "pass": true,
+      "detail": "現在地: 洋平商店洋平が営む何でも屋に近い商店。洋平は、倉庫の在庫を一人で運ぼうとしている。"
+    },
+    {
+      "name": "network response body contains no credential/token material",
+      "pass": true
+    },
+    {
+      "name": "network response body is small (envelope-only, not the full raw provider payload)",
+      "pass": true
+    }
+  ],
+  "networkResponses": [
+    {
+      "url": "http://localhost:5220/api/bgw-npc-dialogue",
+      "status": 200,
+      "body": "{\"classification\":\"NOT_FEASIBLE_NOW\",\"npcResponseIntent\":\"DeclineAssistance\",\"proposedConsequenceId\":null,\"visibleUtterance\":\"いや、大丈夫だよ。相馬さんが見てくれてるから。\"}"
+    }
+  ],
+  "baseUrl": "http://localhost:5220/?newlifebgw121=1",
+  "allPass": true
+}
