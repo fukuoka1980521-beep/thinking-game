@@ -1,0 +1,262 @@
+.v02-frame {
+  --v02-bg: #f4efe5;
+  --v02-paper: #fffaf1;
+  --v02-ink: #2f2a25;
+  --v02-muted: #746b61;
+  --v02-line: #d9cfbf;
+  --v02-accent: #365f7a;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f6f1e7, #efe7da);
+  color: var(--v02-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  padding-bottom: 24px;
+}
+
+.v02-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+.v02-topbar-label {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.v02-exit {
+  border: 1px solid var(--v02-line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.v02-panel {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 14px;
+}
+
+.v02-hero {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  min-height: 220px;
+  max-height: 42vh;
+  background: #d8cfbf;
+}
+
+.v02-hero-img {
+  width: 100%;
+  height: 100%;
+  max-height: 42vh;
+  object-fit: cover;
+  display: block;
+}
+
+.v02-hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.05) 45%, rgba(19, 16, 13, 0.62));
+}
+
+.v02-hero-text {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  color: #fff;
+}
+
+.v02-hero-title {
+  font-size: clamp(22px, 5vw, 32px);
+  margin: 2px 0;
+  font-weight: 800;
+}
+
+.v02-hero-sub {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 520px;
+}
+
+.v02-day-label {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--v02-muted);
+  margin: 14px 0 6px;
+}
+
+.v02-intro-copy {
+  line-height: 1.85;
+  margin: 10px 0 16px;
+  color: #5f564d;
+}
+
+.v02-btn {
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 18px;
+  min-height: 46px;
+  background: var(--v02-accent);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  font: inherit;
+}
+
+.v02-btn.secondary {
+  background: #e7dfd2;
+  color: #443b32;
+  border: 1px solid #d2c7b6;
+}
+
+.v02-scene-card {
+  background: rgba(255, 250, 241, 0.97);
+  border: 1px solid var(--v02-line);
+  border-radius: 18px;
+  padding: 16px;
+  margin-top: 14px;
+  box-shadow: 0 8px 22px rgba(68, 50, 35, 0.07);
+}
+
+.v02-lines p {
+  line-height: 1.8;
+  margin: 0 0 8px;
+}
+
+.v02-npc-block {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.v02-npc-portrait {
+  width: clamp(140px, 26vw, 260px);
+  max-height: 34vh;
+  object-fit: contain;
+  object-position: center bottom;
+  border-radius: 14px;
+  background: linear-gradient(#f7f3eb, #eee6d8);
+  flex: 0 0 auto;
+}
+
+.v02-npc-name {
+  font-size: 12px;
+  color: var(--v02-muted);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.v02-choices {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.v02-choice {
+  border: 1px solid var(--v02-line);
+  background: #fffdf9;
+  border-radius: 14px;
+  padding: 13px 14px;
+  text-align: left;
+  cursor: pointer;
+  min-height: 48px;
+  font: inherit;
+  color: var(--v02-ink);
+}
+
+.v02-choice:hover {
+  border-color: #86a1b1;
+  background: #f8fbfc;
+}
+
+.v02-choice:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.v02-result {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #edf3ef;
+  border: 1px solid #c9d9ce;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+.v02-picklist {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.v02-pick-btn {
+  border: 1px solid var(--v02-line);
+  background: #fffdf8;
+  border-radius: 16px;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--v02-ink);
+  min-height: 56px;
+}
+
+.v02-pick-btn strong {
+  display: block;
+  font-size: 16px;
+}
+
+.v02-summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.v02-summary-item {
+  background: #f0e9de;
+  border: 1px solid #d7ccbc;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.v02-summary-heading {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--v02-muted);
+  margin: 14px 0 0;
+}
+
+.v02-footer-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .v02-panel {
+    padding: 0 12px;
+  }
+  .v02-npc-block {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .v02-npc-portrait {
+    width: 46vw;
+    max-width: 190px;
+    max-height: 26vh;
+  }
+}
