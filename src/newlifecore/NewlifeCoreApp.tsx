@@ -4,16 +4,46 @@ import townImg from "../assets/newlifev02/challenge-town.png";
 import yoheiImg from "../assets/newlifev02/yohei.png";
 import miyokoImg from "../assets/newlifev02/miyoko.png";
 import jinImg from "../assets/newlifev02/soma-jin.png";
-import { LOCATION_LABEL, buildEndOfDayNarrative, buildLocationScene, openingLineFor, reachableLocations } from "./content/day1";
+import { IntakeForm } from "./IntakeForm";
+import {
+  LOCATION_LABEL,
+  buildEndOfDayNarrative,
+  buildIntakeFormWorldFacts,
+  buildLocationScene,
+  kamiyaIntakeReaction,
+  openingLineFor,
+  reachableLocations,
+} from "./content/day1";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
 import { deterministicAdapter } from "./dialogue/deterministicAdapter";
 import { liveNpcAdapter } from "./dialogue/liveAdapterClient";
 import { addWorldFact, canSleep, doShortAction, moveTo, recordConversationTurn, sleep, timeRemainingLabel } from "./engine";
 import { npcDisplayName } from "./npcDefs";
 import { createInitialCoreState, formatClock } from "./types";
-import type { CoreState, LocationId, NpcId } from "./types";
+import type { CoreState, IntakeForm as IntakeFormData, LocationId, NpcId } from "./types";
 
 const PORTRAIT_SRC: Partial<Record<NpcId, string>> = { yohei: yoheiImg, miyoko: miyokoImg, jin: jinImg };
+
+// Directive NEW_LIFE_DAY1_ONBOARDING_AND_WORLD_ACTION_FIX_V1 Section 3: shown once automatically,
+// reopenable on demand, never a persistent overlay. Deliberately five short operational facts, not
+// a tutorial -- the OPENING screen (below) carries what the 30 days mean; this is only mechanics.
+const PLAY_GUIDE_ITEMS = ["場所を選んで移動できます", "人がいれば自由に話せます", "その場でできる行動を選べます", "行動すると時間が進みます", "夜になったら一日を終えられます"];
+
+function PlayGuideCard({ ctaLabel, onContinue }: { ctaLabel: string; onContinue: () => void }) {
+  return (
+    <div className="nlc-scene-card" data-testid="nlc-play-guide">
+      <p className="nlc-summary-heading">この町では</p>
+      <ul className="nlc-guide-list">
+        {PLAY_GUIDE_ITEMS.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+      <button className="nlc-btn" onClick={onContinue} data-testid="nlc-guide-continue">
+        {ctaLabel}
+      </button>
+    </div>
+  );
+}
 
 function Portrait({ npc }: { npc: NpcId }) {
   const src = PORTRAIT_SRC[npc];
@@ -44,6 +74,13 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // troubleshooting rather than a required opt-in.
   const [useLive, setUseLive] = useState<boolean>(() => import.meta.env.MODE === "development");
   const [specialResult, setSpecialResult] = useState<string | null>(null);
+  // Directive NEW_LIFE_DAY1_ONBOARDING_AND_WORLD_ACTION_FIX_V1 Section 11: OPENING (what 30 days
+  // means) -> PLAY GUIDE (short mechanics, once) -> game. Local UI flow only -- CoreState.started
+  // still marks the one thing it always did (left the opening screen); this phase gate sits in
+  // front of it, so engine.ts and CoreState's own shape stay untouched.
+  const [phase, setPhase] = useState<"opening" | "guide" | "game">("opening");
+  const [guideReopened, setGuideReopened] = useState(false);
+  const [showIntakeForm, setShowIntakeForm] = useState(false);
 
   function startGame() {
     setState((s) => ({ ...s, started: true }));
@@ -56,6 +93,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   function move(location: LocationId) {
     setActiveConversation(null);
     setSpecialResult(null);
+    setShowIntakeForm(false);
     setState((s) => moveTo(s, location));
   }
 
@@ -83,6 +121,11 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   }
 
   function runSpecialAction(actionId: string) {
+    if (actionId === "fill_intake_form") {
+      setSpecialResult(null);
+      setShowIntakeForm(true);
+      return;
+    }
     if (actionId === "offer_help_shelf") {
       setState((s) => {
         const helped = doShortAction(s, 45);
@@ -121,11 +164,24 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     }
   }
 
+  // Directive Section 4/7: real UI, not free text pretending. What gets written here is exactly
+  // what ends up in Kamiya's known facts (verbatim, via buildIntakeFormWorldFacts) -- no inferred
+  // psychological label, no career diagnosis (Section 5).
+  function submitIntakeForm(form: IntakeFormData) {
+    setState((s) => {
+      const advanced = doShortAction(s, 15);
+      const withFacts = buildIntakeFormWorldFacts(form, advanced.time).reduce((acc, fact) => addWorldFact(acc, fact), advanced);
+      return { ...withFacts, intakeForm: form, flags: { ...withFacts.flags, intakeFormSubmitted: true } };
+    });
+    setSpecialResult(kamiyaIntakeReaction(form));
+    setShowIntakeForm(false);
+  }
+
   function goSleep() {
     setState((s) => sleep(s));
   }
 
-  if (!state.started) {
+  if (phase === "opening") {
     return (
       <div className="nlc-frame" data-testid="nlc-frame">
         <div className="nlc-topbar">
@@ -142,10 +198,61 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
               <h1 className="nlc-hero-title">チャレンジ町</h1>
             </div>
           </div>
-          <p className="nlc-intro-copy">あなたは今日から、この町で暮らし始めます。</p>
-          <button className="nlc-btn" onClick={startGame} data-testid="nlc-start">
-            目を覚ます
+          <p className="nlc-intro-copy" data-testid="nlc-opening-copy">
+            あなたは30日間、この町で暮らします。
+            <br />
+            町を歩く。人と話す。誰かを手伝う。仕事を探す。何もしない。
+            <br />
+            過ごし方は自由です。決まった正解はありません。
+            <br />
+            30日後、あなたが何をしていて、誰と関わり、どこにいるのか。
+            <br />
+            それは、この30日で決まります。
+          </p>
+          <button className="nlc-btn" onClick={() => setPhase("guide")} data-testid="nlc-start">
+            町での生活を始める
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "guide") {
+    return (
+      <div className="nlc-frame" data-testid="nlc-frame">
+        <div className="nlc-topbar">
+          <span className="nlc-topbar-label">チャレンジ町</span>
+          <button className="nlc-exit" onClick={onExit} data-testid="nlc-exit">
+            ホームへ戻る
+          </button>
+        </div>
+        <div className="nlc-panel">
+          <PlayGuideCard
+            ctaLabel="町へ出る"
+            onContinue={() => {
+              startGame();
+              setPhase("game");
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Reopened on demand from the in-game topbar (directive Section 3: "常時表示は禁止... 後で再確認
+  // できるようにしてよい"). Purely a local overlay -- CoreState is untouched, closing it returns to
+  // exactly where the player was.
+  if (guideReopened) {
+    return (
+      <div className="nlc-frame" data-testid="nlc-frame">
+        <div className="nlc-topbar">
+          <span className="nlc-topbar-label">チャレンジ町</span>
+          <button className="nlc-exit" onClick={onExit} data-testid="nlc-exit">
+            ホームへ戻る
+          </button>
+        </div>
+        <div className="nlc-panel">
+          <PlayGuideCard ctaLabel="閉じる" onContinue={() => setGuideReopened(false)} />
         </div>
       </div>
     );
@@ -189,6 +296,9 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
         <span className="nlc-clock" data-testid="nlc-clock">
           DAY1 ・ {formatClock(state.time)}
         </span>
+        <button className="nlc-exit" onClick={() => setGuideReopened(true)} data-testid="nlc-guide-reopen">
+          ？ 遊び方
+        </button>
         <button className="nlc-exit" onClick={onExit} data-testid="nlc-exit">
           ホームへ戻る
         </button>
@@ -209,7 +319,13 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {scene && (
+        {scene && showIntakeForm && (
+          <div className="nlc-scene-card" data-testid="nlc-location-scene">
+            <IntakeForm onSubmit={submitIntakeForm} onCancel={() => setShowIntakeForm(false)} />
+          </div>
+        )}
+
+        {scene && !showIntakeForm && (
           <div className="nlc-scene-card" data-testid="nlc-location-scene">
             {scene.ambientLine && <p className="nlc-ambient">{scene.ambientLine}</p>}
 
@@ -219,7 +335,9 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                   <Portrait npc={npc} />
                   <div>
                     <div className="nlc-npc-name">{npcDisplayName(npc)}</div>
-                    {activeConversation !== npc && <p className="nlc-npc-line">{openingLineFor(npc, Boolean(state.flags[`met_${npc}`]))}</p>}
+                    {activeConversation !== npc && (
+                      <p className="nlc-npc-line">{openingLineFor(npc, Boolean(state.flags[`met_${npc}`]), Boolean(state.flags.intakeFormSubmitted))}</p>
+                    )}
                   </div>
                 </div>
 
@@ -288,7 +406,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {(scene || hasVenturedOut) && !activeConversation && (
+        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && (
           <div className="nlc-movelist" data-testid="nlc-movelist">
             <p className="nlc-summary-heading">どこへ行きますか（残り{timeRemainingLabel(state.time)}）</p>
             <div className="nlc-picklist">

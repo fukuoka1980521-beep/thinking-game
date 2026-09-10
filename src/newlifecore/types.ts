@@ -37,6 +37,20 @@ export interface ConversationTurn {
   npcReply: string;
 }
 
+export type EmploymentStatus = "working" | "not_working" | "other";
+
+/** NEW_LIFE_DAY1_ONBOARDING_AND_WORLD_ACTION_FIX_V1 -- Kamiya's first-meeting intake form,
+ *  filled out through real UI (IntakeForm.tsx), not claimed via free text. Stored verbatim, never
+ *  scored or classified into a career/personality type (directive Section 5) -- what the player
+ *  actually wrote, as a fact of how DAY1 started, nothing more. */
+export interface IntakeForm {
+  name: string;
+  employmentStatus: EmploymentStatus;
+  cameHereReason: string;
+  currentThoughts: string;
+  troubles: string;
+}
+
 export interface CoreState {
   started: boolean;
   time: ClockMinutes;
@@ -46,6 +60,7 @@ export interface CoreState {
   npcMemory: Record<NpcId, ConversationTurn[]>;
   npcImpression: Record<NpcId, number>;
   flags: Record<string, boolean>;
+  intakeForm: IntakeForm | null;
   ended: boolean;
 }
 
@@ -65,6 +80,7 @@ export function createInitialCoreState(): CoreState {
     npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [] },
     npcImpression: { kamiya: 0, yohei: 0, miyoko: 0, jin: 0 },
     flags: {},
+    intakeForm: null,
     ended: false,
   };
 }

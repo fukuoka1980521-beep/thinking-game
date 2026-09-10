@@ -1,5 +1,5 @@
 import { npcAvailabilityAt, npcsPresentAt } from "../schedule";
-import type { CoreState, LocationId, NpcId } from "../types";
+import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 export const LOCATION_LABEL: Record<LocationId, string> = {
   TRIAL_HOUSE: "仮住まい",
@@ -27,7 +27,11 @@ export interface NpcOpeningLine {
 const OPENING_LINES: Record<NpcId, NpcOpeningLine> = {
   kamiya: {
     npc: "kamiya",
-    firstVisitLine: "神谷はファイルを閉じながら、こちらを見た。「ここがチャレンジセンターです。30日間、いつでも相談に来てください」",
+    // Directive NEW_LIFE_DAY1_ONBOARDING_AND_WORLD_ACTION_FIX_V1: this used to be a vague welcome,
+    // which left the live model free to invent its own "please fill out this form" beat with
+    // nothing backing it on screen (the exact bug this directive fixes). Now the request is real
+    // and scripted, and a real form (IntakeForm.tsx) answers it.
+    firstVisitLine: "神谷はファイルを閉じながら、こちらを見た。「まずは、こちらの用紙にいくつかご記入いただけますか」",
     laterVisitLine: "神谷は顔を上げた。「何か?」",
   },
   yohei: {
@@ -47,7 +51,13 @@ const OPENING_LINES: Record<NpcId, NpcOpeningLine> = {
   },
 };
 
-export function openingLineFor(npc: NpcId, alreadyMet: boolean): string {
+export function openingLineFor(npc: NpcId, alreadyMet: boolean, intakeFormSubmitted = false): string {
+  // Bridges the gap between "form just submitted" and "player opened free chat" -- without this,
+  // Kamiya's card would keep showing the request-the-form line even after it was already handed
+  // over, which is its own small context-continuity break.
+  if (npc === "kamiya" && !alreadyMet && intakeFormSubmitted) {
+    return "神谷は書類を脇に置いた。「では、少しお話を伺いますね」";
+  }
   const l = OPENING_LINES[npc];
   return alreadyMet ? l.laterVisitLine : l.firstVisitLine;
 }
@@ -78,7 +88,14 @@ export function buildLocationScene(state: CoreState): LocationScene {
     const avail = npcAvailabilityAt("kamiya", state.time, state.flags);
     if (avail === "CLOSED") return { location: loc, ambientLine: "チャレンジセンターは終業していた。", npcsHere: [], specialActions: [] };
     if (avail === "BUSY") return { location: loc, ambientLine: "神谷は電話で立て込んでいるようだった。", npcsHere: [], specialActions: [{ id: "wait_kamiya", label: "少し待つ" }] };
-    return { location: loc, ambientLine: "", npcsHere: ["kamiya"], specialActions: [{ id: "view_jobs", label: "求人票を見る" }] };
+    // Directive NEW_LIFE_DAY1_ONBOARDING_AND_WORLD_ACTION_FIX_V1 Section 4/8: the form Kamiya
+    // asks for (firstVisitLine, above) must be a real action, not something free text can fake.
+    // Offered once, alongside the usual "look at job postings" -- disappears once actually filled,
+    // it doesn't reappear as a repeatable action.
+    const specialActions = state.flags.intakeFormSubmitted
+      ? [{ id: "view_jobs", label: "求人票を見る" }]
+      : [{ id: "fill_intake_form", label: "用紙に記入する" }, { id: "view_jobs", label: "求人票を見る" }];
+    return { location: loc, ambientLine: "", npcsHere: ["kamiya"], specialActions };
   }
 
   if (loc === "YOHEI_STORE") {
@@ -174,4 +191,46 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
 
   lines.push("そして眠った。");
   return lines;
+}
+
+const EMPLOYMENT_STATUS_LABEL: Record<IntakeForm["employmentStatus"], string> = {
+  working: "今も仕事をしている",
+  not_working: "今は働いていない",
+  other: "その他",
+};
+
+/** Directive NEW_LIFE_DAY1_ONBOARDING_AND_WORLD_ACTION_FIX_V1 Section 7: what gets recorded is
+ *  exactly what the player wrote, quoted -- never an inferred psychological label ("PLAYER is
+ *  lazy" etc.). Every fact is `knownBy: ["kamiya"]` only -- the same knowledge-boundary mechanism
+ *  contextBuilder.ts already filters on, unchanged; this only adds data through the existing
+ *  channel, not a new one. */
+export function buildIntakeFormWorldFacts(form: IntakeForm, time: ClockMinutes): WorldFact[] {
+  const facts: WorldFact[] = [
+    { id: "intake_employment_status", time, text: `PLAYERは用紙の「今の仕事」欄に「${EMPLOYMENT_STATUS_LABEL[form.employmentStatus]}」と記入した。`, knownBy: ["kamiya"] },
+  ];
+  if (form.name.trim()) facts.push({ id: "intake_name", time, text: `PLAYERは用紙の名前欄に「${form.name.trim()}」と記入した。`, knownBy: ["kamiya"] });
+  if (form.cameHereReason.trim()) {
+    facts.push({ id: "intake_came_here_reason", time, text: `PLAYERは「この町へ来た理由」に「${form.cameHereReason.trim()}」と書いた。`, knownBy: ["kamiya"] });
+  }
+  if (form.currentThoughts.trim()) {
+    facts.push({ id: "intake_current_thoughts", time, text: `PLAYERは「今のところ考えていること」に「${form.currentThoughts.trim()}」と書いた。`, knownBy: ["kamiya"] });
+  }
+  if (form.troubles.trim()) {
+    facts.push({ id: "intake_troubles", time, text: `PLAYERは「困っていること」に「${form.troubles.trim()}」と書いた。`, knownBy: ["kamiya"] });
+  }
+  return facts;
+}
+
+/** Directive Section 6: Kamiya reads the form and reacts, but never recites every field back --
+ *  one short, natural beat, not a form-completion receipt. The one content-dependent branch
+ *  (employment status) is flavor, not a diagnosis -- nothing here classifies the player into a
+ *  type (Section 5). */
+export function kamiyaIntakeReaction(form: IntakeForm): string {
+  const remark =
+    form.employmentStatus === "working"
+      ? "「今もお仕事を？　そうですか」"
+      : form.employmentStatus === "not_working"
+        ? "「……まだ決めてないんですね」"
+        : "「……そうですか」";
+  return `神谷は受け取った用紙に、ざっと目を通した。${remark}`;
 }
