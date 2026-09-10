@@ -1,0 +1,274 @@
+/* PHASE 12.2: visual Product surface for ?newlifebgw121=1. Pure presentation -- no game logic
+   lives here (see src/research/bounded-generative-world/* for that, unchanged this phase).
+   Engineering placeholders throughout (marked .bgw-placeholder) stand in for real generated art;
+   see docs/research/evaluation/phase-12-2/ART_ASSET_MANIFEST_V1.md for the production contract
+   they will be replaced against. */
+
+.bgw-frame {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #f6f1e7;
+  color: #2c2620;
+  font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.bgw-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #3d3226;
+  color: #f6f1e7;
+}
+.bgw-topbar-label { font-size: 13px; opacity: 0.85; }
+.bgw-exit {
+  background: transparent;
+  border: 1px solid #f6f1e7aa;
+  color: #f6f1e7;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+/* --- Opening: presented as the start of a story, not a spec panel --- */
+.bgw-opening {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 32px 24px;
+  background: linear-gradient(180deg, #dfd3b8 0%, #f6f1e7 70%);
+}
+.bgw-opening-title {
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  margin: 0 0 18px;
+  color: #4a3d2b;
+}
+.bgw-opening-text {
+  font-size: 16px;
+  line-height: 1.9;
+  margin: 0 0 28px;
+}
+.bgw-opening-begin {
+  align-self: flex-start;
+  background: #4a3d2b;
+  color: #f6f1e7;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-size: 15px;
+}
+
+/* --- Map: spatial composition, not a card list --- */
+.bgw-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: linear-gradient(160deg, #cfe3d0 0%, #e9e2c9 55%, #d8cfa9 100%);
+  overflow: hidden;
+}
+.bgw-map-caption {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 12px;
+  color: #4a3d2ba0;
+  letter-spacing: 0.08em;
+}
+.bgw-map-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+.bgw-map-node-marker {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: #fffaf0;
+  border: 2px solid #4a3d2b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px #0002;
+}
+.bgw-map-node.is-current .bgw-map-node-marker {
+  background: #4a3d2b;
+  color: #fffaf0;
+}
+.bgw-map-node-label {
+  font-size: 11px;
+  background: #fffaf0d0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.bgw-map-node-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #c0562f;
+  border: 1px solid #fffaf0;
+}
+
+/* --- Location scene: WHERE / WHO / WHAT before conversation --- */
+.bgw-location {
+  padding: 16px;
+}
+.bgw-location-name {
+  font-size: 18px;
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.bgw-location-desc {
+  font-size: 13px;
+  color: #6b5d47;
+  margin: 0 0 14px;
+}
+.bgw-npc-presence {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.bgw-npc-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fffaf0;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid #e4d9bd;
+}
+.bgw-portrait {
+  flex-shrink: 0;
+  width: 64px;
+  height: 96px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fffaf0;
+}
+.bgw-portrait.bgw-placeholder { background: repeating-linear-gradient(135deg, #9c8a63, #9c8a63 6px, #8a7952 6px, #8a7952 12px); }
+.bgw-portrait-yohei.bgw-placeholder { background-color: #6b7a4f; }
+.bgw-portrait-miyoko.bgw-placeholder { background-color: #a8607a; }
+.bgw-portrait-jin.bgw-placeholder { background-color: #4f6a7a; }
+.bgw-npc-text { display: flex; flex-direction: column; gap: 2px; }
+.bgw-npc-name { font-weight: 700; font-size: 14px; }
+.bgw-npc-activity { font-size: 12px; color: #6b5d47; }
+.bgw-npc-talk-button {
+  margin-left: auto;
+  background: #4a3d2b;
+  color: #fffaf0;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  align-self: center;
+}
+
+.bgw-map-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.bgw-map-nav-button {
+  background: #fffaf0;
+  border: 1px solid #c9bb95;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* --- Conversation surface: talking to a person, not a chatbot log --- */
+.bgw-conversation {
+  border-top: 1px solid #e4d9bd;
+  padding: 14px 16px;
+  background: #fffaf0;
+}
+.bgw-conversation-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.bgw-conversation-header .bgw-portrait { width: 48px; height: 72px; font-size: 16px; }
+.bgw-conversation-npc-name { font-weight: 700; font-size: 14px; }
+.bgw-conversation-log { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; max-height: 40vh; overflow-y: auto; }
+.bgw-line-player { align-self: flex-end; background: #4a3d2b; color: #fffaf0; border-radius: 12px 12px 2px 12px; padding: 8px 12px; font-size: 13px; max-width: 82%; }
+.bgw-line-npc { align-self: flex-start; background: #efe6cf; border-radius: 12px 12px 12px 2px; padding: 8px 12px; font-size: 13px; max-width: 82%; }
+.bgw-line-waiting { align-self: flex-start; background: #efe6cf; border-radius: 12px 12px 12px 2px; padding: 8px 14px; font-size: 15px; letter-spacing: 0.15em; color: #9c8a63; }
+@keyframes bgw-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.bgw-line-waiting span { animation: bgw-pulse 1.2s infinite; }
+.bgw-line-waiting span:nth-child(2) { animation-delay: 0.2s; }
+.bgw-line-waiting span:nth-child(3) { animation-delay: 0.4s; }
+
+.bgw-consequence-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #eef2df;
+  border: 1px solid #c9d4a8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: #3f4a2b;
+}
+
+.bgw-conversation-input-row { display: flex; gap: 8px; align-items: center; }
+.bgw-free-text-input {
+  flex: 1;
+  border: 1px solid #c9bb95;
+  border-radius: 20px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+.bgw-send-button {
+  background: #4a3d2b;
+  color: #fffaf0;
+  border: none;
+  border-radius: 20px;
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+}
+.bgw-send-button:disabled { opacity: 0.4; }
+.bgw-leave-button {
+  background: none;
+  border: none;
+  color: #8a7952;
+  font-size: 12px;
+  margin-top: 8px;
+  align-self: flex-start;
+}
+
+.bgw-dev-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 16px; font-size: 12px; }
+.bgw-dev-panel {
+  border: 2px dashed #888;
+  padding: 12px;
+  margin: 0 16px 16px;
+  font-family: monospace;
+  font-size: 11px;
+  white-space: pre-wrap;
+  background: #f4f4f4;
+  color: #111;
+}
