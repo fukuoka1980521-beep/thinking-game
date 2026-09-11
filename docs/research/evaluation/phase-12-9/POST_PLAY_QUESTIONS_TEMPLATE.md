@@ -2,7 +2,11 @@
 
 Ask Q1-Q11 in order, verbatim, after the session ends. Do not ask any question not listed here (see the phase directive's forbidden-question list -- no "面白かった？" / "Daisuke良かった？" / "町が動いているの分かった？" / "前の日のことを覚えていて良かった？" or any equivalent). Record answers close to verbatim. If a tester's answer is short, it is fine to leave it short -- do not prompt for more unless they trail off mid-thought.
 
-**Changelog (THINKING_GAME_FEYNMAN_UNDERSTANDING_DIAGNOSTIC_V0_1)**: the original Q1-Q9 are unchanged in wording, order, and intent. Two questions are new insertions (Q2, Q3 below -- the Feynman STATE and CAUSE checks, which nothing in the original set asked). Two questions are minimally extended, not replaced: original Q4 gained a Feynman "try to explain it" follow-up (the GAP question, which overlapped enough with "what was hard to understand" that a second, separate question would have been pure duplication); original Q5 gained a "why" follow-up (the NEXT question's reason, which Q5 was already halfway to asking). Everything else is byte-identical to before: original Q1 stays Q1; original Q2/Q3 shift to Q4/Q5; original Q6-Q9 shift to Q8-Q11 -- purely renumbered, no wording changed, because of the two insertions (Q2, Q3) above them.
+**Changelog (THINKING_GAME_FEYNMAN_UNDERSTANDING_DIAGNOSTIC_V0_1)**: not all of the original Q1-Q9 are unchanged -- stated precisely, not as a blanket "byte-identical" claim:
+- **STATE (now Q2) and CAUSE (now Q3) are the two genuinely new questions.** Nothing in the original Q1-Q9 asked either of these.
+- **Old Q4 (now Q6) was minimally extended**, not replaced: it gained the GAP question's "try to explain it in your own words" follow-up, since it already overlapped enough with "what was hard to understand" that a fully separate question would have been pure duplication.
+- **Old Q5 (now Q7) was minimally extended**, not replaced: it gained the NEXT question's "why", since it was already asking the action half of that question.
+- **Every other original question (old Q1, Q2, Q3, Q6, Q7, Q8, Q9 -- now Q1, Q4, Q5, Q8, Q9, Q10, Q11) is wording-preserved, with renumbering only.**
 
 - Tester ID: HV-0_
 

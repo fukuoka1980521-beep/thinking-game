@@ -119,8 +119,9 @@ describe("open anomaly review", () => {
     expect(anomalyReview).toContain("assuming every mechanic here is working exactly as designed");
   });
 
-  it("is honest about not finding a pre-existing artifact to reuse", () => {
-    expect(anomalyReview).toMatch(/no prior artifact|found no prior artifact/i);
+  it("is correctly framed as a project-local application of an existing cross-project standard, not a new review mechanism", () => {
+    expect(anomalyReview).toMatch(/already-existing cross-project standard/i);
+    expect(anomalyReview).toMatch(/not a new review mechanism/i);
   });
 
   it("frames every item as a hypothesis, not a scheduled fix", () => {

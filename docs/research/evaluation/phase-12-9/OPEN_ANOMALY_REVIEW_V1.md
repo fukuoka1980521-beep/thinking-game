@@ -1,6 +1,6 @@
-# OPEN ANOMALY REVIEW V1 -- New Life
+# OPEN ANOMALY REVIEW -- New Life (project-local application, V1)
 
-**Provenance note**: the task directive referenced an "existing OPEN_ANOMALY_REVIEW" to use together with the Feynman diagnostic. A full-text search of this repository (tracked files, working tree, and history) found no prior artifact by this name -- nothing was found to reuse. This document is created fresh, this pass, and is meant to stand as "the" open anomaly review going forward, for future phases to actually read and extend rather than re-search for.
+**Provenance note (corrected)**: `OPEN_ANOMALY_REVIEW` is an already-existing cross-project standard/methodology, not something this document invents. A full-text search of *this repository* (tracked files, working tree, and history) found no prior file by this name *within thinking-game* -- that search only establishes that New Life had no project-local application of the standard yet, not that the standard itself is new. This document is that project-local application: New Life's own observation-hypothesis artifact, produced by running the existing standard's governing question against this specific game. It is not a new review mechanism, and it does not define or modify the standard itself -- it is meant to be read and extended by future New Life phases the way any other project-local application document would be.
 
 **Governing question** (asked of the game as it stands, not changed to answer it): *assuming every mechanic here is working exactly as designed, are there places where a player would still build a wrong model of the world?*
 
