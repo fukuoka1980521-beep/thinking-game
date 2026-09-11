@@ -17,13 +17,14 @@ import { deterministicNpcReply } from "../src/newlifecore/dialogue/deterministic
 import { liveNpcAdapter } from "../src/newlifecore/dialogue/liveAdapterClient";
 import { validateNpcReply } from "../src/newlifecore/dialogue/envelope";
 import { resolveWorldEvents } from "../src/newlifecore/content/day1WorldEvents";
-import { buildEndOfDayNarrative, buildLocationScene, describeBelongings } from "../src/newlifecore/content/day1";
+import { buildEndOfDayNarrative, buildLocationScene, describeBelongings, openingLineFor } from "../src/newlifecore/content/day1";
 import { looksLikeRealLifeConcern } from "../src/newlifecore/content/realityBridge";
 import { detectsCrisisSignal } from "../src/newlifecore/content/safetyRoute";
 import { deriveResearchObservation } from "../src/newlifecore/content/research";
 import { menuForNpc } from "../src/newlifecore/content/shop";
+import { NPC_DEFS } from "../src/newlifecore/npcDefs";
 import { createInitialCoreState, DAY_START_MINUTES } from "../src/newlifecore/types";
-import type { CoreState } from "../src/newlifecore/types";
+import type { CoreState, NpcId } from "../src/newlifecore/types";
 
 describe("NEW LIFE CORE: time advances by actions, and a day does not end after one action", () => {
   it("moving to a location advances the clock by a fixed travel cost", () => {
@@ -453,10 +454,221 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: deterministic clas
     expect(looksLikeRealLifeConcern("散髪お願いします")).toBe(false);
   });
 
+  it("looksLikeRealLifeConcern also matches the specific gaps found by the PHASE_12_4 Section 12 live 12-case test (断れない/イライラ/辞めるか迷う)", () => {
+    expect(looksLikeRealLifeConcern("人に頼まれると断れなくて")).toBe(true);
+    expect(looksLikeRealLifeConcern("最近なんかイライラすることが多くて")).toBe(true);
+    expect(looksLikeRealLifeConcern("今の仕事辞めるかどうか迷ってます")).toBe(true);
+    expect(looksLikeRealLifeConcern("やりたいことが正直よく分からないんです")).toBe(true);
+  });
+
+  it("looksLikeRealLifeConcern is a keyword offer heuristic, not semantic understanding -- it should not fire on most ordinary small talk (Section D's 12-case false-positive probe)", () => {
+    const ordinarySmallTalk = [
+      "どこに行こうか迷ってます",
+      "昼飯を何にするか迷っています",
+      "この町を歩き回って疲れました",
+      "仕事帰りです",
+      "床屋に行くか迷ってます",
+      "コーヒーにするか紅茶にするか迷う",
+      "今日は暑くて疲れた",
+      "洋平に言いたいことがある",
+      "町を出るか迷ってる",
+      "最近このゲーム面白い",
+    ];
+    const falsePositives = ordinarySmallTalk.filter((text) => looksLikeRealLifeConcern(text));
+    // Two known, deliberately-kept false-positive sources exist for OTHER phrases (イライラ/続かな --
+    // each is the only thing catching a real Section 12 case) but neither of those two words appears
+    // in this ordinary-small-talk list, so this specific list should come back clean. A future edit
+    // that reintroduces a broad pattern (e.g. bare "迷って") would regress this back toward the
+    // originally-measured 7/12 false-positive rate this test exists to guard against.
+    expect(falsePositives).toHaveLength(0);
+  });
+
+  it("the two deliberately-kept false-positive sources (イライラ/続かな) are still each load-bearing for a real Section 12 case with no cheaper alternative pattern available", () => {
+    expect(looksLikeRealLifeConcern("昨日の試合はイライラしたな")).toBe(true); // known false positive, kept
+    expect(looksLikeRealLifeConcern("最近なんかイライラすることが多くて")).toBe(true); // the real case it exists for
+    expect(looksLikeRealLifeConcern("この商品続かないね")).toBe(true); // known false positive, kept
+    expect(looksLikeRealLifeConcern("運動しようと思ってるけど全然続かない")).toBe(true); // the real case it exists for
+  });
+
   it("detectsCrisisSignal matches explicit self-harm/crisis language and does not match ordinary negative language", () => {
     expect(detectsCrisisSignal("もう死にたい")).toBe(true);
     expect(detectsCrisisSignal("消えてしまいたい")).toBe(true);
     expect(detectsCrisisSignal("今日は疲れた、もう嫌だ")).toBe(false);
     expect(detectsCrisisSignal("仕事を辞めたい")).toBe(false);
+  });
+});
+
+describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: NPC roster and relationship graph (Section 4/5)", () => {
+  const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "daisuke", "hina", "fumiko"];
+
+  it("the town has 7 NPCs, and none of them is uniformly kind/omniscient about the others (Section 4)", () => {
+    expect(Object.keys(NPC_DEFS)).toHaveLength(7);
+    for (const npc of ALL_NPCS) {
+      expect(NPC_DEFS[npc].hiddenBackground.whatTheyDoNotWantToSay.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("relationships are directed (each NPC's own view), have a coarse non-numeric quality, and are not a symmetric single global graph", () => {
+    const yoheiOnJin = NPC_DEFS.yohei.relationships.jin;
+    const jinOnYohei = NPC_DEFS.jin.relationships.yohei;
+    expect(yoheiOnJin?.quality).toBe("close");
+    expect(jinOnYohei?.quality).toBe("close");
+    // Directed, not necessarily identical prose even when the coarse quality happens to match.
+    expect(typeof yoheiOnJin?.description).toBe("string");
+    expect(typeof jinOnYohei?.description).toBe("string");
+    // Not every pair is symmetric -- Yohei is still wary of the newcomer Hina while she reads warmer of Miyoko than of him.
+    expect(NPC_DEFS.yohei.relationships.hina?.quality).toBe("distant");
+    expect(NPC_DEFS.hina.relationships.miyoko?.quality).toBe("familiar");
+    // Never a numeric score anywhere in a relationship.
+    for (const npc of ALL_NPCS) {
+      for (const rel of Object.values(NPC_DEFS[npc].relationships)) {
+        expect(typeof rel?.quality).toBe("string");
+        expect(Number.isNaN(Number(rel?.quality))).toBe(true);
+      }
+    }
+  });
+
+  it("Hina's own relationship map references Fumiko and vice versa, even though they haven't met yet (a real edge exists before the two characters have interacted in-game)", () => {
+    expect(NPC_DEFS.hina.relationships.fumiko).toBeDefined();
+    expect(NPC_DEFS.fumiko.relationships.hina).toBeDefined();
+  });
+});
+
+describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: Hina's shop only exists once the world actually opens it (Section 4/6/8)", () => {
+  it("Hina is unreachable on day 1 and day 2, even at the exact time her (future) schedule would otherwise say she's open", () => {
+    const s0 = createInitialCoreState();
+    expect(npcAvailabilityAt("hina", 12 * 60, s0.flags)).toBe("CLOSED");
+    expect(npcLocationAt("hina", 12 * 60, s0.flags)).toBeNull();
+
+    const day2 = startNewDay({ ...s0, ended: true });
+    expect(npcAvailabilityAt("hina", 12 * 60, day2.flags)).toBe("CLOSED");
+  });
+
+  it("the shop opens the first time day >= 3 crosses 9:00, independent of the player -- and never before day 3", () => {
+    let s = createInitialCoreState();
+    s = startNewDay({ ...s, ended: true }); // day 2
+    s = advanceTime(s, 8 * 60); // well past 9:00 on day 2
+    expect(s.flags.hinaShopOpen).toBeFalsy();
+
+    s = startNewDay({ ...s, ended: true }); // day 3
+    s = advanceTime(s, 1 * 60); // 8:45 -> 9:45, crosses 9:00
+    expect(s.flags.hinaShopOpen).toBe(true);
+    expect(npcAvailabilityAt("hina", s.time, s.flags)).toBe("AVAILABLE");
+    expect(npcLocationAt("hina", s.time, s.flags)).toBe("SHOPPING_STREET");
+
+    const fact = s.worldFacts.find((f) => f.id === "hina_shop_open");
+    expect(fact?.category).toBe("world_change");
+    expect(fact?.knownBy).toEqual(["yohei", "miyoko"]);
+    expect(fact?.day).toBe(3);
+  });
+
+  it("SHOPPING_STREET's ambient text changes across days even before Hina is reachable (day 1 vs day 2 read differently)", () => {
+    const day1 = createInitialCoreState();
+    const day1Scene = buildLocationScene({ ...day1, playerLocation: "SHOPPING_STREET" });
+
+    let s = startNewDay({ ...day1, ended: true });
+    const day2Scene = buildLocationScene({ ...s, playerLocation: "SHOPPING_STREET" });
+
+    expect(day1Scene.ambientLine).not.toBe(day2Scene.ambientLine);
+    expect(day2Scene.npcsHere).toEqual([]); // still not open
+  });
+});
+
+describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: a second, independent unseen NPC<->NPC event (Section 6/7)", () => {
+  it("Fumiko asking Jin to fix the bench never fires on day 1, only from day 2 onward, and always resolves without the player", () => {
+    const s0 = createInitialCoreState();
+    const s1 = advanceTime(s0, 10 * 60); // well past 9:30 on day 1
+    expect(s1.flags.fumikoAskedJin).toBeFalsy();
+
+    const s2 = startNewDay({ ...s1, ended: true }); // day 2
+    const s3 = advanceTime(s2, 6 * 60); // 8:45 -> 14:45, crosses both 9:30 and 14:00
+    expect(s3.flags.fumikoAskedJin).toBe(true);
+    expect(s3.flags.benchFixed).toBe(true);
+
+    const askedFact = s3.worldFacts.find((f) => f.id === "fumiko_asked_jin_bench");
+    const fixedFact = s3.worldFacts.find((f) => f.id === "bench_fixed");
+    expect(askedFact?.knownBy.sort()).toEqual(["fumiko", "jin"]);
+    expect(fixedFact?.knownBy.sort()).toEqual(["fumiko", "jin"]);
+    expect(askedFact?.category).toBe("promise");
+    expect(fixedFact?.category).toBe("pending_task");
+
+    // Knowledge boundary: nobody else knows about it (directive Section 6: "全知NPCは禁止").
+    const kamiyaCtx = buildNpcAiContext("kamiya", s3, "こんにちは");
+    expect(kamiyaCtx.knownFacts.join(" ")).not.toMatch(/ベンチ/);
+    const jinCtx = buildNpcAiContext("jin", s3, "こんにちは");
+    expect(jinCtx.knownFacts.join(" ")).toMatch(/ベンチ/);
+  });
+
+  it("COMMUNITY_HALL's empty-room trace text reflects the bench thread's current state", () => {
+    // Fumiko is scheduled at COMMUNITY_HALL continuously 9:00-16:00, so the "nobody's here" trace
+    // branch only applies outside her (and Jin's) hours -- 18:00 is past both.
+    const s0 = createInitialCoreState();
+    let s = startNewDay({ ...s0, ended: true });
+    s = advanceTime(s, 1 * 60); // crosses 9:30 -> asked, not yet fixed
+    const midScene = buildLocationScene({ ...s, playerLocation: "COMMUNITY_HALL", time: 18 * 60 });
+    expect(midScene.ambientLine).toMatch(/ぐらついた/);
+
+    const doneState = advanceTime(s, 5 * 60); // crosses 14:00 -> fixed
+    const doneScene = buildLocationScene({ ...doneState, playerLocation: "COMMUNITY_HALL", time: 18 * 60 });
+    expect(doneScene.ambientLine).toMatch(/もう、ぐらついていなかった/);
+  });
+});
+
+describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: end-of-day narrative no longer goes stale across days (Section 8)", () => {
+  it("a fact from a PAST day is not re-announced on a later day's end-of-day screen", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "kamiya", "day1の発言", "「そうですか」");
+    const day1Lines = buildEndOfDayNarrative(s1);
+    expect(day1Lines).toContain("神谷とは話が途中のままだ。");
+
+    const s2 = startNewDay({ ...s1, ended: true }); // day 2, kamiya not talked to today
+    const day2Lines = buildEndOfDayNarrative(s2);
+    expect(day2Lines).not.toContain("神谷とは話が途中のままだ。");
+  });
+
+  it("a world-change fact (e.g. the shelf) is only mentioned on the day it actually happened, not every day after", () => {
+    const s0 = createInitialCoreState();
+    const s1 = addWorldFact(s0, { id: "shelf_fixed", time: s0.time, text: "x", knownBy: ["yohei", "jin"] });
+    const withFlag: CoreState = { ...s1, flags: { ...s1.flags, shelfFixed: true, shelfFixedWithPlayer: true } };
+    expect(buildEndOfDayNarrative(withFlag)).toContain("洋平の店の棚は、手伝って直した。");
+
+    const nextDay = startNewDay({ ...withFlag, ended: true });
+    expect(buildEndOfDayNarrative(nextDay)).not.toContain("洋平の店の棚は、手伝って直した。");
+  });
+
+  it("talking to the same NPC again on a later day produces a fresh 'talked today' line, not silence forever after the first day", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "miyoko", "day1", "「そう」");
+    const s2 = startNewDay({ ...s1, ended: true });
+    const s3 = recordConversationTurn(s2, "miyoko", "day2", "「あら」");
+    expect(buildEndOfDayNarrative(s3)).toContain("喫茶のどかで、美代子と少し話した。");
+  });
+});
+
+describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: cross-day conversation continuity in the opening line (Section 1)", () => {
+  it("an NPC talked to YESTERDAY specifically (not just 'ever') gets a distinct day-bridging opening line today, before the player re-opens the conversation", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "yohei", "day1", "「そうか」");
+    const metYohei: CoreState = { ...s1, flags: { ...s1.flags, met_yohei: true } };
+    const s2 = startNewDay({ ...metYohei, ended: true });
+    expect(openingLineFor("yohei", s2)).toBe("洋平はちらっとこちらを見た。「昨日も来てたな」");
+  });
+
+  it("an NPC talked to 2+ days ago (not yesterday) falls back to the ordinary later-visit line, not the bridge line", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "yohei", "day1", "「そうか」");
+    const metYohei: CoreState = { ...s1, flags: { ...s1.flags, met_yohei: true } };
+    const day2 = startNewDay({ ...metYohei, ended: true });
+    const day3 = startNewDay({ ...day2, ended: true });
+    expect(openingLineFor("yohei", day3)).toBe("洋平はちらっとこちらを見た。「また来たか」");
+  });
+
+  it("an NPC already talked to TODAY does not show the bridge line (it's specifically for the first re-encounter of the day)", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordConversationTurn(s0, "yohei", "day1", "「そうか」");
+    const metYohei: CoreState = { ...s1, flags: { ...s1.flags, met_yohei: true } };
+    const day2 = startNewDay({ ...metYohei, ended: true });
+    const talkedAgainToday = recordConversationTurn(day2, "yohei", "day2", "「おう」");
+    expect(openingLineFor("yohei", talkedAgainToday)).toBe("洋平はちらっとこちらを見た。「また来たか」");
   });
 });

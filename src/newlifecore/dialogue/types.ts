@@ -23,6 +23,14 @@ export interface NpcAiContext {
   knownFacts: string[];
   unknownFacts: string[];
   memoryOfPlayer: ConversationTurn[];
+  /** PHASE_12_4 -- the FULL (unwindowed) lifetime turn count with this NPC, separate from
+   *  `memoryOfPlayer` (which stays windowed to MEMORY_WINDOW for the live prompt). Exists because
+   *  the 30-day structural simulation (tests/newlifecoreThirtyDaySimulation.test.ts) measured that
+   *  `deterministicAdapter.ts`'s variety-picker seed, previously `memoryOfPlayer.length`, silently
+   *  froze at a constant value once the window filled (day 7+ of 30 all picked the same reply
+   *  variant) -- the exact kind of "same greeting frequency" monotony Section I asks this Run to
+   *  measure honestly rather than launder away. */
+  historicalTurnCount: number;
   relationshipHistory: string[];
   hiddenBackground: NpcHiddenBackground;
   currentScene: string;

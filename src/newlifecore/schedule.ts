@@ -14,6 +14,11 @@ export function npcLocationAt(npc: NpcId, time: ClockMinutes, flags: CoreState["
   if (npc === "jin" && flags.jinCalledToYohei && time >= 11 * 60 + 30 && time < 13 * 60 + 30) {
     return "YOHEI_STORE";
   }
+  // PHASE_12_4 -- Hina isn't anywhere at all until her shop actually opens (day >= 3, see
+  // content/day1WorldEvents.ts); her `schedule` block only describes her hours AFTER that.
+  if (npc === "hina" && !flags.hinaShopOpen) {
+    return null;
+  }
   const block = NPC_DEFS[npc].schedule.find((b) => time >= b.fromMinutes && time < b.toMinutes);
   return block?.location ?? null;
 }
@@ -21,6 +26,9 @@ export function npcLocationAt(npc: NpcId, time: ClockMinutes, flags: CoreState["
 export function npcAvailabilityAt(npc: NpcId, time: ClockMinutes, flags: CoreState["flags"]): Availability {
   if (npc === "jin" && flags.jinCalledToYohei && time >= 11 * 60 + 30 && time < 13 * 60 + 30) {
     return "AVAILABLE";
+  }
+  if (npc === "hina" && !flags.hinaShopOpen) {
+    return "CLOSED";
   }
   const block = NPC_DEFS[npc].schedule.find((b) => time >= b.fromMinutes && time < b.toMinutes);
   if (!block) return "CLOSED";

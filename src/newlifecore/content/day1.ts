@@ -57,14 +57,45 @@ const OPENING_LINES: Record<NpcId, NpcOpeningLine> = {
     firstVisitLine: "鋏の音が止んだ。「いらっしゃい。……ああ、見ない顔だ」",
     laterVisitLine: "大輔は鏡越しにちらっと視線をよこした。「よう」",
   },
+  hina: {
+    npc: "hina",
+    firstVisitLine: "陽菜が棚から顔を上げた。「あ、いらっしゃいませ……あの、まだ開店したばかりで」",
+    laterVisitLine: "陽菜が顔を上げた。「あ、こんにちは」",
+  },
+  fumiko: {
+    npc: "fumiko",
+    firstVisitLine: "文子が掲示板から振り返った。「あら、見ない顔ね。新しく来た人?」",
+    laterVisitLine: "文子は片手を挙げた。「あら、また会ったわね」",
+  },
 };
 
-export function openingLineFor(npc: NpcId, alreadyMet: boolean, intakeFormSubmitted = false): string {
+// PHASE_12_4 Section 1/8 -- "昨日のことが今日につながっている" as a felt, structural thing, not a
+// UI label: when an NPC was talked to YESTERDAY specifically (not just "ever"), their first
+// encounter TODAY reads as a small continuity beat instead of the generic laterVisitLine. Kept
+// deliberately generic/content-free (never references what was actually said) -- a safe, low-risk
+// day-bridging cue rather than an attempt to summarize or recall specific conversation content.
+const YESTERDAY_BRIDGE_LINES: Record<NpcId, string> = {
+  kamiya: "神谷は顔を上げた。「昨日の続き、聞いてなかったですね」",
+  yohei: "洋平はちらっとこちらを見た。「昨日も来てたな」",
+  miyoko: "美代子は顔を上げた。「あら、昨日も来てくれたわよね」",
+  jin: "相馬は手を止めずに言った。「昨日もいたな」",
+  daisuke: "大輔は鏡越しに視線をよこした。「昨日も来てましたね」",
+  hina: "陽菜が顔を上げた。「あ、昨日も来てくれましたよね」",
+  fumiko: "文子は片手を挙げた。「あら、昨日も来てたわね」",
+};
+
+export function openingLineFor(npc: NpcId, state: CoreState): string {
+  const alreadyMet = Boolean(state.flags[`met_${npc}`]);
   // Bridges the gap between "form just submitted" and "player opened free chat" -- without this,
   // Kamiya's card would keep showing the request-the-form line even after it was already handed
   // over, which is its own small context-continuity break.
-  if (npc === "kamiya" && !alreadyMet && intakeFormSubmitted) {
+  if (npc === "kamiya" && !alreadyMet && state.flags.intakeFormSubmitted) {
     return "神谷は書類を脇に置いた。「では、少しお話を伺いますね」";
+  }
+  if (alreadyMet) {
+    const talkedToday = state.npcMemory[npc].some((t) => t.day === state.day);
+    const talkedYesterday = state.npcMemory[npc].some((t) => t.day === state.day - 1);
+    if (!talkedToday && talkedYesterday) return YESTERDAY_BRIDGE_LINES[npc];
   }
   const l = OPENING_LINES[npc];
   return alreadyMet ? l.laterVisitLine : l.firstVisitLine;
@@ -103,8 +134,31 @@ export function buildLocationScene(state: CoreState): LocationScene {
   }
 
   if (loc === "SHOPPING_STREET") {
-    const shopLine = state.flags.isRaining ? "雨が降り出した。軒先で雨宿りする人が何人か見える。" : "シャッターが半分下りた空き店舗に、手書きの貼り紙がある。「近日、何か始めます」";
-    return { location: loc, ambientLine: shopLine, npcsHere: [], specialActions: state.flags.isRaining ? [{ id: "wait_out_rain", label: "雨宿りする" }] : [{ id: "notice_shop", label: "貼り紙をよく見る" }] };
+    if (state.flags.isRaining) {
+      return { location: loc, ambientLine: "雨が降り出した。軒先で雨宿りする人が何人か見える。", npcsHere: [], specialActions: [{ id: "wait_out_rain", label: "雨宿りする" }] };
+    }
+    // Directive Section 8 -- the empty storefront is not the same picture every day it's visited;
+    // it visibly changes even before Hina is actually present to talk to (day 2's hint), and she
+    // is only ever "here" via schedule.ts's flags.hinaShopOpen gate, never before that regardless
+    // of what day it nominally is (directive Section 6: no NPC/state changes just because a day
+    // number ticked over with nobody watching a specific trigger condition).
+    if (npcsHere.includes("hina")) {
+      return { location: loc, ambientLine: "", npcsHere: ["hina"], specialActions: [{ id: "notice_shop", label: "新しい店を覗く" }] };
+    }
+    if (state.day >= 2) {
+      return {
+        location: loc,
+        ambientLine: "空き店舗のシャッターが半分上がっていた。中で誰かが棚を動かしているのが見える。まだ声はかけられなさそうだ。",
+        npcsHere: [],
+        specialActions: [{ id: "notice_shop", label: "様子をうかがう" }],
+      };
+    }
+    return {
+      location: loc,
+      ambientLine: "シャッターが半分下りた空き店舗に、手書きの貼り紙がある。「近日、何か始めます」",
+      npcsHere: [],
+      specialActions: [{ id: "notice_shop", label: "貼り紙をよく見る" }],
+    };
   }
 
   if (loc === "CHALLENGE_CENTER") {
@@ -181,23 +235,45 @@ export function buildLocationScene(state: CoreState): LocationScene {
     return { location: loc, ambientLine: "", npcsHere: ["daisuke"], specialActions };
   }
 
-  // COMMUNITY_HALL -- must check where Jin actually IS (npcsHere, location-aware), never just
-  // whether he is "available" in the abstract: during the 11:30-13:30 shelf-repair window his
-  // status is AVAILABLE but his location is YOHEI_STORE, not here. Using raw availability here
-  // was a real bug -- it let him appear present in two places in the same instant.
-  if (npcsHere.includes("jin")) {
+  // COMMUNITY_HALL -- Jin and Fumiko can independently be here at the same time; must check where
+  // Jin actually IS (npcsHere, location-aware), never just whether he is "available" in the
+  // abstract: during the 11:30-13:30 shelf-repair window his status is AVAILABLE but his location
+  // is YOHEI_STORE, not here. Using raw availability here was a real bug -- it let him appear
+  // present in two places in the same instant.
+  const jinHere = npcsHere.includes("jin");
+  const fumikoHere = npcsHere.includes("fumiko");
+  const present: NpcId[] = [];
+  const hallActions: { id: string; label: string }[] = [];
+
+  if (jinHere) {
     const jinAvail = npcAvailabilityAt("jin", state.time, state.flags);
     if (jinAvail === "BUSY") {
       // The explicit "on the phone, can't talk" texture -- present, but not a conversation.
-      return { location: loc, ambientLine: "相馬は電話中だった。片手を挙げて、待ってろという仕草をした。", npcsHere: [], specialActions: [{ id: "wait_jin", label: "電話が終わるまで待つ" }] };
+      hallActions.push({ id: "wait_jin", label: "電話が終わるまで待つ" });
+    } else {
+      present.push("jin");
     }
-    return { location: loc, ambientLine: "", npcsHere: ["jin"], specialActions: [] };
   }
+  if (fumikoHere) present.push("fumiko");
+
+  if (present.length > 0 || hallActions.length > 0) {
+    return { location: loc, ambientLine: "", npcsHere: present, specialActions: hallActions };
+  }
+
   if (state.flags.jinCalledToYohei && !state.flags.shelfFixed && state.time < 13 * 60 + 30) {
     // A trace of where he went, not an announcement (directive Section 20).
     return { location: loc, ambientLine: "掲示板の脇に、相馬の工具袋だけが置かれていた。少し出ているようだった。", npcsHere: [], specialActions: [] };
   }
-  return { location: loc, ambientLine: "集会所には誰もいないようだった。掲示板だけが静かに並んでいる。", npcsHere: [], specialActions: [] };
+
+  // Directive Section 6/7 -- a second, independent unseen-event thread (content/day1WorldEvents.ts:
+  // Fumiko asks Jin to fix the community hall bench). Only ever readable as a trace when nobody who
+  // knows about it is actually here -- never an announcement.
+  const emptyLine = state.flags.benchFixed
+    ? "集会所には誰もいないようだった。ベンチはもう、ぐらついていなかった。"
+    : state.flags.fumikoAskedJin
+      ? "集会所には誰もいないようだった。ベンチが、まだ少しぐらついたままだった。"
+      : "集会所には誰もいないようだった。掲示板だけが静かに並んでいる。";
+  return { location: loc, ambientLine: emptyLine, npcsHere: [], specialActions: [] };
 }
 
 /** Directive Section 21: end-of-day must read as a handful of remaining facts in plain sentences
@@ -206,29 +282,43 @@ export function buildLocationScene(state: CoreState): LocationScene {
  *  ままだ。そして寝る。"): short, unresolved-feeling, no "you accomplished X" framing. */
 export function buildEndOfDayNarrative(state: CoreState): string[] {
   const lines: string[] = [];
+  // PHASE_12_4 Section 8 -- everything below is gated on TODAY specifically (a conversation that
+  // happened today, a world fact stamped with today's day number), not "ever" -- the previous
+  // version re-announced e.g. "洋平の店の棚は、手伝って直した" on every single day-end screen
+  // forever once it became true once, which is exactly the identical-day staleness this Run exists
+  // to fix. `engine.ts`'s `addWorldFact` auto-stamps `day`; `recordConversationTurn` auto-stamps
+  // `ConversationTurn.day` (PHASE_12_3).
+  const talkedToday = (npc: NpcId) => state.npcMemory[npc].some((t) => t.day === state.day);
+  const factToday = (id: string) => state.worldFacts.some((f) => f.id === id && f.day === state.day);
 
-  if (state.flags.shelfFixedWithPlayer) {
+  if (factToday("shelf_fixed")) {
     lines.push("洋平の店の棚は、手伝って直した。");
-  } else if (state.flags.shelfFixed) {
+  } else if (factToday("shelf_fixed_without_player")) {
     lines.push("洋平の店の棚は、いつの間にか直っていた。");
-  } else if (state.flags.met_yohei) {
+  } else if (talkedToday("yohei") && !state.flags.shelfFixed) {
     lines.push("洋平の店の棚は、まだ少し傾いたままだった。");
   }
 
-  if (state.flags.met_jin) {
-    lines.push(state.npcMemory.jin.length > 0 ? "相馬とは少し話した。明日も朝が早いらしい。" : "相馬とはすれ違っただけだった。");
+  if (factToday("bench_fixed")) {
+    lines.push("集会所のベンチは、いつの間にか直っていた。");
+  } else if (factToday("fumiko_asked_jin_bench")) {
+    lines.push("文子が、集会所のベンチのことで相馬に何か頼んでいたようだった。");
   }
 
-  if (state.flags.met_miyoko) {
-    lines.push(state.npcMemory.miyoko.length > 0 ? "喫茶のどかで、美代子と少し話した。" : "喫茶のどかに、少しだけ顔を出した。");
+  if (factToday("hina_shop_open")) {
+    lines.push("商店街の空き店舗に、新しい店が開いていた。");
   }
 
-  if (state.flags.met_kamiya) {
-    lines.push(state.npcMemory.kamiya.length > 0 ? "神谷とは話が途中のままだ。" : "神谷とは、まだあまり話していない。");
-  }
+  if (talkedToday("jin")) lines.push("相馬とは少し話した。明日も朝が早いらしい。");
+  if (talkedToday("miyoko")) lines.push("喫茶のどかで、美代子と少し話した。");
+  if (talkedToday("kamiya")) lines.push("神谷とは話が途中のままだ。");
+  if (talkedToday("daisuke")) lines.push("大輔とは、少し話した。");
+  if (talkedToday("hina")) lines.push("陽菜とは、少し話した。");
+  if (talkedToday("fumiko")) lines.push("文子とは、少し話した。");
 
   // Directive Section 15/16 -- a生活上の事情の結果を、スコアではなく事実の一文として残す。「やらな
-  // かったら即ゲームオーバー」でも「やったら加点」でもない、ただの今日あった/なかったこと。
+  // かったら即ゲームオーバー」でも「やったら加点」でもない、ただの今日あった/なかったこと。 This one
+  // stays "ever" (not day-gated) since it's a single DAY1-only obligation, not a recurring daily one.
   if (state.flags.met_kamiya && !state.flags.intakeFormSubmitted) {
     lines.push("チャレンジセンターの用紙は、結局出さなかった。");
   }

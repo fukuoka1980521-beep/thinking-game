@@ -39,7 +39,7 @@ export function recordConversationTurn(state: CoreState, npc: NpcId, playerUtter
 
 export function addWorldFact(state: CoreState, fact: Omit<WorldFact, "id"> & { id: string }): CoreState {
   if (state.worldFacts.some((f) => f.id === fact.id)) return state;
-  return { ...state, worldFacts: [...state.worldFacts, fact] };
+  return { ...state, worldFacts: [...state.worldFacts, { ...fact, day: fact.day ?? state.day }] };
 }
 
 export function doShortAction(state: CoreState, minutes = 10): CoreState {

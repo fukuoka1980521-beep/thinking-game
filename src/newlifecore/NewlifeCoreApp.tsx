@@ -512,7 +512,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                     <div>
                       <div className="nlc-npc-name">{npcDisplayName(npc)}</div>
                       {activeConversation !== npc && (
-                        <p className="nlc-npc-line">{openingLineFor(npc, Boolean(state.flags[`met_${npc}`]), Boolean(state.flags.intakeFormSubmitted))}</p>
+                        <p className="nlc-npc-line">{openingLineFor(npc, state)}</p>
                       )}
                     </div>
                   </div>

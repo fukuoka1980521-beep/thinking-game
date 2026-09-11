@@ -15,7 +15,7 @@
  * docs/research/evaluation/phase-12-0/CHARACTER_MAP_ART_DIRECTION_V1.md's brief.
  */
 import { NPC_CANON } from "../research/bounded-generative-world/canonData";
-import type { LocationId, NpcId } from "./types";
+import type { LocationId, NpcId, NpcRelationship } from "./types";
 
 export interface ScheduleBlock {
   fromMinutes: number;
@@ -58,7 +58,7 @@ export interface NpcDefinition {
   dislikes: string[];
   job: string;
   currentConcerns: string[];
-  relationships: Partial<Record<NpcId, string>>;
+  relationships: Partial<Record<NpcId, NpcRelationship>>;
   knowledge: NpcKnowledge;
   speechStyle: string;
   memoryStyle: string;
@@ -90,9 +90,11 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
       "去年の春に2年続いた交際が終わった。相手は仕事の都合で会えなくなった——結婚はしていない。",
     ],
     relationships: {
-      yohei: "洋平の店に過去何人か紹介したことがある、程度の実務的な関係。",
-      miyoko: "喫茶のどかにはたまに顔を出す。",
-      jin: "相馬には町の軽作業をいくつか回したことがある。",
+      yohei: { description: "洋平の店に過去何人か紹介したことがある、程度の実務的な関係。", quality: "familiar" },
+      miyoko: { description: "喫茶のどかにはたまに顔を出す。", quality: "familiar" },
+      jin: { description: "相馬には町の軽作業をいくつか回したことがある。", quality: "familiar" },
+      hina: { description: "トライアル制度の窓口で少し話したことがある程度。出店準備の相談は受けていない。", quality: "distant" },
+      fumiko: { description: "新しく来た住民のことで、たまに情報交換する。", quality: "familiar" },
     },
     knowledge: {
       firsthand: [
@@ -140,9 +142,11 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
       "来月の商店街の祭りの出店準備——仕入れが普段より多い。",
     ],
     relationships: {
-      jin: "30年以上の付き合い。気心の知れた沈黙が多い。",
-      miyoko: "商売相手（野菜や豆を融通し合う）。",
-      kamiya: "過去に何人か紹介を受けたことがある。",
+      jin: { description: "30年以上の付き合い。気心の知れた沈黙が多い。", quality: "close" },
+      miyoko: { description: "商売相手（野菜や豆を融通し合う）。", quality: "familiar" },
+      kamiya: { description: "過去に何人か紹介を受けたことがある。", quality: "familiar" },
+      hina: { description: "空き店舗を借りた新顔——どうせすぐいなくなるだろうと、まだ半信半疑で見ている。", quality: "distant" },
+      fumiko: { description: "町内の集まりでよく顔を合わせる。", quality: "familiar" },
     },
     knowledge: { firsthand: NPC_CANON.yohei.firsthand, heard: NPC_CANON.yohei.heard, unknowns: NPC_CANON.yohei.unknowns },
     speechStyle: NPC_CANON.yohei.speechRegister,
@@ -182,9 +186,11 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
       "週末、いつもの手伝いが来られないことがあり、一人で回すのが大変な日がある。",
     ],
     relationships: {
-      yohei: "野菜や豆を融通してもらう商売相手。",
-      jin: "椅子や店の修理を頼むことがある。",
-      kamiya: "たまに店に来る。",
+      yohei: { description: "野菜や豆を融通してもらう商売相手。", quality: "familiar" },
+      jin: { description: "椅子や店の修理を頼むことがある。", quality: "familiar" },
+      kamiya: { description: "たまに店に来る。", quality: "familiar" },
+      hina: { description: "空き店舗を見に来ていた頃から気にかけている。差し入れを渡したこともある。", quality: "familiar" },
+      fumiko: { description: "若い頃からの友人。", quality: "close" },
     },
     knowledge: { firsthand: NPC_CANON.miyoko.firsthand, heard: NPC_CANON.miyoko.heard, unknowns: NPC_CANON.miyoko.unknowns },
     speechStyle: NPC_CANON.miyoko.speechRegister,
@@ -219,7 +225,13 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
     dislikes: ["長い説明を求められること", "急かされること"],
     job: NPC_CANON.jin.role,
     currentConcerns: ["その日その日の仕事——今週は少し手が空いている。"],
-    relationships: { yohei: "30年以上の付き合い。", miyoko: "店の修理をたまに頼まれる。", kamiya: "軽作業の紹介を受けることがある。" },
+    relationships: {
+      yohei: { description: "30年以上の付き合い。", quality: "close" },
+      miyoko: { description: "店の修理をたまに頼まれる。", quality: "familiar" },
+      kamiya: { description: "軽作業の紹介を受けることがある。", quality: "familiar" },
+      fumiko: { description: "集会所のことで、時々ちょっとした頼み事をされる。", quality: "familiar" },
+      hina: { description: "まだ顔を知っている程度。", quality: "distant" },
+    },
     knowledge: { firsthand: NPC_CANON.jin.firsthand, heard: NPC_CANON.jin.heard, unknowns: NPC_CANON.jin.unknowns },
     speechStyle: NPC_CANON.jin.speechRegister,
     memoryStyle: "世間話は忘れがちだが、頼まれた仕事の中身と出来は覚えている。",
@@ -266,10 +278,12 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
       "都会にいた頃の同僚と、ここ数年連絡を取っていない。向こうから来た年賀状に返事もまだ。",
     ],
     relationships: {
-      yohei: "たまに顔を剃りに来る、長い付き合い。",
-      miyoko: "喫茶のどかの常連同士。",
-      jin: "店の椅子の脚を直してもらったことがある。",
-      kamiya: "紹介で来た客が何人か店に来たことがある、程度の関係。",
+      yohei: { description: "たまに顔を剃りに来る、長い付き合い。", quality: "familiar" },
+      miyoko: { description: "喫茶のどかの常連同士。", quality: "familiar" },
+      jin: { description: "店の椅子の脚を直してもらったことがある。", quality: "familiar" },
+      kamiya: { description: "紹介で来た客が何人か店に来たことがある、程度の関係。", quality: "distant" },
+      fumiko: { description: "散髪はいつもうち。世間話の相手でもある。", quality: "familiar" },
+      hina: { description: "まだ挨拶程度。", quality: "distant" },
     },
     knowledge: {
       firsthand: ["理容店の経営全般", "客から自然に耳に入る町の噂話（探りには行かない）"],
@@ -292,6 +306,105 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
       { fromMinutes: 10 * 60, toMinutes: 13 * 60, location: "BARBERSHOP", availability: "AVAILABLE", note: "開店、午前" },
       { fromMinutes: 13 * 60, toMinutes: 14 * 60, location: "BARBERSHOP", availability: "BUSY", note: "昼休み" },
       { fromMinutes: 14 * 60, toMinutes: 19 * 60, location: "BARBERSHOP", availability: "AVAILABLE", note: "午後営業" },
+    ],
+  },
+
+  // PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1 Section 4 -- not present at
+  // SHOPPING_STREET until her shop actually opens (schedule.ts's npcLocationAt/npcAvailabilityAt
+  // special-cases her on `flags.hinaShopOpen`, same override pattern already used for Jin's
+  // shelf-repair window). Before that, content/day1WorldEvents.ts's world-event resolution is what
+  // eventually flips the flag (day >= 3), independent of whether the player is even nearby --
+  // directive Section 6/8: the town visibly isn't the same on day 3 as day 1, and she is not
+  // omniscient about anything she wasn't there for either.
+  hina: {
+    id: "hina",
+    displayName: "陽菜",
+    identity: "28歳、女性。都市部で1年半パン屋を営んでいたが、去年閉めた。商店街の空き店舗を借り、" +
+      "小さなパンと焼き菓子の店を開く準備を進めている。",
+    personality: "人当たりは良いが、開店準備で気持ちに余裕がない日もある。自分の店の話になると急に" +
+      "早口になる。",
+    values: "「自分の手で、ちゃんと回せる小さな店であること」。",
+    likes: ["朝の早い時間", "焼き上がりの匂い"],
+    dislikes: ["準備の途中の状態を人に見られること", "急かされること"],
+    job: "商店街の空き店舗で、パンと焼き菓子の店を準備中。",
+    currentConcerns: [
+      "開店の日取りをまだ決めきれていない。",
+      "前の店がうまくいかなかった経験があり、今度もまた同じことになるのではという不安がある。",
+    ],
+    relationships: {
+      yohei: { description: "空き店舗を借りた新顔——洋平からはまだ半信半疑で見られている。", quality: "distant" },
+      miyoko: { description: "空き店舗を見に来ていた頃から気にかけてもらっている。差し入れをもらったこともある。", quality: "familiar" },
+      jin: { description: "まだ顔を知っている程度。", quality: "distant" },
+      kamiya: { description: "トライアル制度の窓口で少し話したことがある。", quality: "familiar" },
+      daisuke: { description: "まだ挨拶程度。", quality: "distant" },
+      fumiko: { description: "集会所の掲示で存在を知られている程度。まだ直接話していない。", quality: "distant" },
+    },
+    knowledge: {
+      firsthand: ["自分の店の準備状況全般", "パン作りの技術全般"],
+      heard: ["商店街の他の店の様子（外から見える範囲）"],
+      unknowns: ["プレイヤーが他のNPCと個別に交わした会話の内容（本人から聞かない限り）", "プレイヤーの内心"],
+    },
+    speechStyle: "基本は明るいが、店の話になると早口・饒舌になる。プレッシャーがある時は言葉少なになる。",
+    memoryStyle: "お客になりそうな人の顔と会話はよく覚えている。",
+    hiddenBackground: {
+      whatTheyWantToday: "今日中に、店の棚の配置をもう少し詰めたい。",
+      whatTheyWorryAbout: "前の店を閉めたときと同じ失敗をまたするのではという不安。",
+      whatTheyDoNotWantToSay: "前の店を閉めた本当の理由（経営がうまくいかなかったこと）は、自分から" +
+        "は話したくない。",
+      whatTheyMisunderstand: "町の人はみんな『よそ者』に最初は冷たいものだと思い込んでいて、実際より" +
+        "距離を感じている。",
+      currentPressure: "誰かに急かされているわけではないが、自分の中で『そろそろ決めないと』という" +
+        "焦りがある。",
+      playerImpression: "まだ特に印象はない——店を見に来た誰か、程度。",
+      privateHistoryRelevantNow: "都市部で1年半パン屋をやって、去年閉めたこと。詳しい経緯は聞かれない" +
+        "限り話さない。",
+    },
+    schedule: [{ fromMinutes: 9 * 60, toMinutes: 18 * 60, location: "SHOPPING_STREET", availability: "AVAILABLE", note: "開店した店先に立っている" }],
+  },
+
+  fumiko: {
+    id: "fumiko",
+    displayName: "文子",
+    identity: "70歳、女性。元小学校教師。退職後、集会所の世話役のようなことを自然と引き受けている。",
+    personality: "面倒見がいいが、頼みごとをする時は遠慮がない。若い世代の言葉にはやや疎い。",
+    values: "「集会所を、誰でもふらっと来られる場所にしておくこと」。",
+    likes: ["昔の教え子の近況", "町内の掲示板を整えること"],
+    dislikes: ["物事がだらしなくなること", "急かされること（自分が急かす側なのに、される側には弱い）"],
+    job: "元小学校教師。退職後は集会所の掲示板管理や簡単な世話役を無償で担っている。",
+    currentConcerns: [
+      "集会所のベンチが片方ぐらついている——誰かに直してもらわないとと思いつつ、まだ頼めていない。",
+      "昔の教え子の一人と、ここ数年連絡が途絶えている。",
+    ],
+    relationships: {
+      jin: { description: "時々、ちょっとした頼み事をする。", quality: "familiar" },
+      miyoko: { description: "若い頃からの友人。", quality: "close" },
+      yohei: { description: "町内の集まりでよく顔を合わせる。", quality: "familiar" },
+      kamiya: { description: "新しく来た人のことで、たまに情報交換する。", quality: "familiar" },
+      daisuke: { description: "散髪はいつも大輔のところ。", quality: "familiar" },
+      hina: { description: "まだ挨拶を交わした程度。", quality: "distant" },
+    },
+    knowledge: {
+      firsthand: ["集会所の運営・行事全般", "町内の掲示板の内容"],
+      heard: ["町内の一般的な噂話"],
+      unknowns: ["プレイヤーが他のNPCと個別に交わした会話の内容（本人から聞かない限り）", "プレイヤーの内心"],
+    },
+    speechStyle: "はきはきしていて、遠慮なく話しかける。昔の教師口調が抜けない時がある。",
+    memoryStyle: "頼んだこと・頼まれたことはよく覚えている。世間話は聞き流すこともある。",
+    hiddenBackground: {
+      whatTheyWantToday: "集会所のベンチをどうにかしたい——できれば今日、誰かに頼みたい。",
+      whatTheyWorryAbout: "疎遠になった教え子のこと。ふとした時に思い出す。",
+      whatTheyDoNotWantToSay: "本当は少し寂しい、ということ。忙しくしていないと気づいてしまうから。",
+      whatTheyMisunderstand: "若い人は放っておかれたいものだと思い込んでいて、時々おせっかいが強く" +
+        "出すぎる。",
+      currentPressure: "特に締め切りはないが、ベンチのことがずっと頭の片隅にある。",
+      playerImpression: "まだ特に何も——新しく来た人、という程度。",
+      privateHistoryRelevantNow: "小学校で35年教えていたこと。聞かれれば話すが、自分から自慢するよう" +
+        "なことはしない。",
+    },
+    schedule: [
+      { fromMinutes: 9 * 60, toMinutes: 12 * 60, location: "COMMUNITY_HALL", availability: "AVAILABLE", note: "掲示板の整理など" },
+      { fromMinutes: 12 * 60, toMinutes: 13 * 60, location: "COMMUNITY_HALL", availability: "BUSY", note: "昼、来客対応で忙しいことがある" },
+      { fromMinutes: 13 * 60, toMinutes: 16 * 60, location: "COMMUNITY_HALL", availability: "AVAILABLE", note: "午後も顔を出している" },
     ],
   },
 };

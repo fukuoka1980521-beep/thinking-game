@@ -115,6 +115,35 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: the Thinking Resid
   });
 });
 
+describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: Thinking Resident quality gate (Section 9/10/11)", () => {
+  it("the prompt requires picking up at least one input-specific detail, and pins the exact PHASE 12.3 generic-normalization example as the FAIL case to avoid", () => {
+    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "最近、仕事を先延ばしにしています");
+    const prompt = buildPrompt(ctx);
+    expect(prompt).toMatch(/必ず最低1つ、その人[\s\S]*固有の言葉・状況・言い回しを拾ってください/);
+    expect(prompt).toMatch(/一般論だけで終わらせてはいけません/);
+    expect(prompt).toMatch(/先延ばし、ね。まあ、誰にでもありますよ、そ[\s\S]*ういうことは。/);
+  });
+
+  it("the prompt instructs identify-before-advise for ambiguous concerns, with at most one non-leading distinguishing question, and explicitly forbids a fixed template wording", () => {
+    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "なんとなくやる気が出ません");
+    const prompt = buildPrompt(ctx);
+    expect(prompt).toMatch(/曖昧な相談には、すぐ行動提案しないこと/);
+    expect(prompt).toMatch(/識別質問（最大1つ）/);
+    expect(prompt).toMatch(/固定テンプレにしないこと/);
+    expect(prompt).toMatch(/誘導質問[\s\S]*は禁止/);
+  });
+
+  it("the prompt lists the generic-phrase fail set explicitly, framed as conditional-on-genericness rather than an outright ban", () => {
+    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "こんにちは");
+    const prompt = buildPrompt(ctx);
+    for (const phrase of ["誰にでもあります", "無理しないでください", "一歩ずつ", "自分を責めないで", "素晴らしいですね", "それは大変でしたね", "まずは小さな一歩から"]) {
+      expect(prompt).toContain(phrase);
+    }
+    expect(prompt).toMatch(/全面禁止ではありません/);
+    expect(prompt).toMatch(/固有の言葉を\s*拾わずにこれらだけで返答を済ませるのはFAIL/);
+  });
+});
+
 describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: bounded menu is real prompt content for shop NPCs only", () => {
   it("Miyoko's prompt lists her real menu; Kamiya's prompt states he has no shop", () => {
     const state = createInitialCoreState();

@@ -19,7 +19,8 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
   const def = NPC_DEFS[npc];
   const scheduleBlock = def.schedule.find((b) => state.time >= b.fromMinutes && state.time < b.toMinutes);
   const relevantFacts = state.worldFacts.filter((f) => f.knownBy.includes(npc)).map((f) => f.text);
-  const memory = (state.npcMemory[npc] ?? []).slice(-MEMORY_WINDOW);
+  const fullMemory = state.npcMemory[npc] ?? [];
+  const memory = fullMemory.slice(-MEMORY_WINDOW);
 
   return {
     npcId: npc,
@@ -36,7 +37,11 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
     knownFacts: [...def.knowledge.firsthand, ...def.knowledge.heard, ...relevantFacts],
     unknownFacts: def.knowledge.unknowns,
     memoryOfPlayer: memory,
-    relationshipHistory: Object.entries(def.relationships).map(([otherId, desc]) => `${npcDisplayName(otherId as NpcId)}: ${desc}`),
+    historicalTurnCount: fullMemory.length,
+    // PHASE_12_4 -- `quality` (close/familiar/tense/distant) is deliberately NOT fed into the
+    // prompt as a labeled axis (directive Section 5: not a stat the AI should ever recite); only
+    // the free-prose `description` goes to the live model, same as before this Run.
+    relationshipHistory: Object.entries(def.relationships).map(([otherId, rel]) => `${npcDisplayName(otherId as NpcId)}: ${rel.description}`),
     hiddenBackground: def.hiddenBackground,
     currentScene: `${LOCATION_LABEL[state.playerLocation]}で、プレイヤーと向き合っている`,
     day: state.day,

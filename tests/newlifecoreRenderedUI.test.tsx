@@ -503,6 +503,20 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: safety route (Sect
     expect(screen.queryByTestId("nlc-safety-route")).not.toBeInTheDocument();
     expect(await screen.findByTestId("nlc-freetext-input-kamiya")).toBeInTheDocument();
   });
+
+  it("PHASE_12_4 Section E: the safety route always wins over the Reality Bridge offer, even to Daisuke, even when the text also matches the concern heuristic -- there is no path from a crisis input to a bridge offer", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await goToBarbershop(user);
+    await user.click(await screen.findByTestId("nlc-talk-daisuke"));
+    // Matches BOTH detectsCrisisSignal ("死にたい") AND looksLikeRealLifeConcern ("先延ばし").
+    await user.type(await screen.findByTestId("nlc-freetext-input-daisuke"), "仕事を先延ばしにしてるし、もう死にたい");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-daisuke"));
+
+    expect(await screen.findByTestId("nlc-safety-route")).toBeInTheDocument();
+    expect(screen.queryByTestId("nlc-reality-bridge-offer")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nlc-reality-bridge-compose")).not.toBeInTheDocument();
+  });
 });
 
 describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: conversation UI no longer dumps the full backlog by default (Section E)", () => {

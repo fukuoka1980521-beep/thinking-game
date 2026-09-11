@@ -9,7 +9,7 @@
 
 export type LocationId = "TRIAL_HOUSE" | "CHALLENGE_CENTER" | "YOHEI_STORE" | "CAFE_NODOKA" | "COMMUNITY_HALL" | "SHOPPING_STREET" | "BARBERSHOP";
 
-export type NpcId = "kamiya" | "yohei" | "miyoko" | "jin" | "daisuke";
+export type NpcId = "kamiya" | "yohei" | "miyoko" | "jin" | "daisuke" | "hina" | "fumiko";
 
 /** Minutes since 00:00. */
 export type ClockMinutes = number;
@@ -20,13 +20,28 @@ export function formatClock(minutes: ClockMinutes): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+/** PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1 Section 7 -- optional tag proving
+ *  the directive's "Life Material" categories (OBJECT/PLACE_KNOWLEDGE/PROMISE/PENDING_TASK/
+ *  SHARED_EVENT/WORLD_CHANGE) are real, filterable, testable state -- not just prose. Deliberately
+ *  NOT a new parallel data system: a WorldFact tagged `category` is still just a WorldFact, stored
+ *  and knowledge-boundary-filtered exactly like any other (see contextBuilder.ts -- unchanged).
+ *  Untagged facts (the existing PHASE 12.1-12.3 ones) remain valid; this is additive only. */
+export type LifeMaterialCategory = "promise" | "pending_task" | "shared_event" | "world_change" | "place_knowledge" | "object";
+
 /** A plain-language fact the world now holds -- never a scored/typed career signal. Optionally
- *  known by specific NPCs (knowledge-boundary + gossip realism); "player" is always implicit. */
+ *  known by specific NPCs (knowledge-boundary + gossip realism); "player" is always implicit.
+ *  `day` (PHASE_12_4, optional -- `engine.ts`'s `addWorldFact` auto-fills it from `state.day` when
+ *  omitted) lets end-of-day narration and future content distinguish "this happened today" from
+ *  "this happened three days ago" instead of a fact staying permanently, repetitively mentionable
+ *  forever once true (directive Section 8's "同じ日にならない" applies to the end-of-day screen
+ *  too, not just what's visitable during the day). */
 export interface WorldFact {
   id: string;
+  day?: number;
   time: ClockMinutes;
   text: string;
   knownBy: NpcId[];
+  category?: LifeMaterialCategory;
 }
 
 /** One free-text conversation turn, stored verbatim -- memory is the record of what was actually
@@ -38,6 +53,22 @@ export interface ConversationTurn {
   time: ClockMinutes;
   playerUtterance: string;
   npcReply: string;
+}
+
+/**
+ * PHASE_12_4 Section 5 -- NPC<->NPC relationships, not just PLAYER<->NPC. Each NPC's own
+ * `NPC_DEFS[x].relationships` map (npcDefs.ts) is a directed edge from their own point of view
+ * (asymmetric on purpose -- two people's sense of the same relationship is rarely identical).
+ * `quality` is a coarse, human-readable label, deliberately NOT a numeric score (directive:
+ * "擬似精密な人格スコアにはしない") -- it exists only so scripted content can branch on it
+ * (e.g. whether Jin's line about Fumiko reads warm or merely dutiful), never shown to the player as
+ * a stat and never fed to the live prompt as a labeled axis (only `description`'s free prose is).
+ */
+export type RelationshipQuality = "close" | "familiar" | "tense" | "distant";
+
+export interface NpcRelationship {
+  description: string;
+  quality: RelationshipQuality;
 }
 
 export type EmploymentStatus = "working" | "not_working" | "other";
@@ -127,8 +158,8 @@ export function createInitialCoreState(): CoreState {
     playerLocation: "TRIAL_HOUSE",
     visitedLocations: ["TRIAL_HOUSE"],
     worldFacts: [],
-    npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [], daisuke: [] },
-    npcImpression: { kamiya: 0, yohei: 0, miyoko: 0, jin: 0, daisuke: 0 },
+    npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [], daisuke: [], hina: [], fumiko: [] },
+    npcImpression: { kamiya: 0, yohei: 0, miyoko: 0, jin: 0, daisuke: 0, hina: 0, fumiko: 0 },
     flags: {},
     intakeForm: null,
     money: 8000,

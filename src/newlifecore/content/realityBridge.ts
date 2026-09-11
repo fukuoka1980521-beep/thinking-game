@@ -12,14 +12,31 @@
 import type { RealWorldIntent, UserUpdateResponse } from "../types";
 
 /**
- * Heuristic, not a diagnosis. Deliberately conservative in spirit (directive Section I bans
- * inferring psychological state) -- this only decides whether to SHOW an optional offer button; it
- * never creates a RealWorldIntent by itself, and getting it wrong in either direction is low-stakes
- * (a missed offer costs nothing, an unwanted offer is just as easy to dismiss as any other choice
- * -- directive Section H: "現実行動を強制しない").
+ * Heuristic, not a diagnosis, and NOT semantic understanding -- a keyword offer trigger only. This
+ * only decides whether to SHOW an optional offer button; it never creates a RealWorldIntent by
+ * itself, and getting it wrong in either direction is low-stakes (a missed offer costs nothing, an
+ * unwanted offer is just as easy to dismiss as any other choice -- directive Section H: "現実行動を
+ * 強制しない").
+ *
+ * PHASE_12_4 Section 12's own 12-case live test found concrete misses in the original list
+ * (断れない/イライラ/辞めるか迷う were all real concerns that got no offer at all) -- expanded from
+ * that evidence, not speculatively. A LATER false-positive pass (Section D of the same directive,
+ * 12 ordinary-small-talk phrases) found bare "迷って" alone matched 4/12 -- "which way to walk",
+ * "what to eat", "whether to get a haircut", "whether to leave town" all triggered the offer just
+ * for containing ANY indecision, not personal-growth indecision specifically. Removed it (and the
+ * separately-redundant "言いたいことがある") because the one case each was added FOR is already
+ * covered independently by another pattern already in this list (辞めるか handles "仕事を辞めるか
+ * どうか迷ってます"; 言えな handles "上司に言いたいことがあるけど言えなくて") -- this is narrowing
+ * for evidenced precision, not the "keep adding words forever" pattern the directive warns against.
+ * Two known remaining false-positive sources are KEPT deliberately because they are each the only
+ * thing catching a real Section 12 case with no cheaper alternative: イライラ (needed for "最近なんか
+ * イライラすることが多くて") also matches "昨日の試合はイライラしたな"; 続かな (needed for "運動
+ * しようと思ってるけど全然続かない", which does NOT contain "運動しない"/"運動してない" as a
+ * contiguous substring so the more specific 運動して?ない pattern alone misses it) also matches
+ * "この商品続かないね". See the CLOSE report for the measured false-positive rate.
  */
 const REAL_LIFE_CONCERN_RE =
-  /先延ばし|言えな|言いたいことがある|気まず|運動して?ない|できてない|できていない|やらなきゃ|やらないと|やれてない|やれていない|悩んで|不安|疲れて|伝えられ|怒られ|喧嘩|揉めて|自信がな|向き合え|変わりたい|続かな|続けられな/;
+  /先延ばし|言えな|気まず|運動して?ない|できてない|できていない|やらなきゃ|やらないと|やれてない|やれていない|悩んで|不安|疲れて|伝えられ|怒られ|喧嘩|揉めて|自信がな|向き合え|変わりたい|続かな|続けられな|断れな|イライラ|辞めるか|やりたいことが分から|やりたいことが正直/;
 
 export function looksLikeRealLifeConcern(playerText: string): boolean {
   return REAL_LIFE_CONCERN_RE.test(playerText);
