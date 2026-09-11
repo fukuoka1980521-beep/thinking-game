@@ -2,7 +2,7 @@
 
 BASELINE: `d5ca99a` (PHASE 12.4 CLOSE, judgments `WORLD_DEPTH_V1 = CONDITIONAL ACCEPT`, `30_DAY_FUN_READY = NOT_YET`, stated bottleneck: authored world-change content exhausts by Day 3 of 30 -- ~90% of the 30-day span had zero new content).
 
-FINAL COMMIT: recorded below at CLOSE time (this report is written before the commit that includes it; see the repo's own commit log for the hash immediately following this file's own commit).
+FINAL COMMIT: `ebd6b39` (feat: add recurring world engine for New Life (PHASE_12_5))
 
 ## 1. What this phase built
 
