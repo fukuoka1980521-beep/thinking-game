@@ -4,6 +4,8 @@
  * as a ConversationTurn (directive Section 14: "AI出力によってゲームstateを直接確定しない").
  */
 import { resolveWorldEvents } from "./content/day1WorldEvents";
+import { resolveGeneratedEvents } from "./content/eventEngine";
+import { EVENT_DEFS } from "./content/eventDefs";
 import { itemById } from "./content/shop";
 import { DAY_FORCE_SLEEP_MINUTES, DAY_SLEEP_AVAILABLE_FROM, DAY_START_MINUTES } from "./types";
 import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, RealWorldIntent, UserUpdateResponse, WorldFact } from "./types";
@@ -12,6 +14,10 @@ export function advanceTime(state: CoreState, minutes: number): CoreState {
   const prevTime = state.time;
   let next: CoreState = { ...state, time: state.time + minutes };
   next = resolveWorldEvents(prevTime, next);
+  // PHASE_12_5 -- the recurring engine runs after the legacy DAY1-3 seed events, same call site,
+  // same (prevTime, stateAfterAdvance) crossing-window shape. Independent of resolveWorldEvents:
+  // neither reads the other's flags/facts, so call order has no behavioral effect between them.
+  next = resolveGeneratedEvents(prevTime, next, EVENT_DEFS);
   if (next.time >= DAY_FORCE_SLEEP_MINUTES) {
     next = { ...next, ended: true };
   }
@@ -110,7 +116,10 @@ export function sleep(state: CoreState): CoreState {
  * later day (their `!flags.x` guards are already false).
  */
 export function startNewDay(state: CoreState): CoreState {
-  const { ateMeal: _ateMeal, isRaining: _isRaining, ...persistentFlags } = state.flags;
+  // PHASE_12_5 -- isDrizzling (content/eventDefs.ts's drizzle_start/drizzle_end pair) joins the
+  // same day-scoped reset as isRaining: normally cleared same-day by drizzle_end, but this is the
+  // fail-safe for the edge case where the player sleeps mid-drizzle before 14:00.
+  const { ateMeal: _ateMeal, isRaining: _isRaining, isDrizzling: _isDrizzling, ...persistentFlags } = state.flags;
   return {
     ...state,
     day: state.day + 1,

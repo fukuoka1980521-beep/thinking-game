@@ -118,6 +118,11 @@ export interface RealWorldIntent {
   };
 }
 
+/** PHASE_12_5_NEW_LIFE_RECURRING_WORLD_ENGINE_V1 Section 3 -- the adopted event families. All 8
+ *  candidates from the directive turned out to have real canon support (see npcDefs.ts's
+ *  currentConcerns/hiddenBackground/relationships), so V1 uses all 8 rather than narrowing further. */
+export type EventFamily = "WORK" | "SOCIAL" | "PLACE" | "WEATHER" | "PROMISE" | "ROUTINE_BREAK" | "SHARED_SMALL_EVENT" | "RESOURCE";
+
 export interface CoreState {
   /** PHASE_12_3 -- starts at 1. Only `startNewDay` (engine.ts) advances it; nothing else in this
    *  codebase is allowed to write it directly (mirrors the "only engine.ts mutates CoreState"
@@ -142,6 +147,16 @@ export interface CoreState {
    *  called from the UI. Opting out changes nothing about how the game plays. */
   researchOptIn: boolean;
   ended: boolean;
+  /** PHASE_12_5 -- recurring-event-engine bookkeeping (content/eventEngine.ts). Maps an
+   *  EventDefinition.id to the last `day` it fired, purely so cooldown can be evaluated as plain
+   *  state (directive Section 13: "STATE IS CANONICAL"), never re-derived by asking the AI or by
+   *  scanning worldFacts text. Persists across days like worldFacts/flags -- `startNewDay` does not
+   *  reset it, matching the "the town remembers" discipline already applied to those fields. */
+  eventLastFired: Record<string, number>;
+  /** Same idea, one level coarser -- last day ANY event of a given family fired, so a family-level
+   *  cooldown (directive Section 7: avoid the same FAMILY firing back-to-back) doesn't require
+   *  scanning every individual event id. */
+  familyLastFired: Partial<Record<EventFamily, number>>;
 }
 
 // 08:45 -- chosen so the first, arranged Challenge Center visit (a 15-minute walk) lands right at
@@ -167,5 +182,7 @@ export function createInitialCoreState(): CoreState {
     realWorldIntents: [],
     researchOptIn: false,
     ended: false,
+    eventLastFired: {},
+    familyLastFired: {},
   };
 }

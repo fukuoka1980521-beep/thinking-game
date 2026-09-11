@@ -1,6 +1,8 @@
 import { npcAvailabilityAt, npcsPresentAt } from "../schedule";
 import { canCookMeal } from "../engine";
 import { itemById } from "./shop";
+import { eventTraceLinesAt } from "./eventEngine";
+import { EVENT_DEFS } from "./eventDefs";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 export const LOCATION_LABEL: Record<LocationId, string> = {
@@ -113,7 +115,25 @@ export interface LocationScene {
   specialActions: { id: string; label: string }[];
 }
 
+/**
+ * PHASE_12_5 Section 14 -- thin wrapper around the hand-authored scene logic below. Appends any
+ * recurring-engine trace lines (content/eventDefs.ts's `location`-bound events that fired TODAY,
+ * via `eventTraceLinesAt`) to whatever ambient line the base scene already produced, so noticing a
+ * restocked shelf or a new flyer works purely by visiting -- never a separate log/list UI, and never
+ * an internal event id/family name, since `eventTraceLinesAt` only ever returns the already
+ * natural-language `worldFact.text` this content authored. Kept as a wrapper (not inlined into
+ * `buildLocationSceneBase`) so every one of that function's many early-return branches gets this for
+ * free without individually touching each one.
+ */
 export function buildLocationScene(state: CoreState): LocationScene {
+  const base = buildLocationSceneBase(state);
+  const traceLines = eventTraceLinesAt(state, EVENT_DEFS, state.playerLocation);
+  if (traceLines.length === 0) return base;
+  const combined = [base.ambientLine, ...traceLines].filter((s) => s.length > 0).join(" ");
+  return { ...base, ambientLine: combined };
+}
+
+function buildLocationSceneBase(state: CoreState): LocationScene {
   const loc = state.playerLocation;
   const npcsHere = npcsPresentAt(loc, state.time, state.flags);
 
@@ -307,6 +327,18 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
 
   if (factToday("hina_shop_open")) {
     lines.push("商店街の空き店舗に、新しい店が開いていた。");
+  }
+
+  // PHASE_12_5 Section 12/19 -- the recurring engine's own facts, same "today, not ever" gating as
+  // the legacy block above. Reuses each definition's already-authored, presentation-ready
+  // `worldFact.text` directly (directive Section 13: "TEXT IS PRESENTATION") -- never an id, family
+  // name, or any other internal term. Shown regardless of whether the player was present for it,
+  // matching the exact "洋平の店の棚は、いつの間にか直っていた。" precedent immediately above: an
+  // NPC-NPC background event is still something the town remembers happening, not a secret.
+  for (const def of EVENT_DEFS) {
+    if (state.worldFacts.some((f) => f.id === `${def.worldFact.id}_d${state.day}` && f.day === state.day)) {
+      lines.push(def.worldFact.text);
+    }
   }
 
   if (talkedToday("jin")) lines.push("相馬とは少し話した。明日も朝が早いらしい。");

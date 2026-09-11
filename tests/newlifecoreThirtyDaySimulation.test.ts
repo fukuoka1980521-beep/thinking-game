@@ -17,8 +17,9 @@ import { buildNpcAiContext } from "../src/newlifecore/dialogue/contextBuilder";
 import { deterministicNpcReply } from "../src/newlifecore/dialogue/deterministicAdapter";
 import { npcAvailabilityAt, npcLocationAt, npcsPresentAt } from "../src/newlifecore/schedule";
 import { NPC_DEFS } from "../src/newlifecore/npcDefs";
+import { EVENT_DEFS } from "../src/newlifecore/content/eventDefs";
 import { createInitialCoreState } from "../src/newlifecore/types";
-import type { CoreState, LocationId } from "../src/newlifecore/types";
+import type { CoreState, LocationId, NpcId } from "../src/newlifecore/types";
 
 const ALL_LOCATIONS: LocationId[] = ["CHALLENGE_CENTER", "YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL", "SHOPPING_STREET", "BARBERSHOP"];
 
@@ -242,5 +243,182 @@ describe("PHASE_12_4 Section I: 30-day monotony diagnostics (measurements for th
     const duplicateTexts = Object.entries(textCounts).filter(([, count]) => count > 1);
     console.log("Distinct world-fact texts that appear more than once (different ids, identical wording):", duplicateTexts.length);
     if (duplicateTexts.length > 0) console.log("Examples:", duplicateTexts.slice(0, 5));
+  });
+});
+
+/**
+ * PHASE_12_5_NEW_LIFE_RECURRING_WORLD_ENGINE_V1 Section 18 -- 30-DAY STRUCTURAL SIMULATION V2. The
+ * suite above (PHASE 12.4) still only tracks the four legacy day1WorldEvents.ts ids and correctly
+ * still reports "EVENT EXHAUSTION DAY: 3/30" -- that suite is intentionally left unmodified as a
+ * historical baseline. This block re-measures the SAME structural question against the combined
+ * system (legacy + the new recurring engine's 16 definitions) using the same scripted policy. Like
+ * the PHASE_12_4 diagnostics above, most of this is measurement, not a pass/fail gate (Section 18:
+ * "技術的なPASSは面白さの証明ではない") -- only genuine structural-safety invariants (no crash, no
+ * cooldown violation, no orphaned chain, no knowledge leak) are hard assertions.
+ */
+describe("PHASE_12_5 Section 18: 30-day structural simulation V2 (legacy + recurring engine combined)", () => {
+  it("measures event exhaustion day, unique event instances/families, quiet days, and identical-day streaks across the combined system", () => {
+    let s = createInitialCoreState();
+    const allKnownIds = [
+      "jin_called_to_yohei",
+      "shelf_fixed_without_player",
+      "fumiko_asked_jin_bench",
+      "bench_fixed",
+      "hina_shop_open",
+      ...EVENT_DEFS.map((d) => d.worldFact.id),
+    ];
+    const firstSeenDay: Record<string, number> = {};
+    const eventCountByDay: number[] = [];
+    const scenesByDay: string[] = [];
+    const familiesFiredByDay: Record<number, Set<string>> = {};
+
+    for (let day = 1; day <= 30; day++) {
+      const before = s.worldFacts.length;
+      s = simulateOneDay(s, day);
+      const after = s.worldFacts.length;
+      eventCountByDay.push(after - before);
+
+      for (const id of allKnownIds) {
+        if (firstSeenDay[id] === undefined && s.worldFacts.some((f) => f.id === id || f.id.startsWith(`${id}_d`))) {
+          firstSeenDay[id] = day;
+        }
+      }
+      const firedFamilies = new Set<string>();
+      for (const def of EVENT_DEFS) {
+        if (s.worldFacts.some((f) => f.id === `${def.worldFact.id}_d${day}`)) firedFamilies.add(def.family);
+      }
+      familiesFiredByDay[day] = firedFamilies;
+
+      // A cheap day-signature: which locations had which NPCs present at a fixed sample time, plus
+      // today's flags snapshot -- if two days produce byte-identical signatures the "day" genuinely
+      // repeated, which is the actual thing Section 8/19 cares about (NOVELTY), not just "some fact
+      // fired somewhere."
+      const sampleTime = 12 * 60;
+      const presenceSignature = ALL_LOCATIONS.map((loc) => `${loc}:${npcsPresentAt(loc, sampleTime, s.flags).join(",")}`).join("|");
+      scenesByDay.push(`${presenceSignature}::flags=${JSON.stringify(s.flags)}`);
+
+      if (day < 30) s = startNewDay({ ...s, ended: true });
+    }
+
+    const uniqueEventInstances = EVENT_DEFS.flatMap((d) => s.worldFacts.filter((f) => f.id.startsWith(`${d.worldFact.id}_d`))).length;
+    const uniqueFamiliesFired = new Set(Object.values(familiesFiredByDay).flatMap((set) => [...set]));
+    const quietDays = eventCountByDay.filter((c) => c === 0).length;
+    const lastNewEventDay = Math.max(0, ...Object.values(firstSeenDay));
+
+    let longestIdenticalStreak = 1;
+    let currentStreak = 1;
+    for (let i = 1; i < scenesByDay.length; i++) {
+      if (scenesByDay[i] === scenesByDay[i - 1]) {
+        currentStreak++;
+        longestIdenticalStreak = Math.max(longestIdenticalStreak, currentStreak);
+      } else {
+        currentStreak = 1;
+      }
+    }
+
+    console.log("EVENT EXHAUSTION DAY V2 (combined legacy+recurring-engine, last day any NEW event fact first appeared):", lastNewEventDay, "/ 30");
+    console.log("Unique fired event instances (recurring engine, 30-day span):", uniqueEventInstances);
+    console.log("Unique event families that fired at least once:", uniqueFamiliesFired.size, "/", 8, [...uniqueFamiliesFired]);
+    console.log("Days with zero NEW worldFacts (quiet days):", quietDays, "/ 30");
+    console.log("Longest run of back-to-back structurally-identical days (same NPC presence signature + flags at a fixed sample time):", longestIdenticalStreak);
+    console.log("New-events-per-day (all 30 days):", eventCountByDay);
+
+    // Structural-safety bar, not a fun bar: the recurring engine must genuinely keep producing SOME
+    // new content well past day 3 (the honest PHASE_12_4 exhaustion point), and must not make every
+    // single day identical.
+    expect(lastNewEventDay).toBeGreaterThan(3);
+    expect(longestIdenticalStreak).toBeLessThan(30);
+  });
+
+  it("never violates a cooldown -- consecutive firings of the same event id are always cooldownDays or more apart", () => {
+    let s = createInitialCoreState();
+    const firedDaysById: Record<string, number[]> = {};
+    for (let day = 1; day <= 30; day++) {
+      s = simulateOneDay(s, day);
+      for (const def of EVENT_DEFS) {
+        if (s.worldFacts.some((f) => f.id === `${def.worldFact.id}_d${day}`)) {
+          (firedDaysById[def.id] ??= []).push(day);
+        }
+      }
+      if (day < 30) s = startNewDay({ ...s, ended: true });
+    }
+    const defById = new Map(EVENT_DEFS.map((d) => [d.id, d]));
+    let violations = 0;
+    for (const [id, days] of Object.entries(firedDaysById)) {
+      const def = defById.get(id)!;
+      for (let i = 1; i < days.length; i++) {
+        const gap = days[i] - days[i - 1];
+        if (gap < def.cooldownDays) violations++;
+        expect(gap, `${id} fired on days ${days[i - 1]} and ${days[i]} -- only ${gap} days apart, cooldown is ${def.cooldownDays}`).toBeGreaterThanOrEqual(def.cooldownDays);
+      }
+    }
+    console.log("Cooldown violations across the 30-day span:", violations, "(hard assertion above already fails the test on any violation)");
+  });
+
+  it("never leaves a chain's earlier stage unresolved by day 30 (no orphaned/stale promise from the new engine's 2-stage chains)", () => {
+    let s = createInitialCoreState();
+    for (let day = 1; day <= 30; day++) {
+      s = simulateOneDay(s, day);
+      if (day < 30) s = startNewDay({ ...s, ended: true });
+    }
+    const chainPairs: [string, string][] = [
+      ["jin_fixes_chair_ask", "jin_fixes_chair_done"],
+      ["miyoko_offers_help_hina_ask", "miyoko_helps_hina_shelves_done"],
+    ];
+    for (const [askId, doneId] of chainPairs) {
+      const askDays = s.worldFacts.filter((f) => f.id.startsWith(`${askId}_d`)).map((f) => Number(f.id.split("_d").pop()));
+      const doneDays = s.worldFacts.filter((f) => f.id.startsWith(`${doneId}_d`)).map((f) => Number(f.id.split("_d").pop()));
+      console.log(`${askId} fired on days:`, askDays, "->", `${doneId} fired on days:`, doneDays);
+      // Every "ask" must have a matching "done" on the same day (the fixture's own eligibility
+      // requires the flag to still be set, and both stages fire within the same in-world day) --
+      // an ask with no same-day done would mean a genuinely orphaned Life Material item.
+      for (const d of askDays) {
+        expect(doneDays, `${askId} fired on day ${d} but ${doneId} never resolved that same day`).toContain(d);
+      }
+    }
+    // Final-state check: if the chain's "ask" flag is currently true, the chain is mid-flight
+    // (expected -- it just hasn't reached its own same-day "done" yet, impossible per the above),
+    // never something that's been stuck for multiple days with no matching resolution.
+    expect(s.flags.jin_fixes_chair_ask ?? false).toBe(false);
+    expect(s.flags.miyoko_offers_help_hina_ask ?? false).toBe(false);
+  });
+
+  it("never leaks knowledge -- a fired event's worldFact is only ever included in an NPC's own AI context if that NPC is in its knownBy list", () => {
+    let s = createInitialCoreState();
+    for (let day = 1; day <= 30; day++) {
+      s = simulateOneDay(s, day);
+      if (day < 30) s = startNewDay({ ...s, ended: true });
+    }
+    const npcs = Object.keys(NPC_DEFS) as NpcId[];
+    let leaks = 0;
+    for (const npc of npcs) {
+      const context = buildNpcAiContext(npc, s, "テスト");
+      for (const fact of s.worldFacts) {
+        if (!fact.knownBy.includes(npc)) {
+          // This exact fact's text must not appear in this NPC's knownFacts -- contextBuilder.ts's
+          // filter is the structural guarantee; this re-checks it holds with the new engine's
+          // (higher-volume, longer-running) facts actually populated, not just the original four.
+          expect(context.knownFacts, `${npc} was given a fact only knownBy=[${fact.knownBy.join(",")}] should know: "${fact.text}"`).not.toContain(fact.text);
+          if (context.knownFacts.includes(fact.text)) leaks++;
+        }
+      }
+    }
+    expect(leaks).toBe(0);
+  });
+
+  it("Life Material and state grow across the 30-day span without runaway/unbounded growth (bounded state growth)", () => {
+    let s = createInitialCoreState();
+    const lifeMaterialCountByDay: number[] = [];
+    for (let day = 1; day <= 30; day++) {
+      s = simulateOneDay(s, day);
+      lifeMaterialCountByDay.push(s.worldFacts.filter((f) => f.category !== undefined).length);
+      if (day < 30) s = startNewDay({ ...s, ended: true });
+    }
+    console.log("Life-Material-tagged worldFact count by day (every 5th):", lifeMaterialCountByDay.filter((_, i) => (i + 1) % 5 === 0));
+    console.log("eventLastFired table size (unique event ids that have ever fired):", Object.keys(s.eventLastFired).length);
+    // Grows (not flat -- the whole point of this phase) but still bounded (not runaway/unbounded --
+    // the same invariant the PHASE_12_4 suite already checks for worldFacts overall).
+    expect(lifeMaterialCountByDay[lifeMaterialCountByDay.length - 1]).toBeGreaterThan(lifeMaterialCountByDay[0]);
+    expect(Object.keys(s.eventLastFired).length).toBeLessThanOrEqual(EVENT_DEFS.length);
   });
 });
