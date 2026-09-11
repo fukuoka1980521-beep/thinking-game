@@ -6,7 +6,7 @@ import { EVENT_DEFS } from "./eventDefs";
 import { npcDisplayName } from "../npcDefs";
 import { TRAJECTORY_SEEDS } from "./trajectoryDefs";
 import type { TrajectorySeed } from "./trajectoryDefs";
-import { canStepBackFromTrajectory, engageActionEligible, hasAcceptedTrajectory, opportunityEligible } from "./trajectoryEngine";
+import { canStepBackFromTrajectory, engageActionEligible, hasAcceptedTrajectory, lateConsequenceEligible, opportunityEligible } from "./trajectoryEngine";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 /**
@@ -31,6 +31,11 @@ function trajectoryActionsFor(seed: TrajectorySeed, state: CoreState): { id: str
     actions.push({ id: `consider_${seed.id}`, label: "話を聞いてみる" });
   } else if (canStepBackFromTrajectory(seed, state)) {
     actions.push({ id: `stepback_${seed.id}`, label: "この関わり方について考え直す" });
+  }
+  // PHASE_12_8 Section 6/7 -- late-game consequence, offered alongside the ordinary work action
+  // (never replacing it) once the player is genuinely established.
+  if (lateConsequenceEligible(seed, state)) {
+    actions.push({ id: `late_${seed.id}`, label: seed.lateConsequenceActionLabel });
   }
   return actions;
 }

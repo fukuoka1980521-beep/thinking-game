@@ -89,3 +89,20 @@ export function opportunityWindowExpired(seed: TrajectorySeed, state: CoreState)
 export function npcsWithActiveTrajectory(seeds: TrajectorySeed[], state: CoreState): NpcId[] {
   return seeds.filter((s) => hasAcceptedTrajectory(s, state)).map((s) => s.npc);
 }
+
+/**
+ * PHASE_12_8_NEW_LIFE_30_DAY_ARC_AND_RETROSPECTIVE_V1 Section 6/7 -- late-game consequence
+ * eligibility. Requires the trajectory to still be actively accepted (stepping back removes
+ * eligibility immediately, matching every other seed action's "accepted state only" gating), the
+ * day threshold, a real minimum amount of prior work behind it (not just having accepted
+ * yesterday), and its own cooldown so it stays an occasional beat, not a new routine.
+ */
+export function lateConsequenceEligible(seed: TrajectorySeed, state: CoreState): boolean {
+  if (!hasAcceptedTrajectory(seed, state)) return false;
+  if (state.day < seed.lateConsequenceMinDay) return false;
+  if (experienceCount(seed.id, state) < seed.lateConsequenceMinWorkCount) return false;
+  const lastFired = state.lateConsequenceLastFired[seed.id];
+  if (lastFired !== undefined && state.day - lastFired < seed.lateConsequenceCooldownDays) return false;
+  if (npcAvailabilityAt(seed.npc, state.time, state.flags) !== "AVAILABLE") return false;
+  return true;
+}

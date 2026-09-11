@@ -821,3 +821,82 @@ describe("PHASE_12_7_NEW_LIFE_PLAYER_TRAJECTORY_V1: life opportunity, real UI en
     expect(screen.queryByTestId(/life-route|job-board|trajectory-list/)).not.toBeInTheDocument();
   }, 15000);
 });
+
+describe("PHASE_12_8_NEW_LIFE_30_DAY_ARC_AND_RETROSPECTIVE_V1: Day 30 retrospective, real UI end to end (Section 3/4/26)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("the retrospective screen does not appear on any earlier day's end screen (only Day 30's)", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    for (let day = 1; day < 10; day++) {
+      const wake = screen.queryByTestId("nlc-go-challenge-center");
+      if (wake) await user.click(wake);
+      let guard = 0;
+      while (!(await screen.queryByTestId("nlc-sleep")) && guard < 60) {
+        await user.click(screen.getByTestId(`nlc-move-${guard % 2 === 0 ? "YOHEI_STORE" : "CAFE_NODOKA"}`));
+        guard++;
+      }
+      await user.click(await screen.findByTestId("nlc-sleep"));
+      expect(screen.queryByTestId("nlc-day30-retrospective")).not.toBeInTheDocument();
+      await user.click(await screen.findByTestId("nlc-next-day"));
+    }
+  }, 60000);
+
+  it("day 30's end screen shows the retrospective with real content, no score/dashboard, and an optional skippable reflection", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    for (let day = 1; day < 30; day++) {
+      await sleepAndAdvance(user);
+    }
+    // Now on day 30 -- advance through the day to its own end screen without clicking next-day.
+    const wake = screen.queryByTestId("nlc-go-challenge-center");
+    if (wake) await user.click(wake);
+    let guard = 0;
+    while (!(await screen.queryByTestId("nlc-sleep")) && guard < 60) {
+      await user.click(screen.getByTestId(`nlc-move-${guard % 2 === 0 ? "YOHEI_STORE" : "CAFE_NODOKA"}`));
+      guard++;
+    }
+    await user.click(await screen.findByTestId("nlc-sleep"));
+
+    const retro = await screen.findByTestId("nlc-day30-retrospective");
+    expect(retro.textContent).toMatch(/30日目の夜になった/);
+    expect(retro.textContent).not.toMatch(/経験値|XP|レベル|好感度|ランキング|%/);
+    expect(screen.queryByTestId(/dashboard|stats-table|radar/)).not.toBeInTheDocument();
+
+    // Reflection is optional -- skip it, and the day still ends normally.
+    await user.click(screen.getByTestId("nlc-day30-reflection-skip"));
+    expect(screen.queryByTestId("nlc-day30-reflection-prompt")).not.toBeInTheDocument();
+    expect(await screen.findByTestId("nlc-next-day")).toBeInTheDocument();
+  }, 90000);
+
+  it("submitting a reflection stores it verbatim and marks it recorded, without analyzing or reacting to its content", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    for (let day = 1; day < 30; day++) {
+      await sleepAndAdvance(user);
+    }
+    const wake = screen.queryByTestId("nlc-go-challenge-center");
+    if (wake) await user.click(wake);
+    let guard = 0;
+    while (!(await screen.queryByTestId("nlc-sleep")) && guard < 60) {
+      await user.click(screen.getByTestId(`nlc-move-${guard % 2 === 0 ? "YOHEI_STORE" : "CAFE_NODOKA"}`));
+      guard++;
+    }
+    await user.click(await screen.findByTestId("nlc-sleep"));
+    await screen.findByTestId("nlc-day30-retrospective");
+
+    await user.type(screen.getByTestId("nlc-day30-reflection-input"), "思ったより、人と話す30日だった");
+    await user.click(screen.getByTestId("nlc-day30-reflection-submit"));
+    expect(await screen.findByTestId("nlc-day30-reflection-recorded")).toBeInTheDocument();
+    expect(screen.queryByTestId("nlc-day30-reflection-prompt")).not.toBeInTheDocument();
+    // The player's own words are never echoed back with any AI-generated commentary around them --
+    // the recorded marker is a fixed, neutral line, not a reaction to what was written.
+    expect(screen.getByTestId("nlc-day30-reflection-recorded").textContent).toBe("（自分の言葉を書き残した。）");
+  }, 90000);
+});

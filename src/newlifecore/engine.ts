@@ -32,6 +32,9 @@ export function moveTo(state: CoreState, location: LocationId): CoreState {
     ...withTime,
     playerLocation: location,
     visitedLocations: withTime.visitedLocations.includes(location) ? withTime.visitedLocations : [...withTime.visitedLocations, location],
+    // PHASE_12_8 Section 3/17 -- cumulative, never reset by startNewDay (unlike visitedLocations
+    // above). Feeds content/retrospective.ts's "よく行った場所" ranking only; never displayed raw.
+    locationVisitCounts: { ...withTime.locationVisitCounts, [location]: (withTime.locationVisitCounts[location] ?? 0) + 1 },
   };
 }
 
@@ -285,6 +288,36 @@ export function declineLifeOpportunity(state: CoreState, seed: TrajectorySeed): 
 export function stepBackFromTrajectory(state: CoreState, seed: TrajectorySeed): CoreState {
   const withTime = advanceTime(state, 5);
   const { [seed.acceptedFlag]: _removed, ...flags } = withTime.flags;
-  const withoutFlag = { ...withTime, flags };
+  // PHASE_12_8 Section 17/19 -- a permanent historical marker (never cleared, unlike
+  // `acceptedFlag`) so content/retrospective.ts can say "途中でやめた" even if the player later
+  // re-accepts the SAME trajectory or moves on to a different one entirely -- the fact that a
+  // step-back happened at some point is itself a real, past-tense fact about their 30 days.
+  const withoutFlag = { ...withTime, flags: { ...flags, [`${seed.id}_ever_stepped_back`]: true } };
   return addWorldFact(withoutFlag, { id: `${seed.id}_stepback_d${withoutFlag.day}`, time: withoutFlag.time, text: seed.stepBackResultText, knownBy: [seed.npc] });
+}
+
+/**
+ * PHASE_12_8_NEW_LIFE_30_DAY_ARC_AND_RETROSPECTIVE_V1 Section 6/7 -- late-game consequence for an
+ * ALREADY-ACCEPTED trajectory. Never a promotion/rank system -- one flat, occasional textured beat
+ * ("今度は少し任される") per seed, gated by day/prior-work-count/cooldown
+ * (`trajectoryEngine.ts`'s `lateConsequenceEligible`), reachable only through a real scene action.
+ */
+export function recordLateConsequence(state: CoreState, seed: TrajectorySeed): CoreState {
+  const withTime = advanceTime(state, 30);
+  const withMoney = { ...withTime, money: withTime.money + seed.lateConsequenceMoney, lateConsequenceLastFired: { ...withTime.lateConsequenceLastFired, [seed.id]: withTime.day } };
+  return addWorldFact(withMoney, {
+    id: `${seed.id}_late_d${withMoney.day}`,
+    time: withMoney.time,
+    text: seed.lateConsequenceResultText,
+    knownBy: [seed.npc],
+    category: "shared_event",
+  });
+}
+
+/** Section 4/19 -- the ONLY place `day30ReflectionText` is ever written, from a real UI textarea
+ *  (Day30Retrospective.tsx), never inferred or summarized. Stores exactly what the player typed,
+ *  verbatim, or `null` if they skipped it -- both are valid, final states. */
+export function submitDay30Reflection(state: CoreState, text: string): CoreState {
+  const trimmed = text.trim();
+  return { ...state, day30ReflectionText: trimmed.length > 0 ? trimmed : null };
 }

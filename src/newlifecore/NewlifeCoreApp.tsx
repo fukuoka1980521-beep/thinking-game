@@ -10,6 +10,8 @@ import { RealityBridgeOffer } from "./RealityBridgeOffer";
 import { RealityBridgeCheckIn } from "./RealityBridgeCheckIn";
 import { PromiseOffer } from "./PromiseOffer";
 import { LifeOpportunityOffer } from "./LifeOpportunityOffer";
+import { Day30Retrospective } from "./Day30Retrospective";
+import { buildRetrospectiveLines } from "./content/retrospective";
 import {
   LOCATION_LABEL,
   buildEndOfDayNarrative,
@@ -44,10 +46,12 @@ import {
   moveTo,
   purchaseItems,
   recordConversationTurn,
+  recordLateConsequence,
   recordTrajectoryEngagement,
   sleep,
   startNewDay,
   stepBackFromTrajectory,
+  submitDay30Reflection,
   timeRemainingLabel,
 } from "./engine";
 import { npcDisplayName } from "./npcDefs";
@@ -265,6 +269,10 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setState((s) => startNewDay(s));
   }
 
+  function submitDay30ReflectionText(text: string) {
+    setState((s) => submitDay30Reflection(s, text));
+  }
+
   function runSpecialAction(actionId: string) {
     // PHASE_12_7 Section 6/13/29 -- dynamic per-seed ids (content/trajectoryDefs.ts). Checked first
     // since these are prefix-matched, not exact-matched like every other branch below.
@@ -293,6 +301,14 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
       if (seed) {
         setState((s) => stepBackFromTrajectory(s, seed));
         setSpecialResult(seed.stepBackResultText);
+      }
+      return;
+    }
+    if (actionId.startsWith("late_")) {
+      const seed = trajectorySeedById(actionId.slice("late_".length));
+      if (seed) {
+        setState((s) => recordLateConsequence(s, seed));
+        setSpecialResult(seed.lateConsequenceResultText);
       }
       return;
     }
@@ -501,6 +517,13 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                 </p>
               ))}
             </div>
+            {state.day === 30 && (
+              <Day30Retrospective
+                lines={buildRetrospectiveLines(state)}
+                onSubmitReflection={submitDay30ReflectionText}
+                reflectionSubmitted={state.day30ReflectionText !== null}
+              />
+            )}
             <div className="nlc-footer-actions">
               <button className="nlc-btn" onClick={goToNextDay} data-testid="nlc-next-day">
                 次の日へ進む（DAY{state.day + 1}）

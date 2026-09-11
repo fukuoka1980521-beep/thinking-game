@@ -209,6 +209,25 @@ export interface CoreState {
    *  short cooldown before the SAME seed offers again -- mirrors `eventLastFired`'s shape exactly,
    *  a separate field only because trajectory seed ids and event ids are different namespaces. */
   lifeOpportunityDeclines: Record<string, number>;
+  /**
+   * PHASE_12_8_NEW_LIFE_30_DAY_ARC_AND_RETROSPECTIVE_V1 Section 3/17 -- how many times the player
+   * has ever ARRIVED at each location (via `moveTo`), across the whole game, never reset by
+   * `startNewDay` (unlike `visitedLocations`, which IS reset daily and only tracks "visited today").
+   * Exists solely so `content/retrospective.ts` can rank "よく行った場所" -- the raw count itself is
+   * never displayed; only used to pick which place(s) the retrospective's prose mentions. Same
+   * "internal count, never a score" discipline as `PlayerExperience.count`.
+   */
+  locationVisitCounts: Partial<Record<LocationId, number>>;
+  /** Section 7 -- last day each seed's late-game consequence fired (mirrors `eventLastFired`'s
+   *  shape) -- a separate small map because it needs its own cooldown independent of the ordinary
+   *  engage/work cooldown, and only ever applies once a trajectory is already accepted. */
+  lateConsequenceLastFired: Record<string, number>;
+  /** Section 4 -- the player's own words, verbatim, never AI-generated or analyzed (Section 5/18/19:
+   *  never summarized into a personality claim). `null` until answered; skippable, so `null` at
+   *  Day 30 is itself a valid, final state, not an error. Deliberately a single flat string, not a
+   *  structured record -- there is nothing to derive FROM this field, it exists only to be read
+   *  back to the player as their own words (Section 19's "PLAYER-CREATED MEANING"). */
+  day30ReflectionText: string | null;
 }
 
 /** PHASE_12_7 Section 7 -- the adopted trajectory families. V1 implements exactly 3 concrete seeds
@@ -252,5 +271,8 @@ export function createInitialCoreState(): CoreState {
     playerPromises: [],
     playerExperiences: [],
     lifeOpportunityDeclines: {},
+    locationVisitCounts: {},
+    lateConsequenceLastFired: {},
+    day30ReflectionText: null,
   };
 }
