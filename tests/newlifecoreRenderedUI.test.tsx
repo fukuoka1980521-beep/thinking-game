@@ -695,3 +695,129 @@ describe("PHASE_12_6_NEW_LIFE_RELATIONSHIP_CONSEQUENCE_AND_SOCIAL_MEMORY_V1: pro
     expect(screen.queryByTestId(/promise-list|relationship-value|npc-history/)).not.toBeInTheDocument();
   });
 });
+
+async function sleepAndAdvance(user: U) {
+  const wake = screen.queryByTestId("nlc-go-challenge-center");
+  if (wake) await user.click(wake);
+  let guard = 0;
+  while (!(await screen.queryByTestId("nlc-sleep")) && guard < 60) {
+    await user.click(screen.getByTestId(`nlc-move-${guard % 2 === 0 ? "YOHEI_STORE" : "CAFE_NODOKA"}`));
+    guard++;
+  }
+  await user.click(await screen.findByTestId("nlc-sleep"));
+  await user.click(await screen.findByTestId("nlc-next-day"));
+}
+
+async function goToCommunityHall(user: U) {
+  const wake = screen.queryByTestId("nlc-go-challenge-center");
+  if (wake) {
+    await user.click(wake);
+    await user.click(await screen.findByTestId("nlc-move-COMMUNITY_HALL"));
+  } else {
+    await user.click(await screen.findByTestId("nlc-move-COMMUNITY_HALL"));
+  }
+}
+
+describe("PHASE_12_7_NEW_LIFE_PLAYER_TRAJECTORY_V1: life opportunity, real UI end to end (Section 6/7/29/31)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("Jin seed: no engage action on Day1 (minDayForHelp=2); appears from Day2; opportunity surfaces only after 2 engagements, and accepting relabels the action (Section 6 -- experience before label)", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await goToCommunityHall(user);
+    expect(screen.queryByTestId("nlc-action-engage_jin_odd_job")).not.toBeInTheDocument();
+
+    await sleepAndAdvance(user); // -> Day2
+    await goToCommunityHall(user);
+    expect(await screen.findByTestId("nlc-action-engage_jin_odd_job")).toBeInTheDocument();
+    expect(screen.queryByTestId("nlc-action-consider_jin_odd_job")).not.toBeInTheDocument();
+    await user.click(screen.getByTestId("nlc-action-engage_jin_odd_job"));
+    expect((await screen.findByTestId("nlc-special-result")).textContent).toMatch(/修理/);
+
+    await sleepAndAdvance(user);
+    await sleepAndAdvance(user); // -> Day4 (engageCooldownDays=2)
+    await goToCommunityHall(user);
+    await user.click(screen.getByTestId("nlc-action-engage_jin_odd_job"));
+
+    // Second engagement reached the threshold -- the "consider" action should now be offered.
+    expect(await screen.findByTestId("nlc-action-consider_jin_odd_job")).toBeInTheDocument();
+    await user.click(screen.getByTestId("nlc-action-consider_jin_odd_job"));
+    expect(await screen.findByTestId("nlc-opportunity-offer")).toBeInTheDocument();
+    await user.click(screen.getByTestId("nlc-opportunity-accept-jin"));
+    expect(screen.queryByTestId("nlc-opportunity-offer")).not.toBeInTheDocument();
+
+    // Once accepted, the SAME action id now shows the "work" framing, not "help" framing.
+    await sleepAndAdvance(user);
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    const workButton = await screen.findByTestId("nlc-action-engage_jin_odd_job");
+    expect(workButton.textContent).toMatch(/仕事をする/);
+    expect(workButton.textContent).not.toMatch(/手伝いに行く/);
+  }, 30000);
+
+  it("declining an opportunity produces no failure/negative framing, and the ordinary engage action remains available afterward (Section 7/8)", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await goToCommunityHall(user); // day1, no-op for jin (minDay 2)
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    await user.click(screen.getByTestId("nlc-action-engage_jin_odd_job"));
+    await sleepAndAdvance(user);
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    await user.click(screen.getByTestId("nlc-action-engage_jin_odd_job"));
+    await user.click(await screen.findByTestId("nlc-action-consider_jin_odd_job"));
+    await user.click(await screen.findByTestId("nlc-opportunity-decline-jin"));
+
+    const result = await screen.findByTestId("nlc-special-result");
+    expect(result.textContent).not.toMatch(/失敗|ゲームオーバー|FAIL/);
+    // The ordinary engage action is still there -- declining did not remove the ability to keep
+    // helping informally (Section 7: declining is a valid life, not a dead end).
+    await sleepAndAdvance(user);
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    expect(await screen.findByTestId("nlc-action-engage_jin_odd_job")).toBeInTheDocument();
+  }, 30000);
+
+  it("change of mind (Section 29): once accepted, a step-back action is offered, and stepping back does not block re-accepting later", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await goToCommunityHall(user);
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    await user.click(screen.getByTestId("nlc-action-engage_jin_odd_job"));
+    await sleepAndAdvance(user);
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    await user.click(screen.getByTestId("nlc-action-engage_jin_odd_job"));
+    await user.click(await screen.findByTestId("nlc-action-consider_jin_odd_job"));
+    await user.click(await screen.findByTestId("nlc-opportunity-accept-jin"));
+
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    expect(await screen.findByTestId("nlc-action-stepback_jin_odd_job")).toBeInTheDocument();
+    await user.click(screen.getByTestId("nlc-action-stepback_jin_odd_job"));
+    const result = await screen.findByTestId("nlc-special-result");
+    expect(result.textContent).not.toMatch(/失敗|クビ|解雇/);
+
+    // No lock-in: after stepping back, the ordinary engage action (not "work") is offered again.
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    const button = await screen.findByTestId("nlc-action-engage_jin_odd_job");
+    expect(button.textContent).toMatch(/手伝いに行く/);
+  }, 30000);
+
+  it("no life-route/career UI ever appears anywhere -- no job board, no route selector, no XP display (Section 31/33)", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await goToCommunityHall(user);
+    await sleepAndAdvance(user);
+    await goToCommunityHall(user);
+    await user.click(screen.getByTestId("nlc-action-engage_jin_odd_job"));
+    expect(document.body.textContent).not.toMatch(/経験値|XP|レベル|職業選択|人生ルート/);
+    expect(screen.queryByTestId(/life-route|job-board|trajectory-list/)).not.toBeInTheDocument();
+  }, 15000);
+});

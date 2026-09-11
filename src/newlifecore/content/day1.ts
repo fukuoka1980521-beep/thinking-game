@@ -4,7 +4,36 @@ import { itemById } from "./shop";
 import { eventTraceLinesAt } from "./eventEngine";
 import { EVENT_DEFS } from "./eventDefs";
 import { npcDisplayName } from "../npcDefs";
+import { TRAJECTORY_SEEDS } from "./trajectoryDefs";
+import type { TrajectorySeed } from "./trajectoryDefs";
+import { canStepBackFromTrajectory, engageActionEligible, hasAcceptedTrajectory, opportunityEligible } from "./trajectoryEngine";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
+
+/**
+ * PHASE_12_7_NEW_LIFE_PLAYER_TRAJECTORY_V1 Section 6/31 -- builds this seed's specialActions for
+ * whichever scene branch calls it (CAFE_NODOKA/COMMUNITY_HALL below). Never more than 2 actions for
+ * a single seed at once (the ordinary engage/work action, plus AT MOST ONE of "consider the
+ * opportunity" / "step back from it" -- those two are mutually exclusive by construction, since
+ * `opportunityEligible` is already false once accepted). Matches Section 33's "opportunityがクエスト
+ * カードに見えない" requirement by staying inside the same plain specialActions list every other
+ * scene action already uses -- no separate "opportunities" panel.
+ */
+function trajectoryActionsFor(seed: TrajectorySeed, state: CoreState): { id: string; label: string }[] {
+  const actions: { id: string; label: string }[] = [];
+  if (engageActionEligible(seed, state)) {
+    const accepted = hasAcceptedTrajectory(seed, state);
+    actions.push({ id: `engage_${seed.id}`, label: accepted ? seed.workActionLabel : seed.engageActionLabel });
+  }
+  if (opportunityEligible(seed, state)) {
+    // Short, neutral button label -- the NPC's actual quoted invite (`seed.opportunityLabel`) is
+    // shown inside LifeOpportunityOffer.tsx once this is pressed, not on the button itself (Section
+    // 31: a button reading a full spoken quote would look like a quest-log entry, not dialogue).
+    actions.push({ id: `consider_${seed.id}`, label: "話を聞いてみる" });
+  } else if (canStepBackFromTrajectory(seed, state)) {
+    actions.push({ id: `stepback_${seed.id}`, label: "この関わり方について考え直す" });
+  }
+  return actions;
+}
 
 export const LOCATION_LABEL: Record<LocationId, string> = {
   TRIAL_HOUSE: "仮住まい",
@@ -240,7 +269,13 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     const avail = npcAvailabilityAt("miyoko", state.time, state.flags);
     if (avail === "CLOSED") return { location: loc, ambientLine: "喫茶のどかは閉まっていた。", npcsHere: [], specialActions: [] };
     // Directive Section 19 -- ordering and simply sitting down are two different, real actions.
-    return { location: loc, ambientLine: "", npcsHere: ["miyoko"], specialActions: [{ id: "order_menu", label: "メニューを注文する" }, { id: "sit_down", label: "コーヒーを頼んで座る" }] };
+    const miyokoSeed = TRAJECTORY_SEEDS.find((s) => s.id === "miyoko_cafe_help")!;
+    const specialActions = [
+      { id: "order_menu", label: "メニューを注文する" },
+      { id: "sit_down", label: "コーヒーを頼んで座る" },
+      ...trajectoryActionsFor(miyokoSeed, state),
+    ];
+    return { location: loc, ambientLine: "", npcsHere: ["miyoko"], specialActions };
   }
 
   if (loc === "BARBERSHOP") {
@@ -273,9 +308,13 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
       hallActions.push({ id: "wait_jin", label: "電話が終わるまで待つ" });
     } else {
       present.push("jin");
+      hallActions.push(...trajectoryActionsFor(TRAJECTORY_SEEDS.find((s) => s.id === "jin_odd_job")!, state));
     }
   }
-  if (fumikoHere) present.push("fumiko");
+  if (fumikoHere) {
+    present.push("fumiko");
+    hallActions.push(...trajectoryActionsFor(TRAJECTORY_SEEDS.find((s) => s.id === "fumiko_community_role")!, state));
+  }
 
   if (present.length > 0 || hallActions.length > 0) {
     return { location: loc, ambientLine: "", npcsHere: present, specialActions: hallActions };
@@ -341,6 +380,20 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
     // not `def.worldFact.text` (the template's base wording).
     const fact = state.worldFacts.find((f) => f.id === `${def.worldFact.id}_d${state.day}` && f.day === state.day);
     if (fact) lines.push(fact.text);
+  }
+
+  // PHASE_12_7 Section 32 -- exactly one plain sentence for whatever trajectory-related thing
+  // happened today, in the same register as every other line here. No stats, no "+1 experience",
+  // no "day X of your job" framing -- each seed contributes at most one line per day, since
+  // engage/accept/decline/stepback are mutually exclusive actions within a single day in practice.
+  for (const seed of TRAJECTORY_SEEDS) {
+    for (const suffix of ["engaged", "accepted", "declined", "stepback"] as const) {
+      const fact = state.worldFacts.find((f) => f.id === `${seed.id}_${suffix}_d${state.day}` && f.day === state.day);
+      if (fact) {
+        lines.push(fact.text);
+        break;
+      }
+    }
   }
 
   if (talkedToday("jin")) lines.push("相馬とは少し話した。明日も朝が早いらしい。");

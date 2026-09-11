@@ -23,6 +23,14 @@ import {
 } from "../src/newlifecore/engine";
 import { computePlayerNpcTags, eligibleForNewInvitation, invitationLabelFor } from "../src/newlifecore/content/socialMemory";
 import { pseudoChance } from "../src/newlifecore/content/eventEngine";
+import {
+  acceptLifeOpportunity,
+  declineLifeOpportunity,
+  recordTrajectoryEngagement,
+  stepBackFromTrajectory,
+} from "../src/newlifecore/engine";
+import { TRAJECTORY_SEEDS } from "../src/newlifecore/content/trajectoryDefs";
+import { engageActionEligible, experienceCount, hasAcceptedTrajectory, opportunityEligible, opportunityWindowExpired } from "../src/newlifecore/content/trajectoryEngine";
 import { buildLocationScene } from "../src/newlifecore/content/day1";
 import { buildNpcAiContext } from "../src/newlifecore/dialogue/contextBuilder";
 import { deterministicNpcReply } from "../src/newlifecore/dialogue/deterministicAdapter";
@@ -543,5 +551,156 @@ describe("PHASE_12_6 Section 21: 30-day simulation V3 (social memory)", () => {
       const pendingCount = s.playerPromises.filter((p) => p.npc === npc && p.status === "pending").length;
       expect(pendingCount, `${npc} has ${pendingCount} simultaneously-pending promises`).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+/**
+ * PHASE_12_7_NEW_LIFE_PLAYER_TRAJECTORY_V1 Section 30 -- 30-DAY STRUCTURAL SIMULATION V4. Inlines
+ * the same location tour + conversation/promise policy as `simulateOneDayV3`, but checks trajectory
+ * eligibility AT EACH LOCATION VISIT (while time-of-day still matches that NPC's schedule window),
+ * not after the whole day (including V3's own evening padding to 20:00) has already elapsed --
+ * `engageActionEligible` requires the NPC to be schedule-AVAILABLE, and every seed's NPC is off
+ * schedule by 20:00, so appending trajectory checks AFTER a full `simulateOneDayV3` call (an
+ * earlier version of this function did exactly that) produced zero engagements across all 30 days,
+ * caught by this test's own "opportunity starvation" assertion before it was ever treated as
+ * evidence of anything about the real mechanism.
+ */
+function simulateOneDayV4(state: CoreState, dayIndex: number): CoreState {
+  let s = state;
+  for (const loc of ALL_LOCATIONS) {
+    s = moveTo(s, loc);
+    const scene = buildLocationScene(s);
+    for (const npc of scene.npcsHere) {
+      if (!s.flags[`met_${npc}`]) s = { ...s, flags: { ...s.flags, [`met_${npc}`]: true } };
+      const text = `${dayIndex}日目、${loc}での発言です`;
+      const context = buildNpcAiContext(npc, s, text);
+      const reply = deterministicNpcReply(context);
+      s = recordConversationTurn(s, npc, text, reply.visibleUtterance);
+      if (eligibleForNewInvitation(npc, s)) {
+        s = pseudoChance(`policy_${npc}_${dayIndex}`) < 0.5 ? acceptPlayerPromise(s, npc, invitationLabelFor(npc)) : declinePlayerPromise(s, npc, invitationLabelFor(npc));
+      }
+    }
+    for (const seed of TRAJECTORY_SEEDS.filter((se) => se.location === loc)) {
+      if (engageActionEligible(seed, s)) {
+        const accepted = hasAcceptedTrajectory(seed, s);
+        const minutes = accepted ? seed.workMinutes : seed.engageMinutes;
+        const money = accepted ? seed.workMoney : seed.engageMoney;
+        const resultText = accepted ? seed.workResultText : seed.engageResultText;
+        s = recordTrajectoryEngagement(s, seed, minutes, money, resultText);
+      }
+      if (opportunityEligible(seed, s)) {
+        s = pseudoChance(`traj_${seed.id}_${dayIndex}`) < 0.5 ? acceptLifeOpportunity(s, seed) : declineLifeOpportunity(s, seed);
+      } else if (hasAcceptedTrajectory(seed, s) && pseudoChance(`stepback_${seed.id}_${dayIndex}`) < 0.1) {
+        s = stepBackFromTrajectory(s, seed);
+      }
+    }
+  }
+  while (s.time < 20 * 60 && !s.ended) {
+    s = doShortAction(s, 30);
+  }
+  if (dayIndex % 5 === 0) {
+    s = createRealWorldIntent(s, "daisuke", `day${dayIndex}の悩み`, `day${dayIndex}に試すこと`);
+  }
+  for (const intent of s.realWorldIntents) {
+    if (!intent.checkedIn && intent.createdOnDay < s.day) {
+      s = checkInRealWorldIntent(s, intent.id, "partially", "");
+    }
+  }
+  return s;
+}
+
+describe("PHASE_12_7 Section 30: 30-day simulation V4 (player trajectory)", () => {
+  it("measures opportunity generation/starvation/flooding, accepted/abandoned trajectories, expired opportunities, and time/money consistency across 30 days", () => {
+    let s = createInitialCoreState();
+    const moneyByDay: number[] = [];
+    const experienceCountByDay: Record<string, number[]> = {};
+    for (const seed of TRAJECTORY_SEEDS) experienceCountByDay[seed.id] = [];
+
+    for (let day = 1; day <= 30; day++) {
+      expect(() => {
+        s = simulateOneDayV4(s, day);
+      }, `day ${day} threw an exception`).not.toThrow();
+      moneyByDay.push(s.money);
+      for (const seed of TRAJECTORY_SEEDS) experienceCountByDay[seed.id].push(experienceCount(seed.id, s));
+      // Money underflow -- purchaseItems already guards against going negative on its own actions,
+      // but trajectory money grants/costs must never independently push the total negative either.
+      expect(s.money, `money went negative on day ${day}`).toBeGreaterThanOrEqual(0);
+      if (day < 30) s = startNewDay({ ...s, ended: true });
+    }
+
+    console.log("Final money:", s.money, "(started at 8000)");
+    console.log("Money by day (every 5th):", moneyByDay.filter((_, i) => (i + 1) % 5 === 0));
+    for (const seed of TRAJECTORY_SEEDS) {
+      console.log(`${seed.id} experience count by day (every 5th):`, experienceCountByDay[seed.id].filter((_, i) => (i + 1) % 5 === 0));
+      console.log(`${seed.id} accepted?`, hasAcceptedTrajectory(seed, s), "| window currently expired (never accepted)?", opportunityWindowExpired(seed, s));
+    }
+
+    // Opportunity generation: every seed's experience count must have grown at least once (the
+    // simulation's touring policy visits every location daily, so starvation -- an opportunity
+    // NEVER becoming eligible at all -- would indicate a real eligibility bug, not a policy limit).
+    for (const seed of TRAJECTORY_SEEDS) {
+      expect(experienceCount(seed.id, s), `${seed.id} was never engaged even once (opportunity starvation)`).toBeGreaterThan(0);
+    }
+
+    // Opportunity flooding: playerExperiences must stay at exactly one entry per seed -- no
+    // duplicate/parallel entries for the same seed ever created.
+    for (const seed of TRAJECTORY_SEEDS) {
+      const entries = s.playerExperiences.filter((e) => e.id === seed.id);
+      expect(entries.length, `${seed.id} has ${entries.length} playerExperiences entries (should be exactly 1)`).toBeLessThanOrEqual(1);
+    }
+
+    // State growth: bounded, not runaway -- at most one experience entry per seed, and
+    // lifeOpportunityDeclines has at most one entry per seed.
+    expect(s.playerExperiences.length).toBeLessThanOrEqual(TRAJECTORY_SEEDS.length);
+    expect(Object.keys(s.lifeOpportunityDeclines).length).toBeLessThanOrEqual(TRAJECTORY_SEEDS.length);
+  });
+
+  it("never violates the engage-action cooldown, and every accepted trajectory has a matching engagement history (no impossible state)", () => {
+    let s = createInitialCoreState();
+    const engagedDaysBySeed: Record<string, number[]> = {};
+    for (const seed of TRAJECTORY_SEEDS) engagedDaysBySeed[seed.id] = [];
+
+    for (let day = 1; day <= 30; day++) {
+      const before: Record<string, number> = {};
+      for (const seed of TRAJECTORY_SEEDS) before[seed.id] = experienceCount(seed.id, s);
+      s = simulateOneDayV4(s, day);
+      for (const seed of TRAJECTORY_SEEDS) {
+        if (experienceCount(seed.id, s) > before[seed.id]) engagedDaysBySeed[seed.id].push(day);
+      }
+      if (day < 30) s = startNewDay({ ...s, ended: true });
+    }
+
+    for (const seed of TRAJECTORY_SEEDS) {
+      const days = engagedDaysBySeed[seed.id];
+      console.log(`${seed.id} engaged on days:`, days);
+      for (let i = 1; i < days.length; i++) {
+        const gap = days[i] - days[i - 1];
+        expect(gap, `${seed.id} engaged on days ${days[i - 1]} and ${days[i]} -- only ${gap} days apart, cooldown is ${seed.engageCooldownDays}`).toBeGreaterThanOrEqual(
+          seed.engageCooldownDays,
+        );
+      }
+      // Impossible state: a trajectory can never be `accepted` without at least `opportunityThreshold`
+      // real engagements behind it (accepting is only ever offered once that threshold is met).
+      if (hasAcceptedTrajectory(seed, s)) {
+        expect(experienceCount(seed.id, s)).toBeGreaterThanOrEqual(seed.opportunityThreshold);
+      }
+    }
+  });
+
+  it("event-engine and social-memory integration: trajectory engagement facts respect the same knownBy boundary as everything else (no leaks introduced by this phase)", () => {
+    let s = createInitialCoreState();
+    for (let day = 1; day <= 30; day++) {
+      s = simulateOneDayV4(s, day);
+      if (day < 30) s = startNewDay({ ...s, ended: true });
+    }
+    const npcs = Object.keys(NPC_DEFS) as NpcId[];
+    let leaks = 0;
+    for (const npc of npcs) {
+      const context = buildNpcAiContext(npc, s, "テスト");
+      for (const fact of s.worldFacts) {
+        if (!fact.knownBy.includes(npc) && context.knownFacts.includes(fact.text)) leaks++;
+      }
+    }
+    expect(leaks).toBe(0);
   });
 });

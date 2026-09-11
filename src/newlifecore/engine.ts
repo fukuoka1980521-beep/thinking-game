@@ -8,8 +8,9 @@ import { resolveGeneratedEvents } from "./content/eventEngine";
 import { EVENT_DEFS } from "./content/eventDefs";
 import { itemById } from "./content/shop";
 import { newPlayerPromise, resolvePendingPromiseOnMeet, sweepPlayerPromisesForNewDay } from "./content/socialMemory";
+import type { TrajectorySeed } from "./content/trajectoryDefs";
 import { DAY_FORCE_SLEEP_MINUTES, DAY_SLEEP_AVAILABLE_FROM, DAY_START_MINUTES } from "./types";
-import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, RealWorldIntent, UserUpdateResponse, WorldFact } from "./types";
+import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, PlayerExperience, RealWorldIntent, UserUpdateResponse, WorldFact } from "./types";
 
 export function advanceTime(state: CoreState, minutes: number): CoreState {
   const prevTime = state.time;
@@ -230,4 +231,60 @@ export function timeRemainingLabel(time: ClockMinutes): string {
   const remaining = DAY_FORCE_SLEEP_MINUTES - time;
   if (remaining <= 0) return "まもなく日が変わる";
   return `${Math.floor(remaining / 60)}時間程度`;
+}
+
+/**
+ * PHASE_12_7_NEW_LIFE_PLAYER_TRAJECTORY_V1 Section 6/13 -- the ONE function behind both the
+ * unlabeled "help again" action and the (once accepted) "work" action -- same seed, same cooldown,
+ * same bookkeeping; only the caller picks which label/reward tier applies (content/day1.ts, based
+ * on `trajectoryEngine.ts`'s `hasAcceptedTrajectory`). Real time and real (modest) money, so
+ * Section 15's opportunity cost and Section 14's "money is a constraint, not a score" both fall out
+ * of the existing engine primitives (`advanceTime`, `state.money`) for free -- no new economy system.
+ */
+export function recordTrajectoryEngagement(state: CoreState, seed: TrajectorySeed, minutes: number, money: number, resultText: string): CoreState {
+  const withTime = advanceTime(state, minutes);
+  const prior = withTime.playerExperiences.find((e) => e.id === seed.id);
+  const updated: PlayerExperience = prior
+    ? { ...prior, count: prior.count + 1, lastDay: withTime.day }
+    : { id: seed.id, npc: seed.npc, count: 1, lastDay: withTime.day };
+  const playerExperiences = prior ? withTime.playerExperiences.map((e) => (e.id === seed.id ? updated : e)) : [...withTime.playerExperiences, updated];
+  const withExperience = { ...withTime, playerExperiences, money: withTime.money + money };
+  return addWorldFact(withExperience, { id: `${seed.id}_engaged_d${withExperience.day}`, time: withExperience.time, text: resultText, knownBy: [seed.npc] });
+}
+
+/**
+ * Section 6/8/12 -- the ONLY place `flags[seed.acceptedFlag]` is ever set, reachable exclusively
+ * from a real UI confirm action (LifeOpportunityOffer.tsx), mirroring `acceptPlayerPromise`'s
+ * discipline. Never framed as a "job" internally beyond a boolean flag -- no separate employment
+ * record, no salary schedule, nothing resembling a career-progress system.
+ */
+export function acceptLifeOpportunity(state: CoreState, seed: TrajectorySeed): CoreState {
+  const withTime = advanceTime(state, seed.opportunityMinutes);
+  const withFlag = { ...withTime, flags: { ...withTime.flags, [seed.acceptedFlag]: true }, money: withTime.money + seed.opportunityMoney };
+  // day-stamped so content/day1.ts's end-of-day narrative can show this happened TODAY specifically
+  // (the same "today, not ever" discipline every other narrative line in this codebase already
+  // follows) -- flags alone carry no timestamp, so a real WorldFact is what makes that possible here.
+  return addWorldFact(withFlag, { id: `${seed.id}_accepted_d${withFlag.day}`, time: withFlag.time, text: seed.acceptedResultText, knownBy: [seed.npc], category: "world_change" });
+}
+
+/** Section 7/11 -- declining is resolved immediately (never a lingering "pending opportunity"
+ *  record -- there is nothing to leave unresolved), and only ever records WHEN, for the short
+ *  re-offer cooldown `opportunityEligible` (trajectoryEngine.ts) reads. */
+export function declineLifeOpportunity(state: CoreState, seed: TrajectorySeed): CoreState {
+  const withTime = advanceTime(state, 5);
+  const withDecline = { ...withTime, lifeOpportunityDeclines: { ...withTime.lifeOpportunityDeclines, [seed.id]: withTime.day } };
+  return addWorldFact(withDecline, { id: `${seed.id}_declined_d${withDecline.day}`, time: withDecline.time, text: seed.declinedResultText, knownBy: [seed.npc] });
+}
+
+/** Section 29 -- change of mind. Clears the accepted flag; deliberately does NOT touch
+ *  `playerExperiences` (the count of times they've done this before is still a true fact about
+ *  their history, even after stepping back -- Section 9's "meaningful experience" persists
+ *  regardless of the current engagement decision) and does NOT set a decline-cooldown (stepping
+ *  back is not a decline of a fresh offer; the opportunity to resume later should stay just as open
+ *  as the original one was, matching Section 11's "second chances" spirit). */
+export function stepBackFromTrajectory(state: CoreState, seed: TrajectorySeed): CoreState {
+  const withTime = advanceTime(state, 5);
+  const { [seed.acceptedFlag]: _removed, ...flags } = withTime.flags;
+  const withoutFlag = { ...withTime, flags };
+  return addWorldFact(withoutFlag, { id: `${seed.id}_stepback_d${withoutFlag.day}`, time: withoutFlag.time, text: seed.stepBackResultText, knownBy: [seed.npc] });
 }

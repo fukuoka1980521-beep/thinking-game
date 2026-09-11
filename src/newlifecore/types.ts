@@ -194,6 +194,35 @@ export interface CoreState {
    *  sync or decay (Section 12: avoid state bloat). `startNewDay` (engine.ts) sweeps this array:
    *  overdue pending promises flip to "missed", and old resolved promises are pruned. */
   playerPromises: PlayerPromise[];
+  /**
+   * PHASE_12_7_NEW_LIFE_PLAYER_TRAJECTORY_V1 Section 9 -- "meaningful experience," never a numeric
+   * skill/ability. One entry per `TrajectorySeed.id` the player has ever engaged with at least once.
+   * `count` exists ONLY to gate the Section 6 "experience before label" threshold
+   * (`content/trajectoryEngine.ts`'s `opportunityEligible`) -- like `socialMemory.ts`'s
+   * `familiar` tag (>=3 turns), it is an internal gate, never displayed as a level/XP number
+   * anywhere (Section 3's ban applies here exactly as it did to relationships).
+   */
+  playerExperiences: PlayerExperience[];
+  /** Section 11 -- "second chances": a declined opportunity must be able to resurface later, but
+   *  Section 11 also forbids re-offering "同じ誘いを何度も機械的に出さない". Maps a
+   *  `TrajectorySeed.id` to the last day it was declined, so `opportunityEligible` can apply a
+   *  short cooldown before the SAME seed offers again -- mirrors `eventLastFired`'s shape exactly,
+   *  a separate field only because trajectory seed ids and event ids are different namespaces. */
+  lifeOpportunityDeclines: Record<string, number>;
+}
+
+/** PHASE_12_7 Section 7 -- the adopted trajectory families. V1 implements exactly 3 concrete seeds
+ *  (Section 25) spanning 3 of these families; UNCOMMITTED is deliberately not a family an
+ *  opportunity ever targets -- it is simply what happens when a player never accepts one, and
+ *  requires no code of its own (Section 8: never a failure state). */
+export type TrajectoryFamily = "EMPLOYMENT" | "INDEPENDENT" | "SHOP_BUSINESS" | "COMMUNITY" | "RELATIONSHIP_BASED";
+
+export interface PlayerExperience {
+  /** A `TrajectorySeed.id` (content/trajectoryDefs.ts). */
+  id: string;
+  npc: NpcId;
+  count: number;
+  lastDay: number;
 }
 
 // 08:45 -- chosen so the first, arranged Challenge Center visit (a 15-minute walk) lands right at
@@ -221,5 +250,7 @@ export function createInitialCoreState(): CoreState {
     eventLastFired: {},
     familyLastFired: {},
     playerPromises: [],
+    playerExperiences: [],
+    lifeOpportunityDeclines: {},
   };
 }

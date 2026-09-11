@@ -9,6 +9,7 @@ import { ShoppingPicker } from "./ShoppingPicker";
 import { RealityBridgeOffer } from "./RealityBridgeOffer";
 import { RealityBridgeCheckIn } from "./RealityBridgeCheckIn";
 import { PromiseOffer } from "./PromiseOffer";
+import { LifeOpportunityOffer } from "./LifeOpportunityOffer";
 import {
   LOCATION_LABEL,
   buildEndOfDayNarrative,
@@ -23,24 +24,30 @@ import {
 import { menuForLocation, shopNpcForLocation } from "./content/shop";
 import { daisukeCheckInAcknowledgement, daisukeIntentConfirmReaction, looksLikeRealLifeConcern } from "./content/realityBridge";
 import { eligibleForNewInvitation, invitationLabelFor } from "./content/socialMemory";
+import { trajectorySeedById } from "./content/trajectoryDefs";
+import { hasAcceptedTrajectory } from "./content/trajectoryEngine";
 import { detectsCrisisSignal, SAFETY_ROUTE_MESSAGE } from "./content/safetyRoute";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
 import { deterministicAdapter } from "./dialogue/deterministicAdapter";
 import { liveNpcAdapter } from "./dialogue/liveAdapterClient";
 import {
+  acceptLifeOpportunity,
   acceptPlayerPromise,
   addWorldFact,
   canSleep,
   checkInRealWorldIntent,
   cookAndEat,
   createRealWorldIntent,
+  declineLifeOpportunity,
   declinePlayerPromise,
   doShortAction,
   moveTo,
   purchaseItems,
   recordConversationTurn,
+  recordTrajectoryEngagement,
   sleep,
   startNewDay,
+  stepBackFromTrajectory,
   timeRemainingLabel,
 } from "./engine";
 import { npcDisplayName } from "./npcDefs";
@@ -144,6 +151,10 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // Section J -- when true, replaces the active conversation's input with the fixed safety message
   // (content/safetyRoute.ts). Never fed through any adapter; nothing here is AI-generated.
   const [safetyRouteActive, setSafetyRouteActive] = useState(false);
+  // PHASE_12_7 Section 6/31 -- holds a TrajectorySeed.id while its LifeOpportunityOffer panel is
+  // open. Scene-level (like showIntakeForm/showShoppingPicker), not conversation-level -- reset on
+  // move, same as those.
+  const [showOpportunityOffer, setShowOpportunityOffer] = useState<string | null>(null);
 
   function startGame() {
     setState((s) => ({ ...s, started: true }));
@@ -164,6 +175,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setPromiseOffer(null);
     setShowCheckIn(null);
     setSafetyRouteActive(false);
+    setShowOpportunityOffer(null);
     setState((s) => moveTo(s, location));
   }
 
@@ -254,6 +266,36 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   }
 
   function runSpecialAction(actionId: string) {
+    // PHASE_12_7 Section 6/13/29 -- dynamic per-seed ids (content/trajectoryDefs.ts). Checked first
+    // since these are prefix-matched, not exact-matched like every other branch below.
+    if (actionId.startsWith("engage_")) {
+      const seed = trajectorySeedById(actionId.slice("engage_".length));
+      if (seed) {
+        const accepted = hasAcceptedTrajectory(seed, state);
+        const minutes = accepted ? seed.workMinutes : seed.engageMinutes;
+        const money = accepted ? seed.workMoney : seed.engageMoney;
+        const resultText = accepted ? seed.workResultText : seed.engageResultText;
+        setState((s) => recordTrajectoryEngagement(s, seed, minutes, money, resultText));
+        setSpecialResult(resultText);
+      }
+      return;
+    }
+    if (actionId.startsWith("consider_")) {
+      const seed = trajectorySeedById(actionId.slice("consider_".length));
+      if (seed) {
+        setSpecialResult(null);
+        setShowOpportunityOffer(seed.id);
+      }
+      return;
+    }
+    if (actionId.startsWith("stepback_")) {
+      const seed = trajectorySeedById(actionId.slice("stepback_".length));
+      if (seed) {
+        setState((s) => stepBackFromTrajectory(s, seed));
+        setSpecialResult(seed.stepBackResultText);
+      }
+      return;
+    }
     if (actionId === "fill_intake_form") {
       setSpecialResult(null);
       setShowIntakeForm(true);
@@ -680,6 +722,28 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                 {specialResult}
               </div>
             )}
+
+            {showOpportunityOffer &&
+              (() => {
+                const seed = trajectorySeedById(showOpportunityOffer);
+                if (!seed) return null;
+                return (
+                  <LifeOpportunityOffer
+                    npc={seed.npc}
+                    label={seed.opportunityLabel}
+                    onAccept={() => {
+                      setState((s) => acceptLifeOpportunity(s, seed));
+                      setSpecialResult(seed.acceptedResultText);
+                      setShowOpportunityOffer(null);
+                    }}
+                    onDecline={() => {
+                      setState((s) => declineLifeOpportunity(s, seed));
+                      setSpecialResult(seed.declinedResultText);
+                      setShowOpportunityOffer(null);
+                    }}
+                  />
+                );
+              })()}
           </div>
         )}
 
