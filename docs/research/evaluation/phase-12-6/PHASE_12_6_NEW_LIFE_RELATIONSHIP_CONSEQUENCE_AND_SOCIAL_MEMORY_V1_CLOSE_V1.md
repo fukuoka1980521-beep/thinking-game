@@ -2,7 +2,7 @@
 
 BASELINE: `e7705f4` (PHASE 12.5 CLOSE, judgments `RECURRING_WORLD_ENGINE = ACCEPT`, `7_DAY_FUN_READY = YES`, `30_DAY_FUN_READY = NOT_YET`; stated remaining weaknesses: (1) per-instance presentation variation still thin, (2) absence/missed promise/declined interaction did not yet meaningfully affect later social experience).
 
-FINAL COMMIT: recorded in a follow-up commit immediately after this file's own commit (matching this project's established two-commit CLOSE pattern).
+FINAL COMMIT: `98c036d` (feat: add social memory and relationship consequence for New Life (PHASE_12_6))
 
 ## 1. What this phase built
 
