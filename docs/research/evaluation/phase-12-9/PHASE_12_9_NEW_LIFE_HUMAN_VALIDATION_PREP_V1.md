@@ -60,7 +60,7 @@ Do not correct a tester's misunderstanding mid-session. Do not confirm or deny a
 
 ## 5. POST-PLAY QUESTIONS -- ask, don't lead
 
-Use `POST_PLAY_QUESTIONS_TEMPLATE.md` verbatim, in order, Q1 through Q9. These are the only questions to ask. In particular, never ask any of the following (they lead the witness):
+Use `POST_PLAY_QUESTIONS_TEMPLATE.md` verbatim, in order, Q1 through Q11 (extended this pass by the Feynman diagnostic -- see §11 below; the original Q1-Q9 content is unchanged, just renumbered/extended in place). These are the only questions to ask. In particular, never ask any of the following (they lead the witness):
 - 面白かった？ / 良かった？ / 分かった？ / 覚えていて良かった？ -- any yes/no question that names a specific feature and invites approval.
 
 If a tester's own free-text answer raises something interesting, it's fine to ask a genuine follow-up **in their own words** ("さっき『あの人また来るかな』って言ってましたけど、それはどのNPCのことですか？"), but never introduce a system name, mechanic, or feature the tester did not bring up themselves.
@@ -98,6 +98,14 @@ Classify every finding using the phase directive's own four buckets before any d
 - **D. Tester understood once told** -> a UI/UX clarity problem, not a content problem
 
 No feature or content development happens on this game until this round is reported and classified (§16 of the phase directive). PHASE 13 design, if any, comes only after.
+
+## 11. FEYNMAN UNDERSTANDING DIAGNOSTIC (added: THINKING_GAME_FEYNMAN_UNDERSTANDING_DIAGNOSTIC_V0_1)
+
+This is a diagnostic layer on top of the human-validation plan above, not a separate test round. Purpose: find out whether a tester can explain, in their own words, the game's goal, current state, cause of that state, and next intended action -- and where they can't, tell apart a deliberate design mystery from an accidental dead end. It is explicitly not a tutorial-planning pass; nothing here should produce added in-game explanation text on its own.
+
+- `POST_PLAY_QUESTIONS_TEMPLATE.md` now runs Q1-Q11: two genuinely new questions were inserted (Q2 STATE, Q3 CAUSE -- neither was asked by the original Q1-Q9 at all), and two existing questions were minimally extended in place rather than duplicated (Q6 absorbed the GAP question's "try to explain it" framing; Q7 absorbed the NEXT question's "why"). Original Q1 and the remaining original questions are unchanged in wording and order, just shifted in number. See that file's own changelog note for the exact mapping.
+- `OBSERVER_SHEET_TEMPLATE.md` gained a "Understanding gap classification" section: the 11-category taxonomy (`INTENDED_MYSTERY`, `ACCIDENTAL_CONFUSION`, `GOAL_CONFUSION`, `STATE_CONFUSION`, `CAUSAL_CONFUSION`, `ACTION_CONFUSION`, `WORDING`, `UI`, `FEEDBACK`, `WORLD_CONTINUITY`, `UNKNOWN`) plus the rule for telling `INTENDED_MYSTERY` apart from `ACCIDENTAL_CONFUSION` (does the tester want to find out, or are they also stuck on what to do next), plus a gap-log table to fill in per session.
+- `OPEN_ANOMALY_REVIEW_V1.md` (new) -- an author-side audit asking "assuming every mechanic works exactly as designed, where could a player still form a wrong model of the world?" No pre-existing artifact by this name was found anywhere in the repository (searched before writing it); this is a fresh document meant to be reused and extended by future phases rather than treated as one-off. Contains 8 hypotheses, each tagged with a gap category and an INTENDED_MYSTERY/ACCIDENTAL_CONFUSION lean, 3 of them checked directly against current source this pass (NPC busy/closed ambiguity for some NPCs, no persistent money display, and the neutral wording of trajectory offers). Explicitly not acted on -- these are things to watch for, not scheduled fixes.
 
 ## Completion
 

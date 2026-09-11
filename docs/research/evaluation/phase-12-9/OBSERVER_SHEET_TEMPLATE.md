@@ -31,6 +31,35 @@ Duplicate this file per tester as `HV-01_observer.md`, `HV-02_observer.md`, etc.
 - Did they notice or remark that the town moves on its own (an NPC not where expected, a change they didn't cause)?
 - Any moment they seemed ready to stop / said something like "this is a good place to pause":
 
+## Understanding gap classification (Feynman diagnostic, added THINKING_GAME_FEYNMAN_UNDERSTANDING_DIAGNOSTIC_V0_1)
+
+This is a diagnostic layer, not a tutorial-planning tool. The point is to find where a player's mental model of the game diverges from what's actually happening -- not to decide, from a single session, that anything needs explaining. Do not propose or add in-game explanation text based on this sheet alone.
+
+**Before classifying "I don't understand X" as a problem**, apply this rule:
+- "分からない" + the tester **wants to find out** (asks a follow-up, says they'll try something to check, seems curious rather than stuck) -> candidate **INTENDED_MYSTERY** (the game may be working as designed -- some things are meant to be discovered slowly, not explained).
+- "分からない" + the tester **also doesn't know what to do next** (stalls, disengages, or does something arbitrary because they've given up figuring out the "real" action) -> candidate **ACCIDENTAL_CONFUSION** (this is a real problem signal regardless of the first classification).
+
+These two are not mutually exclusive with the categories below -- they describe the *quality* of a gap (productive vs. stuck), the categories below describe its *location*. Tag every gap moment with one location category AND, where applicable, the mystery/confusion judgment.
+
+**Location categories** (pick the closest one; use `UNKNOWN` rather than forcing a bad fit):
+- `GOAL_CONFUSION` -- unclear what the game is even about / what they're meant to be doing overall
+- `STATE_CONFUSION` -- unclear what is currently true (their own status, the town's, an NPC's)
+- `CAUSAL_CONFUSION` -- they noticed a change but couldn't connect it to why it happened
+- `ACTION_CONFUSION` -- unclear what an available action would actually do, or how to take it
+- `WORDING` -- the specific text/label used was the problem, not the underlying concept
+- `UI` -- a control was hard to find, use, or recognize as interactive
+- `FEEDBACK` -- they did something and got no visible confirmation it registered
+- `WORLD_CONTINUITY` -- didn't notice, didn't believe, or misread that the world persists/moves independent of them
+- `INTENDED_MYSTERY` -- the gap itself looks like designed-in not-knowing-yet, not a defect (use together with the rule above)
+- `ACCIDENTAL_CONFUSION` -- the gap left them stuck with no path forward (use together with the rule above)
+- `UNKNOWN` -- couldn't confidently classify from what was observed
+
+## Gap log (one row per observed gap, during play or from Q2/Q3/Q6 answers)
+
+| What happened / what they said | Location category | Mystery or confusion? | Observer confidence (high/med/low) |
+|---|---|---|---|
+| | | | |
+
 ## Session outcome
 
 - Ended at: (Day __, approx __ minutes)
