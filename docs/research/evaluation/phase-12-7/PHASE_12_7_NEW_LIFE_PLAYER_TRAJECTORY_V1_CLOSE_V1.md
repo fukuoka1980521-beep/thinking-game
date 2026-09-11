@@ -2,7 +2,7 @@
 
 BASELINE: `fa85b86` (PHASE 12.6 CLOSE, judgments `SOCIAL_MEMORY_ENGINE = ACCEPT`, `14_DAY_FUN_READY = YES`, `30_DAY_FUN_READY = NOT_YET`).
 
-FINAL COMMIT: recorded in a follow-up commit immediately after this file's own commit (this project's established two-commit CLOSE pattern).
+FINAL COMMIT: `6f84fe0` (feat: add player life trajectory system for New Life (PHASE_12_7))
 
 ## 1. What this phase built
 
