@@ -2,6 +2,7 @@ import { NPC_DEFS, npcDisplayName } from "../npcDefs";
 import { npcAvailabilityAt } from "../schedule";
 import { menuForNpc } from "../content/shop";
 import { LOCATION_LABEL } from "../content/day1";
+import { daysSinceLastMeeting, computePlayerNpcTags } from "../content/socialMemory";
 import { formatClock } from "../types";
 import type { CoreState, NpcId } from "../types";
 import type { NpcAiContext } from "./types";
@@ -38,6 +39,9 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
     unknownFacts: def.knowledge.unknowns,
     memoryOfPlayer: memory,
     historicalTurnCount: fullMemory.length,
+    daysSinceLastMeeting: daysSinceLastMeeting(npc, state),
+    pendingPromiseWithPlayer: computePlayerNpcTags(npc, state).includes("pending_promise"),
+    missedPromiseWithPlayer: computePlayerNpcTags(npc, state).includes("missed_promise"),
     // PHASE_12_4 -- `quality` (close/familiar/tense/distant) is deliberately NOT fed into the
     // prompt as a labeled axis (directive Section 5: not a stat the AI should ever recite); only
     // the free-prose `description` goes to the live model, same as before this Run.

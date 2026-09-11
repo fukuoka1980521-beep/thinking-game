@@ -8,6 +8,7 @@ import { IntakeForm } from "./IntakeForm";
 import { ShoppingPicker } from "./ShoppingPicker";
 import { RealityBridgeOffer } from "./RealityBridgeOffer";
 import { RealityBridgeCheckIn } from "./RealityBridgeCheckIn";
+import { PromiseOffer } from "./PromiseOffer";
 import {
   LOCATION_LABEL,
   buildEndOfDayNarrative,
@@ -21,16 +22,19 @@ import {
 } from "./content/day1";
 import { menuForLocation, shopNpcForLocation } from "./content/shop";
 import { daisukeCheckInAcknowledgement, daisukeIntentConfirmReaction, looksLikeRealLifeConcern } from "./content/realityBridge";
+import { eligibleForNewInvitation, invitationLabelFor } from "./content/socialMemory";
 import { detectsCrisisSignal, SAFETY_ROUTE_MESSAGE } from "./content/safetyRoute";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
 import { deterministicAdapter } from "./dialogue/deterministicAdapter";
 import { liveNpcAdapter } from "./dialogue/liveAdapterClient";
 import {
+  acceptPlayerPromise,
   addWorldFact,
   canSleep,
   checkInRealWorldIntent,
   cookAndEat,
   createRealWorldIntent,
+  declinePlayerPromise,
   doShortAction,
   moveTo,
   purchaseItems,
@@ -133,6 +137,9 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // Section H -- an offer is only ever live for the conversation that produced it; switching NPCs
   // or ending the conversation clears it (see move/closeConversation/openConversation below).
   const [realityBridgeOffer, setRealityBridgeOffer] = useState<{ npc: NpcId; playerStatement: string } | null>(null);
+  // PHASE_12_6 Section 6 -- same "cleared whenever the conversation changes" discipline as
+  // realityBridgeOffer above; an invitation offer from NPC X should never survive switching to NPC Y.
+  const [promiseOffer, setPromiseOffer] = useState<{ npc: NpcId; label: string } | null>(null);
   const [showCheckIn, setShowCheckIn] = useState<RealWorldIntent | null>(null);
   // Section J -- when true, replaces the active conversation's input with the fixed safety message
   // (content/safetyRoute.ts). Never fed through any adapter; nothing here is AI-generated.
@@ -154,6 +161,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setShowFullTodayLog(false);
     setShowPastLog(false);
     setRealityBridgeOffer(null);
+    setPromiseOffer(null);
     setShowCheckIn(null);
     setSafetyRouteActive(false);
     setState((s) => moveTo(s, location));
@@ -164,6 +172,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setShowFullTodayLog(false);
     setShowPastLog(false);
     setRealityBridgeOffer(null);
+    setPromiseOffer(null);
     setSafetyRouteActive(false);
     setState((s) => (s.flags[`met_${npc}`] ? s : { ...s, flags: { ...s.flags, [`met_${npc}`]: true } }));
   }
@@ -172,6 +181,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setActiveConversation(null);
     setFreeTextInput("");
     setRealityBridgeOffer(null);
+    setPromiseOffer(null);
     setSafetyRouteActive(false);
   }
 
@@ -189,15 +199,26 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setPending(true);
     setFreeTextInput("");
     setRealityBridgeOffer(null);
+    setPromiseOffer(null);
     const context = buildNpcAiContext(npc, state, text);
     const adapter = useLive ? liveNpcAdapter : deterministicAdapter;
     const reply = await adapter(context);
-    setState((s) => recordConversationTurn(s, npc, text, reply.visibleUtterance));
+    // Read directly (not via setState's functional updater) so the PHASE_12_6 eligibility check
+    // just below sees the POST-turn state (the just-recorded conversation is what `met_${npc}`/
+    // promise-keeping/etc. depend on) -- `state` is this render's own closured value, same as the
+    // `buildNpcAiContext` call two lines above already reads it.
+    const nextState = recordConversationTurn(state, npc, text, reply.visibleUtterance);
+    setState(nextState);
     setPending(false);
     // Section H -- offer is scoped to the Thinking Resident only (Section F/G: he alone runs the
     // thinking-circuit register); a heuristic on the PLAYER's own words, never on the NPC reply.
     if (npc === "daisuke" && looksLikeRealLifeConcern(text)) {
       setRealityBridgeOffer({ npc, playerStatement: text });
+    } else if (eligibleForNewInvitation(npc, nextState)) {
+      // PHASE_12_6 Section 6/15 -- entirely separate from Reality Bridge (never offered to Daisuke,
+      // see eligibleForNewInvitation), and gated purely on state (has met, no pending promise
+      // already, a day-based cooldown since the last one) -- never on anything the AI said.
+      setPromiseOffer({ npc, label: invitationLabelFor(npc) });
     }
   }
 
@@ -206,6 +227,19 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setState((s) => createRealWorldIntent(s, realityBridgeOffer.npc, realityBridgeOffer.playerStatement, intentLabel));
     setSpecialResult(daisukeIntentConfirmReaction());
     setRealityBridgeOffer(null);
+  }
+
+  function acceptPromise() {
+    if (!promiseOffer) return;
+    setState((s) => acceptPlayerPromise(s, promiseOffer.npc, promiseOffer.label));
+    setPromiseOffer(null);
+  }
+
+  function declinePromise() {
+    if (!promiseOffer) return;
+    // Section 7/8 -- no "failure" narration; declining is a valid, equally-ordinary outcome.
+    setState((s) => declinePlayerPromise(s, promiseOffer.npc, promiseOffer.label));
+    setPromiseOffer(null);
   }
 
   function submitCheckIn(response: UserUpdateResponse, note: string) {
@@ -611,6 +645,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                               {npc === "daisuke" && realityBridgeOffer && (
                                 <RealityBridgeOffer onCreate={createIntentFromOffer} onDismiss={() => setRealityBridgeOffer(null)} />
                               )}
+                              {promiseOffer && promiseOffer.npc === npc && <PromiseOffer npc={npc} label={promiseOffer.label} onAccept={acceptPromise} onDecline={declinePromise} />}
                             </>
                           )}
                           <button className="nlc-leave-btn" onClick={closeConversation} data-testid={`nlc-conversation-close-${npc}`}>

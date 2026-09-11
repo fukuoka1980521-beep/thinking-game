@@ -31,6 +31,22 @@ export interface NpcAiContext {
    *  variant) -- the exact kind of "same greeting frequency" monotony Section I asks this Run to
    *  measure honestly rather than launder away. */
   historicalTurnCount: number;
+  /** PHASE_12_6_NEW_LIFE_RELATIONSHIP_CONSEQUENCE_AND_SOCIAL_MEMORY_V1 Section 14 -- `null` if
+   *  never met or no conversation turn yet. Fed to the live prompt as an optional, natural-entry
+   *  signal ("3日ぶり") the model MAY use, never a mandatory callback -- see the server-only live
+   *  prompt builder's own instruction wording (never referenced by path here -- that module lives
+   *  outside src/, and tests/safety.test.ts's own guard flags any string mentioning its path from
+   *  within src/, on purpose). The deterministic adapter uses this mechanically (a REUNION reply
+   *  bucket, `>= 3` days) so the effect is testable without a live model. */
+  daysSinceLastMeeting: number | null;
+  /** Section 6/14 -- true if this NPC currently has an unresolved (not yet due) promise with the
+   *  player. Never itself a reason to force a line about it -- see the same "natural, not
+   *  mandatory" note above. */
+  pendingPromiseWithPlayer: boolean;
+  /** Section 4/14 -- true only while a missed promise with this NPC is still RECENT (see
+   *  socialMemory.ts's `MISSED_PROMISE_RELEVANCE_DAYS`) -- an old miss stops being relevant on its
+   *  own, without any separate decay bookkeeping here. */
+  missedPromiseWithPlayer: boolean;
   relationshipHistory: string[];
   hiddenBackground: NpcHiddenBackground;
   currentScene: string;

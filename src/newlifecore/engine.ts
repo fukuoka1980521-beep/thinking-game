@@ -7,6 +7,7 @@ import { resolveWorldEvents } from "./content/day1WorldEvents";
 import { resolveGeneratedEvents } from "./content/eventEngine";
 import { EVENT_DEFS } from "./content/eventDefs";
 import { itemById } from "./content/shop";
+import { newPlayerPromise, resolvePendingPromiseOnMeet, sweepPlayerPromisesForNewDay } from "./content/socialMemory";
 import { DAY_FORCE_SLEEP_MINUTES, DAY_SLEEP_AVAILABLE_FROM, DAY_START_MINUTES } from "./types";
 import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, RealWorldIntent, UserUpdateResponse, WorldFact } from "./types";
 
@@ -39,8 +40,39 @@ export function recordConversationTurn(state: CoreState, npc: NpcId, playerUtter
   return {
     ...withTime,
     npcMemory: { ...withTime.npcMemory, [npc]: [...withTime.npcMemory[npc], turn] },
-    npcImpression: { ...withTime.npcImpression, [npc]: withTime.npcImpression[npc] + 1 },
+    // PHASE_12_6 Section 6 -- actually talking to this NPC is what counts as keeping a pending
+    // promise from them (see socialMemory.ts's own doc comment for why "conversation," not just
+    // "walked through the location").
+    playerPromises: resolvePendingPromiseOnMeet(withTime.playerPromises, npc, withTime.day),
   };
+}
+
+/**
+ * PHASE_12_6 Section 6/7 -- the ONLY two places a PlayerPromise's initial state is set, both
+ * reachable exclusively from a real UI confirm action (PromiseOffer.tsx's accept/decline buttons),
+ * mirroring `createRealWorldIntent`'s "never inferred from free text" discipline. `label` is always
+ * the pre-authored invite text the offer displayed (`content/socialMemory.ts`'s `INVITE_LABELS`),
+ * never AI-generated.
+ */
+// Includes `withTime.day` (not just time-of-day + array length, which `createRealWorldIntent`'s id
+// pattern also uses) -- a daily schedule repeats the same clock times day after day, so on a long
+// run the SAME npc can be invited at the SAME time-of-day with the SAME playerPromises.length on
+// two DIFFERENT days, colliding without the day component (found via the 30-day social-memory
+// simulation: 17 promises, only 6 unique ids).
+export function acceptPlayerPromise(state: CoreState, npc: NpcId, label: string): CoreState {
+  const withTime = advanceTime(state, 5);
+  const promise = newPlayerPromise(`promise_${npc}_d${withTime.day}_${withTime.time}_${withTime.playerPromises.length}`, npc, withTime, label);
+  return { ...withTime, playerPromises: [...withTime.playerPromises, promise] };
+}
+
+export function declinePlayerPromise(state: CoreState, npc: NpcId, label: string): CoreState {
+  const withTime = advanceTime(state, 5);
+  const promise = {
+    ...newPlayerPromise(`promise_${npc}_d${withTime.day}_${withTime.time}_${withTime.playerPromises.length}`, npc, withTime, label),
+    status: "declined" as const,
+    resolvedOnDay: withTime.day,
+  };
+  return { ...withTime, playerPromises: [...withTime.playerPromises, promise] };
 }
 
 export function addWorldFact(state: CoreState, fact: Omit<WorldFact, "id"> & { id: string }): CoreState {
@@ -120,14 +152,19 @@ export function startNewDay(state: CoreState): CoreState {
   // same day-scoped reset as isRaining: normally cleared same-day by drizzle_end, but this is the
   // fail-safe for the edge case where the player sleeps mid-drizzle before 14:00.
   const { ateMeal: _ateMeal, isRaining: _isRaining, isDrizzling: _isDrizzling, ...persistentFlags } = state.flags;
+  const nextDay = state.day + 1;
   return {
     ...state,
-    day: state.day + 1,
+    day: nextDay,
     time: DAY_START_MINUTES,
     playerLocation: "TRIAL_HOUSE",
     visitedLocations: ["TRIAL_HOUSE"],
     flags: persistentFlags,
     ended: false,
+    // PHASE_12_6 Section 6/12 -- overdue pending promises become "missed" (never surfaced as a
+    // failure anywhere downstream, see socialMemory.ts), and old resolved promises are pruned so
+    // this array stays bounded over a long session.
+    playerPromises: sweepPlayerPromisesForNewDay(state.playerPromises, nextDay),
   };
 }
 

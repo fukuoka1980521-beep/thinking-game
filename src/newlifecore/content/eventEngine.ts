@@ -18,6 +18,8 @@
  */
 import { NPC_DEFS } from "../npcDefs";
 import { npcAvailabilityAt } from "../schedule";
+import { computePlayerNpcTags } from "./socialMemory";
+import type { PlayerSocialTag } from "./socialMemory";
 import type { ClockMinutes, CoreState, EventFamily, LifeMaterialCategory, LocationId, NpcId, RelationshipQuality } from "../types";
 
 export interface EventEligibility {
@@ -37,6 +39,14 @@ export interface EventEligibility {
    *  `NPC_DEFS[a].relationships[b].quality` -- directive Section 11: only the existing coarse
    *  categorical states, never a numeric score. */
   requiredRelationship?: { a: NpcId; b: NpcId; qualities: RelationshipQuality[] }[];
+  /** PHASE_12_6 Section 9/10 -- at least one of `tags` must be present in the PLAYER's own
+   *  categorical relationship with `npc` (`content/socialMemory.ts`'s `computePlayerNpcTags`,
+   *  itself derived state -- see that module's own doc comment for why this is not a score). Lets a
+   *  background event's candidate set shift based on what the player has done, without making the
+   *  event player-presence-required (it still fires on the clock regardless of where the player
+   *  is) and without an unlock-ladder ("好感度アンロック方式にしない" -- this is an OR-of-tags gate,
+   *  not a threshold to climb). */
+  requiredPlayerRelationship?: { npc: NpcId; tags: PlayerSocialTag[] };
   /** 0..1, default 1 (always fires once otherwise eligible). Directive Section 7 forbids an evenly
    *  distributed schedule but Section 2 also forbids delegating occurrence to the LLM or to true
    *  randomness (Math.random would make a run non-reproducible and untestable) -- this is a pure,
@@ -53,6 +63,15 @@ export interface EventWorldFactTemplate {
   text: string;
   knownBy: NpcId[];
   category: LifeMaterialCategory;
+  /** PHASE_12_6 Section 13 -- optional alternate authored phrasings of the SAME canonical fact, for
+   *  a recurring definition whose firings would otherwise read byte-identical every time (the PHASE
+   *  12.5 CLOSE report's own noted weakness). Picked deterministically by `pseudoChance` (never
+   *  Math.random -- same reproducibility rationale as `occurrenceChance`), so the same state always
+   *  picks the same variant on replay. The underlying fact (`id`/`knownBy`/`category`) never varies
+   *  -- only which of these strings gets stored as `WorldFact.text` ("STATE IS CANONICAL. TEXT IS
+   *  PRESENTATION," applied to authored text itself, not just to the live AI). Optional and used
+   *  sparingly (directive: "text variationだけを先に磨かない") -- most definitions still have none. */
+  textVariants?: string[];
 }
 
 export interface EventDefinition {
@@ -148,11 +167,27 @@ function isEligible(def: EventDefinition, state: CoreState): boolean {
     }
   }
 
+  if (e.requiredPlayerRelationship) {
+    const { npc, tags } = e.requiredPlayerRelationship;
+    const playerTags = computePlayerNpcTags(npc, state);
+    if (!tags.some((t) => playerTags.includes(t))) return false;
+  }
+
   if (e.occurrenceChance !== undefined && e.occurrenceChance < 1) {
     if (pseudoChance(`${def.id}_${state.day}`) >= e.occurrenceChance) return false;
   }
 
   return true;
+}
+
+/** Section 13 -- deterministic pick among `text` plus any `textVariants`, seeded by the fact's own
+ *  base id and the firing day so it's reproducible and independent of `occurrenceChance`'s own
+ *  seed space (a different seed string, so the two hashes don't correlate). */
+function pickPresentationText(template: EventWorldFactTemplate, day: number): string {
+  const options = [template.text, ...(template.textVariants ?? [])];
+  if (options.length === 1) return options[0];
+  const index = Math.floor(pseudoChance(`text_${template.id}_${day}`) * options.length);
+  return options[Math.min(index, options.length - 1)];
 }
 
 function fire(def: EventDefinition, state: CoreState): CoreState {
@@ -162,6 +197,8 @@ function fire(def: EventDefinition, state: CoreState): CoreState {
   // addWorldFact's own dedupe discipline rather than assuming the caller got it right.
   if (state.worldFacts.some((f) => f.id === factId)) return state;
 
+  const text = pickPresentationText(def.worldFact, state.day);
+
   let next: CoreState = {
     ...state,
     flags: { ...state.flags, [def.id]: true, ...(def.setFlags ?? {}) },
@@ -169,7 +206,7 @@ function fire(def: EventDefinition, state: CoreState): CoreState {
     familyLastFired: { ...state.familyLastFired, [def.family]: state.day },
     worldFacts: [
       ...state.worldFacts,
-      { id: factId, day: state.day, time: def.triggerTime, text: def.worldFact.text, knownBy: def.worldFact.knownBy, category: def.worldFact.category },
+      { id: factId, day: state.day, time: def.triggerTime, text, knownBy: def.worldFact.knownBy, category: def.worldFact.category },
     ],
   };
 
@@ -206,8 +243,14 @@ export function resolveGeneratedEvents(prevTime: ClockMinutes, state: CoreState,
  * internal term, so a caller can append them straight into a scene's ambient text.
  */
 export function eventTraceLinesAt(state: CoreState, defs: EventDefinition[], location: LocationId): string[] {
-  return defs
-    .filter((d) => d.location === location)
-    .filter((d) => state.worldFacts.some((f) => f.id === `${d.worldFact.id}_d${state.day}` && f.day === state.day))
-    .map((d) => d.worldFact.text);
+  const lines: string[] = [];
+  for (const d of defs) {
+    if (d.location !== location) continue;
+    // Read the ACTUAL stored fact's text, not the template's base `text` -- a presentation variant
+    // (Section 13) may have been picked at fire time, and the stored WorldFact is the canonical
+    // record of what was actually said/shown (`fire()`'s `pickPresentationText`).
+    const fact = state.worldFacts.find((f) => f.id === `${d.worldFact.id}_d${state.day}` && f.day === state.day);
+    if (fact) lines.push(fact.text);
+  }
+  return lines;
 }

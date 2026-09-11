@@ -3,6 +3,7 @@ import { canCookMeal } from "../engine";
 import { itemById } from "./shop";
 import { eventTraceLinesAt } from "./eventEngine";
 import { EVENT_DEFS } from "./eventDefs";
+import { npcDisplayName } from "../npcDefs";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 export const LOCATION_LABEL: Record<LocationId, string> = {
@@ -336,9 +337,10 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
   // matching the exact "洋平の店の棚は、いつの間にか直っていた。" precedent immediately above: an
   // NPC-NPC background event is still something the town remembers happening, not a secret.
   for (const def of EVENT_DEFS) {
-    if (state.worldFacts.some((f) => f.id === `${def.worldFact.id}_d${state.day}` && f.day === state.day)) {
-      lines.push(def.worldFact.text);
-    }
+    // PHASE_12_6 -- read the actual stored fact's text (may be a presentation variant, Section 13),
+    // not `def.worldFact.text` (the template's base wording).
+    const fact = state.worldFacts.find((f) => f.id === `${def.worldFact.id}_d${state.day}` && f.day === state.day);
+    if (fact) lines.push(fact.text);
   }
 
   if (talkedToday("jin")) lines.push("相馬とは少し話した。明日も朝が早いらしい。");
@@ -358,6 +360,22 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
     lines.push("帰って、買ってきた物で何か作って食べた。");
   } else if (state.visitedLocations.length > 1) {
     lines.push("その日は、特に何も食べなかった。");
+  }
+
+  // PHASE_12_6 Section 4/6/8 -- checked at the day-end screen itself, BEFORE engine.ts's
+  // `startNewDay` sweep flips it to "missed" (this screen is the last one seen before that
+  // transition, so "still pending with today as the deadline" already means it will be missed --
+  // checking it this way, rather than after the sweep, avoids a one-day lag where the
+  // acknowledgement would otherwise land on the FOLLOWING day's screen instead of today's). One
+  // plain, factual sentence, same register as every other line here -- never "失敗した"/a penalty
+  // framing ("MISSED CONTENT != LOST GAME"). A KEPT promise is not separately announced here; it's
+  // already covered by the ordinary talkedToday() line above (Section 6: kept promises fold back
+  // into an ordinary conversation, not a special "you succeeded" beat). A DECLINED promise is also
+  // not re-announced -- the player just made that choice moments ago via a real UI button.
+  for (const p of state.playerPromises) {
+    if (p.status === "pending" && p.dueByDay === state.day) {
+      lines.push(`${npcDisplayName(p.npc)}と約束していたことは、今日は果たせなかった。`);
+    }
   }
 
   if (lines.length === 0) {

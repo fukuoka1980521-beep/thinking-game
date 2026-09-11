@@ -65,6 +65,14 @@ ${context.relationshipHistory.join(" / ") || "（特になし）"}
 ${context.memoryOfPlayer.length > 0 ? context.memoryOfPlayer.map((t) => `(${t.time}分) プレイヤー「${t.playerUtterance}」→ ${context.displayName}「${t.npcReply}」`).join("\n") : "（今日はまだ話していない）"}
 ${context.memoryOfPlayer.length > 0 ? `\n直前の自分の発言（これと同じ情報・言い回しを、聞かれてもいないのに繰り返さないこと。特に約束・時刻・場所・別れの挨拶は連続する turn で再発言しない）:\n「${context.memoryOfPlayer[context.memoryOfPlayer.length - 1].npcReply}」` : ""}
 
+【会うのは何日ぶりか・約束の状況（PHASE_12_6 Section 14 -- 参考情報。自然に感じるときだけ、さりげ
+なく反映してよい。毎回触れる必要はない。「前回から◯日」「約束をどうしたか」を台詞で数値や用語とし
+てそのまま言わない（「3日ぶりですね」のような自然な言い方に留め、「daysSinceLastMeeting=3」のよう
+な出力は絶対にしない）】
+${context.daysSinceLastMeeting === null ? "初対面、またはまだ一度も話していない。" : context.daysSinceLastMeeting >= 3 ? `前回会話してから${context.daysSinceLastMeeting}日経っている——久しぶりという空気が自然に出てもよい（必須ではない）。` : "最近も話している——特に日数を意識する必要はない。"}
+${context.pendingPromiseWithPlayer ? "この人物からプレイヤーへの誘い・約束がまだ宙に浮いている（果たされてもいない、断られてもいない）。無理に催促しない。" : ""}
+${context.missedPromiseWithPlayer ? "少し前に交わした約束を、プレイヤーは今回果たせなかった——ただしこれは失敗や責めるべきことではない。軽く流す・少し気にする・全く触れない、いずれもこの人物の性格として自然であればよい。" : ""}
+
 【${context.displayName}が実際に扱っている商品（これ以外は扱っていない。売っていない物は素直に「無い」と答え、他の品を勧めてよい）】
 ${context.availableMenu ? context.availableMenu.map((i) => `${i.label}（${i.price}円）`).join(" / ") : "（この人物は店を持たない。商品の話は本来出てこない）"}
 

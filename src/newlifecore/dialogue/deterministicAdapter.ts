@@ -12,7 +12,7 @@
 import type { NpcAiContext, NpcReplyEnvelope } from "./types";
 import type { NpcId } from "../types";
 
-type Bucket = "OTHER_NPC_MENTIONED" | "WORK_TALK" | "ABOUT_SELF" | "ABOUT_NPC" | "UNCERTAIN" | "GREETING" | "OTHER";
+type Bucket = "OTHER_NPC_MENTIONED" | "WORK_TALK" | "ABOUT_SELF" | "ABOUT_NPC" | "UNCERTAIN" | "GREETING" | "REUNION" | "OTHER";
 
 const OTHER_NPC_NAMES = /洋平|美代子|相馬|神谷|大輔|陽菜|文子/;
 const WORK_RE = /仕事|働|職|求人|給料|稼/;
@@ -69,6 +69,7 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
     ABOUT_NPC: ["神谷は少し苦笑した。「七年目です。長いんだか短いんだか、まだよく分かりません」"],
     UNCERTAIN: ["神谷はペンを置いた。「今すぐ決めなくていいですよ。まだ来たばかりですし」"],
     GREETING: ["神谷は軽く頭を下げた。「どうも」", "神谷は顔を上げた。「こんにちは」"],
+    REUNION: ["神谷は少し意外そうに顔を上げた。「しばらく見ませんでしたね」"],
     OTHER: [
       "神谷は壁の時計をちらっと見た。「そうですか」少し間があって、「……腹減ってません?」",
       "神谷は少し間を置いてから、「そうですか」と言った。",
@@ -82,6 +83,7 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
     ABOUT_NPC: ["洋平は手を止めずに言った。「先代の頃からだから、長いな」"],
     UNCERTAIN: ["洋平は軽く頷いた。「まあ、焦ることもないだろう」"],
     GREETING: ["洋平は片手を挙げた。「おう」", "洋平はこちらを見て、軽く頷いた。"],
+    REUNION: ["洋平は少し目を丸くした。「おう、久しぶりだな」"],
     OTHER: [
       "洋平は「そうか」とだけ言って、また作業に戻った。",
       "洋平は少し考えるような顔をしてから、「まあな」と言った。",
@@ -95,6 +97,7 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
     ABOUT_NPC: ["美代子は少し笑った。「もう20年になるかしら」"],
     UNCERTAIN: ["美代子は優しく言った。「ゆっくりでいいのよ」"],
     GREETING: ["美代子はにっこりした。「あら、いらっしゃい」", "美代子は手を止めて、こちらを見た。「いらっしゃい」"],
+    REUNION: ["美代子は顔を上げて、少し驚いたように言った。「あら、お久しぶり。元気にしてた?」"],
     OTHER: [
       "美代子はカップを拭きながら、静かに頷いた。",
       "美代子は少し首をかしげて、「そう」とだけ言った。",
@@ -108,6 +111,7 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
     ABOUT_NPC: ["相馬は肩をすくめた。「決まった時間割はないな」"],
     UNCERTAIN: ["相馬は特に気にした様子もなく言った。「別に、急かしちゃいない」"],
     GREETING: ["相馬は軽く顎を上げた。", "相馬はちらっとこちらを見て、また手元に戻った。"],
+    REUNION: ["相馬はちらっとこちらを見た。「しばらくだったな」"],
     OTHER: [
       "相馬は軽く頷いただけだった。",
       "相馬は手を止めずに、「そうか」とだけ言った。",
@@ -124,6 +128,7 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
     ABOUT_NPC: ["大輔は少し笑った。「ここを継いで、もう10年になりますね」"],
     UNCERTAIN: ["大輔は静かに言った。「今すぐ決めなくてもいいと思いますよ」"],
     GREETING: ["大輔は軽く会釈した。「いらっしゃい」", "大輔は鏡越しに小さく頷いた。「どうも」"],
+    REUNION: ["大輔は鏡越しに少し驚いたように言った。「お久しぶりです」"],
     OTHER: [
       "大輔は鋏の音だけを残して、しばらく黙っていた。",
       "大輔は少し間を置いてから、「そうですか」と言った。",
@@ -139,6 +144,7 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
     ABOUT_NPC: ["陽菜は棚を拭きながら言った。「まだこっちに来て日が浅いんです」"],
     UNCERTAIN: ["陽菜はうなずいた。「分かります、私もまだ迷ってることばかりで」"],
     GREETING: ["陽菜は顔を上げた。「あ、こんにちは」", "陽菜は手を止めて、「いらっしゃいませ」と言った。"],
+    REUNION: ["陽菜は顔を上げて、少し嬉しそうに言った。「あ、お久しぶりです」"],
     OTHER: [
       "陽菜は棚の位置を少しずらしながら、「うーん」とだけ言った。",
       "陽菜は手を止めて、「そうですね」と言った。",
@@ -153,6 +159,7 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
     ABOUT_NPC: ["文子は少し笑った。「小学校で35年、教えてたのよ」"],
     UNCERTAIN: ["文子はきっぱりと言った。「今すぐ決めなくていいのよ」"],
     GREETING: ["文子は片手を挙げた。「あら、いらっしゃい」", "文子はこちらを見て、「あら」とだけ言った。"],
+    REUNION: ["文子は少し目を細めた。「あら、しばらく見なかったわね。元気にしてた?」"],
     OTHER: [
       "文子は掲示板の紙を直しながら、「そう」とだけ言った。",
       "文子は少し間を置いてから、「ふうん」と言った。",
@@ -165,10 +172,17 @@ function pick(list: string[], seed: number): string {
   return list[seed % list.length];
 }
 
+// PHASE_12_6 Section 14/19 -- days-since-last-meeting threshold for a natural "久しぶり" entry
+// point, instead of the plain GREETING line. Matches the ABSENCE TEST's Case C (2-3 day reunion).
+const REUNION_THRESHOLD_DAYS = 3;
+
 export function deterministicNpcReply(context: NpcAiContext): NpcReplyEnvelope {
   const menu = menuReply(context);
   if (menu) return { visibleUtterance: menu };
-  const bucket = classify(context.playerInput);
+  let bucket = classify(context.playerInput);
+  if (bucket === "GREETING" && context.daysSinceLastMeeting !== null && context.daysSinceLastMeeting >= REUNION_THRESHOLD_DAYS) {
+    bucket = "REUNION";
+  }
   const list = REPLIES[context.npcId][bucket];
   // PHASE_12_4 -- was `context.memoryOfPlayer.length`, which is windowed (MEMORY_WINDOW=6 in
   // contextBuilder.ts) and so silently froze at a constant seed once a relationship passed 6

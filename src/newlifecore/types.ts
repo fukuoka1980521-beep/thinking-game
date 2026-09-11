@@ -123,6 +123,37 @@ export interface RealWorldIntent {
  *  currentConcerns/hiddenBackground/relationships), so V1 uses all 8 rather than narrowing further. */
 export type EventFamily = "WORK" | "SOCIAL" | "PLACE" | "WEATHER" | "PROMISE" | "ROUTINE_BREAK" | "SHARED_SMALL_EVENT" | "RESOURCE";
 
+/**
+ * PHASE_12_6_NEW_LIFE_RELATIONSHIP_CONSEQUENCE_AND_SOCIAL_MEMORY_V1 Section 6 -- an NPC's own
+ * invitation to the player ("明日、よかったら寄って"), created ONLY through a real UI confirmation
+ * (PromiseOffer.tsx), never inferred from free text -- the same "structural action, not parsed AI
+ * text" discipline `RealWorldIntent` already established. Deliberately separate from
+ * `RealWorldIntent` (Section 15: Reality Bridge stays Daisuke-only and unrelated to social
+ * relationship) -- this is the general NPC<->PLAYER promise mechanic every NPC can use.
+ *
+ * `status` is the only outcome field, and it is a plain category, never a score (Section 3: no
+ * friendship/trust/affection meter). "missed" carries no penalty semantics anywhere this type is
+ * read -- see `content/socialMemory.ts`'s derivation functions, which read it only to decide
+ * whether an acknowledgement is eligible, never to accumulate a number.
+ */
+export type PromiseStatus = "pending" | "kept" | "missed" | "declined";
+
+export interface PlayerPromise {
+  id: string;
+  npc: NpcId;
+  createdOnDay: number;
+  /** The day by which meeting this NPC counts as keeping the promise -- a small, fixed window
+   *  (content/socialMemory.ts), not an open-ended obligation. */
+  dueByDay: number;
+  /** Authored, natural-language invite text (content/socialMemory.ts's per-NPC catalog) -- never
+   *  AI-generated, mirrors `RealWorldIntent.intentLabel`'s "never an inferred label" discipline. */
+  label: string;
+  status: PromiseStatus;
+  /** Set once `status` leaves "pending" -- the day kept/missed/declined was determined, so
+   *  Section 12's decay/pruning (engine.ts's `startNewDay`) can age resolved promises out. */
+  resolvedOnDay?: number;
+}
+
 export interface CoreState {
   /** PHASE_12_3 -- starts at 1. Only `startNewDay` (engine.ts) advances it; nothing else in this
    *  codebase is allowed to write it directly (mirrors the "only engine.ts mutates CoreState"
@@ -134,7 +165,6 @@ export interface CoreState {
   visitedLocations: LocationId[];
   worldFacts: WorldFact[];
   npcMemory: Record<NpcId, ConversationTurn[]>;
-  npcImpression: Record<NpcId, number>;
   flags: Record<string, boolean>;
   intakeForm: IntakeForm | null;
   /** Starting cash for the 30-day trial stay -- a modest, ordinary amount (ART/CONTENT DECISION,
@@ -157,6 +187,13 @@ export interface CoreState {
    *  cooldown (directive Section 7: avoid the same FAMILY firing back-to-back) doesn't require
    *  scanning every individual event id. */
   familyLastFired: Partial<Record<EventFamily, number>>;
+  /** PHASE_12_6 Section 6 -- the general NPC<->PLAYER promise mechanic. `content/socialMemory.ts`
+   *  derives all categorical relationship tags (has_met/shared_history/pending_promise/
+   *  missed_promise/familiar/slightly_awkward) from this array plus `npcMemory`/`flags` on demand --
+   *  deliberately no separate stored "relationship" struct, so there is nothing extra to keep in
+   *  sync or decay (Section 12: avoid state bloat). `startNewDay` (engine.ts) sweeps this array:
+   *  overdue pending promises flip to "missed", and old resolved promises are pruned. */
+  playerPromises: PlayerPromise[];
 }
 
 // 08:45 -- chosen so the first, arranged Challenge Center visit (a 15-minute walk) lands right at
@@ -174,7 +211,6 @@ export function createInitialCoreState(): CoreState {
     visitedLocations: ["TRIAL_HOUSE"],
     worldFacts: [],
     npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [], daisuke: [], hina: [], fumiko: [] },
-    npcImpression: { kamiya: 0, yohei: 0, miyoko: 0, jin: 0, daisuke: 0, hina: 0, fumiko: 0 },
     flags: {},
     intakeForm: null,
     money: 8000,
@@ -184,5 +220,6 @@ export function createInitialCoreState(): CoreState {
     ended: false,
     eventLastFired: {},
     familyLastFired: {},
+    playerPromises: [],
   };
 }

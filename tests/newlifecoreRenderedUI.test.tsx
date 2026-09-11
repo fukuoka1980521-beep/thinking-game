@@ -615,3 +615,83 @@ describe("mobile -- no horizontal overflow", () => {
     }
   });
 });
+
+describe("PHASE_12_6_NEW_LIFE_RELATIONSHIP_CONSEQUENCE_AND_SOCIAL_MEMORY_V1: promise offer, real UI end to end (Section 6/7)", () => {
+  afterEach(() => {
+    window.history.pushState({}, "", "/");
+    cleanup();
+  });
+
+  it("talking to a non-Daisuke NPC offers a real, structural accept/decline choice -- never inferred from free text alone", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "こんにちは");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    expect(await screen.findByTestId("nlc-promise-offer")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-promise-accept-kamiya")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-promise-decline-kamiya")).toBeInTheDocument();
+  });
+
+  it("accepting closes the offer and does not immediately offer a second one to the same NPC (no promise spam while one is pending)", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "こんにちは");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    await user.click(await screen.findByTestId("nlc-promise-accept-kamiya"));
+    expect(screen.queryByTestId("nlc-promise-offer")).not.toBeInTheDocument();
+
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "また今度");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    expect(screen.queryByTestId("nlc-promise-offer")).not.toBeInTheDocument();
+  });
+
+  it("declining is a first-class, equally-weighted choice -- closes the offer with no failure/negative result text, and the conversation continues normally", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "こんにちは");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    await user.click(await screen.findByTestId("nlc-promise-decline-kamiya"));
+    expect(screen.queryByTestId("nlc-promise-offer")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nlc-special-result")).not.toBeInTheDocument();
+
+    // The conversation itself still works normally afterward -- declining an invitation is not a
+    // dead end or a degraded mode.
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "また今度");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    const log = await screen.findByTestId("nlc-conversation-log-kamiya");
+    expect(log.textContent).toMatch(/また今度/);
+  });
+
+  it("Daisuke is never offered a promise -- Reality Bridge stays the only mechanism for him (Section 15)", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    // Warm up past 10:00 -- BARBERSHOP doesn't open until then.
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    for (const loc of ["YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL"]) {
+      await user.click(await screen.findByTestId(`nlc-move-${loc}`));
+    }
+    await user.click(await screen.findByTestId("nlc-move-BARBERSHOP"));
+    await user.click(await screen.findByTestId("nlc-talk-daisuke"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-daisuke"), "こんにちは");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-daisuke"));
+    expect(screen.queryByTestId("nlc-promise-offer")).not.toBeInTheDocument();
+  });
+
+  it("no social-memory UI ever appears -- no promise list, no relationship value, no NPC history dashboard (Section 23)", async () => {
+    const user = userEvent.setup();
+    await start(user);
+    await user.click(await screen.findByTestId("nlc-go-challenge-center"));
+    await user.click(await screen.findByTestId("nlc-talk-kamiya"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-kamiya"), "こんにちは");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-kamiya"));
+    await user.click(await screen.findByTestId("nlc-promise-accept-kamiya"));
+    expect(document.body.textContent).not.toMatch(/pending|missed|shared_history|familiar|slightly_awkward/);
+    expect(screen.queryByTestId(/promise-list|relationship-value|npc-history/)).not.toBeInTheDocument();
+  });
+});

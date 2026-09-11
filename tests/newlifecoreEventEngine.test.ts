@@ -315,3 +315,69 @@ describe("PHASE_12_5 event engine: diegetic discovery (eventTraceLinesAt)", () =
     }
   });
 });
+
+describe("PHASE_12_6 event engine: requiredPlayerRelationship eligibility (Section 9/10)", () => {
+  const PLAYER_GATED_EVENT: EventDefinition = {
+    ...SIMPLE_EVENT,
+    id: "test_player_gated",
+    eligibility: { requiredPlayerRelationship: { npc: "yohei", tags: ["shared_history"] } },
+    worldFact: { ...SIMPLE_EVENT.worldFact, id: "test_player_gated" },
+  };
+
+  it("does not fire when the player lacks the required tag with the named NPC", () => {
+    const s = baseState({ day: 1, time: 9 * 60 }); // never helped yohei
+    const next = resolveGeneratedEvents(9 * 60, { ...s, time: 11 * 60 }, [PLAYER_GATED_EVENT]);
+    expect(next.worldFacts).toHaveLength(0);
+  });
+
+  it("fires once the player has the required tag (shared_history via shelfFixedWithPlayer)", () => {
+    const s = baseState({ day: 1, time: 9 * 60, flags: { shelfFixedWithPlayer: true } });
+    const next = resolveGeneratedEvents(9 * 60, { ...s, time: 11 * 60 }, [PLAYER_GATED_EVENT]);
+    expect(next.worldFacts.map((f) => f.id)).toContain("test_player_gated_d1");
+  });
+
+  it("the real yohei_mentions_player_to_jin definition requires the player to have helped Yohei with the shelf", () => {
+    const def = EVENT_DEFS.find((d) => d.id === "yohei_mentions_player_to_jin")!;
+    const withoutHelp = baseState({ day: 5, time: 8 * 60 });
+    const stillNothing = resolveGeneratedEvents(8 * 60, { ...withoutHelp, time: 9 * 60 }, [def]);
+    expect(stillNothing.worldFacts).toHaveLength(0);
+
+    const withHelp = baseState({ day: 5, time: 8 * 60, flags: { shelfFixedWithPlayer: true } });
+    const fired = resolveGeneratedEvents(8 * 60, { ...withHelp, time: 9 * 60 }, [def]);
+    expect(fired.worldFacts.map((f) => f.id)).toContain("yohei_mentions_player_to_jin_d5");
+  });
+});
+
+describe("PHASE_12_6 event engine: presentation variation (Section 13, textVariants)", () => {
+  it("picks deterministically among text + textVariants -- same day always picks the same option", () => {
+    const def: EventDefinition = {
+      ...SIMPLE_EVENT,
+      id: "test_variants",
+      cooldownDays: 0,
+      worldFact: { id: "test_variants", text: "A", textVariants: ["B", "C"], knownBy: [], category: "shared_event" },
+    };
+    const s = baseState({ day: 7, time: 9 * 60 });
+    const once = resolveGeneratedEvents(9 * 60, { ...s, time: 11 * 60 }, [def]);
+    const fact1 = once.worldFacts.find((f) => f.id === "test_variants_d7")!;
+    expect(["A", "B", "C"]).toContain(fact1.text);
+
+    // Re-running the exact same (day, definition) must reproduce the exact same pick.
+    const twice = resolveGeneratedEvents(9 * 60, { ...s, time: 11 * 60 }, [def]);
+    const fact2 = twice.worldFacts.find((f) => f.id === "test_variants_d7")!;
+    expect(fact2.text).toBe(fact1.text);
+  });
+
+  it("eventTraceLinesAt and the stored fact agree on which variant was picked (no template/stored-fact drift)", () => {
+    const def: EventDefinition = {
+      ...SIMPLE_EVENT,
+      id: "test_variants2",
+      location: "CAFE_NODOKA",
+      cooldownDays: 0,
+      worldFact: { id: "test_variants2", text: "A", textVariants: ["B", "C", "D"], knownBy: [], category: "shared_event" },
+    };
+    const s = baseState({ day: 3, time: 9 * 60 });
+    const fired = resolveGeneratedEvents(9 * 60, { ...s, time: 11 * 60 }, [def]);
+    const storedText = fired.worldFacts.find((f) => f.id === "test_variants2_d3")!.text;
+    expect(eventTraceLinesAt(fired, [def], "CAFE_NODOKA")).toEqual([storedText]);
+  });
+});

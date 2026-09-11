@@ -7,6 +7,13 @@
  * AI-generated -- every `worldFact.text` line is hand-written, natural Japanese, presentation-ready
  * as-is (directive Section 13: "TEXT IS PRESENTATION"), never an internal id or family name leaking
  * into anything player-visible.
+ *
+ * PHASE_12_6_NEW_LIFE_RELATIONSHIP_CONSEQUENCE_AND_SOCIAL_MEMORY_V1 added exactly ONE new
+ * definition (`yohei_mentions_player_to_jin`, Section 10's own worked example -- multi-NPC
+ * consequence gated on the PLAYER's categorical relationship, not a general rumor system) and
+ * `textVariants` on four of the most repeat-prone existing definitions (Section 13, presentation
+ * variation) -- deliberately minimal, per that phase's own "text variationだけを先に磨かない"
+ * priority ordering. 17 definitions total now.
  */
 import type { EventDefinition } from "./eventEngine";
 
@@ -94,7 +101,13 @@ export const EVENT_DEFS: EventDefinition[] = [
     },
     cooldownDays: 5,
     familyCooldownDays: 2,
-    worldFact: { id: "fumiko_visits_miyoko_cafe", text: "文子が喫茶のどかに寄って、美代子と少し話し込んでいた。", knownBy: ["fumiko", "miyoko"], category: "shared_event" },
+    worldFact: {
+      id: "fumiko_visits_miyoko_cafe",
+      text: "文子が喫茶のどかに寄って、美代子と少し話し込んでいた。",
+      textVariants: ["喫茶のどかを覗くと、文子が美代子相手に何か熱心に話していた。", "文子が喫茶のどかのカウンターで、美代子とお茶を飲みながら話していた。"],
+      knownBy: ["fumiko", "miyoko"],
+      category: "shared_event",
+    },
   },
   {
     id: "daisuke_and_yohei_chat",
@@ -111,7 +124,42 @@ export const EVENT_DEFS: EventDefinition[] = [
     },
     cooldownDays: 8,
     familyCooldownDays: 2,
-    worldFact: { id: "daisuke_and_yohei_chat", text: "洋平が散髪に寄って、大輔と世間話をしていったらしい。", knownBy: ["daisuke", "yohei"], category: "shared_event" },
+    worldFact: {
+      id: "daisuke_and_yohei_chat",
+      text: "洋平が散髪に寄って、大輔と世間話をしていったらしい。",
+      textVariants: ["大輔の店の前を通ると、洋平が椅子に座って世間話をしていた。", "洋平が髭を当たりに来て、大輔としばらく話し込んでいたらしい。"],
+      knownBy: ["daisuke", "yohei"],
+      category: "shared_event",
+    },
+  },
+
+  // PHASE_12_6 Section 10's own worked example, implemented directly: "PLAYERがYoheiを手伝った→
+  // Jinが後日その話を聞く". Gated on the player's OWN categorical relationship with Yohei
+  // (`shared_history`, which `computePlayerNpcTags` derives from `flags.shelfFixedWithPlayer` --
+  // see socialMemory.ts), not on any score. Information propagation still respects `knownBy`/the
+  // existing yohei<->jin relationship (Section 10: "噂システムを大量生成しない" -- exactly one such
+  // definition this phase, not a general rumor system).
+  {
+    id: "yohei_mentions_player_to_jin",
+    family: "SOCIAL",
+    participants: ["yohei", "jin"],
+    location: "COMMUNITY_HALL",
+    playerPresenceRequired: false,
+    triggerTime: 8 * 60 + 45,
+    eligibility: {
+      minDay: 3,
+      npcsAvailable: ["jin"],
+      requiredRelationship: [{ a: "yohei", b: "jin", qualities: ["close", "familiar"] }],
+      requiredPlayerRelationship: { npc: "yohei", tags: ["shared_history"] },
+    },
+    cooldownDays: 15,
+    familyCooldownDays: 2,
+    worldFact: {
+      id: "yohei_mentions_player_to_jin",
+      text: "洋平が相馬に、新しく来た住人が棚を手伝ってくれた話をしていたらしい。",
+      knownBy: ["yohei", "jin"],
+      category: "shared_event",
+    },
   },
 
   // ---- PLACE (2) ------------------------------------------------------------------------------
@@ -137,7 +185,13 @@ export const EVENT_DEFS: EventDefinition[] = [
     eligibility: { minDay: 4, requiredFlags: ["hinaShopOpen"] },
     cooldownDays: 6,
     familyCooldownDays: 2,
-    worldFact: { id: "hina_shop_new_item", text: "陽菜の店に、見慣れない新しい焼き菓子が並んでいた。", knownBy: ["hina"], category: "object" },
+    worldFact: {
+      id: "hina_shop_new_item",
+      text: "陽菜の店に、見慣れない新しい焼き菓子が並んでいた。",
+      textVariants: ["陽菜の店の棚に、今日は違う種類のパンが並んでいた。", "陽菜の店先に、小さな新作の値札が立っていた。"],
+      knownBy: ["hina"],
+      category: "object",
+    },
   },
 
   // ---- WEATHER (2, paired start/end -- same-day, mirrors day1WorldEvents.ts's rain pattern but
@@ -211,7 +265,13 @@ export const EVENT_DEFS: EventDefinition[] = [
     },
     cooldownDays: 5,
     familyCooldownDays: 2,
-    worldFact: { id: "yohei_miyoko_produce_trade", text: "洋平が美代子に、朝どれの野菜を少し届けていた。", knownBy: ["yohei", "miyoko"], category: "shared_event" },
+    worldFact: {
+      id: "yohei_miyoko_produce_trade",
+      text: "洋平が美代子に、朝どれの野菜を少し届けていた。",
+      textVariants: ["洋平が段ボール箱を抱えて、喫茶のどかに何か運び込んでいた。", "美代子が「今日も助かるわ」と、洋平から野菜を受け取っていた。"],
+      knownBy: ["yohei", "miyoko"],
+      category: "shared_event",
+    },
   },
   {
     id: "jin_fixes_something_unprompted",
