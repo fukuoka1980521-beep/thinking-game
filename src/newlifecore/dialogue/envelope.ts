@@ -13,6 +13,10 @@ const FALLBACK_BY_NPC: Record<string, string> = {
   daisuke: "大輔は鋏を止めて、少し考えた。「……すみません、聞き逃しました」",
   hina: "陽菜は手を止めて、少し困ったように言った。「あ、すみません、今なんて?」",
   fumiko: "文子は少し首をかしげた。「あら、ごめんなさいね、もう一度言ってくれる?」",
+  // PHASE_15 -- found while adding Shizuko: Kiyoshi (added PHASE_13) was also missing here, silently
+  // falling through to the generic "……。" fallback. Both fixed together.
+  kiyoshi: "清は少し眉をひそめた。「……悪い、もう一回言ってくれ」",
+  shizuko: "静子は少し首をかしげた。「ごめんなさいね、聞き取れなかったわ」",
 };
 
 export function validateNpcReply(raw: Partial<NpcReplyEnvelope> | null | undefined, context: NpcAiContext): NpcReplyEnvelope {

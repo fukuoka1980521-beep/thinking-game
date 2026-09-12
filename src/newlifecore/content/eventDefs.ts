@@ -109,26 +109,30 @@ export const EVENT_DEFS: EventDefinition[] = [
       category: "shared_event",
     },
   },
+  // PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 3/6 -- repurposed from
+  // "daisuke_and_yohei_chat" (BARBERSHOP). Same shape, same cooldowns, now Shizuko/Yohei/
+  // FORTUNE_HOUSE -- their `familiar` relationship (npcDefs.ts) is real, established canon
+  // ("旅館時代からの近所付き合い"), not invented just to satisfy this event's eligibility.
   {
-    id: "daisuke_and_yohei_chat",
+    id: "shizuko_and_yohei_chat",
     family: "SOCIAL",
-    participants: ["daisuke", "yohei"],
-    location: "BARBERSHOP",
+    participants: ["shizuko", "yohei"],
+    location: "FORTUNE_HOUSE",
     playerPresenceRequired: false,
     triggerTime: 16 * 60 + 30,
     eligibility: {
       minDay: 4,
-      npcsAvailable: ["daisuke", "yohei"],
-      requiredRelationship: [{ a: "daisuke", b: "yohei", qualities: ["close", "familiar"] }],
+      npcsAvailable: ["shizuko", "yohei"],
+      requiredRelationship: [{ a: "shizuko", b: "yohei", qualities: ["close", "familiar"] }],
       occurrenceChance: 0.6,
     },
     cooldownDays: 8,
     familyCooldownDays: 2,
     worldFact: {
-      id: "daisuke_and_yohei_chat",
-      text: "洋平が散髪に寄って、大輔と世間話をしていったらしい。",
-      textVariants: ["大輔の店の前を通ると、洋平が椅子に座って世間話をしていた。", "洋平が髭を当たりに来て、大輔としばらく話し込んでいたらしい。"],
-      knownBy: ["daisuke", "yohei"],
+      id: "shizuko_and_yohei_chat",
+      text: "洋平が野菜を届けがてら、静子としばらく世間話をしていったらしい。",
+      textVariants: ["占いの館の前を通ると、洋平が縁側で静子と話し込んでいた。", "洋平が顔を出して、静子と少し立ち話をしていったらしい。"],
+      knownBy: ["shizuko", "yohei"],
       category: "shared_event",
     },
   },
@@ -236,17 +240,18 @@ export const EVENT_DEFS: EventDefinition[] = [
     familyCooldownDays: 3,
     worldFact: { id: "yohei_closes_early", text: "洋平商店が、いつもより早くシャッターを下ろしていた。", knownBy: ["jin"], category: "world_change" },
   },
+  // PHASE_15 Section 3/6 -- repurposed from "daisuke_late_open" (BARBERSHOP).
   {
-    id: "daisuke_late_open",
+    id: "shizuko_late_open",
     family: "ROUTINE_BREAK",
-    participants: ["daisuke"],
-    location: "BARBERSHOP",
+    participants: ["shizuko"],
+    location: "FORTUNE_HOUSE",
     playerPresenceRequired: false,
     triggerTime: 10 * 60 + 30,
     eligibility: { minDay: 5, occurrenceChance: 0.35 },
     cooldownDays: 10,
     familyCooldownDays: 3,
-    worldFact: { id: "daisuke_late_open", text: "大輔の店は、今日はいつもより少し遅れて開いたようだった。", knownBy: [], category: "world_change" },
+    worldFact: { id: "shizuko_late_open", text: "占いの館は、今日はいつもより少し遅れて開いたようだった。", knownBy: [], category: "world_change" },
   },
 
   // ---- SHARED_SMALL_EVENT (2) --------------------------------------------------------------------

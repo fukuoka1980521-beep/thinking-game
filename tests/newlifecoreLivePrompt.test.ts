@@ -88,8 +88,8 @@ describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: dialogue precisi
 });
 
 describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: the Thinking Resident's prompt is distinct and non-clinical (Section F/G)", () => {
-  it("Daisuke's prompt explicitly forbids clinical/professional framing and any single fixed closing pattern", () => {
-    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "最近、仕事を先延ばしにしています");
+  it("Shizuko's prompt explicitly forbids clinical/professional framing and any single fixed closing pattern", () => {
+    const ctx = buildNpcAiContext("shizuko", createInitialCoreState(), "最近、仕事を先延ばしにしています");
     const prompt = buildPrompt(ctx);
     expect(prompt).toMatch(/医療従事者・心理士・カウンセラー・セラピストではなく/);
     expect(prompt).toMatch(/「カウンセリング」「セラピー」「診断」「認知行動療法」「治療」「症状」「病気」/);
@@ -97,8 +97,8 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: the Thinking Resid
     expect(prompt).toMatch(/毎回、聞く→まとめる→行動提案、という同じパターンで終わらせてはいけません/);
   });
 
-  it("Daisuke's prompt still carries the same banned-AI-assistant-phrase list every other NPC gets", () => {
-    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "こんにちは");
+  it("Shizuko's prompt still carries the same banned-AI-assistant-phrase list every other NPC gets", () => {
+    const ctx = buildNpcAiContext("shizuko", createInitialCoreState(), "こんにちは");
     const prompt = buildPrompt(ctx);
     expect(prompt).toMatch(/なるほど」「それは大変ですね」「つまり〜ということですね」/);
   });
@@ -110,17 +110,17 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: the Thinking Resid
     expect(prompt).not.toMatch(/思考整理の扱い方/);
   });
 
-  it("Daisuke's prompt includes his own hiddenBackground and never presents him as omniscient about the player's inner life -- shares the standard 'don't read the player's mind' rule", () => {
-    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "こんにちは");
+  it("Shizuko's prompt includes his own hiddenBackground and never presents him as omniscient about the player's inner life -- shares the standard 'don't read the player's mind' rule", () => {
+    const ctx = buildNpcAiContext("shizuko", createInitialCoreState(), "こんにちは");
     const prompt = buildPrompt(ctx);
-    expect(prompt).toMatch(/改装するかどうかを10年近く迷い続けている/);
+    expect(prompt).toMatch(/「占いの館」という看板のせいで、当てること自体を期待されすぎること/);
     expect(prompt).toMatch(/まだ起きていないことを知っているように振る舞ってはいけません/);
   });
 });
 
 describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: Thinking Resident quality gate (Section 9/10/11)", () => {
   it("the prompt requires picking up at least one input-specific detail, and pins the exact PHASE 12.3 generic-normalization example as the FAIL case to avoid", () => {
-    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "最近、仕事を先延ばしにしています");
+    const ctx = buildNpcAiContext("shizuko", createInitialCoreState(), "最近、仕事を先延ばしにしています");
     const prompt = buildPrompt(ctx);
     expect(prompt).toMatch(/必ず最低1つ、その人[\s\S]*固有の言葉・状況・言い回しを拾ってください/);
     expect(prompt).toMatch(/一般論だけで終わらせてはいけません/);
@@ -128,7 +128,7 @@ describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: Thinking 
   });
 
   it("the prompt instructs identify-before-advise for ambiguous concerns, with at most one non-leading distinguishing question, and explicitly forbids a fixed template wording", () => {
-    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "なんとなくやる気が出ません");
+    const ctx = buildNpcAiContext("shizuko", createInitialCoreState(), "なんとなくやる気が出ません");
     const prompt = buildPrompt(ctx);
     expect(prompt).toMatch(/曖昧な相談には、すぐ行動提案しないこと/);
     expect(prompt).toMatch(/識別質問（最大1つ）/);
@@ -137,7 +137,7 @@ describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: Thinking 
   });
 
   it("the prompt lists the generic-phrase fail set explicitly, framed as conditional-on-genericness rather than an outright ban", () => {
-    const ctx = buildNpcAiContext("daisuke", createInitialCoreState(), "こんにちは");
+    const ctx = buildNpcAiContext("shizuko", createInitialCoreState(), "こんにちは");
     const prompt = buildPrompt(ctx);
     for (const phrase of ["誰にでもあります", "無理しないでください", "一歩ずつ", "自分を責めないで", "素晴らしいですね", "それは大変でしたね", "まずは小さな一歩から"]) {
       expect(prompt).toContain(phrase);

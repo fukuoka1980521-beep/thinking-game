@@ -1,16 +1,19 @@
 /**
- * PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 4/5/20 -- exactly 8 local problem
- * definitions (directive's own "8-12, do not mass-produce" ceiling, taken at the low end this
- * phase). Canon-consistency audited BEFORE writing this file (Section 5's explicit requirement):
- * `content/day1WorldEvents.ts` already fully owns the shelf-repair, community-hall-bench, and Hina
- * shop-opening threads (fixed-time, no player-help path for two of them) -- none of those are
- * reused or duplicated here. Instead, 5 of these 8 problems adopt an NPC's own EXISTING
- * `currentConcerns`/`hiddenBackground` entry (npcDefs.ts) that had no mechanic built for it yet:
- * Miyoko's weekend-help shortage, Yohei's missing shop successor, Yohei's festival-prep need, Jin's
- * unspoken "could use a partner", and Daisuke's stalled renovation decision. The remaining 3 are new
- * but grounded: the elderly-customer delivery problem (Kiyoshi, this phase's one new NPC), Hina's
- * post-opening promotion gap (directive Section 5's own "small business: website/flyer" example),
- * and a second, still-vacant shopping-street unit distinct from the one Hina already rented.
+ * PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 4/5/20 -- originally exactly 8
+ * local problem definitions (directive's own "8-12, do not mass-produce" ceiling, taken at the low
+ * end that phase); now 7, after PHASE_15 removed "daisuke_renovation_indecision" (its owning NPC's
+ * location was repurposed into Fortune House -- see that def's own removal note below for why it
+ * was dropped, not reassigned). Canon-consistency audited BEFORE writing this file (Section 5's
+ * explicit requirement): `content/day1WorldEvents.ts` already fully owns the shelf-repair,
+ * community-hall-bench, and Hina shop-opening threads (fixed-time, no player-help path for two of
+ * them) -- none of those are reused or duplicated here. 4 of the remaining 7 problems adopt an
+ * NPC's own EXISTING `currentConcerns`/`hiddenBackground` entry (npcDefs.ts) that had no mechanic
+ * built for it yet: Miyoko's weekend-help shortage, Yohei's missing shop successor, Yohei's
+ * festival-prep need, and Jin's unspoken "could use a partner". The remaining 3 are new but
+ * grounded: the elderly-customer delivery problem (Kiyoshi, PHASE_13's one new NPC), Hina's
+ * post-opening promotion gap (PHASE_13 directive Section 5's own "small business: website/flyer"
+ * example), and a second, still-vacant shopping-street unit distinct from the one Hina already
+ * rented.
  *
  * Never a quest board (Section 6/23): no def here has an "accept" or "quest start" concept. A
  * problem is DISCOVERED (an ordinary, structural action once an ambient cue has been noticed --
@@ -132,19 +135,13 @@ export const LOCAL_PROBLEM_DEFS: LocalProblemDef[] = [
     autoResolveAfterDays: 12,
     autoResolveText: "相馬は結局、これまで通り一人でやっているようだった。",
   },
-  {
-    id: "daisuke_renovation_indecision",
-    npc: "daisuke",
-    location: "BARBERSHOP",
-    minDay: 3,
-    observationLine: "レジの脇に、開かないままの見積書の封筒が置かれていた。",
-    discoverActionLabel: "様子が気になったので聞いてみる",
-    discoverResultText: "大輔は鋏を置いて、少し苦笑した。「店の改装、見積もりだけ取って3ヶ月になります。踏ん切りがつかなくて」",
-    worldChangeText: "理容店かどやの椅子が、一つ新しいものに替わっていた。改装そのものは、まだ先の話らしい。",
-    resolveAfterDays: 5,
-    autoResolveAfterDays: 14,
-    autoResolveText: "大輔の店の改装の話は、あの見積書とともに、まだ引き出しの中にあるようだった。",
-  },
+  // PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 3/6 -- "daisuke_renovation_
+  // indecision" (BARBERSHOP) removed here, not reassigned: it was entirely about Daisuke's own
+  // shop-renovation dilemma, which does not fit Shizuko or Fortune House thematically, and
+  // BARBERSHOP no longer exists as a location. 7 local problems remain (down from 8) -- no
+  // replacement was manufactured just to hold the count; Fortune House's own engagement (card
+  // selection / Thinking Circuit / Reality Bridge) is a genuinely different kind of content, not a
+  // LocalProblemDef-shaped one.
   {
     id: "hina_needs_promotion_help",
     npc: "hina",

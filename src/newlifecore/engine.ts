@@ -10,9 +10,13 @@ import { itemById } from "./content/shop";
 import { newPlayerPromise, resolvePendingPromiseOnMeet, sweepPlayerPromisesForNewDay } from "./content/socialMemory";
 import type { TrajectorySeed } from "./content/trajectoryDefs";
 import type { LocalProblemDef } from "./content/localProblemDefs";
-import { dueLocalProblemResolutions } from "./content/localProblemEngine";
+import { dueLocalProblemResolutions, helpAccumulationMet } from "./content/localProblemEngine";
 import type { ActivityDef } from "./content/activityDefs";
 import { dueActivityResolutions } from "./content/activityEngine";
+import { resolveMomentEventArrival } from "./content/momentEventEngine";
+import { momentEventById } from "./content/momentEventDefs";
+import type { EventThreadDef } from "./content/eventThreadDefs";
+import { dueEventThreadAutoResolutions } from "./content/eventThreadEngine";
 import { DAY_FORCE_SLEEP_MINUTES, DAY_SLEEP_AVAILABLE_FROM, DAY_START_MINUTES } from "./types";
 import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, PlayerExperience, RealWorldIntent, UserUpdateResponse, WorldFact } from "./types";
 
@@ -32,7 +36,7 @@ export function advanceTime(state: CoreState, minutes: number): CoreState {
 
 export function moveTo(state: CoreState, location: LocationId): CoreState {
   const withTime = advanceTime(state, 15); // flat travel cost, directive Section 2's minute-based time economy
-  return {
+  const arrived: CoreState = {
     ...withTime,
     playerLocation: location,
     visitedLocations: withTime.visitedLocations.includes(location) ? withTime.visitedLocations : [...withTime.visitedLocations, location],
@@ -40,6 +44,11 @@ export function moveTo(state: CoreState, location: LocationId): CoreState {
     // above). Feeds content/retrospective.ts's "よく行った場所" ranking only; never displayed raw.
     locationVisitCounts: { ...withTime.locationVisitCounts, [location]: (withTime.locationVisitCounts[location] ?? 0) + 1 },
   };
+  // PHASE_15 Section 9 -- "something might happen" the moment you actually arrive somewhere, the
+  // one genuinely NEW trigger point this phase adds (every other engine hook fires on a clock tick;
+  // this one fires on arrival). A pure no-op on the vast majority of moves (see
+  // `resolveMomentEventArrival`'s own doc comment for the eligibility+chance gating).
+  return resolveMomentEventArrival(arrived, location);
 }
 
 export function recordConversationTurn(state: CoreState, npc: NpcId, playerUtterance: string, npcReply: string): CoreState {
@@ -179,7 +188,9 @@ export function startNewDay(state: CoreState): CoreState {
   // other "town remembers overnight" mechanic in this codebase.
   const withLocalProblems = tickLocalProblemsForNewDay(advanced);
   // PHASE_14 Section 10 -- same timing for GAMEPLAY ACTIVITY world-changes.
-  return tickActivitiesForNewDay(withLocalProblems);
+  const withActivities = tickActivitiesForNewDay(withLocalProblems);
+  // PHASE_15 Section 19 -- same timing for EVENT THREADS the player has stopped engaging with.
+  return tickEventThreadsForNewDay(withActivities);
 }
 
 /**
@@ -349,26 +360,107 @@ export function respondToLocalProblemHelp(state: CoreState, def: LocalProblemDef
   if (!def.helpActionLabel || !def.helpResultText) return state;
   const withTime = advanceTime(state, 40);
   const helpCount = (withTime.localProblemHelpCount[def.id] ?? 0) + 1;
+  const withCounted = { ...withTime, localProblemHelpCount: { ...withTime.localProblemHelpCount, [def.id]: helpCount } };
+  // PHASE_15 Section 2 -- ACTIVITY CONSEQUENCE CLOCK fix: fix the resolution anchor the FIRST time
+  // the accumulation condition is met, and never again -- a help action after the anchor is already
+  // set (whether because this same call just met it, or an earlier one already did) must not move it.
+  const alreadyAnchored = withCounted.localProblemResolutionAnchor[def.id] !== undefined;
+  const anchorNow = !alreadyAnchored && helpAccumulationMet(def, withCounted);
   const withCount: CoreState = {
-    ...withTime,
-    localProblemHelpCount: { ...withTime.localProblemHelpCount, [def.id]: helpCount },
-    localProblemLastPlayerAction: { ...withTime.localProblemLastPlayerAction, [def.id]: withTime.day },
-    localProblemStatus: { ...withTime.localProblemStatus, [def.id]: "player_helped" },
+    ...withCounted,
+    localProblemResolutionAnchor: anchorNow ? { ...withCounted.localProblemResolutionAnchor, [def.id]: withCounted.day } : withCounted.localProblemResolutionAnchor,
+    localProblemLastPlayerAction: { ...withCounted.localProblemLastPlayerAction, [def.id]: withCounted.day },
+    localProblemStatus: { ...withCounted.localProblemStatus, [def.id]: "player_helped" },
   };
   return addWorldFact(withCount, { id: `${def.id}_helped_d${withCount.day}`, time: withCount.time, text: def.helpResultText, knownBy: [def.npc], category: "shared_event" });
 }
 
 /** Section 6/7 -- connecting the problem to another NPC, equally valid to helping directly and
- *  equally never forced -- resolves through the SAME daily tick, on the SAME "数日後" timing. */
+ *  equally never forced -- resolves through the SAME daily tick, on the SAME "数日後" timing.
+ *  PHASE_15 Section 2 -- connect is always a single, immediate-mode action (no accumulation), so its
+ *  anchor is fixed on this action whenever it isn't already set (a repeat connect attempt after
+ *  the fact is not currently offered anyway -- `localProblemConnectEligible` already blocks it once
+ *  status is "player_connected" -- but the same-time-as-set-once discipline is kept here regardless,
+ *  matching the help mutator's shape exactly). */
 export function respondToLocalProblemConnect(state: CoreState, def: LocalProblemDef): CoreState {
   if (!def.connectNpc || !def.connectActionLabel || !def.connectResultText) return state;
   const withTime = advanceTime(state, 20);
+  const alreadyAnchored = withTime.localProblemResolutionAnchor[def.id] !== undefined;
   const withStatus: CoreState = {
     ...withTime,
+    localProblemResolutionAnchor: alreadyAnchored ? withTime.localProblemResolutionAnchor : { ...withTime.localProblemResolutionAnchor, [def.id]: withTime.day },
     localProblemLastPlayerAction: { ...withTime.localProblemLastPlayerAction, [def.id]: withTime.day },
     localProblemStatus: { ...withTime.localProblemStatus, [def.id]: "player_connected" },
   };
   return addWorldFact(withStatus, { id: `${def.id}_connected_d${withStatus.day}`, time: withStatus.time, text: def.connectResultText, knownBy: [def.npc, def.connectNpc], category: "shared_event" });
+}
+
+/**
+ * PHASE_15 Section 9-24 -- the ONLY place a moment event's response is recorded, reachable exclusively
+ * from a real scene-action click (never inferred from free text, same discipline as every other
+ * structural action in this file). A no-op if the def/choice pair doesn't actually exist or the event
+ * isn't the one currently active there -- mirrors `discoverLocalProblem`'s defensive-dedupe shape.
+ */
+export function respondToMomentEvent(state: CoreState, defId: string, choiceId: string): CoreState {
+  const def = momentEventById(defId);
+  const choice = def?.choices.find((c) => c.id === choiceId);
+  if (!def || !choice || state.momentEventShownDay[def.id] !== state.day || state.flags[`moment_${def.id}_resolved`]) return state;
+  const withTime = advanceTime(state, 5);
+  const withFlags: CoreState = { ...withTime, flags: { ...withTime.flags, [`moment_${def.id}_resolved`]: true, ...(choice.setFlags ?? {}) } };
+  return addWorldFact(withFlags, { id: `${def.id}_d${withFlags.day}`, time: withFlags.time, text: choice.resultText, knownBy: [], category: "shared_event" });
+}
+
+/**
+ * PHASE_15 Section 25-31 -- the ONLY place `state.eventThreads[def.id]` is first created, reachable
+ * only from the real "様子が気になったので聞いてみる"-style discover action (content/day1.ts), same
+ * pattern as `discoverLocalProblem`.
+ */
+export function discoverEventThread(state: CoreState, def: EventThreadDef): CoreState {
+  if (state.eventThreads[def.id] !== undefined) return state;
+  const withTime = advanceTime(state, 10);
+  const withThread: CoreState = {
+    ...withTime,
+    eventThreads: { ...withTime.eventThreads, [def.id]: { status: "DISCOVERED", stageIndex: 0, discoveredOnDay: withTime.day, lastPlayerProgressDay: withTime.day } },
+  };
+  return addWorldFact(withThread, { id: `${def.id}_discovered`, time: withThread.time, text: def.discoverResultText, knownBy: def.knownBy, category: def.category });
+}
+
+/**
+ * Section 27 -- advances a thread exactly one stage via a real scene action. When the stage just
+ * completed was the LAST one in `def.stages`, the thread resolves as `RESOLVED` and its `resultText`
+ * is recorded as the thread's own conclusion (Section 25's "プレイヤーが最後まで関わりきった場合の
+ * 結末"); otherwise it simply moves to `PROGRESSED` awaiting the next beat.
+ */
+export function progressEventThread(state: CoreState, def: EventThreadDef): CoreState {
+  const runtime = state.eventThreads[def.id];
+  if (!runtime || runtime.stageIndex >= def.stages.length) return state;
+  const stage = def.stages[runtime.stageIndex];
+  const withTime = advanceTime(state, 15);
+  const isFinal = runtime.stageIndex + 1 >= def.stages.length;
+  const withThread: CoreState = {
+    ...withTime,
+    eventThreads: {
+      ...withTime.eventThreads,
+      [def.id]: { ...runtime, stageIndex: runtime.stageIndex + 1, status: isFinal ? "RESOLVED" : "PROGRESSED", lastPlayerProgressDay: withTime.day },
+    },
+  };
+  const factId = isFinal ? `${def.id}_resolved` : `${def.id}_stage_d${withThread.day}_${runtime.stageIndex}`;
+  return addWorldFact(withThread, { id: factId, time: withThread.time, text: stage.resultText, knownBy: def.knownBy, category: isFinal ? "world_change" : def.category });
+}
+
+/** Section 19 -- called from `startNewDay`, same timing as `tickLocalProblemsForNewDay`/
+ *  `tickActivitiesForNewDay`. A thread the player has stopped engaging with resolves on its own,
+ *  using its OWN authored `resolvedWithoutPlayerText` (Section 19: never dressed up as a player
+ *  accomplishment). */
+function tickEventThreadsForNewDay(state: CoreState): CoreState {
+  const due = dueEventThreadAutoResolutions(state);
+  let next = state;
+  for (const def of due) {
+    const runtime = next.eventThreads[def.id];
+    next = { ...next, eventThreads: { ...next.eventThreads, [def.id]: { ...runtime, status: "RESOLVED_WITHOUT_PLAYER" } } };
+    next = addWorldFact(next, { id: `${def.id}_resolved_without_player_d${next.day}`, time: next.time, text: def.resolvedWithoutPlayerText, knownBy: def.knownBy, category: "world_change" });
+  }
+  return next;
 }
 
 /**
@@ -408,9 +500,15 @@ export function runActivity(state: CoreState, def: ActivityDef, doneTasks: { id:
   const totalMinutes = doneTasks.reduce((sum, t) => sum + t.minutes, 0);
   const withTime = advanceTime(state, totalMinutes);
   const count = (withTime.activityHelpCount[def.id] ?? 0) + 1;
+  // PHASE_15 Section 2 -- ACTIVITY CONSEQUENCE CLOCK fix: same anchor-once discipline as
+  // `respondToLocalProblemHelp` above. Fixed the exact session `completionThreshold` is first
+  // reached; every session after that (the player kept helping past the threshold) leaves it alone.
+  const alreadyAnchored = withTime.activityResolutionAnchor[def.id] !== undefined;
+  const anchorNow = !alreadyAnchored && count >= def.completionThreshold;
   const withCount: CoreState = {
     ...withTime,
     activityHelpCount: { ...withTime.activityHelpCount, [def.id]: count },
+    activityResolutionAnchor: anchorNow ? { ...withTime.activityResolutionAnchor, [def.id]: withTime.day } : withTime.activityResolutionAnchor,
     activityLastDone: { ...withTime.activityLastDone, [def.id]: withTime.day },
   };
   const reaction = doneTasks.length >= def.tasks.length ? def.npcReactionAllDone : doneTasks.length >= 2 ? def.npcReactionPartial : def.npcReactionMinimal;

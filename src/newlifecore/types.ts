@@ -7,7 +7,11 @@
  * career-score-driven state ("単純スコアで人生を決めない").
  */
 
-export type LocationId = "TRIAL_HOUSE" | "CHALLENGE_CENTER" | "YOHEI_STORE" | "CAFE_NODOKA" | "COMMUNITY_HALL" | "SHOPPING_STREET" | "BARBERSHOP";
+// PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 3 -- BARBERSHOP renamed to
+// FORTUNE_HOUSE (a true 1-for-1 replacement, not an addition -- location count stays 7). Daisuke
+// himself is NOT deleted (see npcDefs.ts's own note on his now-empty `schedule`) -- only the
+// location he used to occupy changed purpose.
+export type LocationId = "TRIAL_HOUSE" | "CHALLENGE_CENTER" | "YOHEI_STORE" | "CAFE_NODOKA" | "COMMUNITY_HALL" | "SHOPPING_STREET" | "FORTUNE_HOUSE";
 
 // PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 9 -- exactly one new, occasional
 // (not core-daily) NPC added this phase, grounded in a real local-problem need (an elderly customer
@@ -15,7 +19,12 @@ export type LocationId = "TRIAL_HOUSE" | "CHALLENGE_CENTER" | "YOHEI_STORE" | "C
 // not roster padding. Section 11's location count is deliberately left unchanged this phase (he is
 // reachable at YOHEI_STORE on his own light schedule, not a new place) -- see the phase's CLOSE
 // report for why NPC/location expansion was kept minimal rather than run to this phase's ceiling.
-export type NpcId = "kamiya" | "yohei" | "miyoko" | "jin" | "daisuke" | "hina" | "fumiko" | "kiyoshi";
+// PHASE_15 Section 5/6 -- Shizuko (the new Fortune House NPC) added. Daisuke is deliberately KEPT
+// in this union (not deleted -- Section 6's "データ破壊禁止") even though nothing in the game can
+// reach him anymore once his `schedule` is emptied (npcDefs.ts) -- every `Record<NpcId, ...>` map
+// that already had his entry stays valid and untouched, and his full characterization survives
+// intact for a possible future phase, rather than being destructively removed.
+export type NpcId = "kamiya" | "yohei" | "miyoko" | "jin" | "daisuke" | "hina" | "fumiko" | "kiyoshi" | "shizuko";
 
 /** Minutes since 00:00. */
 export type ClockMinutes = number;
@@ -256,6 +265,17 @@ export interface CoreState {
   activityHelpCount: Record<string, number>;
   activityLastDone: Record<string, number>;
   activityResolved: Record<string, boolean>;
+  /**
+   * PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 2 -- the ACTIVITY CONSEQUENCE CLOCK
+   * fix. The day `completionThreshold` sessions were FIRST reached, written exactly once per
+   * activity (never overwritten by a later session, unlike `activityLastDone` above, which keeps
+   * updating for cooldown/eligibility purposes). `dueActivityResolutions` now measures
+   * `resolveAfterDays` from THIS anchor, not from the most recent session -- so continuing to help
+   * past the threshold can never push the world-change further away. Mirrors
+   * `localProblemResolutionAnchor` below exactly (Section 2's explicit "common mechanism, common
+   * fix" requirement -- both systems had the identical bug, both get the identical fix).
+   */
+  activityResolutionAnchor: Record<string, number>;
   localProblemsKnown: Record<string, number>;
   /**
    * Section 7/19 -- the WORLD's own resolution state per problem, entirely independent of whether
@@ -272,6 +292,59 @@ export interface CoreState {
    *  world-consequence resolution can land a realistic "数日後" later rather than the same instant
    *  (mirrors `eventLastFired`'s shape). */
   localProblemLastPlayerAction: Record<string, number>;
+  /** PHASE_15 Section 2 -- same ACTIVITY CONSEQUENCE CLOCK fix as `activityResolutionAnchor` above,
+   *  applied to local problems: the day the resolution-triggering condition (accumulation threshold
+   *  met for "accumulate"-mode help, or the single help/connect action itself otherwise) was FIRST
+   *  satisfied, fixed once, never moved by further help/connect actions on an already-anchored
+   *  problem. */
+  localProblemResolutionAnchor: Record<string, number>;
+  /**
+   * PHASE_15 Section 9-24 -- HYBRID EVENT ENCOUNTER V1: MOMENT EVENTS. Maps a `MomentEventDef.id` to
+   * the day it was last shown to the player (stamped once, on arrival, by
+   * `content/momentEventEngine.ts`'s `resolveMomentEventArrival`, called from `moveTo`). This single
+   * field does double duty as (a) "already shown today, don't show a second time on a revisit" and
+   * (b) the cooldown basis for the def not reappearing again too soon on a LATER day -- deliberately
+   * NOT reset by `startNewDay` (mirrors `eventLastFired`'s persistence). Whether the player actually
+   * responded is tracked separately via `flags[`moment_${id}_resolved`]` (mirrors the recurring event
+   * engine's own `flags[def.id]=true` convention) so an ignored moment event's choices simply vanish
+   * at the next day boundary without ever blocking or nagging (Section 23: fully ignorable).
+   */
+  momentEventShownDay: Record<string, number>;
+  /**
+   * PHASE_15 Section 25-31 -- HYBRID EVENT ENCOUNTER V1: EVENT THREADS. One entry per
+   * `EventThreadDef.id` the player has ever discovered; absence = not yet discovered (mirrors
+   * `localProblemsKnown`'s absence semantics). `stageIndex` is the count of POST-DISCOVERY stages
+   * completed so far (0 = just discovered, nothing past that yet); `lastPlayerProgressDay` is the
+   * anchor `content/eventThreadEngine.ts`'s daily tick measures `autoProgressAfterDays` from -- unlike
+   * the PHASE A activity/local-problem clock fix, a thread's `lastPlayerProgressDay` is deliberately
+   * allowed to keep moving forward on each real stage advance (each advance IS genuine progress
+   * toward resolution, not a repeated non-qualifying action, so this is not the Section 2 bug: nothing
+   * here defers an already-earned resolution, it only postpones the "town moves on without you"
+   * fallback for as long as the player keeps genuinely engaging).
+   */
+  eventThreads: Record<string, EventThreadRuntimeState>;
+}
+
+/**
+ * PHASE_15 Section 25 -- a multi-day mini-story's own state machine, entirely derived from real
+ * player/world actions, never a numeric quest-progress bar (mirrors `LocalProblemStatus`'s "plain
+ * category, never a score" discipline). `DISCOVERED` = the player has learned of it but not yet
+ * advanced it; `ACTIVE`/`PROGRESSED` = at least one further stage has been reached through real player
+ * engagement; `WAITING` is reserved for a thread whose next stage is not yet eligible (currently
+ * unused by V1's linear stage lists -- kept in the type for a future branching thread, Section 26's
+ * own explicit list); `RESOLVED` = the player carried it to its final stage; `ABANDONED` is reserved
+ * for a thread the player explicitly stepped back from (unused by V1 -- no thread currently offers a
+ * step-back action, since none commits the player to anything); `RESOLVED_WITHOUT_PLAYER` = the world
+ * moved it to its conclusion on its own because the player stopped engaging (Section 19's "player is
+ * not the hero" applied to threads, same principle as `LocalProblemStatus`'s identical outcome).
+ */
+export type EventThreadStatus = "DISCOVERED" | "ACTIVE" | "WAITING" | "PROGRESSED" | "RESOLVED" | "ABANDONED" | "RESOLVED_WITHOUT_PLAYER";
+
+export interface EventThreadRuntimeState {
+  status: EventThreadStatus;
+  stageIndex: number;
+  discoveredOnDay: number;
+  lastPlayerProgressDay: number;
 }
 
 /** Section 7/19 -- deliberately NOT a numeric score or percentage. `player_helped`/`player_connected`
@@ -310,7 +383,7 @@ export function createInitialCoreState(): CoreState {
     playerLocation: "TRIAL_HOUSE",
     visitedLocations: ["TRIAL_HOUSE"],
     worldFacts: [],
-    npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [], daisuke: [], hina: [], fumiko: [], kiyoshi: [] },
+    npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [], daisuke: [], hina: [], fumiko: [], kiyoshi: [], shizuko: [] },
     flags: {},
     intakeForm: null,
     money: 8000,
@@ -329,9 +402,13 @@ export function createInitialCoreState(): CoreState {
     activityHelpCount: {},
     activityLastDone: {},
     activityResolved: {},
+    activityResolutionAnchor: {},
     localProblemsKnown: {},
     localProblemStatus: {},
     localProblemHelpCount: {},
     localProblemLastPlayerAction: {},
+    localProblemResolutionAnchor: {},
+    momentEventShownDay: {},
+    eventThreads: {},
   };
 }

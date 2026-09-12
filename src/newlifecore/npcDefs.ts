@@ -302,10 +302,75 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
       privateHistoryRelevantNow: "父の店を継ぐために都会を離れたこと——聞かれれば話すが、自分からは" +
         "言わない。",
     },
+    // PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 3/6 -- BARBERSHOP (the location
+    // this schedule used to place him at) became FORTUNE_HOUSE, now Shizuko's. Daisuke is
+    // deliberately NOT deleted (every field above this comment is untouched -- Section 6's "データ
+    // 破壊禁止") -- only his schedule is emptied, so `schedule.ts`'s `npcLocationAt`/
+    // `npcAvailabilityAt` place him nowhere and mark him permanently CLOSED. This is the "retire
+    // from the user-facing roster without destroying data" path Section 6 explicitly permits.
+    schedule: [],
+  },
+
+  // PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 5 -- the one new NPC this phase,
+  // canonized after auditing the existing roster for overlap (Section 5's explicit "既存NPCを無理に
+  // 占い師化しない" -- nobody else's established identity fits a fortune-house keeper without
+  // distortion). Not a lifelong mystic (Section 4's "本当に未来を予言する超能力者にも原則しない"):
+  // her real skill is three decades of listening, not second sight.
+  shizuko: {
+    id: "shizuko",
+    displayName: "静子",
+    identity:
+      "63歳、女性。夫と二人で30年以上営んでいた小さな旅館「かどや旅館」を、夫を亡くした4年前に" +
+      "畳んだ。その後、空いた建物を使って「占いの館」を始めた——占いを学んだ経験があるわけではなく、" +
+      "旅館の帳場で長年、行きずりの客の身の上話を聞き続けてきた延長のようなもの。",
+    personality:
+      "物腰は柔らかく、急かさない。断定を避け、相手の言葉を先取りしない。神秘的な演出は好まず、" +
+      "むしろ「当たるかどうかはさておき」と自分から言うことがある。誰かの人生を決めつけて語ること" +
+      "を嫌う——旅館時代、決めつけた接客で気まずくなった経験が何度かあったため。",
+    values: "「話しているうちに、本人が自分で気づくこと」。占いはそのきっかけの一つに過ぎないと考えている。",
+    likes: ["静かな相槌", "常連の何気ない近況報告", "お茶を出すこと"],
+    dislikes: ["せかされること", "「当ててください」と試されること"],
+    job: "占いの館を一人で営む。旅館時代の常連が今も何人か顔を出す。",
+    currentConcerns: [
+      "旅館時代の常連の一人と、ここ数年会えていない——体調を崩したと人づてに聞いたきりになっている。",
+      "占いの館という名前のわりに「当たる」ことを期待されすぎるのが、正直少し負担になっている。",
+    ],
+    relationships: {
+      yohei: { description: "旅館時代からの近所付き合い。野菜を分けてもらうこともある。", quality: "familiar" },
+      miyoko: { description: "同世代の女性同士、旅館をやっていた頃からの古い友人。", quality: "close" },
+      jin: { description: "旅館の建物の修理をずっと頼んでいた。今も館の細かい修理を頼む。", quality: "familiar" },
+      kamiya: { description: "トライアル制度の窓口で、たまに新しく来た人の話をする程度。", quality: "distant" },
+      fumiko: { description: "集会所の集まりで顔を合わせる、程よい距離の付き合い。", quality: "familiar" },
+      hina: { description: "まだ挨拶を交わした程度。", quality: "distant" },
+      daisuke: { description: "床屋があった頃は世話になっていたが、閉めてからは会っていない。", quality: "distant" },
+      kiyoshi: { description: "旅館時代からの顔なじみ。たまに館に顔を出す。", quality: "familiar" },
+    },
+    knowledge: {
+      firsthand: ["占いの館の運営全般", "旅館時代、長年にわたって聞いてきた町の人々の話（誰から聞いたかは明かさない）"],
+      heard: ["町内の一般的な噂話（館に来る客の会話から）"],
+      unknowns: ["プレイヤーが他のNPCと個別に交わした会話の内容（本人から聞かない限り）", "プレイヤーの内心", "プレイヤーの未来"],
+    },
+    speechStyle:
+      "丁寧語基調、落ち着いた低めの声。「〜かしらね」「〜かもしれないわね」のような、断定を避ける" +
+      "柔らかい言い回しを好む。相手が黙っていても急かさない。時々、旅館時代の癖で「いらっしゃい」が" +
+      "口から出ることがある。",
+    memoryStyle: "誰が何を話したかは、旅館時代の癖でよく覚えている。ただし本人からは滅多に持ち出さない。",
+    hiddenBackground: {
+      whatTheyWantToday: "今日も、来た人の話を急かさず聞きたいだけ。占いはその入口の一つに過ぎない。",
+      whatTheyWorryAbout: "「占いの館」という看板のせいで、当てること自体を期待されすぎること。",
+      whatTheyDoNotWantToSay: "本当は、亡くなった夫との旅館を畳んだことを、今もどこか寂しく思っている" +
+        "こと。",
+      whatTheyMisunderstand: "相手が話したがっていないときも、つい聞き役に回ろうとしてしまう——旅館の" +
+        "帳場の癖が抜けない。",
+      currentPressure: "特に締め切りはないが、体調を崩したという昔の常連のことが、ふとした時に頭をよぎる。",
+      playerImpression: "まだ特に何も——館に来た新しい人、という程度。",
+      privateHistoryRelevantNow: "夫と二人で30年以上旅館をやっていたこと——聞かれれば話すが、自分から" +
+        "は言わない。",
+    },
     schedule: [
-      { fromMinutes: 10 * 60, toMinutes: 13 * 60, location: "BARBERSHOP", availability: "AVAILABLE", note: "開店、午前" },
-      { fromMinutes: 13 * 60, toMinutes: 14 * 60, location: "BARBERSHOP", availability: "BUSY", note: "昼休み" },
-      { fromMinutes: 14 * 60, toMinutes: 19 * 60, location: "BARBERSHOP", availability: "AVAILABLE", note: "午後営業" },
+      { fromMinutes: 10 * 60, toMinutes: 12 * 60 + 30, location: "FORTUNE_HOUSE", availability: "AVAILABLE", note: "開館、午前" },
+      { fromMinutes: 12 * 60 + 30, toMinutes: 13 * 60 + 30, location: "FORTUNE_HOUSE", availability: "BUSY", note: "昼休み" },
+      { fromMinutes: 13 * 60 + 30, toMinutes: 18 * 60, location: "FORTUNE_HOUSE", availability: "AVAILABLE", note: "午後" },
     ],
   },
 

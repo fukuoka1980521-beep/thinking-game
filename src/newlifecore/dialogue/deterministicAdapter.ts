@@ -185,6 +185,23 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
       "清は棚の方を見たまま、「ふん」と言った。",
     ],
   },
+  // PHASE_15 -- Shizuko's fallback bucket set. Soft, unhurried, avoids断定 even in the generic
+  // buckets (never "そうですか"-style flatness) -- distinct from Daisuke's terser register, since
+  // her whole positioning (Section 4/10) is "won't tell you what to think", not "doesn't say much".
+  shizuko: {
+    OTHER_NPC_MENTIONED: ["静子は少し目を細めた。「あら、そうなの」"],
+    WORK_TALK: ["静子は静かに言った。「焦らなくていいと思うわよ」"],
+    ABOUT_SELF: ["静子は小さく頷いた。「そうだったのね」"],
+    ABOUT_NPC: ["静子は少し笑った。「この館を始めて、もう4年になるかしらね」"],
+    UNCERTAIN: ["静子は優しく言った。「今すぐ決めなくてもいいのよ」"],
+    GREETING: ["静子はゆっくり頷いた。「いらっしゃい」", "静子はこちらを見て、「あら」と微笑んだ。"],
+    REUNION: ["静子は少し驚いたように言った。「あら、お久しぶりね」"],
+    OTHER: [
+      "静子はお茶を一口飲んで、静かに頷いた。",
+      "静子は少し間を置いてから、「そう」とだけ言った。",
+      "静子はカードを軽く揃え直しながら、「ふふ」と笑った。",
+    ],
+  },
 };
 
 function pick(list: string[], seed: number): string {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { USER_UPDATE_OPTIONS, daisukeCheckInPrompt } from "./content/realityBridge";
+import { USER_UPDATE_OPTIONS, shizukoCheckInPrompt } from "./content/realityBridge";
 import type { RealWorldIntent, UserUpdateResponse } from "./types";
 
 /**
@@ -20,7 +20,7 @@ export function RealityBridgeCheckIn({ intent, onSubmit, onCancel }: { intent: R
 
   return (
     <div data-testid="nlc-reality-bridge-checkin">
-      <p className="nlc-ambient">{daisukeCheckInPrompt(intent)}</p>
+      <p className="nlc-ambient">{shizukoCheckInPrompt(intent)}</p>
 
       <div className="nlc-form-field">
         <div className="nlc-form-radio-group">

@@ -63,7 +63,9 @@ export function localProblemConnectEligible(def: LocalProblemDef, state: CoreSta
   return npcAvailabilityAt(def.connectNpc, state.time, state.flags) === "AVAILABLE";
 }
 
-function helpAccumulationMet(def: LocalProblemDef, state: CoreState): boolean {
+/** Exported so `engine.ts`'s help mutator can decide, on the exact action that satisfies it,
+ *  whether to fix the resolution anchor (Section 2's clock fix) this turn. */
+export function helpAccumulationMet(def: LocalProblemDef, state: CoreState): boolean {
   if (def.helpMode !== "accumulate") return true;
   return (state.localProblemHelpCount[def.id] ?? 0) >= (def.helpThreshold ?? 1);
 }
@@ -73,6 +75,12 @@ function helpAccumulationMet(def: LocalProblemDef, state: CoreState): boolean {
  * event engine and trajectory late-consequence's own "tick on day start" shape). Returns the list of
  * defs that should resolve TODAY plus which text/knownBy applies, WITHOUT mutating anything --
  * `engine.ts` is the only place that actually writes the resulting WorldFacts/status.
+ *
+ * PHASE_15 Section 2 -- ACTIVITY CONSEQUENCE CLOCK fix, identical mechanism/fix as
+ * `activityEngine.ts`'s `dueActivityResolutions`: measures `resolveAfterDays` from
+ * `localProblemResolutionAnchor[def.id]` (the day the resolution condition was FIRST satisfied,
+ * fixed once in `engine.ts`'s help/connect mutators) instead of the most recent action, so
+ * continuing to help/connect after the anchor is set can never defer the world-change.
  */
 export interface LocalProblemResolution {
   def: LocalProblemDef;
@@ -85,9 +93,9 @@ export function dueLocalProblemResolutions(state: CoreState): LocalProblemResolu
     if (isLocalProblemResolved(def, state)) continue;
     const status = state.localProblemStatus[def.id];
     if (status === "player_helped" || status === "player_connected") {
-      if (!helpAccumulationMet(def, state)) continue;
-      const lastAction = state.localProblemLastPlayerAction[def.id];
-      if (lastAction !== undefined && state.day - lastAction >= def.resolveAfterDays) {
+      const anchor = state.localProblemResolutionAnchor[def.id];
+      if (anchor === undefined) continue; // accumulation threshold not yet reached
+      if (state.day - anchor >= def.resolveAfterDays) {
         out.push({ def, outcome: "resolved" });
       }
       continue;

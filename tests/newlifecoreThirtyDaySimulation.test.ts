@@ -42,7 +42,7 @@ import { EVENT_DEFS } from "../src/newlifecore/content/eventDefs";
 import { createInitialCoreState } from "../src/newlifecore/types";
 import type { CoreState, LocationId, NpcId } from "../src/newlifecore/types";
 
-const ALL_LOCATIONS: LocationId[] = ["CHALLENGE_CENTER", "YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL", "SHOPPING_STREET", "BARBERSHOP"];
+const ALL_LOCATIONS: LocationId[] = ["CHALLENGE_CENTER", "YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL", "SHOPPING_STREET", "FORTUNE_HOUSE"];
 
 function simulateOneDay(state: CoreState, dayIndex: number): CoreState {
   let s = state;

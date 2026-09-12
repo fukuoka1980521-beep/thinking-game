@@ -21,7 +21,10 @@ import { buildLocationScene, buildEndOfDayNarrative } from "../src/newlifecore/c
 const miyokoDef = localProblemById("miyoko_weekend_help_shortage")!;
 const kiyoshiDeliveryDef = localProblemById("yohei_kiyoshi_delivery")!;
 const jinDef = localProblemById("jin_solo_workload")!;
-const daisukeDef = localProblemById("daisuke_renovation_indecision")!;
+// PHASE_15 Section 3/6 -- "daisuke_renovation_indecision" was removed (its owning NPC/location no
+// longer exist as reachable content); "yohei_shop_successor" is the remaining conversation-only
+// (no help/connect action) def, used here for the same "listen-only" test shape.
+const conversationOnlyDef = localProblemById("yohei_shop_successor")!;
 
 function atDay(day: number, time?: number) {
   const s = createInitialCoreState();
@@ -30,7 +33,7 @@ function atDay(day: number, time?: number) {
 
 describe("PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1: definitions themselves", () => {
   it("has between 8 and 12 definitions (directive's own ceiling), taken at the low end this phase", () => {
-    expect(LOCAL_PROBLEM_DEFS.length).toBe(8);
+    expect(LOCAL_PROBLEM_DEFS.length).toBe(7);
   });
 
   it("never uses quest-board vocabulary anywhere in any def's authored text (Section 6/23 ban)", () => {
@@ -133,6 +136,69 @@ describe("help response (accumulate mode) never resolves before its threshold an
   });
 });
 
+describe("PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 2: ACTIVITY CONSEQUENCE CLOCK fix (local-problem side -- same mechanism, same fix)", () => {
+  it("threshold reached -> additional help afterward -> resolution day does NOT move", () => {
+    let state = discoverLocalProblem(atDay(miyokoDef.minDay, 9 * 60), miyokoDef);
+    for (let i = 0; i < (miyokoDef.helpThreshold ?? 1); i++) {
+      state = respondToLocalProblemHelp(state, miyokoDef);
+      if (i < (miyokoDef.helpThreshold ?? 1) - 1) state = startNewDay(state);
+    }
+    const anchorDay = state.localProblemResolutionAnchor[miyokoDef.id];
+    expect(anchorDay).toBe(state.day);
+    // One more help action after the threshold was already reached.
+    state = startNewDay(state);
+    state = respondToLocalProblemHelp(state, miyokoDef);
+    expect(state.localProblemResolutionAnchor[miyokoDef.id]).toBe(anchorDay); // unchanged
+    expect(state.localProblemLastPlayerAction[miyokoDef.id]).toBe(state.day); // this keeps updating
+  });
+
+  it("threshold reached -> helped every cooldown-eligible day thereafter -> resolution never deferred", () => {
+    let state = discoverLocalProblem(atDay(miyokoDef.minDay, 9 * 60), miyokoDef);
+    for (let i = 0; i < (miyokoDef.helpThreshold ?? 1); i++) {
+      state = respondToLocalProblemHelp(state, miyokoDef);
+      if (i < (miyokoDef.helpThreshold ?? 1) - 1) state = startNewDay(state);
+    }
+    const anchorDay = state.day;
+    const targetResolveDay = anchorDay + miyokoDef.resolveAfterDays;
+    while (state.day < targetResolveDay + 4) {
+      state = startNewDay(state);
+      if (localProblemHelpEligible(miyokoDef, { ...state, time: 9 * 60 })) {
+        state = respondToLocalProblemHelp({ ...state, time: 9 * 60 }, miyokoDef);
+      }
+    }
+    expect(state.localProblemResolutionAnchor[miyokoDef.id]).toBe(anchorDay);
+    expect(isLocalProblemResolved(miyokoDef, state)).toBe(true);
+  });
+
+  it("before the threshold, no anchor is set", () => {
+    let state = discoverLocalProblem(atDay(miyokoDef.minDay, 9 * 60), miyokoDef);
+    state = respondToLocalProblemHelp(state, miyokoDef); // 1 of 3
+    expect(state.localProblemResolutionAnchor[miyokoDef.id]).toBeUndefined();
+  });
+
+  it("once resolved, the world-change WorldFact is never duplicated by further ticks", () => {
+    let state = discoverLocalProblem(atDay(miyokoDef.minDay, 9 * 60), miyokoDef);
+    for (let i = 0; i < (miyokoDef.helpThreshold ?? 1); i++) {
+      state = respondToLocalProblemHelp(state, miyokoDef);
+      if (i < (miyokoDef.helpThreshold ?? 1) - 1) state = startNewDay(state);
+    }
+    for (let i = 0; i < miyokoDef.resolveAfterDays + 5; i++) state = startNewDay(state);
+    const matches = state.worldFacts.filter((f) => f.id.startsWith(`${miyokoDef.id}_resolved_d`));
+    expect(matches).toHaveLength(1);
+  });
+
+  it("connect-based resolution (kiyoshiDeliveryDef) also anchors once and holds across repeated startNewDay calls", () => {
+    let state = discoverLocalProblem(atDay(kiyoshiDeliveryDef.minDay, 9 * 60), kiyoshiDeliveryDef);
+    state = respondToLocalProblemConnect(state, kiyoshiDeliveryDef);
+    const anchorDay = state.localProblemResolutionAnchor[kiyoshiDeliveryDef.id];
+    expect(anchorDay).toBe(state.day);
+    for (let i = 0; i < 10; i++) {
+      state = startNewDay(state);
+      expect(state.localProblemResolutionAnchor[kiyoshiDeliveryDef.id]).toBe(anchorDay);
+    }
+  });
+});
+
 describe("connect response resolves on its own timing, independent of help", () => {
   it("sets player_connected immediately, then resolves only after resolveAfterDays", () => {
     let state = discoverLocalProblem(atDay(kiyoshiDeliveryDef.minDay, 9 * 60), kiyoshiDeliveryDef);
@@ -159,15 +225,14 @@ describe("world resolves without the player (Section 19 -- player is not the onl
   });
 
   it("does NOT auto-resolve a def the player is actively engaged with, even past its autoResolveAfterDays window", () => {
-    let state = discoverLocalProblem(atDay(daisukeDef.minDay, 9 * 60), daisukeDef);
-    // daisukeDef has no help/connect action (conversation-only) -- its own resolution requires
-    // resolveAfterDays from discovery-adjacent engagement to matter; here we only assert that
-    // discovering it alone does not immediately count as "never engaged" for autoResolve purposes
-    // being skipped is out of scope for a conversation-only def, so instead assert the *undiscovered*
-    // case still respects the earlier auto-resolve test's mechanism (covered above) rather than
-    // firing early.
+    let state = discoverLocalProblem(atDay(conversationOnlyDef.minDay, 9 * 60), conversationOnlyDef);
+    // conversationOnlyDef (yohei_shop_successor) has no help/connect action (conversation-only) --
+    // its own resolution requires resolveAfterDays from discovery-adjacent engagement to matter;
+    // here we only assert that discovering it alone does not immediately count as "never engaged"
+    // for autoResolve purposes. Advancing just 2 days (well short of both resolveAfterDays: 4 and
+    // autoResolveAfterDays: 10) should leave it unresolved either way.
     for (let i = 0; i < 2; i++) state = startNewDay(state);
-    expect(isLocalProblemResolved(daisukeDef, state)).toBe(false);
+    expect(isLocalProblemResolved(conversationOnlyDef, state)).toBe(false);
   });
 });
 

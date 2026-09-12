@@ -148,6 +148,95 @@ describe("end-of-day narrative includes today's activity beat", () => {
   });
 });
 
+describe("PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 2: ACTIVITY CONSEQUENCE CLOCK fix", () => {
+  function doSession(state: ReturnType<typeof atDay>) {
+    return runActivity({ ...state, time: repairDef.eligibleFromMinutes }, repairDef, [repairDef.tasks[0]]);
+  }
+
+  it("threshold reached -> left alone -> resolves exactly resolveAfterDays later", () => {
+    let state = atDay(repairDef.minDay, repairDef.eligibleFromMinutes);
+    for (let i = 0; i < repairDef.completionThreshold; i++) {
+      state = doSession(state);
+      if (i < repairDef.completionThreshold - 1) state = startNewDay(state);
+    }
+    const anchorDay = state.day;
+    expect(state.activityResolutionAnchor[repairDef.id]).toBe(anchorDay);
+    for (let i = 0; i < repairDef.resolveAfterDays - 1; i++) state = startNewDay(state);
+    expect(state.activityResolved[repairDef.id]).toBeFalsy();
+    state = startNewDay(state);
+    expect(state.activityResolved[repairDef.id]).toBe(true);
+    expect(state.day).toBe(anchorDay + repairDef.resolveAfterDays);
+  });
+
+  it("threshold reached -> additional sessions afterward -> resolution day does NOT move (PHASE_14's exact bug)", () => {
+    let state = atDay(repairDef.minDay, repairDef.eligibleFromMinutes);
+    for (let i = 0; i < repairDef.completionThreshold; i++) {
+      state = doSession(state);
+      if (i < repairDef.completionThreshold - 1) state = startNewDay(state);
+    }
+    const anchorDay = state.day;
+    // One more session, respecting cooldown, AFTER the threshold was already reached.
+    state = startNewDay(state);
+    state = startNewDay(state); // cooldownDays=2
+    state = doSession(state);
+    expect(state.activityResolutionAnchor[repairDef.id]).toBe(anchorDay); // unchanged
+    expect(state.activityLastDone[repairDef.id]).toBe(state.day); // this DOES keep updating
+    expect(state.activityLastDone[repairDef.id]).not.toBe(anchorDay);
+  });
+
+  it("threshold reached -> activity done every eligible (cooldown-respecting) day -> resolution never deferred", () => {
+    let state = atDay(repairDef.minDay, repairDef.eligibleFromMinutes);
+    for (let i = 0; i < repairDef.completionThreshold; i++) {
+      state = doSession(state);
+      if (i < repairDef.completionThreshold - 1) state = startNewDay(state);
+    }
+    const anchorDay = state.day;
+    const targetResolveDay = anchorDay + repairDef.resolveAfterDays;
+    // Keep helping every cooldown-eligible day, all the way past when resolution should land.
+    while (state.day < targetResolveDay + 4) {
+      state = startNewDay(state);
+      if (activityEligible(repairDef, { ...state, time: repairDef.eligibleFromMinutes })) {
+        state = doSession(state);
+      }
+    }
+    expect(state.activityResolutionAnchor[repairDef.id]).toBe(anchorDay);
+    expect(state.activityResolved[repairDef.id]).toBe(true);
+  });
+
+  it("before the threshold, progress accumulates but no anchor is ever set", () => {
+    let state = atDay(repairDef.minDay, repairDef.eligibleFromMinutes);
+    state = doSession(state); // 1 of 3
+    expect(state.activityHelpCount[repairDef.id]).toBe(1);
+    expect(state.activityResolutionAnchor[repairDef.id]).toBeUndefined();
+    for (let i = 0; i < 10; i++) state = startNewDay(state);
+    expect(state.activityResolved[repairDef.id]).toBeFalsy();
+  });
+
+  it("once resolved, the world-change WorldFact is never duplicated by further ticks", () => {
+    let state = atDay(repairDef.minDay, repairDef.eligibleFromMinutes);
+    for (let i = 0; i < repairDef.completionThreshold; i++) {
+      state = doSession(state);
+      if (i < repairDef.completionThreshold - 1) state = startNewDay(state);
+    }
+    for (let i = 0; i < repairDef.resolveAfterDays + 5; i++) state = startNewDay(state);
+    const matches = state.worldFacts.filter((f) => f.id.startsWith(`${repairDef.id}_worldchange_d`));
+    expect(matches).toHaveLength(1);
+  });
+
+  it("the anchor persists unchanged across many day transitions (no silent reset)", () => {
+    let state = atDay(repairDef.minDay, repairDef.eligibleFromMinutes);
+    for (let i = 0; i < repairDef.completionThreshold; i++) {
+      state = doSession(state);
+      if (i < repairDef.completionThreshold - 1) state = startNewDay(state);
+    }
+    const anchorDay = state.activityResolutionAnchor[repairDef.id];
+    for (let i = 0; i < 15; i++) {
+      state = startNewDay(state);
+      expect(state.activityResolutionAnchor[repairDef.id]).toBe(anchorDay);
+    }
+  });
+});
+
 describe("PHASE_14 Section 4/22/23: TODAY'S SIGNS", () => {
   it("returns at most 3 signs", () => {
     const state = atDay(5, 8 * 60 + 45);

@@ -31,18 +31,22 @@ export interface ActivityResolution {
   def: ActivityDef;
 }
 
-/** Section 10 -- called once per day (from `engine.ts`'s `startNewDay`, same shape as
- *  `dueLocalProblemResolutions`). An activity's world-change lands once `completionThreshold`
- *  sessions have accumulated AND `resolveAfterDays` have passed since the LAST session -- never on
- *  the session itself. */
+/**
+ * PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 2 -- ACTIVITY CONSEQUENCE CLOCK fix.
+ * Called once per day (from `engine.ts`'s `startNewDay`, same shape as `dueLocalProblemResolutions`).
+ * An activity's world-change lands `resolveAfterDays` after `activityResolutionAnchor[def.id]` --
+ * the day `completionThreshold` was FIRST reached (written once, in `engine.ts`'s `runActivity`,
+ * never moved again). Continuing to do the activity past the threshold no longer defers this: the
+ * anchor is already fixed, so `state.day - anchor` keeps growing regardless of further sessions
+ * (PHASE 14's bug measured from `activityLastDone`, which kept updating on every session).
+ */
 export function dueActivityResolutions(state: CoreState): ActivityResolution[] {
   const out: ActivityResolution[] = [];
   for (const def of ACTIVITY_DEFS) {
     if (state.activityResolved[def.id]) continue;
-    const count = state.activityHelpCount[def.id] ?? 0;
-    if (count < def.completionThreshold) continue;
-    const lastDone = state.activityLastDone[def.id];
-    if (lastDone !== undefined && state.day - lastDone >= def.resolveAfterDays) {
+    const anchor = state.activityResolutionAnchor[def.id];
+    if (anchor === undefined) continue; // threshold not yet reached
+    if (state.day - anchor >= def.resolveAfterDays) {
       out.push({ def });
     }
   }

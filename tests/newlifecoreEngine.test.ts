@@ -434,14 +434,14 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: Reality Bridge loo
     expect(JSON.stringify(obs)).not.toMatch(/score|diagnosis|personality/i);
   });
 
-  it("BARBERSHOP offers the check-in action only once the player returns on a LATER day, not the same day the intent was created", () => {
+  it("FORTUNE_HOUSE offers the check-in action only once the player returns on a LATER day, not the same day the intent was created", () => {
     const s0 = createInitialCoreState();
-    const s1 = createRealWorldIntent({ ...s0, playerLocation: "BARBERSHOP", time: 12 * 60 }, "daisuke", "x", "y");
-    const sceneSameDay = buildLocationScene({ ...s1, playerLocation: "BARBERSHOP", time: 12 * 60 + 30 });
+    const s1 = createRealWorldIntent({ ...s0, playerLocation: "FORTUNE_HOUSE", time: 12 * 60 }, "shizuko", "x", "y");
+    const sceneSameDay = buildLocationScene({ ...s1, playerLocation: "FORTUNE_HOUSE", time: 12 * 60 + 30 });
     expect(sceneSameDay.specialActions.map((a) => a.id)).not.toContain("check_in_intent");
 
     const s2 = startNewDay({ ...s1, ended: true });
-    const sceneNextDay = buildLocationScene({ ...s2, playerLocation: "BARBERSHOP", time: 12 * 60 });
+    const sceneNextDay = buildLocationScene({ ...s2, playerLocation: "FORTUNE_HOUSE", time: 12 * 60 });
     expect(sceneNextDay.specialActions.map((a) => a.id)).toContain("check_in_intent");
   });
 });
@@ -499,12 +499,14 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: deterministic clas
 });
 
 describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: NPC roster and relationship graph (Section 4/5)", () => {
-  // PHASE_13 Section 9 -- Kiyoshi added (7 -> 8), the one deliberately modest roster expansion this
-  // phase; see that phase's CLOSE report for why it stopped well short of the 12-14 ceiling offered.
-  const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "daisuke", "hina", "fumiko", "kiyoshi"];
+  // PHASE_13 Section 9 -- Kiyoshi added (7 -> 8). PHASE_15 Section 5/6 -- Shizuko added (8 -> 9);
+  // Daisuke stays IN NPC_DEFS (his data is not deleted, only his schedule emptied -- see
+  // npcDefs.ts's own note), so the roster COUNT here still includes him even though he is
+  // permanently unreachable in actual play.
+  const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "daisuke", "hina", "fumiko", "kiyoshi", "shizuko"];
 
-  it("the town has 8 NPCs, and none of them is uniformly kind/omniscient about the others (Section 4)", () => {
-    expect(Object.keys(NPC_DEFS)).toHaveLength(8);
+  it("the town has 9 NPCs defined (8 reachable -- Daisuke's data persists but is unreachable), and none of them is uniformly kind/omniscient about the others (Section 4)", () => {
+    expect(Object.keys(NPC_DEFS)).toHaveLength(9);
     for (const npc of ALL_NPCS) {
       expect(NPC_DEFS[npc].hiddenBackground.whatTheyDoNotWantToSay.length).toBeGreaterThan(0);
     }

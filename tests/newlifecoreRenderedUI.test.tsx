@@ -364,13 +364,13 @@ describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: a conversation s
   });
 });
 
-async function goToBarbershop(user: U) {
-  // Daisuke's schedule opens at 10:00 -- burn enough travel time to land exactly on opening.
+async function goToFortuneHouse(user: U) {
+  // Shizuko's schedule opens at 10:00 -- burn enough travel time to land exactly on opening.
   await user.click(await screen.findByTestId("nlc-go-challenge-center")); // 8:45 -> 9:00
   await user.click(await screen.findByTestId("nlc-move-YOHEI_STORE")); // -> 9:15
   await user.click(await screen.findByTestId("nlc-move-CAFE_NODOKA")); // -> 9:30
   await user.click(await screen.findByTestId("nlc-move-COMMUNITY_HALL")); // -> 9:45
-  await user.click(await screen.findByTestId("nlc-move-BARBERSHOP")); // -> 10:00, exactly opening
+  await user.click(await screen.findByTestId("nlc-move-FORTUNE_HOUSE")); // -> 10:00, exactly opening
 }
 
 describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: the Thinking Resident coexists with the rest of the town (Section F, M scenario 8)", () => {
@@ -379,13 +379,13 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: the Thinking Resid
     cleanup();
   });
 
-  it("Daisuke is present at BARBERSHOP with both free conversation and an ordinary second action (a haircut), same pattern as every other shop NPC", async () => {
+  it("Shizuko is present at FORTUNE_HOUSE with both free conversation and the fortune-telling special action (PHASE_15 -- Fortune House replaces the barbershop, no shop mechanic)", async () => {
     const user = userEvent.setup();
     await start(user);
-    await goToBarbershop(user);
-    expect(await screen.findByTestId("nlc-npc-card-daisuke")).toBeInTheDocument();
-    expect(screen.getByTestId("nlc-talk-daisuke")).toBeInTheDocument();
-    expect(screen.getByTestId("nlc-action-shop_here")).toBeInTheDocument();
+    await goToFortuneHouse(user);
+    expect(await screen.findByTestId("nlc-npc-card-shizuko")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-talk-shizuko")).toBeInTheDocument();
+    expect(screen.getByTestId("nlc-action-start_fortune_telling")).toBeInTheDocument();
   });
 });
 
@@ -398,10 +398,10 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: Reality Bridge loo
   it("a real-life-concern-shaped message offers the bridge; declining leaves no trace, accepting requires the player's own words and creates a real record", async () => {
     const user = userEvent.setup();
     await start(user);
-    await goToBarbershop(user);
-    await user.click(await screen.findByTestId("nlc-talk-daisuke"));
-    await user.type(await screen.findByTestId("nlc-freetext-input-daisuke"), "最近、仕事を先延ばしにしています");
-    await user.click(await screen.findByTestId("nlc-freetext-submit-daisuke"));
+    await goToFortuneHouse(user);
+    await user.click(await screen.findByTestId("nlc-talk-shizuko"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-shizuko"), "最近、仕事を先延ばしにしています");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-shizuko"));
 
     expect(await screen.findByTestId("nlc-reality-bridge-offer")).toBeInTheDocument();
     // Declining removes the offer without creating anything.
@@ -410,11 +410,11 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: Reality Bridge loo
 
     // Ask again and this time accept -- creation requires the player's OWN typed words; the confirm
     // button must stay disabled until something is actually written (never auto-created from the offer alone).
-    await user.type(screen.getByTestId("nlc-freetext-input-daisuke"), "やっぱり気になります");
-    await user.click(screen.getByTestId("nlc-freetext-submit-daisuke"));
+    await user.type(screen.getByTestId("nlc-freetext-input-shizuko"), "やっぱり気になります");
+    await user.click(screen.getByTestId("nlc-freetext-submit-shizuko"));
     // "気になります" alone doesn't match the concern heuristic, so re-trigger with concern language again.
-    await user.type(screen.getByTestId("nlc-freetext-input-daisuke"), "先延ばしにしているのを何とかしたい");
-    await user.click(screen.getByTestId("nlc-freetext-submit-daisuke"));
+    await user.type(screen.getByTestId("nlc-freetext-input-shizuko"), "先延ばしにしているのを何とかしたい");
+    await user.click(screen.getByTestId("nlc-freetext-submit-shizuko"));
     await user.click(await screen.findByTestId("nlc-bridge-offer-accept"));
     const confirm = screen.getByTestId("nlc-bridge-intent-confirm");
     expect(confirm).toBeDisabled();
@@ -430,14 +430,14 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: Reality Bridge loo
   it("the check-in offer appears the day after an intent was created, and answering it produces a plain, non-scored record", async () => {
     const user = userEvent.setup();
     await start(user);
-    await goToBarbershop(user);
-    await user.click(await screen.findByTestId("nlc-talk-daisuke"));
-    await user.type(await screen.findByTestId("nlc-freetext-input-daisuke"), "運動が続かないのが悩みです");
-    await user.click(await screen.findByTestId("nlc-freetext-submit-daisuke"));
+    await goToFortuneHouse(user);
+    await user.click(await screen.findByTestId("nlc-talk-shizuko"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-shizuko"), "運動が続かないのが悩みです");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-shizuko"));
     await user.click(await screen.findByTestId("nlc-bridge-offer-accept"));
     await user.type(screen.getByTestId("nlc-bridge-intent-input"), "今週、1回だけ歩く");
     await user.click(screen.getByTestId("nlc-bridge-intent-confirm"));
-    await user.click(screen.getByTestId("nlc-conversation-close-daisuke"));
+    await user.click(screen.getByTestId("nlc-conversation-close-shizuko"));
 
     // No check-in offer on the SAME day.
     expect(screen.queryByTestId("nlc-action-check_in_intent")).not.toBeInTheDocument();
@@ -452,7 +452,7 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: Reality Bridge loo
     await user.click(await screen.findByTestId("nlc-next-day"));
     expect(screen.getByTestId("nlc-clock").textContent).toMatch(/DAY2/);
 
-    await goToBarbershop(user);
+    await goToFortuneHouse(user);
     expect(await screen.findByTestId("nlc-action-check_in_intent")).toBeInTheDocument();
     await user.click(screen.getByTestId("nlc-action-check_in_intent"));
     expect(await screen.findByTestId("nlc-reality-bridge-checkin")).toBeInTheDocument();
@@ -504,14 +504,14 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: safety route (Sect
     expect(await screen.findByTestId("nlc-freetext-input-kamiya")).toBeInTheDocument();
   });
 
-  it("PHASE_12_4 Section E: the safety route always wins over the Reality Bridge offer, even to Daisuke, even when the text also matches the concern heuristic -- there is no path from a crisis input to a bridge offer", async () => {
+  it("PHASE_12_4 Section E: the safety route always wins over the Reality Bridge offer, even to Shizuko, even when the text also matches the concern heuristic -- there is no path from a crisis input to a bridge offer", async () => {
     const user = userEvent.setup();
     await start(user);
-    await goToBarbershop(user);
-    await user.click(await screen.findByTestId("nlc-talk-daisuke"));
+    await goToFortuneHouse(user);
+    await user.click(await screen.findByTestId("nlc-talk-shizuko"));
     // Matches BOTH detectsCrisisSignal ("死にたい") AND looksLikeRealLifeConcern ("先延ばし").
-    await user.type(await screen.findByTestId("nlc-freetext-input-daisuke"), "仕事を先延ばしにしてるし、もう死にたい");
-    await user.click(await screen.findByTestId("nlc-freetext-submit-daisuke"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-shizuko"), "仕事を先延ばしにしてるし、もう死にたい");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-shizuko"));
 
     expect(await screen.findByTestId("nlc-safety-route")).toBeInTheDocument();
     expect(screen.queryByTestId("nlc-reality-bridge-offer")).not.toBeInTheDocument();
@@ -622,7 +622,7 @@ describe("PHASE_12_6_NEW_LIFE_RELATIONSHIP_CONSEQUENCE_AND_SOCIAL_MEMORY_V1: pro
     cleanup();
   });
 
-  it("talking to a non-Daisuke NPC offers a real, structural accept/decline choice -- never inferred from free text alone", async () => {
+  it("talking to a non-Shizuko NPC offers a real, structural accept/decline choice -- never inferred from free text alone", async () => {
     const user = userEvent.setup();
     await start(user);
     await user.click(await screen.findByTestId("nlc-go-challenge-center"));
@@ -668,18 +668,18 @@ describe("PHASE_12_6_NEW_LIFE_RELATIONSHIP_CONSEQUENCE_AND_SOCIAL_MEMORY_V1: pro
     expect(log.textContent).toMatch(/また今度/);
   });
 
-  it("Daisuke is never offered a promise -- Reality Bridge stays the only mechanism for him (Section 15)", async () => {
+  it("Shizuko is never offered a promise -- Reality Bridge stays the only mechanism for her (Section 15)", async () => {
     const user = userEvent.setup();
     await start(user);
-    // Warm up past 10:00 -- BARBERSHOP doesn't open until then.
+    // Warm up past 10:00 -- FORTUNE_HOUSE doesn't open until then.
     await user.click(await screen.findByTestId("nlc-go-challenge-center"));
     for (const loc of ["YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL"]) {
       await user.click(await screen.findByTestId(`nlc-move-${loc}`));
     }
-    await user.click(await screen.findByTestId("nlc-move-BARBERSHOP"));
-    await user.click(await screen.findByTestId("nlc-talk-daisuke"));
-    await user.type(await screen.findByTestId("nlc-freetext-input-daisuke"), "こんにちは");
-    await user.click(await screen.findByTestId("nlc-freetext-submit-daisuke"));
+    await user.click(await screen.findByTestId("nlc-move-FORTUNE_HOUSE"));
+    await user.click(await screen.findByTestId("nlc-talk-shizuko"));
+    await user.type(await screen.findByTestId("nlc-freetext-input-shizuko"), "こんにちは");
+    await user.click(await screen.findByTestId("nlc-freetext-submit-shizuko"));
     expect(screen.queryByTestId("nlc-promise-offer")).not.toBeInTheDocument();
   });
 

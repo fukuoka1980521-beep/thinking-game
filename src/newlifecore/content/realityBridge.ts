@@ -51,18 +51,25 @@ export const USER_UPDATE_OPTIONS: { value: UserUpdateResponse; label: string }[]
   { value: "other", label: "自由記述" },
 ];
 
+/**
+ * PHASE_15_NEW_LIFE_HYBRID_EVENT_AND_FORTUNE_HOUSE_V1 Section 3/6/11 -- Reality Bridge migrated
+ * from Daisuke (BARBERSHOP) to Shizuko (FORTUNE_HOUSE). Renamed from `daisukeIntentConfirmReaction`/
+ * `daisukeCheckInPrompt`/`daisukeCheckInAcknowledgement` -- same 3 functions, same role in the flow,
+ * rewritten for Shizuko's own register (Section 30: distinct from every other NPC, not just a
+ * find-and-replace of "大輔" -> "静子"; no scissors/mirror imagery -- hers is cards/tea).
+ */
+
 /** Directive Section H: shown right after the player confirms creating the intent. Deliberately
- *  flat/non-cheerleading -- no "頑張って!", no congratulation, matching Daisuke's own established
- *  register (short, not effusive) and the broader "AI依存を促さない" / no praise-as-reward
- *  discipline already established elsewhere in this project. */
-export function daisukeIntentConfirmReaction(): string {
-  return "大輔は軽く頷いた。「そうか。……まあ、無理しない範囲でな」";
+ *  flat/non-cheerleading -- no "頑張って!", no congratulation, matching the broader "AI依存を促さ
+ *  ない" / no praise-as-reward discipline already established elsewhere in this project. */
+export function shizukoIntentConfirmReaction(): string {
+  return "静子は静かに頷いた。「そう。……まあ、無理しない範囲でね」";
 }
 
 /** Directive Section H: the return visit's opening beat, shown once the check-in panel opens --
  *  references the ORIGINAL intent by the player's own words, never a summary/diagnosis of it. */
-export function daisukeCheckInPrompt(intent: RealWorldIntent): string {
-  return `大輔は鏡越しにちらっと見た。「そういえば……前に言ってた「${intent.intentLabel}」、その後どうだった？」`;
+export function shizukoCheckInPrompt(intent: RealWorldIntent): string {
+  return `静子はゆっくり顔を上げた。「そういえば……前に言ってた「${intent.intentLabel}」、その後どうだった？」`;
 }
 
 /** Directive Section H: the scripted beat right after the player answers -- deliberately the SAME
@@ -71,6 +78,6 @@ export function daisukeCheckInPrompt(intent: RealWorldIntent): string {
  *  left to the live model's next free-text reply, which by then already knows the fact (via
  *  engine.ts's checkInRealWorldIntent -> addWorldFact, the same knowledge-boundary channel
  *  everything else uses). */
-export function daisukeCheckInAcknowledgement(): string {
-  return "大輔は小さく頷いた。「そうか」それだけ言って、また鋏を動かし始めた。";
+export function shizukoCheckInAcknowledgement(): string {
+  return "静子は小さく頷いた。「そう」それだけ言って、お茶をひと口飲んだ。";
 }

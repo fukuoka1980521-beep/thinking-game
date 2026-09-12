@@ -11,6 +11,9 @@ import { LOCAL_PROBLEM_DEFS } from "./localProblemDefs";
 import { localProblemConnectEligible, localProblemDiscoverEligible, localProblemHelpEligible, localProblemObservationEligible } from "./localProblemEngine";
 import { ACTIVITY_DEFS } from "./activityDefs";
 import { activityEligible } from "./activityEngine";
+import { activeMomentEventAt } from "./momentEventEngine";
+import { EVENT_THREAD_DEFS } from "./eventThreadDefs";
+import { eventThreadDiscoverEligible, eventThreadNextStageEligible, eventThreadObservationEligible, eventThreadRuntimeState } from "./eventThreadEngine";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 /**
@@ -89,6 +92,52 @@ function localProblemAmbientLineAt(location: LocationId, state: CoreState): stri
   return def ? def.observationLine : "";
 }
 
+/** PHASE_15 Section 9-24 -- the currently-active moment event's own ambient line ("something
+ *  happened"), or empty. Reads `activeMomentEventAt` (a pure function of state that was already
+ *  stamped by `engine.ts`'s `moveTo` on arrival) -- this function itself performs no mutation. */
+function momentEventAmbientLineAt(location: LocationId, state: CoreState): string {
+  const def = activeMomentEventAt(location, state);
+  return def ? def.observationLine : "";
+}
+
+/** PHASE_15 Section 9-24 -- the active moment event's 1-2 response choices, offered as ordinary
+ *  specialActions (never a separate card/modal, Section 23). Encoded as `momentchoice_<defId>_<choiceId>`;
+ *  NewlifeCoreApp.tsx resolves this back to the exact (def, choice) pair by brute-force lookup over
+ *  the small MOMENT_EVENT_DEFS table (both components can themselves contain underscores, so a single
+ *  `slice` cannot unambiguously split them back apart). */
+function momentEventActionsAt(location: LocationId, state: CoreState): { id: string; label: string }[] {
+  const def = activeMomentEventAt(location, state);
+  if (!def) return [];
+  return def.choices.map((c) => ({ id: `momentchoice_${def.id}_${c.id}`, label: c.label }));
+}
+
+/** PHASE_15 Section 25-31 -- at most one ambient event-thread discovery cue per location visit, same
+ *  "first eligible in authored order" discipline as `localProblemAmbientLineAt`. Only ever shown for
+ *  a thread not yet discovered -- an already-discovered thread's own progress is surfaced purely
+ *  through its action label (`eventThreadActionsAt` below), never a second ambient line nagging about
+ *  it (Section 26: no separate "thread available" banner). */
+function eventThreadAmbientLineAt(location: LocationId, state: CoreState): string {
+  const def = EVENT_THREAD_DEFS.find((d) => eventThreadObservationEligible(d, location, state));
+  return def ? def.observationLine : "";
+}
+
+/** PHASE_15 Section 25-31 -- an ordinary scene action either discovering a new thread or advancing
+ *  an already-discovered one, exactly like every other specialAction in this file (never a distinct
+ *  "quest" widget). At most one action per thread def; a def can never offer both actions at once
+ *  (discover/next-stage are mutually exclusive by construction, mirroring local problems). */
+function eventThreadActionsAt(location: LocationId, state: CoreState): { id: string; label: string }[] {
+  const actions: { id: string; label: string }[] = [];
+  for (const def of EVENT_THREAD_DEFS) {
+    if (eventThreadDiscoverEligible(def, location, state)) {
+      actions.push({ id: `discover_thread_${def.id}`, label: def.discoverActionLabel });
+    } else if (eventThreadNextStageEligible(def, location, state)) {
+      const runtime = eventThreadRuntimeState(def, state)!;
+      actions.push({ id: `progress_thread_${def.id}`, label: def.stages[runtime.stageIndex].actionLabel });
+    }
+  }
+  return actions;
+}
+
 export const LOCATION_LABEL: Record<LocationId, string> = {
   TRIAL_HOUSE: "仮住まい",
   CHALLENGE_CENTER: "チャレンジセンター",
@@ -96,7 +145,8 @@ export const LOCATION_LABEL: Record<LocationId, string> = {
   CAFE_NODOKA: "喫茶のどか",
   COMMUNITY_HALL: "集会所",
   SHOPPING_STREET: "商店街",
-  BARBERSHOP: "理容店かどや",
+  // PHASE_15 Section 3/32 -- an ordinary town shop name, not a therapy/medical-sounding label.
+  FORTUNE_HOUSE: "占いの館",
 };
 
 export const REACHABLE_FROM_TRIAL_HOUSE: LocationId[] = ["CHALLENGE_CENTER", "YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL", "SHOPPING_STREET"];
@@ -158,6 +208,12 @@ const OPENING_LINES: Record<NpcId, NpcOpeningLine> = {
     firstVisitLine: "レジの脇に立っていた清が、ちらっとこちらを見た。",
     laterVisitLine: "清は軽く頷いた。「ああ」",
   },
+  shizuko: {
+    npc: "shizuko",
+    firstVisitLine: "奥から静子が顔を出した。「あら、いらっしゃい。……占いの館、って名前だけど、そう" +
+      "身構えなくていいのよ」",
+    laterVisitLine: "静子はゆっくり顔を上げた。「あら、また来てくれたのね」",
+  },
 };
 
 // PHASE_12_4 Section 1/8 -- "昨日のことが今日につながっている" as a felt, structural thing, not a
@@ -174,6 +230,7 @@ const YESTERDAY_BRIDGE_LINES: Record<NpcId, string> = {
   hina: "陽菜が顔を上げた。「あ、昨日も来てくれましたよね」",
   fumiko: "文子は片手を挙げた。「あら、昨日も来てたわね」",
   kiyoshi: "清はちらっとこちらを見た。「昨日も来てたな」",
+  shizuko: "静子は顔を上げた。「あら、昨日も来てくれたわよね」",
 };
 
 export function openingLineFor(npc: NpcId, state: CoreState): string {
@@ -252,27 +309,35 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     // is only ever "here" via schedule.ts's flags.hinaShopOpen gate, never before that regardless
     // of what day it nominally is (directive Section 6: no NPC/state changes just because a day
     // number ticked over with nobody watching a specific trigger condition).
+    // PHASE_15 Section 9-24 -- moment events are location-wide town texture, independent of which
+    // of this location's own sub-branches the player happens to land in, so they're merged into
+    // every non-rain SHOPPING_STREET branch below the same way `localProblemAmbientLineAt` already
+    // is at other locations.
+    const shoppingMomentLine = momentEventAmbientLineAt(loc, state);
+    const shoppingMomentActions = momentEventActionsAt(loc, state);
     if (npcsHere.includes("hina")) {
       return {
         location: loc,
-        ambientLine: localProblemAmbientLineAt(loc, state),
+        ambientLine: [localProblemAmbientLineAt(loc, state), shoppingMomentLine].filter((s) => s.length > 0).join(" "),
         npcsHere: ["hina"],
-        specialActions: [{ id: "notice_shop", label: "新しい店を覗く" }, ...localProblemActionsForNpcHere("hina", loc, state)],
+        specialActions: [{ id: "notice_shop", label: "新しい店を覗く" }, ...localProblemActionsForNpcHere("hina", loc, state), ...shoppingMomentActions],
       };
     }
     if (state.day >= 2) {
       return {
         location: loc,
-        ambientLine: "空き店舗のシャッターが半分上がっていた。中で誰かが棚を動かしているのが見える。まだ声はかけられなさそうだ。",
+        ambientLine: ["空き店舗のシャッターが半分上がっていた。中で誰かが棚を動かしているのが見える。まだ声はかけられなさそうだ。", shoppingMomentLine]
+          .filter((s) => s.length > 0)
+          .join(" "),
         npcsHere: [],
-        specialActions: [{ id: "notice_shop", label: "様子をうかがう" }],
+        specialActions: [{ id: "notice_shop", label: "様子をうかがう" }, ...shoppingMomentActions],
       };
     }
     return {
       location: loc,
-      ambientLine: "シャッターが半分下りた空き店舗に、手書きの貼り紙がある。「近日、何か始めます」",
+      ambientLine: ["シャッターが半分下りた空き店舗に、手書きの貼り紙がある。「近日、何か始めます」", shoppingMomentLine].filter((s) => s.length > 0).join(" "),
       npcsHere: [],
-      specialActions: [{ id: "notice_shop", label: "貼り紙をよく見る" }],
+      specialActions: [{ id: "notice_shop", label: "貼り紙をよく見る" }, ...shoppingMomentActions],
     };
   }
 
@@ -309,6 +374,12 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     // else this branch offers" pattern SHOP_ACTION already follows. PHASE_14 -- his GAMEPLAY
     // ACTIVITY (shop_helper) joins the same "always available" list.
     const yoheiLocalProblemActions = [...localProblemActionsForNpcHere("yohei", loc, state), ...activityActionsForNpcHere("yohei", loc, state)];
+    // PHASE_15 Section 25-31 -- Kiyoshi's own thread (kiyoshi_old_colleague) surfaces only during
+    // his own narrow schedule window (`npcAvailabilityAt` inside the eligibility checks already
+    // gates this), independent of the shelf-thread branch the scene otherwise lands in on any given
+    // day -- so it's merged into every non-closed/non-busy YOHEI_STORE branch below.
+    const kiyoshiThreadLine = eventThreadAmbientLineAt(loc, state);
+    const kiyoshiThreadActions = eventThreadActionsAt(loc, state);
 
     if (state.flags.shelfFixed) {
       // The shelf thread is over -- reached either by the player's own hands, or by Yohei and
@@ -316,8 +387,8 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
       const ambientLine = state.flags.shelfFixedWithPlayer
         ? "洋平は棚を軽く叩いて確かめた。「うん、大丈夫そうだ」"
         : "棚を軽く小突くと、もう安定していた。「さっき相馬が寄ってな」洋平はそれだけ言った。";
-      const combined = [ambientLine, localProblemAmbientLineAt(loc, state)].filter((s) => s.length > 0).join(" ");
-      return { location: loc, ambientLine: combined, npcsHere, specialActions: [SHOP_ACTION, ...yoheiLocalProblemActions] };
+      const combined = [ambientLine, localProblemAmbientLineAt(loc, state), kiyoshiThreadLine].filter((s) => s.length > 0).join(" ");
+      return { location: loc, ambientLine: combined, npcsHere, specialActions: [SHOP_ACTION, ...yoheiLocalProblemActions, ...kiyoshiThreadActions] };
     }
 
     if (jinAlsoHere) {
@@ -337,8 +408,8 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     // shelfFixed still false should not occur (the world-event auto-resolves it by then) but the
     // fallback below keeps this branch harmless if it ever does.
     const hint = state.time < 11 * 60 + 30 ? "棚の脚が少し傾いているのが、なんとなく目についた。" : "";
-    const combinedHint = [hint, localProblemAmbientLineAt(loc, state)].filter((s) => s.length > 0).join(" ");
-    return { location: loc, ambientLine: combinedHint, npcsHere, specialActions: [SHOP_ACTION, ...yoheiLocalProblemActions] };
+    const combinedHint = [hint, localProblemAmbientLineAt(loc, state), kiyoshiThreadLine].filter((s) => s.length > 0).join(" ");
+    return { location: loc, ambientLine: combinedHint, npcsHere, specialActions: [SHOP_ACTION, ...yoheiLocalProblemActions, ...kiyoshiThreadActions] };
   }
 
   if (loc === "CAFE_NODOKA") {
@@ -352,21 +423,30 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
       ...trajectoryActionsFor(miyokoSeed, state),
       ...localProblemActionsForNpcHere("miyoko", loc, state),
       ...activityActionsForNpcHere("miyoko", loc, state),
+      // PHASE_15 Section 9-31 -- the crowded-cafe moment event and Miyoko's own thread
+      // (miyoko_old_photo) are both ordinary specialActions here, same list as everything else.
+      ...momentEventActionsAt(loc, state),
+      ...eventThreadActionsAt(loc, state),
     ];
-    return { location: loc, ambientLine: localProblemAmbientLineAt(loc, state), npcsHere: ["miyoko"], specialActions };
+    const ambientLine = [localProblemAmbientLineAt(loc, state), momentEventAmbientLineAt(loc, state), eventThreadAmbientLineAt(loc, state)]
+      .filter((s) => s.length > 0)
+      .join(" ");
+    return { location: loc, ambientLine, npcsHere: ["miyoko"], specialActions };
   }
 
-  if (loc === "BARBERSHOP") {
-    const avail = npcAvailabilityAt("daisuke", state.time, state.flags);
-    if (avail === "CLOSED") return { location: loc, ambientLine: "理容店かどやのシャッターは下りていた。", npcsHere: [], specialActions: [] };
-    if (avail === "BUSY") return { location: loc, ambientLine: "大輔は昼休みのようだった。", npcsHere: [], specialActions: [] };
-    // Directive Section H/M scenario 5 -- an open (not yet checked-in) intent from an earlier day
-    // surfaces here as a real action, not as a pushy notification the moment the day starts. Only
-    // offered once the player has actually come back to this location on a later day.
-    const hasOpenIntent = state.realWorldIntents.some((i) => i.npc === "daisuke" && !i.checkedIn && i.createdOnDay < state.day);
-    const specialActions: { id: string; label: string }[] = [{ id: "shop_here", label: "散髪してもらう" }, ...localProblemActionsForNpcHere("daisuke", loc, state)];
+  if (loc === "FORTUNE_HOUSE") {
+    const avail = npcAvailabilityAt("shizuko", state.time, state.flags);
+    if (avail === "CLOSED") return { location: loc, ambientLine: "占いの館は閉まっていた。", npcsHere: [], specialActions: [] };
+    if (avail === "BUSY") return { location: loc, ambientLine: "静子は少し手が離せないようだった。", npcsHere: [], specialActions: [] };
+    // PHASE_15 Section 7 -- ordinary entry actions only: never an "悩み入力欄" thrust at the player
+    // immediately. "占ってもらう" starts the 3-card flow (Section 8); the ordinary "自由に話す" talk
+    // button is offered identically to every other NPC (see the shared npcsHere rendering below).
+    // Section 11 -- an open (not yet checked-in) Reality Bridge intent from an earlier day surfaces
+    // here as a real action, same pattern PHASE 12.3 established for Daisuke, now Shizuko's.
+    const hasOpenIntent = state.realWorldIntents.some((i) => i.npc === "shizuko" && !i.checkedIn && i.createdOnDay < state.day);
+    const specialActions: { id: string; label: string }[] = [{ id: "start_fortune_telling", label: "占ってもらう" }];
     if (hasOpenIntent) specialActions.unshift({ id: "check_in_intent", label: "その後の話をする" });
-    return { location: loc, ambientLine: localProblemAmbientLineAt(loc, state), npcsHere: ["daisuke"], specialActions };
+    return { location: loc, ambientLine: "", npcsHere: ["shizuko"], specialActions };
   }
 
   // COMMUNITY_HALL -- Jin and Fumiko can independently be here at the same time; must check where
@@ -400,13 +480,29 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     hallActions.push(...localProblemActionsForNpcHere("fumiko", loc, state));
   }
 
+  // PHASE_15 Section 9-24 -- COMMUNITY_HALL's two moment events (a stranger asking directions, a
+  // new bulletin notice) are town-wide texture independent of whether Jin/Fumiko happen to be
+  // present, so they're merged into every COMMUNITY_HALL branch below.
+  const hallMomentLine = momentEventAmbientLineAt(loc, state);
+  const hallMomentActions = momentEventActionsAt(loc, state);
+
   if (present.length > 0 || hallActions.length > 0) {
-    return { location: loc, ambientLine: localProblemAmbientLineAt(loc, state), npcsHere: present, specialActions: hallActions };
+    return {
+      location: loc,
+      ambientLine: [localProblemAmbientLineAt(loc, state), hallMomentLine].filter((s) => s.length > 0).join(" "),
+      npcsHere: present,
+      specialActions: [...hallActions, ...hallMomentActions],
+    };
   }
 
   if (state.flags.jinCalledToYohei && !state.flags.shelfFixed && state.time < 13 * 60 + 30) {
     // A trace of where he went, not an announcement (directive Section 20).
-    return { location: loc, ambientLine: "掲示板の脇に、相馬の工具袋だけが置かれていた。少し出ているようだった。", npcsHere: [], specialActions: [] };
+    return {
+      location: loc,
+      ambientLine: ["掲示板の脇に、相馬の工具袋だけが置かれていた。少し出ているようだった。", hallMomentLine].filter((s) => s.length > 0).join(" "),
+      npcsHere: [],
+      specialActions: [...hallMomentActions],
+    };
   }
 
   // Directive Section 6/7 -- a second, independent unseen-event thread (content/day1WorldEvents.ts:
@@ -417,7 +513,12 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     : state.flags.fumikoAskedJin
       ? "集会所には誰もいないようだった。ベンチが、まだ少しぐらついたままだった。"
       : "集会所には誰もいないようだった。掲示板だけが静かに並んでいる。";
-  return { location: loc, ambientLine: emptyLine, npcsHere: [], specialActions: [] };
+  return {
+    location: loc,
+    ambientLine: [emptyLine, hallMomentLine].filter((s) => s.length > 0).join(" "),
+    npcsHere: [],
+    specialActions: [...hallMomentActions],
+  };
 }
 
 /** Directive Section 21: end-of-day must read as a handful of remaining facts in plain sentences
@@ -517,6 +618,11 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
   if (talkedToday("daisuke")) lines.push("大輔とは、少し話した。");
   if (talkedToday("hina")) lines.push("陽菜とは、少し話した。");
   if (talkedToday("fumiko")) lines.push("文子とは、少し話した。");
+  // PHASE_15 -- found while auditing this block for Shizuko's addition: Kiyoshi (added PHASE_13)
+  // was missing a line here entirely -- talking to him was never mentioned in the end-of-day
+  // narrative. Fixed alongside Shizuko's new line, same register as every line above.
+  if (talkedToday("kiyoshi")) lines.push("清とは、少し話した。");
+  if (talkedToday("shizuko")) lines.push("占いの館で、静子と少し話した。");
 
   // Directive Section 15/16 -- a生活上の事情の結果を、スコアではなく事実の一文として残す。「やらな
   // かったら即ゲームオーバー」でも「やったら加点」でもない、ただの今日あった/なかったこと。 This one

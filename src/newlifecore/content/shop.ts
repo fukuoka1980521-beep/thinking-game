@@ -34,16 +34,18 @@ export const YOHEI_GOODS: ShopItem[] = [
 // conversation -- directive Section 19's "1 LOCATION = 1 EVENTを禁止" -- not building a real menu).
 export const BARBERSHOP_MENU: ShopItem[] = [{ id: "haircut", label: "散髪", price: 1500 }];
 
+// PHASE_15 Section 3/6/7 -- BARBERSHOP's entries removed (not reassigned): Fortune House
+// deliberately has no purchase mechanic (Section 7's entry actions are 占ってもらう/前回の続き/自由
+// に話す only, never a shop). `BARBERSHOP_MENU`/`haircut` above is left in place, unused but
+// harmless (Section 6's "データ破壊禁止") -- `ALL_ITEMS` below still includes it.
 const MENU_BY_LOCATION: Partial<Record<LocationId, ShopItem[]>> = {
   CAFE_NODOKA: CAFE_MENU,
   YOHEI_STORE: YOHEI_GOODS,
-  BARBERSHOP: BARBERSHOP_MENU,
 };
 
 const SHOP_NPC_BY_LOCATION: Partial<Record<LocationId, NpcId>> = {
   CAFE_NODOKA: "miyoko",
   YOHEI_STORE: "yohei",
-  BARBERSHOP: "daisuke",
 };
 
 const ALL_ITEMS: Record<string, ShopItem> = Object.fromEntries([...CAFE_MENU, ...YOHEI_GOODS, ...BARBERSHOP_MENU].map((i) => [i.id, i]));

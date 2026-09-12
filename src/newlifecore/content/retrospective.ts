@@ -24,8 +24,14 @@ import { TRAJECTORY_SEEDS } from "./trajectoryDefs";
 import { hasAcceptedTrajectory } from "./trajectoryEngine";
 import type { CoreState, LocationId, NpcId } from "../types";
 
-const ALL_LOCATIONS: LocationId[] = ["CHALLENGE_CENTER", "YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL", "SHOPPING_STREET", "BARBERSHOP"];
-const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "daisuke", "hina", "fumiko"];
+// PHASE_15 Section 3/6 -- BARBERSHOP -> FORTUNE_HOUSE. PHASE_15 also found (while touching this
+// list for that rename) that ALL_NPCS was missing "kiyoshi" entirely since PHASE_13 added him --
+// his "most talked to"/"never met" retrospective ranking was silently never considered. Fixed here.
+// "daisuke" is deliberately removed (not just left in): he is permanently unreachable now (his
+// schedule is empty, npcDefs.ts), so including him would make every future retrospective claim
+// "never met 大輔" -- true but meaningless, since there was never a way to.
+const ALL_LOCATIONS: LocationId[] = ["CHALLENGE_CENTER", "YOHEI_STORE", "CAFE_NODOKA", "COMMUNITY_HALL", "SHOPPING_STREET", "FORTUNE_HOUSE"];
+const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "hina", "fumiko", "kiyoshi", "shizuko"];
 
 function pick<T>(options: T[], seed: string): T {
   if (options.length === 1) return options[0];

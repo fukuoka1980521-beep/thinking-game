@@ -121,6 +121,7 @@ const INVITE_LABELS: Record<NpcId, string> = {
   hina: "また覗きに来てください。今度は焼きたてをお出しできると思うので。",
   fumiko: "また集会所に寄ってちょうだい。掲示板、少し変わってるはずだから。",
   kiyoshi: "また顔を見せてくれ。",
+  shizuko: "また館に寄ってちょうだい。",
 };
 
 export function invitationLabelFor(npc: NpcId): string {
@@ -129,14 +130,15 @@ export function invitationLabelFor(npc: NpcId): string {
 
 /**
  * Section 6/9 -- eligibility for OFFERING a new invitation, checked right after a conversation turn
- * completes (NewlifeCoreApp.tsx). Pure state gates only: never offered to Daisuke (Section 15: kept
- * separate from Reality Bridge), never while a promise with this NPC is already pending (no promise
- * spam), never on the very first exchange (`familiar` not required, but SOME prior contact is --
- * `has_met` plus at least one completed turn), and a simple day-based cooldown since the last
- * promise (any status) with this NPC so invitations don't refire every single conversation.
+ * completes (NewlifeCoreApp.tsx). Pure state gates only: never offered to Daisuke or Shizuko
+ * (Section 15/PHASE_15 Section 11: kept separate from Reality Bridge, now Shizuko's), never while a
+ * promise with this NPC is already pending (no promise spam), never on the very first exchange
+ * (`familiar` not required, but SOME prior contact is -- `has_met` plus at least one completed
+ * turn), and a simple day-based cooldown since the last promise (any status) with this NPC so
+ * invitations don't refire every single conversation.
  */
 export function eligibleForNewInvitation(npc: NpcId, state: CoreState): boolean {
-  if (npc === "daisuke") return false;
+  if (npc === "daisuke" || npc === "shizuko") return false;
   if (!state.flags[`met_${npc}`]) return false;
   if (pendingPromiseWith(npc, state)) return false;
   const npcPromises = promisesWith(npc, state);

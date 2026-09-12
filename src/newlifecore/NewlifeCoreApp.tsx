@@ -24,13 +24,15 @@ import {
   reachableLocations,
 } from "./content/day1";
 import { menuForLocation, shopNpcForLocation } from "./content/shop";
-import { daisukeCheckInAcknowledgement, daisukeIntentConfirmReaction, looksLikeRealLifeConcern } from "./content/realityBridge";
+import { shizukoCheckInAcknowledgement, shizukoIntentConfirmReaction, looksLikeRealLifeConcern } from "./content/realityBridge";
 import { eligibleForNewInvitation, invitationLabelFor } from "./content/socialMemory";
 import { trajectorySeedById } from "./content/trajectoryDefs";
 import { hasAcceptedTrajectory } from "./content/trajectoryEngine";
 import { localProblemById } from "./content/localProblemDefs";
 import { activityById } from "./content/activityDefs";
 import { ActivitySession } from "./ActivitySession";
+import { fortuneCardById } from "./content/fortuneCards";
+import { FortuneCardPicker } from "./FortuneCardPicker";
 import { buildTodaysSigns } from "./content/todaysSigns";
 import { detectsCrisisSignal, SAFETY_ROUTE_MESSAGE } from "./content/safetyRoute";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
@@ -46,15 +48,18 @@ import {
   createRealWorldIntent,
   declineLifeOpportunity,
   declinePlayerPromise,
+  discoverEventThread,
   discoverLocalProblem,
   doShortAction,
   moveTo,
+  progressEventThread,
   purchaseItems,
   recordConversationTurn,
   recordLateConsequence,
   recordTrajectoryEngagement,
   respondToLocalProblemConnect,
   respondToLocalProblemHelp,
+  respondToMomentEvent,
   runActivity,
   sleep,
   startNewDay,
@@ -62,6 +67,8 @@ import {
   submitDay30Reflection,
   timeRemainingLabel,
 } from "./engine";
+import { MOMENT_EVENT_DEFS } from "./content/momentEventDefs";
+import { eventThreadById } from "./content/eventThreadDefs";
 import { npcDisplayName } from "./npcDefs";
 import { createInitialCoreState, formatClock } from "./types";
 import type { CoreState, IntakeForm as IntakeFormData, LocationId, NpcId, RealWorldIntent, UserUpdateResponse } from "./types";
@@ -170,6 +177,11 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // PHASE_14 Section 5-10 -- holds an ActivityDef.id while its ActivitySession is open. Same
   // scene-level, reset-on-move discipline as showShoppingPicker/showOpportunityOffer above.
   const [showActivity, setShowActivity] = useState<string | null>(null);
+  // PHASE_15 Section 8 -- holds true while the 3-card picker is open; `fortuneOpeningLine` holds the
+  // chosen card's own opening question, shown once at the top of the NEXT conversation with Shizuko
+  // (see the conversation-panel render below), then cleared. Same reset-on-move/close discipline.
+  const [showFortuneCards, setShowFortuneCards] = useState(false);
+  const [fortuneOpeningLine, setFortuneOpeningLine] = useState<string | null>(null);
 
   function startGame() {
     setState((s) => ({ ...s, started: true }));
@@ -192,6 +204,8 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setSafetyRouteActive(false);
     setShowOpportunityOffer(null);
     setShowActivity(null);
+    setShowFortuneCards(false);
+    setFortuneOpeningLine(null);
     setState((s) => moveTo(s, location));
   }
 
@@ -205,12 +219,24 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setState((s) => (s.flags[`met_${npc}`] ? s : { ...s, flags: { ...s.flags, [`met_${npc}`]: true } }));
   }
 
+  // PHASE_15 Section 8 -- the ONLY place a card is picked. Never decides anything about the future
+  // (the card data itself carries no such claim, content/fortuneCards.ts) -- it only picks which
+  // opening question Shizuko asks, then proceeds into an ordinary conversation exactly like any
+  // other NPC's.
+  function selectFortuneCard(cardId: string) {
+    const card = fortuneCardById(cardId);
+    setShowFortuneCards(false);
+    setFortuneOpeningLine(card?.openingLine ?? null);
+    openConversation("shizuko");
+  }
+
   function closeConversation() {
     setActiveConversation(null);
     setFreeTextInput("");
     setRealityBridgeOffer(null);
     setPromiseOffer(null);
     setSafetyRouteActive(false);
+    setFortuneOpeningLine(null);
   }
 
   async function submitFreeText() {
@@ -240,7 +266,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setPending(false);
     // Section H -- offer is scoped to the Thinking Resident only (Section F/G: he alone runs the
     // thinking-circuit register); a heuristic on the PLAYER's own words, never on the NPC reply.
-    if (npc === "daisuke" && looksLikeRealLifeConcern(text)) {
+    if (npc === "shizuko" && looksLikeRealLifeConcern(text)) {
       setRealityBridgeOffer({ npc, playerStatement: text });
     } else if (eligibleForNewInvitation(npc, nextState)) {
       // PHASE_12_6 Section 6/15 -- entirely separate from Reality Bridge (never offered to Daisuke,
@@ -253,7 +279,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   function createIntentFromOffer(intentLabel: string) {
     if (!realityBridgeOffer) return;
     setState((s) => createRealWorldIntent(s, realityBridgeOffer.npc, realityBridgeOffer.playerStatement, intentLabel));
-    setSpecialResult(daisukeIntentConfirmReaction());
+    setSpecialResult(shizukoIntentConfirmReaction());
     setRealityBridgeOffer(null);
   }
 
@@ -273,7 +299,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   function submitCheckIn(response: UserUpdateResponse, note: string) {
     if (!showCheckIn) return;
     setState((s) => checkInRealWorldIntent(s, showCheckIn.id, response, note));
-    setSpecialResult(daisukeCheckInAcknowledgement());
+    setSpecialResult(shizukoCheckInAcknowledgement());
     setShowCheckIn(null);
   }
 
@@ -351,6 +377,42 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
       }
       return;
     }
+    // PHASE_15 Section 9-24 -- moment-event choice ids encode BOTH the def id and the choice id
+    // (`momentchoice_<defId>_<choiceId>`), so unlike every other prefix-matched id above, resolving
+    // this one back requires checking each known (def, choice) pair rather than a single `slice`
+    // (see content/day1.ts's `momentEventActionsAt` doc comment for why).
+    if (actionId.startsWith("momentchoice_")) {
+      const rest = actionId.slice("momentchoice_".length);
+      for (const def of MOMENT_EVENT_DEFS) {
+        const choice = def.choices.find((c) => rest === `${def.id}_${c.id}`);
+        if (choice) {
+          setState((s) => respondToMomentEvent(s, def.id, choice.id));
+          setSpecialResult(choice.resultText);
+          return;
+        }
+      }
+      return;
+    }
+    // PHASE_15 Section 25-31 -- dynamic per-thread ids (content/eventThreadDefs.ts), same
+    // prefix-matched pattern as the local-problem ids above.
+    if (actionId.startsWith("discover_thread_")) {
+      const def = eventThreadById(actionId.slice("discover_thread_".length));
+      if (def) {
+        setState((s) => discoverEventThread(s, def));
+        setSpecialResult(def.discoverResultText);
+      }
+      return;
+    }
+    if (actionId.startsWith("progress_thread_")) {
+      const def = eventThreadById(actionId.slice("progress_thread_".length));
+      if (def) {
+        const runtime = state.eventThreads[def.id];
+        const stage = runtime ? def.stages[runtime.stageIndex] : undefined;
+        setState((s) => progressEventThread(s, def));
+        if (stage) setSpecialResult(stage.resultText);
+      }
+      return;
+    }
     // PHASE_14 Section 5-10 -- dynamic per-activity ids (content/activityDefs.ts), same
     // prefix-matched pattern as the local-problem ids above.
     if (actionId.startsWith("start_activity_")) {
@@ -361,13 +423,20 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
       }
       return;
     }
+    // PHASE_15 Section 7/8 -- "占ってもらう" starts the 3-card picker, never a bare worries-textbox
+    // (Section 7's explicit ban on jumping straight to an input field).
+    if (actionId === "start_fortune_telling") {
+      setSpecialResult(null);
+      setShowFortuneCards(true);
+      return;
+    }
     if (actionId === "fill_intake_form") {
       setSpecialResult(null);
       setShowIntakeForm(true);
       return;
     }
     if (actionId === "check_in_intent") {
-      const openIntent = state.realWorldIntents.find((i) => i.npc === "daisuke" && !i.checkedIn && i.createdOnDay < state.day);
+      const openIntent = state.realWorldIntents.find((i) => i.npc === "shizuko" && !i.checkedIn && i.createdOnDay < state.day);
       if (openIntent) {
         setSpecialResult(null);
         setShowCheckIn(openIntent);
@@ -682,7 +751,13 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
             );
           })()}
 
-        {scene && !showIntakeForm && !showShoppingPicker && !showCheckIn && !showActivity && (
+        {scene && showFortuneCards && (
+          <div className="nlc-scene-card" data-testid="nlc-location-scene">
+            <FortuneCardPicker onSelect={selectFortuneCard} onCancel={() => setShowFortuneCards(false)} />
+          </div>
+        )}
+
+        {scene && !showIntakeForm && !showShoppingPicker && !showCheckIn && !showActivity && !showFortuneCards && (
           <div className="nlc-scene-card" data-testid="nlc-location-scene">
             {scene.ambientLine && <p className="nlc-ambient">{scene.ambientLine}</p>}
 
@@ -715,6 +790,14 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
 
                       return (
                         <div className="nlc-conversation" data-testid={`nlc-conversation-${npc}`}>
+                          {/* PHASE_15 Section 8 -- the chosen card's own opening question, shown once
+                              at the top of this fresh fortune-telling session (before the player's
+                              first turn today), never a separate popup/result panel. */}
+                          {npc === "shizuko" && fortuneOpeningLine && todayTurns.length === 0 && (
+                            <p className="nlc-npc-line" data-testid="nlc-fortune-opening-line">
+                              {fortuneOpeningLine}
+                            </p>
+                          )}
                           {lastPastTurn && (
                             <div className="nlc-past-summary" data-testid={`nlc-past-summary-${npc}`}>
                               {!showPastLog ? (
@@ -791,7 +874,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                                   送る
                                 </button>
                               </div>
-                              {npc === "daisuke" && realityBridgeOffer && (
+                              {npc === "shizuko" && realityBridgeOffer && (
                                 <RealityBridgeOffer onCreate={createIntentFromOffer} onDismiss={() => setRealityBridgeOffer(null)} />
                               )}
                               {promiseOffer && promiseOffer.npc === npc && <PromiseOffer npc={npc} label={promiseOffer.label} onAccept={acceptPromise} onDecline={declinePromise} />}
@@ -854,7 +937,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && !showShoppingPicker && !showCheckIn && !showActivity && (
+        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && !showShoppingPicker && !showCheckIn && !showActivity && !showFortuneCards && (
           <div className="nlc-movelist" data-testid="nlc-movelist">
             <p className="nlc-summary-heading">どこへ行きますか（残り{timeRemainingLabel(state.time)}）</p>
             <div className="nlc-picklist">
