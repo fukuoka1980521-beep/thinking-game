@@ -1,4 +1,4 @@
-import { npcAvailabilityAt, npcsPresentAt } from "../schedule";
+import { npcAvailabilityAt, npcsPresentAt, nextOpeningTimeAt } from "../schedule";
 import { canCookMeal } from "../engine";
 import { itemById } from "./shop";
 import { eventTraceLinesAt } from "./eventEngine";
@@ -14,6 +14,7 @@ import { activityEligible } from "./activityEngine";
 import { activeMomentEventAt } from "./momentEventEngine";
 import { EVENT_THREAD_DEFS } from "./eventThreadDefs";
 import { eventThreadDiscoverEligible, eventThreadNextStageEligible, eventThreadObservationEligible, eventThreadRuntimeState } from "./eventThreadEngine";
+import { formatClock } from "../types";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 /**
@@ -136,6 +137,32 @@ function eventThreadActionsAt(location: LocationId, state: CoreState): { id: str
     }
   }
   return actions;
+}
+
+/** PHASE_15_1_CLOSED_STATE_UX_FIX -- shared closed-state builder for every single-NPC-owned location
+ *  (CHALLENGE_CENTER/Kamiya, YOHEI_STORE/Yohei, CAFE_NODOKA/Miyoko, FORTUNE_HOUSE/Shizuko). Fixes a
+ *  real UX gap found via real-browser check: arriving before opening previously showed only a bare
+ *  "closed" line with zero actions -- not a hard dead-end (the surrounding movelist stays reachable
+ *  regardless, confirmed via `.scratch_phase15` evidence), but a real first-time player had no
+ *  in-scene way to learn WHEN to come back or to wait there at all. When a later opening exists TODAY
+ *  (`nextOpeningTimeAt`, canonical schedule-derived, never hardcoded per location -- a future
+ *  schedule edit can never leave this text stale), appends that time and offers the SAME
+ *  `rest_a_while` action TRIAL_HOUSE already uses (identical id, identical `doShortAction(state, 15)`
+ *  handler in NewlifeCoreApp.tsx, reused verbatim -- not a new time mechanic) under a
+ *  context-appropriate label. When nothing more opens today (e.g. arriving after closing time), the
+ *  plain closed line is left exactly as authored -- telling the player to wait for something that
+ *  won't happen today would be misleading, and the movelist already lets them leave. */
+function closedStateScene(location: LocationId, npc: NpcId, state: CoreState, closedLine: string): LocationScene {
+  const nextOpen = nextOpeningTimeAt(npc, location, state.time);
+  if (nextOpen === null) {
+    return { location, ambientLine: closedLine, npcsHere: [], specialActions: [] };
+  }
+  return {
+    location,
+    ambientLine: `${closedLine} ${formatClock(nextOpen)}から開くようだ。`,
+    npcsHere: [],
+    specialActions: [{ id: "rest_a_while", label: "少し時間を過ごす" }],
+  };
 }
 
 export const LOCATION_LABEL: Record<LocationId, string> = {
@@ -343,7 +370,7 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
 
   if (loc === "CHALLENGE_CENTER") {
     const avail = npcAvailabilityAt("kamiya", state.time, state.flags);
-    if (avail === "CLOSED") return { location: loc, ambientLine: "チャレンジセンターは終業していた。", npcsHere: [], specialActions: [] };
+    if (avail === "CLOSED") return closedStateScene(loc, "kamiya", state, "チャレンジセンターは終業していた。");
     if (avail === "BUSY") return { location: loc, ambientLine: "神谷は電話で立て込んでいるようだった。", npcsHere: [], specialActions: [{ id: "wait_kamiya", label: "少し待つ" }] };
     // Directive NEW_LIFE_DAY1_ONBOARDING_AND_WORLD_ACTION_FIX_V1 Section 4/8: the form Kamiya
     // asks for (firstVisitLine, above) must be a real action, not something free text can fake.
@@ -360,7 +387,7 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
 
   if (loc === "YOHEI_STORE") {
     const avail = npcAvailabilityAt("yohei", state.time, state.flags);
-    if (avail === "CLOSED") return { location: loc, ambientLine: "洋平商店のシャッターは下りていた。", npcsHere: [], specialActions: [] };
+    if (avail === "CLOSED") return closedStateScene(loc, "yohei", state, "洋平商店のシャッターは下りていた。");
     if (avail === "BUSY") return { location: loc, ambientLine: "洋平は伝票の整理で手が離せないようだった。", npcsHere: [], specialActions: [] };
     const jinAlsoHere = npcsHere.includes("jin");
 
@@ -414,7 +441,7 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
 
   if (loc === "CAFE_NODOKA") {
     const avail = npcAvailabilityAt("miyoko", state.time, state.flags);
-    if (avail === "CLOSED") return { location: loc, ambientLine: "喫茶のどかは閉まっていた。", npcsHere: [], specialActions: [] };
+    if (avail === "CLOSED") return closedStateScene(loc, "miyoko", state, "喫茶のどかは閉まっていた。");
     // Directive Section 19 -- ordering and simply sitting down are two different, real actions.
     const miyokoSeed = TRAJECTORY_SEEDS.find((s) => s.id === "miyoko_cafe_help")!;
     const specialActions = [
@@ -436,7 +463,7 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
 
   if (loc === "FORTUNE_HOUSE") {
     const avail = npcAvailabilityAt("shizuko", state.time, state.flags);
-    if (avail === "CLOSED") return { location: loc, ambientLine: "占いの館は閉まっていた。", npcsHere: [], specialActions: [] };
+    if (avail === "CLOSED") return closedStateScene(loc, "shizuko", state, "占いの館は閉まっていた。");
     if (avail === "BUSY") return { location: loc, ambientLine: "静子は少し手が離せないようだった。", npcsHere: [], specialActions: [] };
     // PHASE_15 Section 7 -- ordinary entry actions only: never an "悩み入力欄" thrust at the player
     // immediately. "占ってもらう" starts the 3-card flow (Section 8); the ordinary "自由に話す" talk
