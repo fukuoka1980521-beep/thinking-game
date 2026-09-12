@@ -22,7 +22,7 @@ describe("NEW LIFE CORE: onboarding (directive NEW_LIFE_DAY1_ONBOARDING_AND_WORL
     window.history.pushState({}, "", "/?newlifecore=1");
     render(<App />);
     const opening = await screen.findByTestId("nlc-opening-copy");
-    expect(opening.textContent).toMatch(/30日間/);
+    expect(opening.textContent).toMatch(/30日/);
     expect(opening.textContent).not.toMatch(/移動できます|時間が進みます/);
 
     const user = userEvent.setup();

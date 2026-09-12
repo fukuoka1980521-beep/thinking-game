@@ -9,6 +9,8 @@ import type { TrajectorySeed } from "./trajectoryDefs";
 import { canStepBackFromTrajectory, engageActionEligible, hasAcceptedTrajectory, lateConsequenceEligible, opportunityEligible } from "./trajectoryEngine";
 import { LOCAL_PROBLEM_DEFS } from "./localProblemDefs";
 import { localProblemConnectEligible, localProblemDiscoverEligible, localProblemHelpEligible, localProblemObservationEligible } from "./localProblemEngine";
+import { ACTIVITY_DEFS } from "./activityDefs";
+import { activityEligible } from "./activityEngine";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 /**
@@ -66,6 +68,18 @@ function localProblemActionsForNpcHere(npc: NpcId, location: LocationId, state: 
     }
   }
   return actions;
+}
+
+/**
+ * PHASE_14_NEW_LIFE_GAMEPLAY_CORE_V1 Section 5/6/21 -- an activity's start button, offered exactly
+ * like any other specialAction (never a distinct "quest" widget, Section 26). At most one activity
+ * per NPC-at-location is expected in V1's 3 defs, but this loops in case that changes later.
+ */
+function activityActionsForNpcHere(npc: NpcId, location: LocationId, state: CoreState): { id: string; label: string }[] {
+  return ACTIVITY_DEFS.filter((def) => def.location === location && def.npc === npc && activityEligible(def, state)).map((def) => ({
+    id: `start_activity_${def.id}`,
+    label: def.actionLabel,
+  }));
 }
 
 /** Section 13 -- at most one ambient local-problem cue per location visit (never a stacked list of
@@ -292,8 +306,9 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
 
     // PHASE_13 -- Yohei's own local-problem actions (successor worry, Kiyoshi's delivery need)
     // apply in every non-closed/non-busy branch below, same "always available alongside whatever
-    // else this branch offers" pattern SHOP_ACTION already follows.
-    const yoheiLocalProblemActions = localProblemActionsForNpcHere("yohei", loc, state);
+    // else this branch offers" pattern SHOP_ACTION already follows. PHASE_14 -- his GAMEPLAY
+    // ACTIVITY (shop_helper) joins the same "always available" list.
+    const yoheiLocalProblemActions = [...localProblemActionsForNpcHere("yohei", loc, state), ...activityActionsForNpcHere("yohei", loc, state)];
 
     if (state.flags.shelfFixed) {
       // The shelf thread is over -- reached either by the player's own hands, or by Yohei and
@@ -336,6 +351,7 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
       { id: "sit_down", label: "コーヒーを頼んで座る" },
       ...trajectoryActionsFor(miyokoSeed, state),
       ...localProblemActionsForNpcHere("miyoko", loc, state),
+      ...activityActionsForNpcHere("miyoko", loc, state),
     ];
     return { location: loc, ambientLine: localProblemAmbientLineAt(loc, state), npcsHere: ["miyoko"], specialActions };
   }
@@ -375,6 +391,7 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
       // problem's connect target is Jin (yohei_kiyoshi_delivery) -- both are conversations with
       // Jin himself, so both surface here regardless of which problem they originated from.
       hallActions.push(...localProblemActionsForNpcHere("jin", loc, state));
+      hallActions.push(...activityActionsForNpcHere("jin", loc, state));
     }
   }
   if (fumikoHere) {
@@ -479,6 +496,19 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
         break;
       }
     }
+  }
+
+  // PHASE_14 Section 6/9/10 -- one plain sentence for an activity session done today, or a
+  // world-change that landed today -- same shape as the LOCAL PROBLEM block just above (session id
+  // carries a time suffix for uniqueness, so matched by prefix; world-change id is day-exact).
+  for (const def of ACTIVITY_DEFS) {
+    const sessionFact = state.worldFacts.find((f) => f.id.startsWith(`${def.id}_session_d${state.day}_`) && f.day === state.day);
+    if (sessionFact) {
+      lines.push(sessionFact.text);
+      continue;
+    }
+    const worldChangeFact = state.worldFacts.find((f) => f.id === `${def.id}_worldchange_d${state.day}` && f.day === state.day);
+    if (worldChangeFact) lines.push(worldChangeFact.text);
   }
 
   if (talkedToday("jin")) lines.push("相馬とは少し話した。明日も朝が早いらしい。");

@@ -243,6 +243,19 @@ export interface CoreState {
    * whether a response action is offered) and by `dialogue/contextBuilder.ts` (to decide whether an
    * NPC's `knownFacts` includes it, Section 15).
    */
+  /**
+   * PHASE_14_NEW_LIFE_GAMEPLAY_CORE_V1 Section 5-10 -- GAMEPLAY ACTIVITY bookkeeping. An activity
+   * session (`content/activityEngine.ts`'s `runActivity`) increments `activityHelpCount` by 1
+   * regardless of how many of its tasks were actually completed (partial completion is a normal,
+   * valid outcome, never a failure) and stamps `activityLastDone`. `activityResolved` is set only by
+   * the daily tick once `completionThreshold` sessions have accumulated AND `resolveAfterDays` have
+   * passed since the last one -- mirrors `localProblemStatus`'s "never instant" discipline exactly,
+   * deliberately a separate small map rather than folded into the local-problem ones (different id
+   * namespace, different definitions file).
+   */
+  activityHelpCount: Record<string, number>;
+  activityLastDone: Record<string, number>;
+  activityResolved: Record<string, boolean>;
   localProblemsKnown: Record<string, number>;
   /**
    * Section 7/19 -- the WORLD's own resolution state per problem, entirely independent of whether
@@ -313,6 +326,9 @@ export function createInitialCoreState(): CoreState {
     locationVisitCounts: {},
     lateConsequenceLastFired: {},
     day30ReflectionText: null,
+    activityHelpCount: {},
+    activityLastDone: {},
+    activityResolved: {},
     localProblemsKnown: {},
     localProblemStatus: {},
     localProblemHelpCount: {},

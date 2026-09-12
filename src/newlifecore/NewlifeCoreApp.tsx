@@ -29,6 +29,9 @@ import { eligibleForNewInvitation, invitationLabelFor } from "./content/socialMe
 import { trajectorySeedById } from "./content/trajectoryDefs";
 import { hasAcceptedTrajectory } from "./content/trajectoryEngine";
 import { localProblemById } from "./content/localProblemDefs";
+import { activityById } from "./content/activityDefs";
+import { ActivitySession } from "./ActivitySession";
+import { buildTodaysSigns } from "./content/todaysSigns";
 import { detectsCrisisSignal, SAFETY_ROUTE_MESSAGE } from "./content/safetyRoute";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
 import { deterministicAdapter } from "./dialogue/deterministicAdapter";
@@ -52,6 +55,7 @@ import {
   recordTrajectoryEngagement,
   respondToLocalProblemConnect,
   respondToLocalProblemHelp,
+  runActivity,
   sleep,
   startNewDay,
   stepBackFromTrajectory,
@@ -163,6 +167,9 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // open. Scene-level (like showIntakeForm/showShoppingPicker), not conversation-level -- reset on
   // move, same as those.
   const [showOpportunityOffer, setShowOpportunityOffer] = useState<string | null>(null);
+  // PHASE_14 Section 5-10 -- holds an ActivityDef.id while its ActivitySession is open. Same
+  // scene-level, reset-on-move discipline as showShoppingPicker/showOpportunityOffer above.
+  const [showActivity, setShowActivity] = useState<string | null>(null);
 
   function startGame() {
     setState((s) => ({ ...s, started: true }));
@@ -184,6 +191,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setShowCheckIn(null);
     setSafetyRouteActive(false);
     setShowOpportunityOffer(null);
+    setShowActivity(null);
     setState((s) => moveTo(s, location));
   }
 
@@ -343,6 +351,16 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
       }
       return;
     }
+    // PHASE_14 Section 5-10 -- dynamic per-activity ids (content/activityDefs.ts), same
+    // prefix-matched pattern as the local-problem ids above.
+    if (actionId.startsWith("start_activity_")) {
+      const def = activityById(actionId.slice("start_activity_".length));
+      if (def) {
+        setSpecialResult(null);
+        setShowActivity(def.id);
+      }
+      return;
+    }
     if (actionId === "fill_intake_form") {
       setSpecialResult(null);
       setShowIntakeForm(true);
@@ -429,6 +447,19 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setShowShoppingPicker(false);
   }
 
+  // PHASE_14 Section 6/9 -- the ONLY place an activity session resolves. `done` is exactly the
+  // subset of tasks ActivitySession.tsx recorded the player actually completing -- never re-derived
+  // or second-guessed here.
+  function finishActivity(done: { id: string; minutes: number; resultText: string }[]) {
+    if (!showActivity) return;
+    const def = activityById(showActivity);
+    if (!def) return;
+    setState((s) => runActivity(s, def, done));
+    const reaction = done.length >= def.tasks.length ? def.npcReactionAllDone : done.length >= 2 ? def.npcReactionPartial : def.npcReactionMinimal;
+    setSpecialResult(reaction);
+    setShowActivity(null);
+  }
+
   // Directive Section 4/7: real UI, not free text pretending. What gets written here is exactly
   // what ends up in Kamiya's known facts (verbatim, via buildIntakeFormWorldFacts) -- no inferred
   // psychological label, no career diagnosis (Section 5).
@@ -463,16 +494,14 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
               <h1 className="nlc-hero-title">チャレンジ町</h1>
             </div>
           </div>
+          {/* PHASE_14 Section 1/18 -- trimmed from a 5-line, "何者になるか"-framed copy to this
+              shorter, theme-aligned version: a small town to settle into, not a job-search pitch or
+              a "become someone" countdown. "仕事を探してください"/"困りごとを解決してください" are
+              deliberately never written here (Section 18's explicit ban). */}
           <p className="nlc-intro-copy" data-testid="nlc-opening-copy">
-            あなたは30日間、この町で暮らします。
+            30日、この町で好きに暮らしてみてください。
             <br />
-            町を歩く。人と話す。誰かを手伝う。仕事を探す。何もしない。
-            <br />
-            過ごし方は自由です。決まった正解はありません。
-            <br />
-            30日後、あなたが何をしていて、誰と関わり、どこにいるのか。
-            <br />
-            それは、この30日で決まります。
+            町を歩き、人と出会い、気の向くまま過ごせます。決まった正解はありません。
           </p>
           <button className="nlc-btn" onClick={() => setPhase("guide")} data-testid="nlc-start">
             町での生活を始める
@@ -571,6 +600,9 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // so this gate must not depend on actually having talked to him (that would softlock a player
   // who walks straight back to the trial house without engaging).
   const hasVenturedOut = state.visitedLocations.length > 1;
+  // PHASE_14 Section 4 -- computed once per render; cheap and pure (buildTodaysSigns never mutates
+  // state), so no memoization is needed for a scene this small.
+  const todaysSigns = buildTodaysSigns(state);
   const scene = state.playerLocation !== "TRIAL_HOUSE" || hasVenturedOut ? buildLocationScene(state) : null;
   // A conversation's own 10-minute time cost can cross a schedule/world-event boundary that moves
   // the npc elsewhere (time progressing through conversation is an intentionally KEPT feature).
@@ -603,6 +635,15 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
         {!hasVenturedOut && state.playerLocation === "TRIAL_HOUSE" && (
           <div className="nlc-scene-card" data-testid="nlc-wake-scene">
             <p>カーテンの隙間から、朝の光が差し込んでいた。机の上には鍵と、返却日を丸く囲んだ紙。</p>
+            {/* PHASE_14 Section 4/23/30 -- plain sentences, same <p> as the line above, no icon/badge/
+                list styling -- deliberately indistinguishable in markup from ordinary ambient text,
+                so it can never read as a mission panel. Ignoring all of these and going anywhere else
+                is exactly as valid as acting on one. */}
+            {todaysSigns.map((sign, i) => (
+              <p key={i} data-testid="nlc-todays-sign">
+                {sign}
+              </p>
+            ))}
             <div className="nlc-footer-actions">
               <button className="nlc-btn" onClick={headToChallengeCenter} data-testid="nlc-go-challenge-center">
                 チャレンジセンターへ向かう
@@ -629,7 +670,19 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {scene && !showIntakeForm && !showShoppingPicker && !showCheckIn && (
+        {scene &&
+          showActivity &&
+          (() => {
+            const def = activityById(showActivity);
+            if (!def) return null;
+            return (
+              <div className="nlc-scene-card" data-testid="nlc-location-scene">
+                <ActivitySession def={def} onFinish={finishActivity} />
+              </div>
+            );
+          })()}
+
+        {scene && !showIntakeForm && !showShoppingPicker && !showCheckIn && !showActivity && (
           <div className="nlc-scene-card" data-testid="nlc-location-scene">
             {scene.ambientLine && <p className="nlc-ambient">{scene.ambientLine}</p>}
 
@@ -801,7 +854,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </div>
         )}
 
-        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && !showShoppingPicker && !showCheckIn && (
+        {(scene || hasVenturedOut) && !activeConversation && !showIntakeForm && !showShoppingPicker && !showCheckIn && !showActivity && (
           <div className="nlc-movelist" data-testid="nlc-movelist">
             <p className="nlc-summary-heading">どこへ行きますか（残り{timeRemainingLabel(state.time)}）</p>
             <div className="nlc-picklist">

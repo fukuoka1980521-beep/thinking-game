@@ -11,6 +11,8 @@ import { newPlayerPromise, resolvePendingPromiseOnMeet, sweepPlayerPromisesForNe
 import type { TrajectorySeed } from "./content/trajectoryDefs";
 import type { LocalProblemDef } from "./content/localProblemDefs";
 import { dueLocalProblemResolutions } from "./content/localProblemEngine";
+import type { ActivityDef } from "./content/activityDefs";
+import { dueActivityResolutions } from "./content/activityEngine";
 import { DAY_FORCE_SLEEP_MINUTES, DAY_SLEEP_AVAILABLE_FROM, DAY_START_MINUTES } from "./types";
 import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, PlayerExperience, RealWorldIntent, UserUpdateResponse, WorldFact } from "./types";
 
@@ -175,7 +177,9 @@ export function startNewDay(state: CoreState): CoreState {
   // PHASE_13 Section 7/19 -- local problems that came due (via player help/connect, or resolving on
   // their own without the player) resolve at the START of the new day, same timing shape as every
   // other "town remembers overnight" mechanic in this codebase.
-  return tickLocalProblemsForNewDay(advanced);
+  const withLocalProblems = tickLocalProblemsForNewDay(advanced);
+  // PHASE_14 Section 10 -- same timing for GAMEPLAY ACTIVITY world-changes.
+  return tickActivitiesForNewDay(withLocalProblems);
 }
 
 /**
@@ -387,6 +391,40 @@ function tickLocalProblemsForNewDay(state: CoreState): CoreState {
       localProblemStatus: { ...next.localProblemStatus, [def.id]: outcome },
     };
     next = addWorldFact(next, { id: `${def.id}_${outcome}_d${next.day}`, time: next.time, text, knownBy, category: "world_change" });
+  }
+  return next;
+}
+
+/**
+ * PHASE_14_NEW_LIFE_GAMEPLAY_CORE_V1 Section 6/9/10 -- the ONLY place an activity session resolves,
+ * called exactly once when the player ends the session (budget exhausted or they chose to wrap up).
+ * `doneTasks` is whatever subset of `def.tasks` was actually completed -- partial completion is the
+ * NORMAL case, never a failure state, and this function does not distinguish "why" the session ended
+ * (out of time vs. player chose to stop) since Section 6 treats both as equally legitimate outcomes.
+ * Time spent is the sum of the done tasks' own minutes (never the full budget -- a player who does
+ * one 10-minute task and then stops should not be charged for 35 unused minutes).
+ */
+export function runActivity(state: CoreState, def: ActivityDef, doneTasks: { id: string; minutes: number; resultText: string }[]): CoreState {
+  const totalMinutes = doneTasks.reduce((sum, t) => sum + t.minutes, 0);
+  const withTime = advanceTime(state, totalMinutes);
+  const count = (withTime.activityHelpCount[def.id] ?? 0) + 1;
+  const withCount: CoreState = {
+    ...withTime,
+    activityHelpCount: { ...withTime.activityHelpCount, [def.id]: count },
+    activityLastDone: { ...withTime.activityLastDone, [def.id]: withTime.day },
+  };
+  const reaction = doneTasks.length >= def.tasks.length ? def.npcReactionAllDone : doneTasks.length >= 2 ? def.npcReactionPartial : def.npcReactionMinimal;
+  return addWorldFact(withCount, { id: `${def.id}_session_d${withCount.day}_${withCount.time}`, time: withCount.time, text: reaction, knownBy: [def.npc], category: "shared_event" });
+}
+
+/** Section 10 -- called from `startNewDay`, same "resolve at the start of the new day" timing as
+ *  `tickLocalProblemsForNewDay`. */
+function tickActivitiesForNewDay(state: CoreState): CoreState {
+  const due = dueActivityResolutions(state);
+  let next = state;
+  for (const { def } of due) {
+    next = { ...next, activityResolved: { ...next.activityResolved, [def.id]: true } };
+    next = addWorldFact(next, { id: `${def.id}_worldchange_d${next.day}`, time: next.time, text: def.worldChangeText, knownBy: [def.npc], category: "world_change" });
   }
   return next;
 }

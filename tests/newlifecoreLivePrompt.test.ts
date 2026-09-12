@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { buildNpcAiContext } from "../src/newlifecore/dialogue/contextBuilder";
 import { NPC_DEFS } from "../src/newlifecore/npcDefs";
-import { purchaseItems, discoverLocalProblem } from "../src/newlifecore/engine";
+import { purchaseItems, discoverLocalProblem, runActivity } from "../src/newlifecore/engine";
 import { localProblemById } from "../src/newlifecore/content/localProblemDefs";
+import { activityById } from "../src/newlifecore/content/activityDefs";
 import { createInitialCoreState, type NpcId } from "../src/newlifecore/types";
 // The live prompt builder is a plain-JS, server-only module (never bundled into the client --
 // tests/safety.test.ts guards that) but is pure/side-effect-free at import time (the only
@@ -206,5 +207,14 @@ describe("PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 1-C/15:
   it("with nothing discovered yet, the prompt says plainly there is nothing specific known, and never invents one", () => {
     const prompt = buildPrompt(buildNpcAiContext("kamiya", createInitialCoreState(), "何か困っていることありますか"));
     expect(prompt).toMatch(/具体的に知っている町の困りごとはない/);
+  });
+});
+
+describe("PHASE_14_NEW_LIFE_GAMEPLAY_CORE_V1 Section 11: a just-finished activity session is real material for free conversation to build on", () => {
+  it("Miyoko's prompt carries her reaction to today's activity session as a known fact (the same knowledge-boundary channel local problems already use)", () => {
+    const def = activityById("cafe_busy_hour")!;
+    const state = runActivity({ ...createInitialCoreState(), day: def.minDay, time: def.eligibleFromMinutes }, def, [def.tasks[0]]);
+    const prompt = buildPrompt(buildNpcAiContext("miyoko", state, "さっきは助かりました"));
+    expect(prompt).toContain(def.npcReactionMinimal);
   });
 });
