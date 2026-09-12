@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildNpcAiContext } from "../src/newlifecore/dialogue/contextBuilder";
 import { NPC_DEFS } from "../src/newlifecore/npcDefs";
+import { purchaseItems, discoverLocalProblem } from "../src/newlifecore/engine";
+import { localProblemById } from "../src/newlifecore/content/localProblemDefs";
 import { createInitialCoreState, type NpcId } from "../src/newlifecore/types";
 // The live prompt builder is a plain-JS, server-only module (never bundled into the client --
 // tests/safety.test.ts guards that) but is pure/side-effect-free at import time (the only
@@ -160,5 +162,49 @@ describe("NEW_LIFE_DAY1_LIVING_DEPTH_AND_DIALOGUE_PRECISION_V1: bounded menu is 
     const prompt = buildPrompt(buildNpcAiContext("yohei", createInitialCoreState(), "何を売ってますか"));
     expect(prompt).toMatch(/米（1袋）/);
     expect(prompt).not.toMatch(/ホットサンド/);
+  });
+});
+
+describe("PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 1-D/17: no real calendar date is ever offered as invented content (HV-01 regression)", () => {
+  it("every NPC's real prompt explicitly forbids inventing a real month/day calendar date and directs to Day-N phrasing instead", () => {
+    const state = createInitialCoreState();
+    for (const npc of ALL_NPCS) {
+      const prompt = buildPrompt(buildNpcAiContext(npc, state, "今日は何月何日ですか"));
+      expect(prompt, `${npc}'s prompt must forbid inventing a calendar date`).toMatch(/実在する月日を絶対に発明して答えないでください/);
+      expect(prompt).toContain(`DAY${state.day}`);
+      expect(prompt).toMatch(/来てから/);
+    }
+  });
+});
+
+describe("PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 1-B/16: same-day purchases are never mistaken for a distant past occasion (HV-01 hot-sandwich regression)", () => {
+  it("a same-day purchase from this NPC appears in the prompt with explicit recency framing and a ban on 'again/before'-style re-recommendation", () => {
+    const afterPurchase = purchaseItems(createInitialCoreState(), "miyoko", ["hot_sandwich"]).state;
+    const ctx = buildNpcAiContext("miyoko", afterPurchase, "美味しかったです");
+    const prompt = buildPrompt(ctx);
+    expect(prompt).toContain("PLAYERがホットサンドを買った");
+    expect(prompt).toMatch(/今日、この場でついさっき起きたことです/);
+    expect(prompt).toMatch(/「前に買ってくれた時」「今度また」のように/);
+  });
+
+  it("with no purchase today, the prompt says plainly that nothing has been bought yet", () => {
+    const prompt = buildPrompt(buildNpcAiContext("miyoko", createInitialCoreState(), "こんにちは"));
+    expect(prompt).toMatch(/今日はまだ何も買っていない/);
+  });
+});
+
+describe("PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 1-C/15: a known local problem gives the NPC real material instead of a generic dismissal (HV-01 Kamiya regression)", () => {
+  it("once a local problem is discovered, the owning NPC's prompt carries it and instructs engaging with it when the player asks about town troubles or offers to help", () => {
+    const def = localProblemById("miyoko_weekend_help_shortage")!;
+    const state = discoverLocalProblem({ ...createInitialCoreState(), day: def.minDay }, def);
+    const prompt = buildPrompt(buildNpcAiContext("miyoko", state, "何か困っていることありますか"));
+    expect(prompt).toContain(def.discoverResultText);
+    expect(prompt).toMatch(/具体的に答えてください/);
+    expect(prompt).toMatch(/「そうですか」だけで終わらせるのは/);
+  });
+
+  it("with nothing discovered yet, the prompt says plainly there is nothing specific known, and never invents one", () => {
+    const prompt = buildPrompt(buildNpcAiContext("kamiya", createInitialCoreState(), "何か困っていることありますか"));
+    expect(prompt).toMatch(/具体的に知っている町の困りごとはない/);
   });
 });

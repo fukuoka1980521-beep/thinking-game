@@ -7,6 +7,8 @@ import { npcDisplayName } from "../npcDefs";
 import { TRAJECTORY_SEEDS } from "./trajectoryDefs";
 import type { TrajectorySeed } from "./trajectoryDefs";
 import { canStepBackFromTrajectory, engageActionEligible, hasAcceptedTrajectory, lateConsequenceEligible, opportunityEligible } from "./trajectoryEngine";
+import { LOCAL_PROBLEM_DEFS } from "./localProblemDefs";
+import { localProblemConnectEligible, localProblemDiscoverEligible, localProblemHelpEligible, localProblemObservationEligible } from "./localProblemEngine";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
 /**
@@ -38,6 +40,39 @@ function trajectoryActionsFor(seed: TrajectorySeed, state: CoreState): { id: str
     actions.push({ id: `late_${seed.id}`, label: seed.lateConsequenceActionLabel });
   }
   return actions;
+}
+
+/**
+ * PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 4/6/13 -- whichever NPC the player
+ * is currently facing, this surfaces (a) discovering one of THEIR own problems (once the ambient
+ * cue has been noticed -- discover/help are mutually exclusive by construction, see
+ * `localProblemEngine.ts`), and (b) any OTHER problem that lists this NPC as its connect target,
+ * regardless of where that problem itself lives (Section 7's "別NPCにつなぐ" is a conversation with
+ * the person being connected TO, not a menu on the original problem's own screen). Labels are
+ * always plain, ordinary scene-action phrasing -- never "受注"/"クエスト開始" (Section 6/23).
+ */
+function localProblemActionsForNpcHere(npc: NpcId, location: LocationId, state: CoreState): { id: string; label: string }[] {
+  const actions: { id: string; label: string }[] = [];
+  for (const def of LOCAL_PROBLEM_DEFS) {
+    if (def.location === location && def.npc === npc) {
+      if (localProblemDiscoverEligible(def, state)) {
+        actions.push({ id: `discover_localproblem_${def.id}`, label: def.discoverActionLabel });
+      } else if (def.helpActionLabel && localProblemHelpEligible(def, state)) {
+        actions.push({ id: `help_localproblem_${def.id}`, label: def.helpActionLabel });
+      }
+    }
+    if (def.connectNpc === npc && def.connectActionLabel && localProblemConnectEligible(def, state)) {
+      actions.push({ id: `connect_localproblem_${def.id}`, label: def.connectActionLabel });
+    }
+  }
+  return actions;
+}
+
+/** Section 13 -- at most one ambient local-problem cue per location visit (never a stacked list of
+ *  hints), picking the first eligible-and-undiscovered def at this location in authored order. */
+function localProblemAmbientLineAt(location: LocationId, state: CoreState): string {
+  const def = LOCAL_PROBLEM_DEFS.find((d) => d.location === location && localProblemObservationEligible(d, state));
+  return def ? def.observationLine : "";
 }
 
 export const LOCATION_LABEL: Record<LocationId, string> = {
@@ -104,6 +139,11 @@ const OPENING_LINES: Record<NpcId, NpcOpeningLine> = {
     firstVisitLine: "文子が掲示板から振り返った。「あら、見ない顔ね。新しく来た人?」",
     laterVisitLine: "文子は片手を挙げた。「あら、また会ったわね」",
   },
+  kiyoshi: {
+    npc: "kiyoshi",
+    firstVisitLine: "レジの脇に立っていた清が、ちらっとこちらを見た。",
+    laterVisitLine: "清は軽く頷いた。「ああ」",
+  },
 };
 
 // PHASE_12_4 Section 1/8 -- "昨日のことが今日につながっている" as a felt, structural thing, not a
@@ -119,6 +159,7 @@ const YESTERDAY_BRIDGE_LINES: Record<NpcId, string> = {
   daisuke: "大輔は鏡越しに視線をよこした。「昨日も来てましたね」",
   hina: "陽菜が顔を上げた。「あ、昨日も来てくれましたよね」",
   fumiko: "文子は片手を挙げた。「あら、昨日も来てたわね」",
+  kiyoshi: "清はちらっとこちらを見た。「昨日も来てたな」",
 };
 
 export function openingLineFor(npc: NpcId, state: CoreState): string {
@@ -198,7 +239,12 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     // of what day it nominally is (directive Section 6: no NPC/state changes just because a day
     // number ticked over with nobody watching a specific trigger condition).
     if (npcsHere.includes("hina")) {
-      return { location: loc, ambientLine: "", npcsHere: ["hina"], specialActions: [{ id: "notice_shop", label: "新しい店を覗く" }] };
+      return {
+        location: loc,
+        ambientLine: localProblemAmbientLineAt(loc, state),
+        npcsHere: ["hina"],
+        specialActions: [{ id: "notice_shop", label: "新しい店を覗く" }, ...localProblemActionsForNpcHere("hina", loc, state)],
+      };
     }
     if (state.day >= 2) {
       return {
@@ -224,9 +270,12 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     // asks for (firstVisitLine, above) must be a real action, not something free text can fake.
     // Offered once, alongside the usual "look at job postings" -- disappears once actually filled,
     // it doesn't reappear as a repeatable action.
-    const specialActions = state.flags.intakeFormSubmitted
-      ? [{ id: "view_jobs", label: "求人票を見る" }]
-      : [{ id: "fill_intake_form", label: "用紙に記入する" }, { id: "view_jobs", label: "求人票を見る" }];
+    const specialActions = [
+      ...(state.flags.intakeFormSubmitted
+        ? [{ id: "view_jobs", label: "求人票を見る" }]
+        : [{ id: "fill_intake_form", label: "用紙に記入する" }, { id: "view_jobs", label: "求人票を見る" }]),
+      ...localProblemActionsForNpcHere("kamiya", loc, state),
+    ];
     return { location: loc, ambientLine: "", npcsHere: ["kamiya"], specialActions };
   }
 
@@ -241,13 +290,19 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     // alongside whatever else that branch already offers (talk, shelf-help).
     const SHOP_ACTION = { id: "shop_here", label: "買い物をする" };
 
+    // PHASE_13 -- Yohei's own local-problem actions (successor worry, Kiyoshi's delivery need)
+    // apply in every non-closed/non-busy branch below, same "always available alongside whatever
+    // else this branch offers" pattern SHOP_ACTION already follows.
+    const yoheiLocalProblemActions = localProblemActionsForNpcHere("yohei", loc, state);
+
     if (state.flags.shelfFixed) {
       // The shelf thread is over -- reached either by the player's own hands, or by Yohei and
       // Jin finishing it without the player (directive Section 20/21: a trace, never a badge).
       const ambientLine = state.flags.shelfFixedWithPlayer
         ? "洋平は棚を軽く叩いて確かめた。「うん、大丈夫そうだ」"
         : "棚を軽く小突くと、もう安定していた。「さっき相馬が寄ってな」洋平はそれだけ言った。";
-      return { location: loc, ambientLine, npcsHere: ["yohei"], specialActions: [SHOP_ACTION] };
+      const combined = [ambientLine, localProblemAmbientLineAt(loc, state)].filter((s) => s.length > 0).join(" ");
+      return { location: loc, ambientLine: combined, npcsHere, specialActions: [SHOP_ACTION, ...yoheiLocalProblemActions] };
     }
 
     if (jinAlsoHere) {
@@ -257,7 +312,7 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
         location: loc,
         ambientLine: "奥で相馬が棚の様子を見ていた。洋平が脇で見守っている。",
         npcsHere: ["yohei", "jin"],
-        specialActions: [{ id: "offer_help_shelf", label: "棚の修理を手伝う" }, SHOP_ACTION],
+        specialActions: [{ id: "offer_help_shelf", label: "棚の修理を手伝う" }, SHOP_ACTION, ...yoheiLocalProblemActions],
       };
     }
 
@@ -267,7 +322,8 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     // shelfFixed still false should not occur (the world-event auto-resolves it by then) but the
     // fallback below keeps this branch harmless if it ever does.
     const hint = state.time < 11 * 60 + 30 ? "棚の脚が少し傾いているのが、なんとなく目についた。" : "";
-    return { location: loc, ambientLine: hint, npcsHere: ["yohei"], specialActions: [SHOP_ACTION] };
+    const combinedHint = [hint, localProblemAmbientLineAt(loc, state)].filter((s) => s.length > 0).join(" ");
+    return { location: loc, ambientLine: combinedHint, npcsHere, specialActions: [SHOP_ACTION, ...yoheiLocalProblemActions] };
   }
 
   if (loc === "CAFE_NODOKA") {
@@ -279,8 +335,9 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
       { id: "order_menu", label: "メニューを注文する" },
       { id: "sit_down", label: "コーヒーを頼んで座る" },
       ...trajectoryActionsFor(miyokoSeed, state),
+      ...localProblemActionsForNpcHere("miyoko", loc, state),
     ];
-    return { location: loc, ambientLine: "", npcsHere: ["miyoko"], specialActions };
+    return { location: loc, ambientLine: localProblemAmbientLineAt(loc, state), npcsHere: ["miyoko"], specialActions };
   }
 
   if (loc === "BARBERSHOP") {
@@ -291,9 +348,9 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     // surfaces here as a real action, not as a pushy notification the moment the day starts. Only
     // offered once the player has actually come back to this location on a later day.
     const hasOpenIntent = state.realWorldIntents.some((i) => i.npc === "daisuke" && !i.checkedIn && i.createdOnDay < state.day);
-    const specialActions: { id: string; label: string }[] = [{ id: "shop_here", label: "散髪してもらう" }];
+    const specialActions: { id: string; label: string }[] = [{ id: "shop_here", label: "散髪してもらう" }, ...localProblemActionsForNpcHere("daisuke", loc, state)];
     if (hasOpenIntent) specialActions.unshift({ id: "check_in_intent", label: "その後の話をする" });
-    return { location: loc, ambientLine: "", npcsHere: ["daisuke"], specialActions };
+    return { location: loc, ambientLine: localProblemAmbientLineAt(loc, state), npcsHere: ["daisuke"], specialActions };
   }
 
   // COMMUNITY_HALL -- Jin and Fumiko can independently be here at the same time; must check where
@@ -314,15 +371,20 @@ function buildLocationSceneBase(state: CoreState): LocationScene {
     } else {
       present.push("jin");
       hallActions.push(...trajectoryActionsFor(TRAJECTORY_SEEDS.find((s) => s.id === "jin_odd_job")!, state));
+      // PHASE_13 -- Jin's own local problem (jin_solo_workload, origin) PLUS whatever other
+      // problem's connect target is Jin (yohei_kiyoshi_delivery) -- both are conversations with
+      // Jin himself, so both surface here regardless of which problem they originated from.
+      hallActions.push(...localProblemActionsForNpcHere("jin", loc, state));
     }
   }
   if (fumikoHere) {
     present.push("fumiko");
     hallActions.push(...trajectoryActionsFor(TRAJECTORY_SEEDS.find((s) => s.id === "fumiko_community_role")!, state));
+    hallActions.push(...localProblemActionsForNpcHere("fumiko", loc, state));
   }
 
   if (present.length > 0 || hallActions.length > 0) {
-    return { location: loc, ambientLine: "", npcsHere: present, specialActions: hallActions };
+    return { location: loc, ambientLine: localProblemAmbientLineAt(loc, state), npcsHere: present, specialActions: hallActions };
   }
 
   if (state.flags.jinCalledToYohei && !state.flags.shelfFixed && state.time < 13 * 60 + 30) {
@@ -401,6 +463,24 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
     }
   }
 
+  // PHASE_13 Section 7/8 -- exactly one plain sentence for whatever LOCAL PROBLEM thing happened
+  // today, same register and same "today only" gating as the trajectory block just above.
+  // Discovery/help/connect are stamped on the day the player took that action; `resolved`/
+  // `resolved_without_player` are stamped by `engine.ts`'s `startNewDay` tick with the NEW day's
+  // number (i.e. the day the player is now living through) -- so a world change that lands "a few
+  // days later" correctly surfaces on THAT later day's own end-of-day screen, not retroactively on
+  // the day the player last took action.
+  for (const def of LOCAL_PROBLEM_DEFS) {
+    for (const suffix of ["discovered", "helped", "connected", "resolved", "resolved_without_player"] as const) {
+      const id = suffix === "discovered" ? `${def.id}_discovered` : `${def.id}_${suffix}_d${state.day}`;
+      const fact = state.worldFacts.find((f) => f.id === id && f.day === state.day);
+      if (fact) {
+        lines.push(fact.text);
+        break;
+      }
+    }
+  }
+
   if (talkedToday("jin")) lines.push("相馬とは少し話した。明日も朝が早いらしい。");
   if (talkedToday("miyoko")) lines.push("喫茶のどかで、美代子と少し話した。");
   if (talkedToday("kamiya")) lines.push("神谷とは話が途中のままだ。");
@@ -452,6 +532,11 @@ export function buildPurchaseNarration(npc: NpcId, labels: string[]): string {
   const joined = labels.join("、");
   if (npc === "yohei") return `洋平は${joined}を袋にまとめた。「はい。重いぞ」`;
   if (npc === "miyoko") return `美代子は${joined}をカウンターに置いた。「はい、どうぞ。気をつけてね」`;
+  // PHASE_13 Section 1-A -- "散髪を受け取った" read as unnatural Japanese (HV-01 finding): a haircut
+  // is a service done TO you, not an object received. Daisuke-specific branch, matching the
+  // yohei/miyoko pattern above instead of falling through to the generic (object-purchase-only)
+  // fallback line.
+  if (npc === "daisuke") return `大輔に${joined}をしてもらった。「はい、お疲れさま」`;
   return `${joined}を受け取った。`;
 }
 

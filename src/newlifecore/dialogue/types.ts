@@ -57,6 +57,23 @@ export interface NpcAiContext {
    *  `null` for NPCs who do not run a shop (Kamiya, Jin) so the prompt never invents a menu for
    *  them either. The AI must answer product questions from this list only, never invent an item. */
   availableMenu: ShopItem[] | null;
+  /**
+   * PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 16 -- item labels this NPC sold
+   * (or that the player otherwise obtained from them) EARLIER TODAY, in purchase order. Exists so a
+   * same-day purchase is never mistaken for a distant past occasion (the HV-01 "また買ってくれた
+   *時..." hot-sandwich contradiction) -- fed to the live prompt with explicit recency framing, see
+   * the server-only prompt builder's own instruction wording.
+   */
+  recentPurchasesToday: string[];
+  /**
+   * Section 4/15 -- short, already-NPC-voiced lines for whichever LOCAL PROBLEM(s) this NPC
+   * currently knows about (as owner or hearsay) and are not yet resolved. Never a mandatory line to
+   * recite -- exists so that when the PLAYER brings up wanting to help/start something, the NPC has
+   * real, specific, canonical material to draw on instead of a generic "そうですか" (Section 15's
+   * exact failure case). Empty array is a normal, valid state (nothing known yet, or nothing left
+   * unresolved) -- never itself a reason to invent one.
+   */
+  knownLocalProblemMentions: string[];
   playerInput: string;
 }
 

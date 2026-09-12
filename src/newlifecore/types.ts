@@ -9,7 +9,13 @@
 
 export type LocationId = "TRIAL_HOUSE" | "CHALLENGE_CENTER" | "YOHEI_STORE" | "CAFE_NODOKA" | "COMMUNITY_HALL" | "SHOPPING_STREET" | "BARBERSHOP";
 
-export type NpcId = "kamiya" | "yohei" | "miyoko" | "jin" | "daisuke" | "hina" | "fumiko";
+// PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 9 -- exactly one new, occasional
+// (not core-daily) NPC added this phase, grounded in a real local-problem need (an elderly customer
+// of Yohei's who has trouble getting his own shopping done -- Section 10's "older resident" gap),
+// not roster padding. Section 11's location count is deliberately left unchanged this phase (he is
+// reachable at YOHEI_STORE on his own light schedule, not a new place) -- see the phase's CLOSE
+// report for why NPC/location expansion was kept minimal rather than run to this phase's ceiling.
+export type NpcId = "kamiya" | "yohei" | "miyoko" | "jin" | "daisuke" | "hina" | "fumiko" | "kiyoshi";
 
 /** Minutes since 00:00. */
 export type ClockMinutes = number;
@@ -228,7 +234,40 @@ export interface CoreState {
    *  structured record -- there is nothing to derive FROM this field, it exists only to be read
    *  back to the player as their own words (Section 19's "PLAYER-CREATED MEANING"). */
   day30ReflectionText: string | null;
+  /**
+   * PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 4/13/14 -- maps a
+   * `LocalProblemDef.id` to the day the PLAYER first learned of it. Absence = not yet discovered by
+   * the player (the problem may still exist in the world; canonical existence is not gated on
+   * player knowledge -- Section 19: the town does not wait for the player to notice anything).
+   * Never surfaced as a "依頼一覧" list (Section 14) -- read only by `content/day1.ts` (to decide
+   * whether a response action is offered) and by `dialogue/contextBuilder.ts` (to decide whether an
+   * NPC's `knownFacts` includes it, Section 15).
+   */
+  localProblemsKnown: Record<string, number>;
+  /**
+   * Section 7/19 -- the WORLD's own resolution state per problem, entirely independent of whether
+   * the player ever discovered it. Absence = still unresolved. Never a numeric progress bar --
+   * exactly one of a small, plain set of outcomes, each read only to pick which authored line
+   * (content/localProblemDefs.ts) narrates it, never displayed as a status label.
+   */
+  localProblemStatus: Record<string, LocalProblemStatus>;
+  /** Section 7 -- how many distinct days the player has taken the "help" response for a given
+   *  problem, purely to gate the small number of accumulate-type problems' resolution threshold
+   *  (mirrors `PlayerExperience.count`'s "internal gate, never a score" discipline exactly). */
+  localProblemHelpCount: Record<string, number>;
+  /** Section 7 -- the day of the player's most recent help/connect action on this problem, so its
+   *  world-consequence resolution can land a realistic "数日後" later rather than the same instant
+   *  (mirrors `eventLastFired`'s shape). */
+  localProblemLastPlayerAction: Record<string, number>;
 }
+
+/** Section 7/19 -- deliberately NOT a numeric score or percentage. `player_helped`/`player_connected`
+ *  are set the moment the player takes that response (an intermediate state -- the world hasn't
+ *  visibly changed yet); `resolved`/`resolved_without_player` are set only by the daily resolution
+ *  tick (content/localProblemEngine.ts's `tickLocalProblems`, called from `startNewDay`), never
+ *  immediately on the player's own action -- the "数日後" gap is real elapsed game time, not a
+ *  cosmetic delay. */
+export type LocalProblemStatus = "player_helped" | "player_connected" | "resolved" | "resolved_without_player";
 
 /** PHASE_12_7 Section 7 -- the adopted trajectory families. V1 implements exactly 3 concrete seeds
  *  (Section 25) spanning 3 of these families; UNCOMMITTED is deliberately not a family an
@@ -258,7 +297,7 @@ export function createInitialCoreState(): CoreState {
     playerLocation: "TRIAL_HOUSE",
     visitedLocations: ["TRIAL_HOUSE"],
     worldFacts: [],
-    npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [], daisuke: [], hina: [], fumiko: [] },
+    npcMemory: { kamiya: [], yohei: [], miyoko: [], jin: [], daisuke: [], hina: [], fumiko: [], kiyoshi: [] },
     flags: {},
     intakeForm: null,
     money: 8000,
@@ -274,5 +313,9 @@ export function createInitialCoreState(): CoreState {
     locationVisitCounts: {},
     lateConsequenceLastFired: {},
     day30ReflectionText: null,
+    localProblemsKnown: {},
+    localProblemStatus: {},
+    localProblemHelpCount: {},
+    localProblemLastPlayerAction: {},
   };
 }

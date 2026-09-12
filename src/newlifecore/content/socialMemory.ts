@@ -120,6 +120,7 @@ const INVITE_LABELS: Record<NpcId, string> = {
   daisuke: "また来てください。",
   hina: "また覗きに来てください。今度は焼きたてをお出しできると思うので。",
   fumiko: "また集会所に寄ってちょうだい。掲示板、少し変わってるはずだから。",
+  kiyoshi: "また顔を見せてくれ。",
 };
 
 export function invitationLabelFor(npc: NpcId): string {

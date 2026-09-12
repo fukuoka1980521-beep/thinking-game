@@ -9,6 +9,8 @@ import { EVENT_DEFS } from "./content/eventDefs";
 import { itemById } from "./content/shop";
 import { newPlayerPromise, resolvePendingPromiseOnMeet, sweepPlayerPromisesForNewDay } from "./content/socialMemory";
 import type { TrajectorySeed } from "./content/trajectoryDefs";
+import type { LocalProblemDef } from "./content/localProblemDefs";
+import { dueLocalProblemResolutions } from "./content/localProblemEngine";
 import { DAY_FORCE_SLEEP_MINUTES, DAY_SLEEP_AVAILABLE_FROM, DAY_START_MINUTES } from "./types";
 import type { ClockMinutes, ConversationTurn, CoreState, LocationId, NpcId, PlayerExperience, RealWorldIntent, UserUpdateResponse, WorldFact } from "./types";
 
@@ -157,7 +159,7 @@ export function startNewDay(state: CoreState): CoreState {
   // fail-safe for the edge case where the player sleeps mid-drizzle before 14:00.
   const { ateMeal: _ateMeal, isRaining: _isRaining, isDrizzling: _isDrizzling, ...persistentFlags } = state.flags;
   const nextDay = state.day + 1;
-  return {
+  const advanced: CoreState = {
     ...state,
     day: nextDay,
     time: DAY_START_MINUTES,
@@ -170,6 +172,10 @@ export function startNewDay(state: CoreState): CoreState {
     // this array stays bounded over a long session.
     playerPromises: sweepPlayerPromisesForNewDay(state.playerPromises, nextDay),
   };
+  // PHASE_13 Section 7/19 -- local problems that came due (via player help/connect, or resolving on
+  // their own without the player) resolve at the START of the new day, same timing shape as every
+  // other "town remembers overnight" mechanic in this codebase.
+  return tickLocalProblemsForNewDay(advanced);
 }
 
 /**
@@ -312,6 +318,77 @@ export function recordLateConsequence(state: CoreState, seed: TrajectorySeed): C
     knownBy: [seed.npc],
     category: "shared_event",
   });
+}
+
+/**
+ * PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 4/13 -- the ONLY place a problem
+ * moves from "ambient cue" to real player knowledge, reachable only from the structural
+ * "気になったので聞いてみる"-style scene action (content/day1.ts), never inferred from free text.
+ * `localProblemsKnown[id]` stores the DAY discovered (Section 14: player-facing memory, never a
+ * displayed list) -- also stamps a WorldFact known by both the owning NPC and (if defined) the
+ * hearsay NPC, so the latter can genuinely reference it in conversation too (Section 4's hearsay
+ * discovery path, reusing the existing knowledge-boundary mechanism, not a new one).
+ */
+export function discoverLocalProblem(state: CoreState, def: LocalProblemDef): CoreState {
+  if (state.localProblemsKnown[def.id] !== undefined) return state;
+  const withTime = advanceTime(state, 10);
+  const withKnown = { ...withTime, localProblemsKnown: { ...withTime.localProblemsKnown, [def.id]: withTime.day } };
+  const knownBy: NpcId[] = def.hearsayNpc ? [def.npc, def.hearsayNpc] : [def.npc];
+  return addWorldFact(withKnown, { id: `${def.id}_discovered`, time: withKnown.time, text: def.discoverResultText, knownBy, category: "place_knowledge" });
+}
+
+/** Section 6/7 -- an ordinary help action, never a "quest accept". Sets the intermediate
+ *  `player_helped` status and bumps the accumulate-mode counter; the actual world-change text
+ *  (Section 8's reward) is never written here -- only `tickLocalProblemsForNewDay` (below), once
+ *  `resolveAfterDays` have genuinely passed, ever writes that. */
+export function respondToLocalProblemHelp(state: CoreState, def: LocalProblemDef): CoreState {
+  if (!def.helpActionLabel || !def.helpResultText) return state;
+  const withTime = advanceTime(state, 40);
+  const helpCount = (withTime.localProblemHelpCount[def.id] ?? 0) + 1;
+  const withCount: CoreState = {
+    ...withTime,
+    localProblemHelpCount: { ...withTime.localProblemHelpCount, [def.id]: helpCount },
+    localProblemLastPlayerAction: { ...withTime.localProblemLastPlayerAction, [def.id]: withTime.day },
+    localProblemStatus: { ...withTime.localProblemStatus, [def.id]: "player_helped" },
+  };
+  return addWorldFact(withCount, { id: `${def.id}_helped_d${withCount.day}`, time: withCount.time, text: def.helpResultText, knownBy: [def.npc], category: "shared_event" });
+}
+
+/** Section 6/7 -- connecting the problem to another NPC, equally valid to helping directly and
+ *  equally never forced -- resolves through the SAME daily tick, on the SAME "数日後" timing. */
+export function respondToLocalProblemConnect(state: CoreState, def: LocalProblemDef): CoreState {
+  if (!def.connectNpc || !def.connectActionLabel || !def.connectResultText) return state;
+  const withTime = advanceTime(state, 20);
+  const withStatus: CoreState = {
+    ...withTime,
+    localProblemLastPlayerAction: { ...withTime.localProblemLastPlayerAction, [def.id]: withTime.day },
+    localProblemStatus: { ...withTime.localProblemStatus, [def.id]: "player_connected" },
+  };
+  return addWorldFact(withStatus, { id: `${def.id}_connected_d${withStatus.day}`, time: withStatus.time, text: def.connectResultText, knownBy: [def.npc, def.connectNpc], category: "shared_event" });
+}
+
+/**
+ * Section 7/19 -- called from `startNewDay`, AFTER the day has already advanced (so "today" below
+ * means the new day). Writes the small number of resolutions `dueLocalProblemResolutions` (a pure
+ * function, content/localProblemEngine.ts) determined were due -- world-change text for a
+ * player-driven resolution, a DIFFERENT plain sentence for a without-player resolution (Section 19:
+ * never dressed up as a player accomplishment when the player did nothing). Both stay ordinary
+ * WorldFacts, read by `buildEndOfDayNarrative`/ambient scene text exactly like everything else --
+ * never a separate "problems resolved" panel.
+ */
+function tickLocalProblemsForNewDay(state: CoreState): CoreState {
+  const due = dueLocalProblemResolutions(state);
+  let next = state;
+  for (const { def, outcome } of due) {
+    const text = outcome === "resolved" ? def.worldChangeText : (def.autoResolveText ?? def.worldChangeText);
+    const knownBy: NpcId[] = def.hearsayNpc ? [def.npc, def.hearsayNpc] : [def.npc];
+    next = {
+      ...next,
+      localProblemStatus: { ...next.localProblemStatus, [def.id]: outcome },
+    };
+    next = addWorldFact(next, { id: `${def.id}_${outcome}_d${next.day}`, time: next.time, text, knownBy, category: "world_change" });
+  }
+  return next;
 }
 
 /** Section 4/19 -- the ONLY place `day30ReflectionText` is ever written, from a real UI textarea

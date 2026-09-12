@@ -407,6 +407,54 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
       { fromMinutes: 13 * 60, toMinutes: 16 * 60, location: "COMMUNITY_HALL", availability: "AVAILABLE", note: "午後も顔を出している" },
     ],
   },
+  // PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 9/10 -- the one new NPC this
+  // phase, deliberately "supporting/occasional" tier (a light schedule, not a daily fixture): an
+  // older resident, grounding the LOCAL PROBLEM LOOP's "yohei_delivery_shortage" problem
+  // (content/localProblemDefs.ts) in an actual person rather than an abstract mention.
+  kiyoshi: {
+    id: "kiyoshi",
+    displayName: "清",
+    identity: "82歳、男性。洋平商店の古くからの客。一人暮らし。数年前に免許を返納した。",
+    personality: "口数は多くないが、頑固というより照れ隠しに近い。誰かに頼ることへの抵抗が強い。",
+    values: "「人の手を借りずに、自分のことは自分でやること」。ただし本人も、それが年々きつくなってきているのは分かっている。",
+    likes: ["昔ながらの店の並び", "静かな時間"],
+    dislikes: ["同情されること", "急かされること"],
+    job: "元々は町内の工場に勤めていた。今は年金暮らし。",
+    currentConcerns: [
+      "免許を返納してから、洋平商店より遠い品はほとんど買えなくなった。重い物は特に持って帰れない。",
+      "近所に頼れる相手がいない日は、買い物自体を諦めることがある。",
+    ],
+    relationships: {
+      yohei: { description: "先代の頃からの客。世間話程度はする。", quality: "familiar" },
+      jin: { description: "顔は知っているが、頼み事をしたことはない。", quality: "distant" },
+      miyoko: { description: "たまに喫茶のどかにも顔を出す。", quality: "distant" },
+      kamiya: { description: "接点はほとんどない。", quality: "distant" },
+      daisuke: { description: "散髪はいつもかどや。", quality: "familiar" },
+      hina: { description: "まだ話したことはない。", quality: "distant" },
+      fumiko: { description: "集会所の集まりで顔を合わせることがある。", quality: "familiar" },
+    },
+    knowledge: {
+      firsthand: ["自分の暮らし向き、買い物の不便さ"],
+      heard: ["町内の一般的な噂話（洋平の店先で耳にする範囲）"],
+      unknowns: ["プレイヤーが他のNPCと個別に交わした会話の内容（本人から聞かない限り）", "プレイヤーの内心"],
+    },
+    speechStyle: "短く、ぶっきらぼう。世話を焼かれそうになると、はぐらかして話を切り上げる。",
+    memoryStyle: "同じ話を繰り返すことがある。最近のことより、昔のことの方がよく出てくる。",
+    hiddenBackground: {
+      whatTheyWantToday: "今日必要な分だけ、洋平の店で済ませたい。それ以上のことは特に望んでいない。",
+      whatTheyWorryAbout: "このまま買い物が難しくなっていったらどうするか、という漠然とした不安。",
+      whatTheyDoNotWantToSay: "本当は重い物を運ぶのがつらいこと。誰かに頼るのは気が引ける。",
+      whatTheyMisunderstand: "頼ることは迷惑をかけることだ、と思い込んでいる。",
+      currentPressure: "特に締め切りはないが、買い物のたびに少し疲れが残るようになった。",
+      playerImpression: "まだ特に何も——店先でたまに見かける、新しい顔という程度。",
+      privateHistoryRelevantNow: "工場で長年働いていたこと。聞かれれば話すが、自分からは言わない。",
+    },
+    schedule: [
+      // Deliberately light/occasional -- present only during a short late-morning window, not all
+      // day like Yohei himself (Section 9's "全員main NPCにしない").
+      { fromMinutes: 10 * 60, toMinutes: 11 * 60, location: "YOHEI_STORE", availability: "AVAILABLE", note: "買い物に来ている" },
+    ],
+  },
 };
 
 export function npcDisplayName(id: NpcId): string {

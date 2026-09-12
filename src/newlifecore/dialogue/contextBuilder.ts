@@ -3,6 +3,8 @@ import { npcAvailabilityAt } from "../schedule";
 import { menuForNpc } from "../content/shop";
 import { LOCATION_LABEL } from "../content/day1";
 import { daysSinceLastMeeting, computePlayerNpcTags } from "../content/socialMemory";
+import { LOCAL_PROBLEM_DEFS } from "../content/localProblemDefs";
+import { isLocalProblemDiscovered, isLocalProblemResolved } from "../content/localProblemEngine";
 import { formatClock } from "../types";
 import type { CoreState, NpcId } from "../types";
 import type { NpcAiContext } from "./types";
@@ -14,6 +16,23 @@ function describeMood(npc: NpcId, state: CoreState): string {
   if (availability === "BUSY") return "少し立て込んでいて、余裕がない";
   if (state.time >= 17 * 60) return "一日の終わりが近く、少し疲れている";
   return "落ち着いている";
+}
+
+/** Section 16 -- item labels this NPC sold TODAY, in the order bought. Derived from the existing
+ *  `purchase_${npc}_${time}` WorldFacts `engine.ts`'s `purchaseItems` already writes (day-stamped by
+ *  `addWorldFact`), so no new state was needed -- only a recency-scoped read of state already kept. */
+function recentPurchasesToday(npc: NpcId, state: CoreState): string[] {
+  return state.worldFacts
+    .filter((f) => f.day === state.day && f.id.startsWith(`purchase_${npc}_`))
+    .map((f) => f.text);
+}
+
+/** Section 4/15 -- every LOCAL PROBLEM this NPC (as owner or hearsay) currently knows about and
+ *  that isn't resolved yet, as the already-NPC-voiced line from the moment it was discovered. */
+function knownLocalProblemMentions(npc: NpcId, state: CoreState): string[] {
+  return LOCAL_PROBLEM_DEFS.filter((def) => (def.npc === npc || def.hearsayNpc === npc) && isLocalProblemDiscovered(def, state) && !isLocalProblemResolved(def, state)).map(
+    (def) => def.discoverResultText,
+  );
 }
 
 export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: string): NpcAiContext {
@@ -52,6 +71,8 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
     timeLabel: formatClock(state.time),
     worldFactsRelevant: relevantFacts,
     availableMenu: menuForNpc(npc),
+    recentPurchasesToday: recentPurchasesToday(npc, state),
+    knownLocalProblemMentions: knownLocalProblemMentions(npc, state),
     playerInput,
   };
 }

@@ -17,7 +17,7 @@ import { deterministicNpcReply } from "../src/newlifecore/dialogue/deterministic
 import { liveNpcAdapter } from "../src/newlifecore/dialogue/liveAdapterClient";
 import { validateNpcReply } from "../src/newlifecore/dialogue/envelope";
 import { resolveWorldEvents } from "../src/newlifecore/content/day1WorldEvents";
-import { buildEndOfDayNarrative, buildLocationScene, describeBelongings, openingLineFor } from "../src/newlifecore/content/day1";
+import { buildEndOfDayNarrative, buildLocationScene, buildPurchaseNarration, describeBelongings, openingLineFor } from "../src/newlifecore/content/day1";
 import { looksLikeRealLifeConcern } from "../src/newlifecore/content/realityBridge";
 import { detectsCrisisSignal } from "../src/newlifecore/content/safetyRoute";
 import { deriveResearchObservation } from "../src/newlifecore/content/research";
@@ -499,10 +499,12 @@ describe("PHASE_12_3_NEW_LIFE_WORLD_AND_THINKING_RESIDENT_V1: deterministic clas
 });
 
 describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: NPC roster and relationship graph (Section 4/5)", () => {
-  const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "daisuke", "hina", "fumiko"];
+  // PHASE_13 Section 9 -- Kiyoshi added (7 -> 8), the one deliberately modest roster expansion this
+  // phase; see that phase's CLOSE report for why it stopped well short of the 12-14 ceiling offered.
+  const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "daisuke", "hina", "fumiko", "kiyoshi"];
 
-  it("the town has 7 NPCs, and none of them is uniformly kind/omniscient about the others (Section 4)", () => {
-    expect(Object.keys(NPC_DEFS)).toHaveLength(7);
+  it("the town has 8 NPCs, and none of them is uniformly kind/omniscient about the others (Section 4)", () => {
+    expect(Object.keys(NPC_DEFS)).toHaveLength(8);
     for (const npc of ALL_NPCS) {
       expect(NPC_DEFS[npc].hiddenBackground.whatTheyDoNotWantToSay.length).toBeGreaterThan(0);
     }
@@ -670,5 +672,18 @@ describe("PHASE_12_4_NEW_LIFE_WORLD_DEPTH_AND_CONVERSATION_QUALITY_V1: cross-day
     const day2 = startNewDay({ ...metYohei, ended: true });
     const talkedAgainToday = recordConversationTurn(day2, "yohei", "day2", "「おう」");
     expect(openingLineFor("yohei", talkedAgainToday)).toBe("洋平はちらっとこちらを見た。「また来たか」");
+  });
+});
+
+describe("PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 1-A: purchase narration reads as natural Japanese for every shop NPC (HV-01 regression)", () => {
+  it("Daisuke's haircut narration never uses the object-receiving phrasing HV-01 flagged as unnatural", () => {
+    const line = buildPurchaseNarration("daisuke", ["散髪"]);
+    expect(line).not.toContain("散髪を受け取った");
+    expect(line).toContain("散髪をしてもらった");
+  });
+
+  it("Yohei's and Miyoko's own narration are unchanged by this fix", () => {
+    expect(buildPurchaseNarration("yohei", ["米（1袋）"])).toContain("袋にまとめた");
+    expect(buildPurchaseNarration("miyoko", ["コーヒー"])).toContain("カウンターに置いた");
   });
 });

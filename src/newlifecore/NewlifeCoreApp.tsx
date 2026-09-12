@@ -28,6 +28,7 @@ import { daisukeCheckInAcknowledgement, daisukeIntentConfirmReaction, looksLikeR
 import { eligibleForNewInvitation, invitationLabelFor } from "./content/socialMemory";
 import { trajectorySeedById } from "./content/trajectoryDefs";
 import { hasAcceptedTrajectory } from "./content/trajectoryEngine";
+import { localProblemById } from "./content/localProblemDefs";
 import { detectsCrisisSignal, SAFETY_ROUTE_MESSAGE } from "./content/safetyRoute";
 import { buildNpcAiContext } from "./dialogue/contextBuilder";
 import { deterministicAdapter } from "./dialogue/deterministicAdapter";
@@ -42,12 +43,15 @@ import {
   createRealWorldIntent,
   declineLifeOpportunity,
   declinePlayerPromise,
+  discoverLocalProblem,
   doShortAction,
   moveTo,
   purchaseItems,
   recordConversationTurn,
   recordLateConsequence,
   recordTrajectoryEngagement,
+  respondToLocalProblemConnect,
+  respondToLocalProblemHelp,
   sleep,
   startNewDay,
   stepBackFromTrajectory,
@@ -309,6 +313,33 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
       if (seed) {
         setState((s) => recordLateConsequence(s, seed));
         setSpecialResult(seed.lateConsequenceResultText);
+      }
+      return;
+    }
+    // PHASE_13 Section 4/6/13 -- dynamic per-problem ids (content/localProblemDefs.ts), same
+    // prefix-matched pattern as the trajectory ids above. Never a separate "quest" UI path -- these
+    // are ordinary specialActions like everything else in this list.
+    if (actionId.startsWith("discover_localproblem_")) {
+      const def = localProblemById(actionId.slice("discover_localproblem_".length));
+      if (def) {
+        setState((s) => discoverLocalProblem(s, def));
+        setSpecialResult(def.discoverResultText);
+      }
+      return;
+    }
+    if (actionId.startsWith("help_localproblem_")) {
+      const def = localProblemById(actionId.slice("help_localproblem_".length));
+      if (def && def.helpResultText) {
+        setState((s) => respondToLocalProblemHelp(s, def));
+        setSpecialResult(def.helpResultText);
+      }
+      return;
+    }
+    if (actionId.startsWith("connect_localproblem_")) {
+      const def = localProblemById(actionId.slice("connect_localproblem_".length));
+      if (def && def.connectResultText) {
+        setState((s) => respondToLocalProblemConnect(s, def));
+        setSpecialResult(def.connectResultText);
       }
       return;
     }

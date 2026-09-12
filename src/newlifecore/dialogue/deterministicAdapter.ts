@@ -22,6 +22,9 @@ const UNCERTAIN_RE = /わからな|まだ決め|迷って|うーん|考え中/;
 const GREETING_RE = /こんにちは|おはよう|どうも|はじめまして/;
 const MENU_QUESTION_RE = /メニュー|何がありますか|何がある|何を売って|品揃え/;
 const ORDER_REQUEST_RE = /ください|ほしい|食べたい|くれ|お願いします|売って/;
+// PHASE_13 Section 15 -- the exact player-behavior pattern HV-01 observed: asking about the town's
+// troubles, or offering to help, or stating an intent to start something.
+const PROBLEM_INQUIRY_RE = /困って|困りごと|手伝え|手伝う|力になれ|仕事を始め|事業を始め|起業/;
 
 /**
  * Directive Section 3/4/11 -- DIRECT QUESTION FIRST + BOUNDED MENU, enforced structurally in the
@@ -166,6 +169,22 @@ const REPLIES: Record<NpcId, Record<Bucket, string[]>> = {
       "文子は腕を組んで、「そうねえ」と言った。",
     ],
   },
+  // PHASE_13 -- Kiyoshi's fallback bucket set. Terse, mildly guarded; warms up only slightly even
+  // in the OTHER bucket, matching his established "頼ることへの抵抗が強い" personality.
+  kiyoshi: {
+    OTHER_NPC_MENTIONED: ["清は「ふん」とだけ言った。"],
+    WORK_TALK: ["清は少し首を振った。「わしはもう、働いとらんよ」"],
+    ABOUT_SELF: ["清は少し黙ってから、「昔の話だ」と言った。"],
+    ABOUT_NPC: ["清は短く言った。「工場に長くいた。それだけだ」"],
+    UNCERTAIN: ["清は特に気にした様子もなく、「そうか」とだけ言った。"],
+    GREETING: ["清は軽く頷いた。", "清はちらっとこちらを見て、「ああ」と言った。"],
+    REUNION: ["清はちらっとこちらを見た。「しばらく見なかったな」"],
+    OTHER: [
+      "清は黙って頷いただけだった。",
+      "清は少し間を置いてから、「そうか」とだけ言った。",
+      "清は棚の方を見たまま、「ふん」と言った。",
+    ],
+  },
 };
 
 function pick(list: string[], seed: number): string {
@@ -176,9 +195,25 @@ function pick(list: string[], seed: number): string {
 // point, instead of the plain GREETING line. Matches the ABSENCE TEST's Case C (2-3 day reunion).
 const REUNION_THRESHOLD_DAYS = 3;
 
+/**
+ * Section 15 -- structural (non-live-model-dependent) fix for the exact HV-01 finding: asked about
+ * town troubles / offering to help / stating a business intent, with a real known local problem on
+ * hand, must engage with it specifically rather than a generic "そうですか". Deliberately checked
+ * BEFORE the ordinary bucket lookup (not added as a REPLIES bucket) so a NPC with nothing known yet
+ * still falls through to its normal, honest reply -- never invents a problem to have something to say.
+ */
+function problemInquiryReply(context: NpcAiContext): string | null {
+  if (!PROBLEM_INQUIRY_RE.test(context.playerInput)) return null;
+  if (context.knownLocalProblemMentions.length === 0) return null;
+  const mention = pick(context.knownLocalProblemMentions, context.historicalTurnCount);
+  return mention;
+}
+
 export function deterministicNpcReply(context: NpcAiContext): NpcReplyEnvelope {
   const menu = menuReply(context);
   if (menu) return { visibleUtterance: menu };
+  const problemReply = problemInquiryReply(context);
+  if (problemReply) return { visibleUtterance: problemReply };
   let bucket = classify(context.playerInput);
   if (bucket === "GREETING" && context.daysSinceLastMeeting !== null && context.daysSinceLastMeeting >= REUNION_THRESHOLD_DAYS) {
     bucket = "REUNION";
