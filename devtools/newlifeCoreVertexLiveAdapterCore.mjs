@@ -82,6 +82,24 @@ ${context.recentPurchasesToday.length > 0 ? context.recentPurchasesToday.join(" 
 【この人物が知っている、町の困りごと（Section 15 -- プレイヤーから「困っていることある？」「手伝えることある？」「仕事を始めたい」のように聞かれた場合、これが1つでもあれば、それについて具体的に答えてください。「そうですか」だけで終わらせるのは、具体的な話題があるのに一般論で流していることになり不自然です。ただし、聞かれてもいないのに毎回この話をする必要はありませんし、必ず仕事や役割を提案する義務もありません）】
 ${context.knownLocalProblemMentions.length > 0 ? context.knownLocalProblemMentions.join(" / ") : "（今のところ、具体的に知っている町の困りごとはない）"}
 
+【今、実際に起きていること（PHASE_16 Section 7 -- 最優先の情報。プレイヤーが今日ここに来た理由に
+直結している可能性が高い。下の【プレイヤーの発言】がこれに関係する内容なら、まずこれに具体的に答
+えること）】
+${
+  context.currentEvent
+    ? `出来事: ${context.currentEvent}\n状況: ${context.eventState}\n直前に起きたこと: ${context.whatJustHappened}`
+    : "（今、この人物に関わる特別な出来事は特にない）"
+}
+
+【今日、この人物が知った・関わった他の出来事】
+${context.recentSharedEventsToday.length > 0 ? context.recentSharedEventsToday.join(" / ") : "（特になし）"}
+
+【まだ続いている、少し前からの話】
+${context.unresolvedThreadsKnown.length > 0 ? context.unresolvedThreadsKnown.join(" / ") : "（特になし）"}
+
+【今日一緒に何かした記録】
+${context.recentActivitiesToday.length > 0 ? context.recentActivitiesToday.join(" / ") : "（特になし）"}
+
 【今の場面】
 ${context.currentScene}（DAY${context.day}, ${context.timeLabel}）
 
@@ -93,6 +111,17 @@ ${context.currentScene}（DAY${context.day}, ${context.timeLabel}）
 function buildStandardNpcPrompt(context) {
   return `${buildSharedContextBlock(context)}
 重要（絶対に守ること）:
+- PHASE_16 Section 8（最優先中の最優先）: 上の【今、実際に起きていること】に具体的な出来事が書か
+  れている場合、プレイヤーの発言がそれに関係する内容なら、まずその出来事そのものに答えてください。
+  「そうか」「まあな」「助かった」のような一般的な相槌だけで済ませず、誰が・何を・なぜという具体的
+  な中身に触れた一言を必ず含めること。その上で、必要なら新しい情報・質問・話題転換に移ってよい。
+  悪い例: プレイヤー「清さんの件、聞きました」→ ${context.displayName}「まあ、助かった」（何が助
+  かったのか、清さんの何の話なのかに一切触れていない）。
+  良い方向の例: 【今、実際に起きていること】の内容を具体的に一言拾ってから答える。
+- PHASE_16 Section 9: 会話の流れの中で、上の【本人が直接知っていること】に実際に書かれている範囲
+  でなら、新しい話題を自分から持ち出してよい（例: 自分の身の回りで実際にあったこと）。ただし、
+  そこに書かれていない出来事・人物・事実を、その場の思いつきで発明してはいけません——新しい話題は
+  必ず上記のいずれかの情報に基づくこと。
 - 最優先（人間ならまずこうする）: プレイヤーの発言が具体的な質問（「〜ありますか」「〜できますか」
   など）なら、まずその質問そのものに直接答えること。聞かれてもいない情報（観光案内、町の説明、営業
   時間の由来など）を勝手に付け足して長く話し始めないこと。例えば「この町でおすすめの場所は？」に対
@@ -167,6 +196,9 @@ function buildStandardNpcPrompt(context) {
 function buildThinkingResidentPrompt(context) {
   return `${buildSharedContextBlock(context)}
 重要（絶対に守ること、標準の会話ルール）:
+- PHASE_16 Section 8: 上の【今、実際に起きていること】に具体的な出来事が書かれている場合、プレイ
+  ヤーの発言がそれに関係する内容なら、まずその出来事そのものに具体的に答えてから、必要ならThinking
+  Circuitの話に移ってください。
 - 最優先（人間ならまずこうする）: プレイヤーの発言が具体的な質問なら、まずその質問そのものに直接
   答えること。聞かれてもいない情報を勝手に付け足して長く話し始めないこと。
 - 仕草・動作の描写は禁止ではないが、毎回使わないこと。カードを整える・お茶を飲む・湯呑みを置く、と

@@ -9,8 +9,10 @@ import {
   moveTo,
   purchaseItems,
   recordConversationTurn,
+  recordFortuneCardSelection,
   startNewDay,
 } from "../src/newlifecore/engine";
+import { FORTUNE_CARDS } from "../src/newlifecore/content/fortuneCards";
 import { npcAvailabilityAt, npcLocationAt, npcsPresentAt } from "../src/newlifecore/schedule";
 import { buildNpcAiContext } from "../src/newlifecore/dialogue/contextBuilder";
 import { deterministicNpcReply } from "../src/newlifecore/dialogue/deterministicAdapter";
@@ -687,5 +689,71 @@ describe("PHASE_13_NEW_LIFE_WORLD_ACTIVITY_AND_LOCAL_PROBLEMS_V1 Section 1-A: pu
   it("Yohei's and Miyoko's own narration are unchanged by this fix", () => {
     expect(buildPurchaseNarration("yohei", ["米（1袋）"])).toContain("袋にまとめた");
     expect(buildPurchaseNarration("miyoko", ["コーヒー"])).toContain("カウンターに置いた");
+  });
+});
+
+describe("PHASE_16_NEW_LIFE_GAME_IDENTITY_REBUILD_V1 Section 11: STATE COHERENCE -- café food/drink never persists as luggage", () => {
+  it("ordering café menu items (all consumedOnSite) deducts money but adds NOTHING to inventory -- the actual bug fix", () => {
+    const s0 = createInitialCoreState();
+    const { state: s1, totalCost, purchasedLabels } = purchaseItems(s0, "miyoko", ["coffee", "toast"]);
+    expect(totalCost).toBe(400 + 350);
+    expect(purchasedLabels).toEqual(["コーヒー", "トースト"]);
+    expect(s1.money).toBe(s0.money - totalCost);
+    expect(s1.inventory.coffee).toBeUndefined();
+    expect(s1.inventory.toast).toBeUndefined();
+    // "荷物を確認する" must never list café food/drink as luggage.
+    expect(describeBelongings(s1.inventory)).toBe("特に持ち帰った物はまだない。");
+  });
+
+  it("Yohei's groceries still persist in inventory exactly as before (only consumedOnSite items are exempt)", () => {
+    const s0 = createInitialCoreState();
+    const { state: s1 } = purchaseItems(s0, "yohei", ["rice"]);
+    expect(s1.inventory.rice).toBe(1);
+    expect(describeBelongings(s1.inventory)).toContain("米");
+  });
+
+  it("buildPurchaseNarration reads as on-site dine-in phrasing for an all-consumedOnSite café order, never the take-away '気をつけてね' line", () => {
+    const line = buildPurchaseNarration("miyoko", ["コーヒー", "トースト"], true);
+    expect(line).toContain("テーブルまで運んできてくれた");
+    expect(line).not.toContain("気をつけてね");
+  });
+});
+
+describe("PHASE_16_NEW_LIFE_GAME_IDENTITY_REBUILD_V1 Section 18: FORTUNE PERSISTENCE", () => {
+  it("recordFortuneCardSelection is the only place lastFortuneCard is written, stamping the card id and the current day", () => {
+    const s0 = createInitialCoreState();
+    expect(s0.lastFortuneCard).toBeNull();
+    const s1 = recordFortuneCardSelection(s0, "road");
+    expect(s1.lastFortuneCard).toEqual({ cardId: "road", day: s0.day });
+  });
+
+  it("openingLineFor gives Shizuko a card-aware follow-up greeting the first time she's talked to on a LATER day than the card was drawn", () => {
+    const s0 = createInitialCoreState();
+    const withCard = recordFortuneCardSelection(s0, "mirror");
+    const nextDay = startNewDay(withCard);
+    const line = openingLineFor("shizuko", nextDay);
+    expect(line).toBe(FORTUNE_CARDS.find((c) => c.id === "mirror")!.followUpLine);
+  });
+
+  it("the follow-up greeting only fires ONCE per day -- after actually talking to her that day, the ordinary laterVisitLine takes over", () => {
+    const s0 = createInitialCoreState();
+    const withCard = recordFortuneCardSelection(s0, "light");
+    let nextDay = startNewDay(withCard);
+    nextDay = recordConversationTurn(nextDay, "shizuko", "こんにちは", "「あら」");
+    const line = openingLineFor("shizuko", nextDay);
+    expect(line).not.toBe(FORTUNE_CARDS.find((c) => c.id === "light")!.followUpLine);
+  });
+
+  it("no follow-up greeting on the SAME day the card was drawn (that's the live fortune-telling session itself, not a revisit)", () => {
+    const s0 = createInitialCoreState();
+    const withCard = recordFortuneCardSelection(s0, "road");
+    const line = openingLineFor("shizuko", withCard);
+    expect(line).not.toBe(FORTUNE_CARDS.find((c) => c.id === "road")!.followUpLine);
+  });
+
+  it("never stores any raw player free text -- only the card id and day (existing privacy rule)", () => {
+    const s0 = createInitialCoreState();
+    const s1 = recordFortuneCardSelection(s0, "road");
+    expect(Object.keys(s1.lastFortuneCard!)).toEqual(["cardId", "day"]);
   });
 });

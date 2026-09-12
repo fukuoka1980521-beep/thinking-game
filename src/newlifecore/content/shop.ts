@@ -13,13 +13,24 @@ export interface ShopItem {
   price: number;
   /** Section 12/13 -- an item that can actually be cooked/eaten at the trial house once bought. */
   isFoodIngredient?: boolean;
+  /**
+   * PHASE_16 Section 11 -- STATE COHERENCE fix: an item eaten/drunk on the spot the moment it's
+   * ordered (every current CAFE_MENU item -- there is no takeout choice yet, Section 11's own
+   * "必要以上に複雑にしない" scope limit). `engine.ts`'s `purchaseItems` never adds a
+   * `consumedOnSite` item to `state.inventory` -- this is the actual root-cause fix for the found
+   * defect (café food/drink was showing up under "荷物を確認する" at the trial house forever, since
+   * every purchase used to be added to inventory unconditionally regardless of location/item type).
+   * Left `undefined`/falsy on every YOHEI_GOODS grocery item, which still persist in inventory
+   * exactly as before (unchanged, correct behavior -- groceries genuinely get carried home).
+   */
+  consumedOnSite?: boolean;
 }
 
 export const CAFE_MENU: ShopItem[] = [
-  { id: "toast", label: "トースト", price: 350 },
-  { id: "hot_sandwich", label: "ホットサンド", price: 650 },
-  { id: "coffee", label: "コーヒー", price: 400 },
-  { id: "tea", label: "紅茶", price: 400 },
+  { id: "toast", label: "トースト", price: 350, consumedOnSite: true },
+  { id: "hot_sandwich", label: "ホットサンド", price: 650, consumedOnSite: true },
+  { id: "coffee", label: "コーヒー", price: 400, consumedOnSite: true },
+  { id: "tea", label: "紅茶", price: 400, consumedOnSite: true },
 ];
 
 export const YOHEI_GOODS: ShopItem[] = [

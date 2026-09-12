@@ -14,6 +14,13 @@ export function LifeOpportunityOffer({ npc, label, onAccept, onDecline }: { npc:
   return (
     <div className="nlc-result" data-testid="nlc-opportunity-offer">
       <p className="nlc-ambient">{label}</p>
+      {/* PHASE_16_NEW_LIFE_GAME_IDENTITY_REBUILD_V1 Section 21 -- BIG CHOICE SIGNAL: accepting sets
+          `acceptedFlag` for the rest of the 30 days (a genuine LIFE_TURN_EVENT, Section 5), so the
+          player is told a decision of this size is coming WITHOUT any outcome being previewed --
+          Section 21's own example phrasing, verbatim. */}
+      <p className="nlc-big-choice-signal" data-testid="nlc-big-choice-signal">
+        この返事で、しばらく生活が変わるかもしれない。
+      </p>
       <div className="nlc-choices">
         <button className="nlc-choice" onClick={onAccept} data-testid={`nlc-opportunity-accept-${npc}`}>
           引き受けてみる

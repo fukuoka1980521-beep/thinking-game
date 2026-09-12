@@ -74,6 +74,27 @@ export interface NpcAiContext {
    * unresolved) -- never itself a reason to invent one.
    */
   knownLocalProblemMentions: string[];
+  /**
+   * PHASE_16_NEW_LIFE_GAME_IDENTITY_REBUILD_V1 Section 7 -- CURRENT_EVENT/EVENT_STATE/
+   * WHAT_JUST_HAPPENED, all derived from real canonical state (`dialogue/sceneContext.ts`'s
+   * `activeEventContextFor`), never invented. `null` in every field is itself a valid, common state
+   * ("nothing event-shaped is currently open with this NPC") -- not an error or a reason to force a
+   * line. This is the direct fix for the Owner's evidence-B scene: previously the prompt carried no
+   * signal that the player had JUST discovered/helped with something today, so a generic reply like
+   * "まあ、助かった" had nothing concrete to answer.
+   */
+  currentEvent: string | null;
+  eventState: string | null;
+  whatJustHappened: string | null;
+  /** Section 7 RECENT_SHARED_EVENT -- today's `shared_event`-category facts this NPC knows, most
+   *  recent first. */
+  recentSharedEventsToday: string[];
+  /** Section 7 UNRESOLVED_THREAD -- every still-open Event Thread this NPC is party to, as its own
+   *  most-recently-reached line, independent of whether touched today. */
+  unresolvedThreadsKnown: string[];
+  /** Section 7 RECENT_ACTIVITIES -- mirrors `recentPurchasesToday`'s exact shape for GAMEPLAY
+   *  ACTIVITY sessions with this NPC today. */
+  recentActivitiesToday: string[];
   playerInput: string;
 }
 

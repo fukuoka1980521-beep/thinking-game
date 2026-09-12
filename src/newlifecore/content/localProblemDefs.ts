@@ -76,7 +76,8 @@ export const LOCAL_PROBLEM_DEFS: LocalProblemDef[] = [
     location: "CAFE_NODOKA",
     minDay: 2,
     observationLine: "週末のカウンターに、美代子が一人で立っていた。テイクアウトの注文が重なると、少し手が回らなくなるようだった。",
-    discoverActionLabel: "気になったので聞いてみる",
+    // PHASE_16 Section 12 -- names WHO and roughly WHAT, matching every other def's fix below.
+    discoverActionLabel: "美代子に、週末のことを聞く",
     discoverResultText: "美代子は少し苦笑した。「週末、いつもの手伝いの子が来られないことがあってね。テイクアウトまで一人だと、ちょっと大変なの」",
     helpActionLabel: "テイクアウトの受け渡しを手伝う",
     helpResultText: "カウンターの端に立って、テイクアウトの袋を渡す係をした。美代子は「あら、助かるわ」と何度か言った。",
@@ -92,7 +93,7 @@ export const LOCAL_PROBLEM_DEFS: LocalProblemDef[] = [
     hearsayNpc: "jin",
     minDay: 3,
     observationLine: "洋平が伝票を見ながら、少しの間、手を止めていた。",
-    discoverActionLabel: "様子が気になったので聞いてみる",
+    discoverActionLabel: "洋平に、様子を聞く",
     discoverResultText: "洋平は少し間を置いてから言った。「……跡を継ぐ人間がいなくてな。息子は都会だ。まあ、いい」それ以上は続けなかった。",
     // No repeatable "help" grind action -- this resolves (or doesn't) purely through being talked to
     // again, matching Section 6's "聞くだけ/考えてみる" response types exactly.
@@ -108,7 +109,11 @@ export const LOCAL_PROBLEM_DEFS: LocalProblemDef[] = [
     hearsayNpc: "kiyoshi",
     minDay: 2,
     observationLine: "常連の清が、重そうな米袋を前に少し困った顔をしていた。",
-    discoverActionLabel: "様子が気になったので聞いてみる",
+    // PHASE_16_NEW_LIFE_GAME_IDENTITY_REBUILD_V1 Section 12 -- "様子が気になったので聞いてみる" was
+    // the directive's own named example of a vague action label (the player couldn't tell WHO they'd
+    // be talking to or WHAT it was about before pressing it). Replaced with a label naming both the
+    // target NPC and the topic -- Section 12's "PLAYERが押した時に何をするか理解できる文言".
+    discoverActionLabel: "洋平に、清さんの様子を聞く",
     discoverResultText: "洋平は声を落として言った。「清さん、免許を返してからな。重い物は運べと言われても、うちも配達までは手が回らん」",
     helpActionLabel: "清さんの荷物を届ける",
     helpResultText: "清の家まで、買った物を一緒に運んだ。清は「すまんな」とだけ言ったが、少しほっとした様子だった。",
@@ -125,7 +130,7 @@ export const LOCAL_PROBLEM_DEFS: LocalProblemDef[] = [
     location: "COMMUNITY_HALL",
     minDay: 3,
     observationLine: "相馬が、いくつも重なった仕事の依頼を前に、珍しく少し手を止めていた。",
-    discoverActionLabel: "様子が気になったので聞いてみる",
+    discoverActionLabel: "相馬に、様子を聞く",
     discoverResultText: "相馬は工具を確かめながら言った。「一人でやってきたからな。今更誰かと組むというのも、考えたことがない」",
     connectNpc: "kiyoshi",
     connectActionLabel: "誰かと組んでみたらどうか話してみる",
@@ -149,7 +154,7 @@ export const LOCAL_PROBLEM_DEFS: LocalProblemDef[] = [
     hearsayNpc: "miyoko",
     minDay: 4,
     observationLine: "陽菜の店の前に、手書きの小さな値札はあるが、外から見える案内はまだ何もなかった。",
-    discoverActionLabel: "気になったので聞いてみる",
+    discoverActionLabel: "陽菜に、様子を聞く",
     discoverResultText: "陽菜は少し早口になった。「棚の準備で手一杯で、お知らせとかチラシとか、そこまで手が回ってなくて」",
     helpActionLabel: "チラシ作りを手伝う",
     helpResultText: "陽菜と一緒に、簡単な手書きのチラシを何枚か作った。陽菜は「こういうの苦手で、助かります」と言った。",
@@ -165,7 +170,7 @@ export const LOCAL_PROBLEM_DEFS: LocalProblemDef[] = [
     hearsayNpc: "fumiko",
     minDay: 5,
     observationLine: "陽菜の店の少し先に、別のシャッターが下りたままの区画があった。ずいぶん長く空いているようだった。",
-    discoverActionLabel: "気になったので聞いてみる",
+    discoverActionLabel: "陽菜に、空き店舗のことを聞く",
     discoverResultText: "陽菜は少し声を落とした。「あそこ、私が来る前からずっとああみたいです。借りる人がいないのかも」",
     connectNpc: "kamiya",
     connectActionLabel: "神谷に空き店舗のことを話してみる",
@@ -182,7 +187,7 @@ export const LOCAL_PROBLEM_DEFS: LocalProblemDef[] = [
     hearsayNpc: "yohei",
     minDay: 3,
     observationLine: "集会所の掲示板に、来月の商店街祭りの手書きの案内が貼られていた。文子が、その前で少し困った顔をしていた。",
-    discoverActionLabel: "気になったので聞いてみる",
+    discoverActionLabel: "文子に、様子を聞く",
     discoverResultText: "文子ははきはきと、でも少し疲れた様子で言った。「祭りの準備、人手が全然足りなくて。洋平さんも仕入れで手一杯みたいだし」",
     helpActionLabel: "祭りの準備を手伝う",
     helpResultText: "集会所で、祭りの飾りつけや案内板の準備を手伝った。文子は「本当に助かるわ」と何度も言った。",

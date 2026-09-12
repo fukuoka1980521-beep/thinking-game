@@ -323,6 +323,15 @@ export interface CoreState {
    * fallback for as long as the player keeps genuinely engaging).
    */
   eventThreads: Record<string, EventThreadRuntimeState>;
+  /**
+   * PHASE_16_NEW_LIFE_GAME_IDENTITY_REBUILD_V1 Section 18 -- FORTUNE PERSISTENCE: the most recently
+   * drawn Fortune House card and the day it was drawn, set exactly once per draw (`engine.ts`'s
+   * `recordFortuneCardSelection`) and never cleared by `startNewDay` (persists like every other
+   * cross-day memory field). Deliberately minimal -- no raw player free text is ever stored here
+   * (existing privacy rule, unchanged) -- only enough to let `content/day1.ts`'s `openingLineFor`
+   * greet the player with a card-aware "その後どうでした？" follow-up on a later visit.
+   */
+  lastFortuneCard: { cardId: string; day: number } | null;
 }
 
 /**
@@ -410,5 +419,6 @@ export function createInitialCoreState(): CoreState {
     localProblemResolutionAnchor: {},
     momentEventShownDay: {},
     eventThreads: {},
+    lastFortuneCard: null,
   };
 }

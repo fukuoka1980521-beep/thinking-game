@@ -5,6 +5,7 @@ import { LOCATION_LABEL } from "../content/day1";
 import { daysSinceLastMeeting, computePlayerNpcTags } from "../content/socialMemory";
 import { LOCAL_PROBLEM_DEFS } from "../content/localProblemDefs";
 import { isLocalProblemDiscovered, isLocalProblemResolved } from "../content/localProblemEngine";
+import { activeEventContextFor, recentActivitiesToday, recentSharedEventsToday, unresolvedThreadsKnown } from "./sceneContext";
 import { formatClock } from "../types";
 import type { CoreState, NpcId } from "../types";
 import type { NpcAiContext } from "./types";
@@ -73,6 +74,10 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
     availableMenu: menuForNpc(npc),
     recentPurchasesToday: recentPurchasesToday(npc, state),
     knownLocalProblemMentions: knownLocalProblemMentions(npc, state),
+    ...activeEventContextFor(npc, state),
+    recentSharedEventsToday: recentSharedEventsToday(npc, state),
+    unresolvedThreadsKnown: unresolvedThreadsKnown(npc, state),
+    recentActivitiesToday: recentActivitiesToday(npc, state),
     playerInput,
   };
 }

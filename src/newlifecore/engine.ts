@@ -122,7 +122,14 @@ export function purchaseItems(state: CoreState, npc: NpcId, itemIds: string[]): 
   }
   const withTime = advanceTime(state, 10); // one short transaction, same order of magnitude as a conversation turn
   const inventory = { ...withTime.inventory };
-  for (const item of items) inventory[item.id] = (inventory[item.id] ?? 0) + 1;
+  // PHASE_16 Section 11 -- STATE COHERENCE fix: a `consumedOnSite` item (every current café menu
+  // item) is eaten/drunk the moment it's ordered and never enters `inventory` -- this is the actual
+  // fix for the found defect (café food/drink persisting as "荷物" at the trial house forever).
+  // Everything else (groceries) is added exactly as before.
+  for (const item of items) {
+    if (item.consumedOnSite) continue;
+    inventory[item.id] = (inventory[item.id] ?? 0) + 1;
+  }
   const labels = items.map((i) => i.label);
   const withFact = addWorldFact(withTime, {
     id: `purchase_${npc}_${withTime.time}`,
@@ -533,4 +540,11 @@ function tickActivitiesForNewDay(state: CoreState): CoreState {
 export function submitDay30Reflection(state: CoreState, text: string): CoreState {
   const trimmed = text.trim();
   return { ...state, day30ReflectionText: trimmed.length > 0 ? trimmed : null };
+}
+
+/** PHASE_16 Section 18 -- the ONLY place `lastFortuneCard` is ever written, reachable exclusively
+ *  from a real card-selection click (FortuneCardPicker.tsx). No time cost (mirrors `openConversation`
+ *  -- entering a conversation is free; the conversation turns themselves already cost time). */
+export function recordFortuneCardSelection(state: CoreState, cardId: string): CoreState {
+  return { ...state, lastFortuneCard: { cardId, day: state.day } };
 }

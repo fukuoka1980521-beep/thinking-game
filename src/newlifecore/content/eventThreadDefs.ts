@@ -57,7 +57,8 @@ export const EVENT_THREAD_DEFS: EventThreadDef[] = [
     discoverNpc: "kiyoshi",
     minDay: 2,
     observationLine: "清が、携帯電話の画面を眺めながら、何か考え込んでいるようだった。",
-    discoverActionLabel: "様子が気になったので聞いてみる",
+    // PHASE_16 Section 12 -- names WHO, matching localProblemDefs.ts's same fix.
+    discoverActionLabel: "清に、様子を聞く",
     discoverResultText: "清は少し間を置いてから言った。「……昔、工場で一緒だった奴から電話があってな。何年ぶりかも忘れた」それ以上は多く語らなかった。",
     stages: [
       {
@@ -89,7 +90,7 @@ export const EVENT_THREAD_DEFS: EventThreadDef[] = [
     discoverNpc: "miyoko",
     minDay: 2,
     observationLine: "美代子が、カウンターの奥で何か古い写真を眺めていた。",
-    discoverActionLabel: "気になったので聞いてみる",
+    discoverActionLabel: "美代子に、様子を聞く",
     discoverResultText: "美代子は少し照れたように笑った。「昔の、この店の写真。……もう時効よね、見る?」",
     stages: [
       {

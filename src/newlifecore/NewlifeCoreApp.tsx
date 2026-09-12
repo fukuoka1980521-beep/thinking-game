@@ -23,7 +23,7 @@ import {
   openingLineFor,
   reachableLocations,
 } from "./content/day1";
-import { menuForLocation, shopNpcForLocation } from "./content/shop";
+import { itemById, menuForLocation, shopNpcForLocation } from "./content/shop";
 import { shizukoCheckInAcknowledgement, shizukoIntentConfirmReaction, looksLikeRealLifeConcern } from "./content/realityBridge";
 import { eligibleForNewInvitation, invitationLabelFor } from "./content/socialMemory";
 import { trajectorySeedById } from "./content/trajectoryDefs";
@@ -55,6 +55,7 @@ import {
   progressEventThread,
   purchaseItems,
   recordConversationTurn,
+  recordFortuneCardSelection,
   recordLateConsequence,
   recordTrajectoryEngagement,
   respondToLocalProblemConnect,
@@ -182,6 +183,10 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // (see the conversation-panel render below), then cleared. Same reset-on-move/close discipline.
   const [showFortuneCards, setShowFortuneCards] = useState(false);
   const [fortuneOpeningLine, setFortuneOpeningLine] = useState<string | null>(null);
+  // PHASE_16 Section 14/15 -- the drawn card's own label, shown as a distinct "reveal" beat right
+  // before the opening line (never a separate screen -- Section 14's ritual stays inside the same
+  // ordinary conversation panel every other NPC uses).
+  const [revealedCardLabel, setRevealedCardLabel] = useState<string | null>(null);
 
   function startGame() {
     setState((s) => ({ ...s, started: true }));
@@ -206,6 +211,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setShowActivity(null);
     setShowFortuneCards(false);
     setFortuneOpeningLine(null);
+    setRevealedCardLabel(null);
     setState((s) => moveTo(s, location));
   }
 
@@ -227,6 +233,8 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     const card = fortuneCardById(cardId);
     setShowFortuneCards(false);
     setFortuneOpeningLine(card?.openingLine ?? null);
+    setRevealedCardLabel(card?.label ?? null);
+    setState((s) => recordFortuneCardSelection(s, cardId));
     openConversation("shizuko");
   }
 
@@ -237,6 +245,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     setPromiseOffer(null);
     setSafetyRouteActive(false);
     setFortuneOpeningLine(null);
+    setRevealedCardLabel(null);
   }
 
   async function submitFreeText() {
@@ -512,7 +521,8 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
     if (!npc) return;
     const result = purchaseItems(state, npc, itemIds);
     setState(result.state);
-    setSpecialResult(buildPurchaseNarration(npc, result.purchasedLabels));
+    const allConsumedOnSite = itemIds.length > 0 && itemIds.every((id) => itemById(id)?.consumedOnSite);
+    setSpecialResult(buildPurchaseNarration(npc, result.purchasedLabels, allConsumedOnSite));
     setShowShoppingPicker(false);
   }
 
@@ -681,6 +691,13 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
   // conversation always keeps rendering even once the npc has left; the only real difference is
   // that free-text input closes off (see hasLeftMidConversation below).
   const visibleNpcsHere = scene && activeConversation && !scene.npcsHere.includes(activeConversation) ? [...scene.npcsHere, activeConversation] : (scene?.npcsHere ?? []);
+  // PHASE_16 Section 4/29 -- EVENT VISIBILITY: true when this scene is actually hosting a Moment
+  // Event choice, an Event Thread discover/progress action, or a local-problem discover/help/connect
+  // action -- the cases the directive names as "something is happening now" (never activities/shop/
+  // ordinary talk, which are routine, not an event).
+  const sceneHasEventAction = Boolean(
+    scene?.specialActions.some((a) => a.id.startsWith("momentchoice_") || a.id.startsWith("discover_thread_") || a.id.startsWith("progress_thread_") || a.id.startsWith("discover_localproblem_") || a.id.startsWith("help_localproblem_") || a.id.startsWith("connect_localproblem_")),
+  );
 
   return (
     <div className="nlc-frame" data-testid="nlc-frame">
@@ -758,7 +775,7 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
         )}
 
         {scene && !showIntakeForm && !showShoppingPicker && !showCheckIn && !showActivity && !showFortuneCards && (
-          <div className="nlc-scene-card" data-testid="nlc-location-scene">
+          <div className={`nlc-scene-card${sceneHasEventAction ? " nlc-scene-card--event" : ""}`} data-testid="nlc-location-scene">
             {scene.ambientLine && <p className="nlc-ambient">{scene.ambientLine}</p>}
 
             {visibleNpcsHere.map((npc) => {
@@ -790,6 +807,14 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
 
                       return (
                         <div className="nlc-conversation" data-testid={`nlc-conversation-${npc}`}>
+                          {/* PHASE_16 Section 14 -- the "card reveal" beat: names which card was drawn,
+                              distinct from (and just before) the opening question itself, still inside
+                              the same ordinary conversation panel -- never a separate screen/animation. */}
+                          {npc === "shizuko" && revealedCardLabel && todayTurns.length === 0 && (
+                            <p className="nlc-fortune-card-reveal" data-testid="nlc-fortune-card-reveal">
+                              カードは「{revealedCardLabel}」だった。
+                            </p>
+                          )}
                           {/* PHASE_15 Section 8 -- the chosen card's own opening question, shown once
                               at the top of this fresh fortune-telling session (before the player's
                               first turn today), never a separate popup/result panel. */}
@@ -942,7 +967,12 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
             <p className="nlc-summary-heading">どこへ行きますか（残り{timeRemainingLabel(state.time)}）</p>
             <div className="nlc-picklist">
               {reachableLocations(state.playerLocation).map((loc) => (
-                <button key={loc} className="nlc-pick-btn" onClick={() => move(loc)} data-testid={`nlc-move-${loc}`}>
+                <button
+                  key={loc}
+                  className={`nlc-pick-btn${loc === "FORTUNE_HOUSE" ? " nlc-pick-btn--fortune" : ""}`}
+                  onClick={() => move(loc)}
+                  data-testid={`nlc-move-${loc}`}
+                >
                   {LOCATION_LABEL[loc]}
                 </button>
               ))}

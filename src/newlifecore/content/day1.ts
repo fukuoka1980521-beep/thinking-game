@@ -14,6 +14,7 @@ import { activityEligible } from "./activityEngine";
 import { activeMomentEventAt } from "./momentEventEngine";
 import { EVENT_THREAD_DEFS } from "./eventThreadDefs";
 import { eventThreadDiscoverEligible, eventThreadNextStageEligible, eventThreadObservationEligible, eventThreadRuntimeState } from "./eventThreadEngine";
+import { fortuneCardById } from "./fortuneCards";
 import { formatClock } from "../types";
 import type { ClockMinutes, CoreState, IntakeForm, LocationId, NpcId, WorldFact } from "../types";
 
@@ -267,6 +268,17 @@ export function openingLineFor(npc: NpcId, state: CoreState): string {
   // over, which is its own small context-continuity break.
   if (npc === "kamiya" && !alreadyMet && state.flags.intakeFormSubmitted) {
     return "神谷は書類を脇に置いた。「では、少しお話を伺いますね」";
+  }
+  // PHASE_16 Section 18 -- FORTUNE PERSISTENCE: a card-aware "その後どうでした？" greeting the first
+  // time the player talks to Shizuko on a LATER day than the one she drew a card on. Checked before
+  // the generic yesterday-bridge/laterVisit lines below since it carries genuinely specific content
+  // (which card), not just a content-free continuity cue.
+  if (npc === "shizuko" && state.lastFortuneCard && state.lastFortuneCard.day < state.day) {
+    const talkedToday = state.npcMemory.shizuko.some((t) => t.day === state.day);
+    if (!talkedToday) {
+      const card = fortuneCardById(state.lastFortuneCard.cardId);
+      if (card) return card.followUpLine;
+    }
   }
   if (alreadyMet) {
     const talkedToday = state.npcMemory[npc].some((t) => t.day === state.day);
@@ -690,11 +702,18 @@ export function buildEndOfDayNarrative(state: CoreState): string[] {
 /** Directive Section 10 -- order -> pay -> receive should read as one short, concrete sentence,
  *  never a long animation. `npc` picks the register (洋平's brusque "重いぞ" vs 美代子's softer
  *  warmth), matching each NPC's own established speech style rather than one generic line. */
-export function buildPurchaseNarration(npc: NpcId, labels: string[]): string {
+export function buildPurchaseNarration(npc: NpcId, labels: string[], allConsumedOnSite = false): string {
   if (labels.length === 0) return "今は、これだけの持ち合わせがなかった。";
   const joined = labels.join("、");
   if (npc === "yohei") return `洋平は${joined}を袋にまとめた。「はい。重いぞ」`;
-  if (npc === "miyoko") return `美代子は${joined}をカウンターに置いた。「はい、どうぞ。気をつけてね」`;
+  // PHASE_16 Section 10/11 -- distinct on-site phrasing (never "気をつけてね", which reads as a
+  // takeaway send-off) for the café's actual behavior: every current item is eaten/drunk right there
+  // at the table, matching `consumedOnSite` skipping `inventory` in `engine.ts`'s `purchaseItems`.
+  if (npc === "miyoko") {
+    return allConsumedOnSite
+      ? `美代子は${joined}をテーブルまで運んできてくれた。「はい、どうぞ。ごゆっくり」`
+      : `美代子は${joined}をカウンターに置いた。「はい、どうぞ。気をつけてね」`;
+  }
   // PHASE_13 Section 1-A -- "散髪を受け取った" read as unnatural Japanese (HV-01 finding): a haircut
   // is a service done TO you, not an object received. Daisuke-specific branch, matching the
   // yohei/miyoko pattern above instead of falling through to the generic (object-purchase-only)
