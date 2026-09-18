@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { STAMP_ASSETS } from "./stampAssets";
 
 /**
  * PHASE_12_8_NEW_LIFE_30_DAY_ARC_AND_RETROSPECTIVE_V1 Section 3/4/26 -- the ONLY new screen this
@@ -25,6 +26,12 @@ export function Day30Retrospective({
 
   return (
     <div className="nlc-scene-card" data-testid="nlc-day30-retrospective">
+      <img
+        className="nlc-retrospective-img"
+        src={STAMP_ASSETS.memoryNostalgicView}
+        alt="30日前を振り返る"
+        data-testid="nlc-day30-memory-image"
+      />
       <div className="nlc-summary-list">
         {lines.map((line, i) => (
           <p className="nlc-summary-item" key={i}>
@@ -57,7 +64,12 @@ export function Day30Retrospective({
           </div>
         </div>
       )}
-      {reflectionSubmitted && <p className="nlc-summary-item" data-testid="nlc-day30-reflection-recorded">（自分の言葉を書き残した。）</p>}
+      {reflectionSubmitted && (
+        <div className="nlc-retrospective-close" data-testid="nlc-day30-reflection-recorded">
+          <img className="nlc-retrospective-cheers-img" src={STAMP_ASSETS.ossanCheers} alt="かんぱい" />
+          <p className="nlc-summary-item">（自分の言葉を書き残した。）</p>
+        </div>
+      )}
     </div>
   );
 }

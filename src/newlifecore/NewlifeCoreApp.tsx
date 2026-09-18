@@ -4,6 +4,7 @@ import townImg from "../assets/newlifev02/challenge-town.png";
 import yoheiImg from "../assets/newlifev02/yohei.png";
 import miyokoImg from "../assets/newlifev02/miyoko.png";
 import jinImg from "../assets/newlifev02/soma-jin.png";
+import { STAMP_ASSETS } from "./stampAssets";
 import { IntakeForm } from "./IntakeForm";
 import { ShoppingPicker } from "./ShoppingPicker";
 import { RealityBridgeOffer } from "./RealityBridgeOffer";
@@ -94,6 +95,7 @@ function PlayGuideCard({
 }) {
   return (
     <div className="nlc-scene-card" data-testid="nlc-play-guide">
+      <img className="nlc-welcome-img" src={STAMP_ASSETS.ossanWelcome} alt="よろしくお願いします" data-testid="nlc-welcome-image" />
       <p className="nlc-summary-heading">この町では</p>
       <ul className="nlc-guide-list">
         {PLAY_GUIDE_ITEMS.map((item) => (
@@ -648,6 +650,13 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           </button>
         </div>
         <div className="nlc-panel">
+          <div className="nlc-hero nlc-hero--dayend">
+            <img className="nlc-hero-img" src={STAMP_ASSETS.scenicEveningSunset} alt="夕暮れの住宅街" data-testid="nlc-dayend-image" />
+            <div className="nlc-hero-shade" />
+            <div className="nlc-hero-text">
+              <h1 className="nlc-hero-title">DAY{state.day}が終わった</h1>
+            </div>
+          </div>
           <div className="nlc-scene-card" data-testid="nlc-day-end">
             <div className="nlc-summary-list" data-testid="nlc-worldfacts-list">
               {buildEndOfDayNarrative(state).map((line, i) => (
