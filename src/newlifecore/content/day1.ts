@@ -289,6 +289,21 @@ export function openingLineFor(npc: NpcId, state: CoreState): string {
   return alreadyMet ? l.laterVisitLine : l.firstVisitLine;
 }
 
+/**
+ * PHASE_17 STAGE A -- FORTUNE VISUAL CONTINUITY: mirrors the exact condition inside
+ * `openingLineFor` that shows Shizuko's card-aware follow-up line, so the UI can additionally show
+ * a small, non-interactive repeat of the card's own label (`.nlc-fortune-card`, read-only) next to
+ * that line -- "前回引いたカードを視覚的にも思い出せる" without introducing any new state, magic
+ * styling, or a second source of truth for which card was drawn.
+ */
+export function lastFortuneCardLabelFor(npc: NpcId, state: CoreState): string | null {
+  if (npc !== "shizuko" || !state.lastFortuneCard || state.lastFortuneCard.day >= state.day) return null;
+  const talkedToday = state.npcMemory.shizuko.some((t) => t.day === state.day);
+  if (talkedToday) return null;
+  const card = fortuneCardById(state.lastFortuneCard.cardId);
+  return card ? card.label : null;
+}
+
 export interface LocationScene {
   location: LocationId;
   ambientLine: string;

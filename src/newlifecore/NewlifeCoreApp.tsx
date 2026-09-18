@@ -21,9 +21,11 @@ import {
   buildPurchaseNarration,
   describeBelongings,
   kamiyaIntakeReaction,
+  lastFortuneCardLabelFor,
   openingLineFor,
   reachableLocations,
 } from "./content/day1";
+import { npcsPresentAt } from "./schedule";
 import { itemById, menuForLocation, shopNpcForLocation } from "./content/shop";
 import { shizukoCheckInAcknowledgement, shizukoIntentConfirmReaction, looksLikeRealLifeConcern } from "./content/realityBridge";
 import { eligibleForNewInvitation, invitationLabelFor } from "./content/socialMemory";
@@ -71,7 +73,7 @@ import {
 } from "./engine";
 import { MOMENT_EVENT_DEFS } from "./content/momentEventDefs";
 import { eventThreadById } from "./content/eventThreadDefs";
-import { npcDisplayName } from "./npcDefs";
+import { npcDisplayName, usualLocationFor } from "./npcDefs";
 import { createInitialCoreState, formatClock } from "./types";
 import type { CoreState, IntakeForm as IntakeFormData, LocationId, NpcId, RealWorldIntent, UserUpdateResponse } from "./types";
 
@@ -95,7 +97,7 @@ function PlayGuideCard({
 }) {
   return (
     <div className="nlc-scene-card" data-testid="nlc-play-guide">
-      <img className="nlc-welcome-img" src={STAMP_ASSETS.ossanWelcome} alt="よろしくお願いします" data-testid="nlc-welcome-image" />
+      <img className="nlc-welcome-img" src={STAMP_ASSETS.duoWelcome} alt="よろしくお願いします" data-testid="nlc-welcome-image" />
       <p className="nlc-summary-heading">この町では</p>
       <ul className="nlc-guide-list">
         {PLAY_GUIDE_ITEMS.map((item) => (
@@ -121,12 +123,30 @@ function PlayGuideCard({
   );
 }
 
+// PHASE_17 STAGE A -- NPC RECOGNIZABILITY (Section A9): six NPCs still have no portrait ("画像不足
+// を嘘の画像で埋めない"). Rather than leave every one of them the exact same grey initial badge
+// (hard to tell apart at a glance), each gets a fixed, distinct background color -- still text, no
+// fabricated likeness, just enough to stop "everyone with no photo looks identical."
+const FALLBACK_BADGE_COLOR: Partial<Record<NpcId, string>> = {
+  kamiya: "#8a6bab",
+  daisuke: "#4f8a6d",
+  shizuko: "#a85d7a",
+  hina: "#c07830",
+  fumiko: "#3f7a8a",
+  kiyoshi: "#7a6a4f",
+};
+
 function Portrait({ npc }: { npc: NpcId }) {
   const src = PORTRAIT_SRC[npc];
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
-      <div className="nlc-portrait nlc-portrait-fallback" data-testid={`nlc-portrait-${npc}`} data-image-failed={!src ? undefined : "true"}>
+      <div
+        className="nlc-portrait nlc-portrait-fallback"
+        style={{ background: FALLBACK_BADGE_COLOR[npc] }}
+        data-testid={`nlc-portrait-${npc}`}
+        data-image-failed={!src ? undefined : "true"}
+      >
         {npcDisplayName(npc).slice(0, 1)}
       </div>
     );
@@ -795,8 +815,20 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
                     <Portrait npc={npc} />
                     <div>
                       <div className="nlc-npc-name">{npcDisplayName(npc)}</div>
+                      {usualLocationFor(npc) && (
+                        <p className="nlc-npc-place" data-testid={`nlc-npc-place-${npc}`}>
+                          {LOCATION_LABEL[usualLocationFor(npc)!]}の人
+                        </p>
+                      )}
                       {activeConversation !== npc && (
-                        <p className="nlc-npc-line">{openingLineFor(npc, state)}</p>
+                        <>
+                          <p className="nlc-npc-line">{openingLineFor(npc, state)}</p>
+                          {lastFortuneCardLabelFor(npc, state) && (
+                            <span className="nlc-fortune-memory-chip" data-testid="nlc-fortune-memory-chip">
+                              前回のカード：{lastFortuneCardLabelFor(npc, state)}
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -975,16 +1007,25 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
           <div className="nlc-movelist" data-testid="nlc-movelist">
             <p className="nlc-summary-heading">どこへ行きますか（残り{timeRemainingLabel(state.time)}）</p>
             <div className="nlc-picklist">
-              {reachableLocations(state.playerLocation).map((loc) => (
-                <button
-                  key={loc}
-                  className={`nlc-pick-btn${loc === "FORTUNE_HOUSE" ? " nlc-pick-btn--fortune" : ""}`}
-                  onClick={() => move(loc)}
-                  data-testid={`nlc-move-${loc}`}
-                >
-                  {LOCATION_LABEL[loc]}
-                </button>
-              ))}
+              {reachableLocations(state.playerLocation).map((loc) => {
+                // PHASE_17 STAGE A -- WHO/WHERE before committing to a move: +15 is the real travel
+                // cost `moveTo` (engine.ts) charges, so this previews who will actually be there on
+                // arrival, not just who happens to be there right now.
+                const whoThere = npcsPresentAt(loc, state.time + 15, state.flags);
+                return (
+                  <button
+                    key={loc}
+                    className={`nlc-pick-btn${loc === "FORTUNE_HOUSE" ? " nlc-pick-btn--fortune" : ""}`}
+                    onClick={() => move(loc)}
+                    data-testid={`nlc-move-${loc}`}
+                  >
+                    <span className="nlc-pick-btn-label">{LOCATION_LABEL[loc]}</span>
+                    <span className="nlc-pick-btn-who" data-testid={`nlc-move-who-${loc}`}>
+                      {whoThere.length ? whoThere.map((npc) => npcDisplayName(npc)).join("・") : "誰もいないかも"}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             {canSleep(state) && (
               <button className="nlc-btn nlc-sleep-btn" onClick={goSleep} data-testid="nlc-sleep">

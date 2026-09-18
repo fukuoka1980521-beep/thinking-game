@@ -532,3 +532,14 @@ export const NPC_DEFS: Record<NpcId, NpcDefinition> = {
 export function npcDisplayName(id: NpcId): string {
   return NPC_DEFS[id].displayName;
 }
+
+/**
+ * PHASE_17 STAGE A -- NPC RECOGNIZABILITY: the one place with no portrait an NPC card can still
+ * borrow to help WHO/WHERE ("洋平商店の洋平" reads faster than a bare name), read straight from
+ * this file's own schedule data (real, already-authored) rather than inventing a new field. Returns
+ * null for an NPC with no schedule at all (daisuke, PHASE_15's intentionally-retired case) instead
+ * of guessing a location for someone who is nowhere.
+ */
+export function usualLocationFor(id: NpcId): LocationId | null {
+  return NPC_DEFS[id].schedule.find((block) => block.location !== null)?.location ?? null;
+}
