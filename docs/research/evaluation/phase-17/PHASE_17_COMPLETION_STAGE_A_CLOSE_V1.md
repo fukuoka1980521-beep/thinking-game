@@ -127,9 +127,9 @@ One real defect found and fixed during this stage's own verification: at 360px, 
 
 ## A18/A19 — Commit and transition gate
 
-See the one-line judgment block at the end of this document for the actual outcome and the actual
-commit hash this produced. Per directive A19, even if PHASE_17_COMPLETE = YES, this does not open
-HV-01 -- STAGE B is next, and a new Human Validation baseline is only confirmed at the very end of
+PHASE_17_COMPLETE = YES and STATE_COHERENCE = PASS, so per A18 a completion commit was made on top
+of `ebb71e6` (not amending it): **`52ae0ea`**. Per A19, this does not open HV-01 -- STAGE B
+(PHASE_18) is next, and a new Human Validation baseline is only confirmed at the very end of
 STAGE B (directive B23).
 
 ## What's still open after STAGE A (not lost, named)
