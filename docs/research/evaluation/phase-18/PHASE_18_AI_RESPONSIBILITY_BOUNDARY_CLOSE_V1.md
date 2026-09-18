@@ -113,12 +113,21 @@ visible error and zero canonical-state change).
 
 ## B22 — Commit
 
-Separate from the STAGE A commits (`52ae0ea`, `79c74ec`), per directive B22. Actual hash recorded
-at the end of this document once made.
+Separate from the STAGE A commits (`52ae0ea`, `79c74ec`), per directive B22: **`fe61d28`**.
 
 ## B23 — Final Human Validation gate
 
 Per directive: HV-01 opens only if PHASE_17_COMPLETE=YES (already true, STAGE A) **and**
-STATE_COHERENCE=PASS **and** VISUAL_FEYNMAN_REGRESSION=PASS **and**
-LIVE_MODEL_CONTEXT_INTEGRITY!=FAIL **and** READY_FOR_HUMAN_VALIDATION=YES. See the one-line summary
-at the very end of this document for the actual outcome.
+STATE_COHERENCE=PASS (true) **and** VISUAL_FEYNMAN_REGRESSION=PASS (true) **and**
+LIVE_MODEL_CONTEXT_INTEGRITY!=FAIL (true -- CONDITIONAL, not FAIL) **and**
+READY_FOR_HUMAN_VALIDATION=YES (**false** this Run). Net result: **HV-01 does not open yet.** The
+gate is held by one thing only -- live-model verification is real but partial (2/7 named
+scenarios). Completing the remaining 5 scenarios live (or accepting the deterministic-adapter
+equivalent as sufficient, an Owner call, not an autonomous one per directive Section governing
+business-facing scope calls) is what would flip READY_FOR_HUMAN_VALIDATION to YES.
+
+---
+
+**NEW_LIFE_FINAL_BASELINE_COMMIT = fe61d28**
+
+**READY_FOR_HV01 = NO**
