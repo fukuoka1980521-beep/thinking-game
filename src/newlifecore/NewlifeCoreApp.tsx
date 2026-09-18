@@ -74,6 +74,7 @@ import {
 import { MOMENT_EVENT_DEFS } from "./content/momentEventDefs";
 import { eventThreadById } from "./content/eventThreadDefs";
 import { npcDisplayName, usualLocationFor } from "./npcDefs";
+import { getDevConversationLog } from "./dialogue/devObservability";
 import { createInitialCoreState, formatClock } from "./types";
 import type { CoreState, IntakeForm as IntakeFormData, LocationId, NpcId, RealWorldIntent, UserUpdateResponse } from "./types";
 
@@ -1040,6 +1041,24 @@ export function NewlifeCoreApp({ onExit }: { onExit: () => void }) {
             <input type="checkbox" data-testid="nlc-live-toggle" checked={useLive} onChange={(ev) => setUseLive(ev.target.checked)} />
             AIとの会話（オフで簡易応答に切り替え）
           </label>
+        )}
+
+        {/* PHASE_18 Section B12 -- dev/test-only, collapsed by default, never shown in a production
+            build. Shows which path each recent reply actually took (real model vs. bounded
+            fallback) so a stalled/erroring live call is visible during development, not silent. */}
+        {import.meta.env.DEV && (
+          <details className="nlc-dev-toggle" data-testid="nlc-dev-conversation-log">
+            <summary>直近の応答ログ（開発用）</summary>
+            {getDevConversationLog()
+              .slice()
+              .reverse()
+              .map((e, i) => (
+                <p key={i} style={{ margin: "4px 0", fontSize: "12px" }}>
+                  {e.npcId} / DAY{e.day} / {e.source === "live" ? "モデル応答" : `簡易応答（${e.fallbackReason ?? "unknown"}）`} /{" "}
+                  {e.latencyMs}ms
+                </p>
+              ))}
+          </details>
         )}
       </div>
     </div>

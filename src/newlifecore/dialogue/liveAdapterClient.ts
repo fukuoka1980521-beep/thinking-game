@@ -7,7 +7,26 @@
  */
 import { validateNpcReply } from "./envelope";
 import { deterministicNpcReply } from "./deterministicAdapter";
-import type { NpcAiAdapter, NpcReplyEnvelope } from "./types";
+import { recordDevConversationTurn } from "./devObservability";
+import type { NpcAiAdapter, NpcAiContext, NpcReplyEnvelope } from "./types";
+
+// PHASE_18 Section B12 -- dev/test-only; never affects the reply itself, only what gets logged
+// alongside it. `import.meta.env.DEV` is also true under vitest, which is fine here: the log is
+// inert (nothing reads it back into gameplay), so recording extra entries during tests is harmless.
+function logTurn(context: NpcAiContext, source: "live" | "fallback", startedAt: number, fallbackReason?: string) {
+  if (!import.meta.env.DEV) return;
+  recordDevConversationTurn({
+    npcId: context.npcId,
+    day: context.day,
+    location: context.currentLocation,
+    currentEvent: context.currentEvent,
+    recentMemoryCount: context.memoryOfPlayer.length,
+    source,
+    fallbackReason,
+    latencyMs: Math.round(performance.now() - startedAt),
+    at: Date.now(),
+  });
+}
 
 /** Directive Section 30: AI/GCP failure must never stop the game or surface a raw technical
  *  error. A connection failure (network/5xx/timeout) falls back to the richer, topic-aware
@@ -20,6 +39,7 @@ import type { NpcAiAdapter, NpcReplyEnvelope } from "./types";
 const LIVE_REPLY_TIMEOUT_MS = 20000;
 
 export const liveNpcAdapter: NpcAiAdapter = async (context) => {
+  const startedAt = performance.now();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), LIVE_REPLY_TIMEOUT_MS);
   try {
@@ -29,11 +49,19 @@ export const liveNpcAdapter: NpcAiAdapter = async (context) => {
       body: JSON.stringify(context),
       signal: controller.signal,
     });
-    if (!res.ok) return deterministicNpcReply(context);
+    if (!res.ok) {
+      logTurn(context, "fallback", startedAt, `http_${res.status}`);
+      return deterministicNpcReply(context);
+    }
     const raw = (await res.json()) as Partial<NpcReplyEnvelope>;
-    if (!raw || typeof raw.visibleUtterance !== "string" || !raw.visibleUtterance.trim()) return deterministicNpcReply(context);
+    if (!raw || typeof raw.visibleUtterance !== "string" || !raw.visibleUtterance.trim()) {
+      logTurn(context, "fallback", startedAt, "empty_or_malformed_reply");
+      return deterministicNpcReply(context);
+    }
+    logTurn(context, "live", startedAt);
     return validateNpcReply(raw, context);
-  } catch {
+  } catch (err) {
+    logTurn(context, "fallback", startedAt, err instanceof Error ? err.name : "unknown_error");
     return deterministicNpcReply(context);
   } finally {
     clearTimeout(timeout);
