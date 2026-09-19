@@ -15,6 +15,7 @@ import { NewlifeContractV2App } from "./newlifecontractv2/NewlifeContractV2App";
 import { NewlifeV02App } from "./newlifev02/NewlifeV02App";
 import { NewlifeV03App } from "./newlifev03/NewlifeV03App";
 import { NewlifeCoreApp } from "./newlifecore/NewlifeCoreApp";
+import { Newlife7DayApp } from "./newlife7day/Newlife7DayApp";
 import {
   loadInProgressSession,
   loadCompletedLogs,
@@ -41,7 +42,8 @@ type View =
   | { kind: "NEWLIFE_CONTRACT_V2" }
   | { kind: "NEWLIFE_V02" }
   | { kind: "NEWLIFE_V03" }
-  | { kind: "NEWLIFE_CORE" };
+  | { kind: "NEWLIFE_CORE" }
+  | { kind: "NEWLIFE_7DAY" };
 
 // Section 7: after roughly this many cases in one sitting, offer the play-run summary.
 const SESSION_SUMMARY_THRESHOLD = 5;
@@ -70,6 +72,7 @@ function initialViewFromLocation(): View {
   if (params.has("newlifev02")) return { kind: "NEWLIFE_V02" };
   if (params.has("newlifev03")) return { kind: "NEWLIFE_V03" };
   if (params.has("newlifecore")) return { kind: "NEWLIFE_CORE" };
+  if (params.has("newlife7day")) return { kind: "NEWLIFE_7DAY" };
   return { kind: "HOME" };
 }
 
@@ -289,6 +292,10 @@ export default function App() {
 
   if (view.kind === "NEWLIFE_CORE") {
     return <NewlifeCoreApp onExit={() => setView({ kind: "HOME" })} />;
+  }
+
+  if (view.kind === "NEWLIFE_7DAY") {
+    return <Newlife7DayApp onExit={() => setView({ kind: "HOME" })} />;
   }
 
   return (
