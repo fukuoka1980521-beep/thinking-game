@@ -433,11 +433,25 @@ VAR reassured_hina_about_signage = false
         -> day_end
     }
 
+/* [PHASE_24.5 -- always-rendered pre-festival world state, set unconditionally, never gated on a
+   player choice. Fixes RUN_C's newly-surfaced Days 21-23 hard-gate failure the same way PHASE_24.2/
+   24.3/24.4 each fixed their own corridor: an independent Layer-A world beat under the existing
+   Layer-B gates, none of which are loosened here.] */
+VAR festival_setup_visible_day21 = false
+VAR festival_commitments_visible_day22 = false
+VAR hina_festival_offering_decided = "unset"
+VAR player_knows_hina_offering_reason = false
+VAR festival_final_state_visible_day23 = false
+
 = day21
     ~ bench_fixed = suggested_jin_for_bench
-    Full scene: spine Day 21.
+    ~ festival_setup_visible_day21 = true
+    Full scene: spine Day 21. Independent of anything below, the street is visibly changing shape --
+    folding tables, ropes, and temporary stands appearing, Hall furniture being moved,
+    {bench_fixed: the bench already sturdy among them.|not bench_fixed: the bench still wobbling
+    among them, untouched.} What will all of this look like once the stalls are actually filled?
     * [Thank Jin specifically] -> evidence(jin, "thanked_jin_for_unseen_work") -> day_end
-    * [Miss it] -> day_end
+    * [Miss it] -> The setup keeps going regardless. -> day_end
     - { jin_arrangement == "unset" and ((jin_evidence has "thanked_jin_for_unseen_work") or
       (jin_evidence has "noticed_jin_fixed_something")):
         * [Accept the late offer] -> ~ jin_arrangement = "accepted" -> day_end
@@ -446,17 +460,35 @@ VAR reassured_hina_about_signage = false
     -> day_end
 
 = day22
+    ~ festival_commitments_visible_day22 = true
+    { trial_result_menu_confusion and (hina_concrete_decision != "unset"):
+        ~ hina_festival_offering_decided = hina_concrete_decision
+    - else:
+        ~ hina_festival_offering_decided = "small_presence"
+    }
+    Elsewhere on the street, stall positions are visibly firming up from tentative to fixed.
     { (hina_evidence has "noticed_hina_money_pressure") and (LIST_COUNT(hina_evidence) >= 2):
         Full scene: spine Day 22 -- the reveal.
-        * [Just listen] -> free_talk(hina) -> ~ player_knows_hina_true_reason = true -> day_end
+        * [Just listen] -> free_talk(hina) -> ~ player_knows_hina_true_reason = true -> gather
     - else:
-        An ordinary, pleasant evening.
-        -> day_end
+        An ordinary, pleasant evening for the private thread -- but Hina's actual festival offering
+        ({hina_festival_offering_decided}) is already visible in her shop's prep either way.
+        -> gather
     }
+    - (gather)
+    * [Ask Hina why she chose that] -> free_talk(hina) -> ~ player_knows_hina_offering_reason = true
+      -> day_end
+    * [Don't ask] -> day_end
+    -> day_end
 
 = day23
-    Full scene: spine Day 23 -- explicitly non-causal by design.
-    * [Investigate] -> day_end
+    ~ festival_final_state_visible_day23 = true
+    The street has reached its final pre-festival state -- stall positions fixed, Yohei's stock
+    physically present at the scale decided on Day 20, Hina's chosen offering visible in place,
+    Jin finishing one last practical item, the whole street recognizably different from Day 1.
+    Full scene: spine Day 23 -- the false alarm itself remains explicitly non-causal by design.
+    * [Investigate the false alarm] -> day_end
+    * [Ignore it, walk the finished street instead] -> day_end
     - -> roam(("daisuke")) -> day_end
 
 = day24

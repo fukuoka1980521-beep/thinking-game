@@ -571,61 +571,110 @@ Daisuke's decision firsthand today. PLAYER_CANNOT_CHANGE: that Daisuke's decisio
 it hasn't already) -- fixed, independent. FREE_TALK_CAN_AFFECT: can shift Yohei's decision toward
 generous if genuinely persuasive.
 
-### Day 21
-MAIN SCENE: somewhere in town, something being fixed by someone nobody's watching -- Jin, including
-(if `suggested_jin_for_bench`) the Hall's bench specifically. Per OWNER-04's pattern, he checks the
-bench's actual current state up close rather than fixing from memory of what "a wobbly bench" usually
-needs. This is also the SECOND, late window for Jin's standing-arrangement offer if it never fired
-on Day 5.
-WHY THIS MATTERS NOW: the last realistic point before the festival for both threads to land.
-PLAYER INTERVENTION: notice and specifically thank him, or miss it. IF ACTS: creates `thanked_jin_
-for_unseen_work`; if the late-window gate is also met, the arrangement offer surfaces here too. IF
-NOT: the work happens anyway, unseen. WHEN RETURNS: `bench_fixed` -> Day 24; `jin_arrangement` (if
-resolved here) -> Day 29/30.
+### Day 21 `[PHASE_24.5 ADDITION -- ALWAYS RENDERED: festival_setup_visible_day21]`
+MAIN SCENE: two things, layered, never conflated. (1) Somewhere in town, something being fixed by
+someone nobody's watching -- Jin, including (if `suggested_jin_for_bench`) the Hall's bench
+specifically. Per OWNER-04's pattern, he checks the bench's actual current state up close rather
+than fixing from memory of what "a wobbly bench" usually needs. This is also the SECOND, late
+window for Jin's standing-arrangement offer if it never fired on Day 5. (2) **Independently,
+unconditionally, visible across the whole street**: the town physically starts changing shape for
+the festival -- folding tables arriving, ropes and temporary signs going up, Hall furniture being
+moved, shop fronts beginning to shift their displays, pedestrian space being rearranged. This
+requires no player involvement to occur or to be narrated; it is simply what the street looks like
+today, concrete and specific (the scale read from `yohei_festival_stock`'s eventual size, the
+bench's own state read from `bench_fixed`), not "the festival is coming" as a vague mood.
+WHY THIS MATTERS NOW: the last realistic point before the festival for the Jin/bench threads to
+land; separately, the first point the festival stops being an announcement and starts being a
+physical fact.
+PLAYER INTERVENTION: notice and specifically thank Jin, or miss it; separately, watch or ignore the
+setup itself -- either way it keeps happening. IF ACTS (Jin): creates `thanked_jin_for_unseen_
+work`; if the late-window gate is also met, the arrangement offer surfaces here too. IF NOT: the
+work happens anyway, unseen. WHEN RETURNS: `bench_fixed` -> Day 24; `jin_arrangement` (if resolved
+here) -> Day 29/30; `festival_setup_visible_day21` colors Day 22 and 23's own visible progression.
 FREE TALK: open.
 OPTIONAL ROAMING AFTER: none additional -- this is already a rich, multi-thread day.
-VISIBLE CONSEQUENCE: a fixed bench people can actually sit on; a specific acknowledgment if given.
+VISIBLE CONSEQUENCE: a fixed bench people can actually sit on; a specific acknowledgment if given;
+`festival_setup_visible_day21` = true, always, with concrete state-derived detail.
+OPEN_QUESTION_AT_DAY_END: "What will all of this look like once the stalls are actually filled?" --
+grounded directly in the half-assembled tables and stands, not manufactured.
 
-CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: Day 10, Day 5. PLAYER_CAN_
-CHANGE: whether Jin is specifically thanked; the late-window arrangement outcome, if it fires.
-PLAYER_CANNOT_CHANGE: whether `bench_fixed` happens at all (locked in Day 10). FREE_TALK_CAN_AFFECT:
-can create the thanks-evidence.
+CAUSALITY_LEVEL: HIGH (Jin/bench threads) with one always-true WORLD fact underneath (the setup).
+OPEN_THREAD_CREATED: "what the finished street will look like." CALLBACK_FROM: Day 10, Day 5 (Jin);
+Day 20 (setup scale). PLAYER_CAN_CHANGE: whether Jin is specifically thanked; the late-window
+arrangement outcome, if it fires. PLAYER_CANNOT_CHANGE: whether `bench_fixed` happens at all (locked
+in Day 10); whether the street visibly transforms today regardless of the player. FREE_TALK_CAN_
+AFFECT: can create the thanks-evidence; nothing about the setup, which is unconditional.
 
-### Day 22
+### Day 22 `[PHASE_24.5 ADDITION -- ALWAYS RENDERED: hina_festival_offering_decided]`
 MAIN SCENE: Hina's shop, later, quieter. IF gate met (`noticed_hina_money_pressure` and `COUNT
 (hina_relationship_evidence) >= 2`): she finally says the real reason the last shop closed. ELSE: an
-ordinary, pleasant evening.
-WHY THIS MATTERS NOW: the last major emotional beat before the festival.
-PLAYER INTERVENTION: just listen, patiently. IF gate met and player listens well: `player_knows_
-hina_true_reason = true`. **This has NO effect on `hina_shop_readiness` whatsoever** -- the exact
-conflation the evaluator flagged, now explicitly severed (see ledger). IF gate not met: nothing to
-act on, explicitly legitimate.
-FREE TALK: this IS the deep-talk day, gated on real accumulated evidence.
+ordinary, pleasant evening. **Independently, unconditionally, layered into this same day**: Hina has
+made a concrete, practical decision about what she'll actually offer at the festival tomorrow --
+read directly from the Days 1-14 trial arc's own results (a reduced menu, one weak item cut, one
+unexpectedly popular item kept, a changed table layout, or a deliberately small presence), never
+invented fresh. This is a WORLD FACT, visible in her shop's actual physical prep regardless of
+whether the private gate ever fires. Elsewhere on the street, other stalls' positions visibly firm
+up from tentative to fixed -- `festival_commitments_visible_day22` -- the town settling into its
+final shape, independent of the player.
+WHY THIS MATTERS NOW: the last major emotional beat before the festival, for the private thread;
+separately, the point at which "the festival is being planned" becomes "the festival's actual shape
+is now fixed," regardless of relationship depth.
+PLAYER INTERVENTION: just listen, patiently, for the private reveal. IF gate met and player listens
+well: `player_knows_hina_true_reason = true`. **This has NO effect on `hina_shop_readiness`
+whatsoever** -- the exact conflation the evaluator flagged, now explicitly severed (see ledger). IF
+gate not met: nothing to act on for the private thread, explicitly legitimate -- but the player
+still sees exactly what Hina will offer tomorrow, and may separately ask WHY (practical reasoning
+only, `player_knows_hina_offering_reason`) without that unlocking the deeper private story.
+FREE TALK: this IS the deep-talk day for the private reveal, gated on real accumulated evidence;
+the practical offering decision is discussable at any depth up to the practical-reason line.
 OPTIONAL ROAMING AFTER: none additional.
 VISIBLE CONSEQUENCE: real vulnerability shared, met with presence, if reached; her shop's own
-readiness keeps advancing (or not) on its own separate schedule regardless.
+readiness keeps advancing (or not) on its own separate schedule regardless; `hina_festival_offering_
+decided` = true, always, visible in her actual festival-facing prep.
+OPEN_QUESTION_AT_DAY_END: "will what she's chosen to offer actually work, once the street is full of
+people tomorrow?" -- grounded in the concrete decision just made, not manufactured.
 
-CAUSALITY_LEVEL: HIGH (when it fires) / MEDIUM otherwise. OPEN_THREAD_CREATED: none new. CALLBACK_
-FROM: Days 1, 4, 14. PLAYER_CAN_CHANGE: whether `player_knows_hina_true_reason` becomes true.
-PLAYER_CANNOT_CHANGE: `hina_shop_readiness`'s own tier (advances independently) and the true reason
-itself (a fixed past event). FREE_TALK_CAN_AFFECT: the only path to this specific knowledge, never
-to shop readiness.
+CAUSALITY_LEVEL: HIGH (when the private reveal fires) / MEDIUM otherwise, with one always-true WORLD
+fact underneath (the offering decision) regardless of either. OPEN_THREAD_CREATED: "whether Hina's
+festival choice pays off." CALLBACK_FROM: Days 1, 4, 14 (private reveal); the Days 1-14 trial arc
+(offering decision). PLAYER_CAN_CHANGE: whether `player_knows_hina_true_reason` becomes true;
+whether the practical reason is heard. PLAYER_CANNOT_CHANGE: `hina_shop_readiness`'s own tier
+(advances independently), the true reason itself (a fixed past event), or whether the offering
+decision itself happened. FREE_TALK_CAN_AFFECT: the only path to the private knowledge, never to
+shop readiness; whether the practical reason is heard, never whether the decision happened.
 
-### Day 23
-MAIN SCENE: shouting, running, a truck somewhere it shouldn't be -- the day before the festival.
-WHY THIS MATTERS NOW: a designed tension-release valve, honestly labeled QUIET, not smuggled in as
-if it mattered (Section 4's rule applied and this day deliberately kept cosmetic, disclosed).
-PLAYER INTERVENTION: investigate, or shrug it off. IF ACTS/IF NOT: same harmless resolution either
-way. WHEN RETURNS: nothing -- explicitly non-causal by design.
-FREE TALK: open, low stakes.
+### Day 23 `[PHASE_24.5 ADDITION -- ALWAYS RENDERED: festival_final_state_visible_day23, layered around the existing false alarm]`
+MAIN SCENE: shouting, running, a truck somewhere it shouldn't be -- the day before the festival,
+preserved exactly as designed comic relief, honestly labeled QUIET (Section 4's rule applied and
+this beat deliberately kept cosmetic, disclosed, not smuggled in as if it mattered). **Layered
+around it, unconditionally**: the street reaches its final pre-festival state -- final stall
+positions fixed and visible, Yohei's stock physically present at the exact scale `yohei_festival_
+stock` determined on Day 20, Hina's Day-22 offering visibly in place at her stall, Fumiko checking
+the overall layout, Jin finishing one last practical setup item, the whole street recognizably
+different from how it looked on Day 1. This renders whether or not the player investigates or
+ignores the false alarm.
+WHY THIS MATTERS NOW: the tension-release valve still does its job as comic relief; separately, this
+is the last day before the festival itself, and the street's own finished, physical state is what
+should make tomorrow feel inevitable -- not a line telling the player to look forward to it.
+PLAYER INTERVENTION: investigate the false alarm, or shrug it off -- same harmless resolution either
+way, explicitly non-causal by design. Separately, walk the finished street or not; either way, its
+state is what it is. WHEN RETURNS: nothing from the false alarm; `festival_final_state_visible_
+day23` colors Day 24 directly (the festival opens onto exactly this already-visible street).
+FREE TALK: open, low stakes, for the false alarm.
 OPTIONAL ROAMING AFTER: **a brief stop at Daisuke's is available** (one more return-after-deflection
 opportunity before the final Day-27 window, per Fix A).
-VISIBLE CONSEQUENCE: a laugh, a held breath let out.
+VISIBLE CONSEQUENCE: a laugh, a held breath let out (false alarm); a fully realized, visibly
+complete festival street (the new, unconditional layer) -- tomorrow is the festival, and the player
+can already see exactly what is about to become active.
 
-CAUSALITY_LEVEL: QUIET (honestly labeled). OPEN_THREAD_CREATED: none. CALLBACK_FROM: none. PLAYER_
-CAN_CHANGE: nothing durable from the main scene (the roaming stop can still create Daisuke evidence).
-PLAYER_CANNOT_CHANGE: the false-alarm's own outcome. FREE_TALK_CAN_AFFECT: nothing durable from the
-main scene.
+CAUSALITY_LEVEL: QUIET (false alarm, honestly labeled) with one always-true WORLD fact underneath
+(the finished street). OPEN_THREAD_CREATED: none new (the open question is Day 24 itself, now made
+concrete by what's visibly in place). CALLBACK_FROM: none (false alarm); Day 20 (stock scale), Day
+21 (setup), Day 22 (Hina's offering) for the finished-street layer. PLAYER_CAN_CHANGE: nothing
+durable from the false alarm (the roaming stop can still create Daisuke evidence). PLAYER_CANNOT_
+CHANGE: the false-alarm's own outcome; whether the street reaches its finished state today
+regardless of player attention. FREE_TALK_CAN_AFFECT: nothing durable from the main scene; nothing
+about the finished-street layer, which is unconditional.
 
 ### Day 24 — MERGE POINT (festival) -- retains a real, bounded location/time budget
 MAIN SCENE: the whole street dressed for the festival, all six NPCs live simultaneously for the

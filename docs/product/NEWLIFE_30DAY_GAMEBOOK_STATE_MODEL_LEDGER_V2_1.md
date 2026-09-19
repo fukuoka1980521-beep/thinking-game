@@ -259,6 +259,37 @@ future plan (Day 28), and visible departure signals before the final private cho
 five separate, unavoidable beats, never fewer than the engaged player receives, only less privately
 detailed.
 
+## PHASE_24.5 addition — the pre-festival world arc (Days 20-23 corridor repair)
+
+Added to fix RUN_C's newly-surfaced, pre-existing `MAX_LOW_PULL_STREAK = 3` at Days 21-23
+(disclosed in PHASE_24.4's own audit as a defect that was always present in the data but never
+separately flagged, because the largest streak at Days 25-29 masked it as the reported maximum).
+Root cause: Day 21 (Jin's unseen work, invisible if unthanked), Day 22 (Hina's private reveal,
+evidence-gated, "ordinary evening" if the gate is not met) and Day 23 (the deliberately cosmetic
+false alarm) are each individually defensible in isolation, but stacked back-to-back for a quiet,
+minimally-engaged persona they produce three flat, low-pull days immediately before the festival.
+**The private gates are unchanged** -- the fix is the same Layer-A/Layer-B principle used in every
+prior corridor repair: one continuous, unconditional public arc -- **THE FESTIVAL BECOMES
+PHYSICALLY REAL** -- running underneath Days 20-23, visible regardless of relationship depth.
+
+| Variable | Layer | Behavior |
+|---|---|---|
+| `festival_setup_visible_day21` | WORLD_PROGRESS | **Always true from Day 21** -- folding tables, ropes, temporary stands, and rearranged Hall furniture appear in the street/Hall, independent of whether the player notices or thanks Jin. Read from `yohei_festival_stock`'s eventual scale (Day 20) and `bench_fixed`'s state (Day 21) for concrete detail, never invented fresh. |
+| `festival_commitments_visible_day22` | WORLD_PROGRESS | **Always true from Day 22** -- participants visibly commit to concrete versions of what they'll actually do (Hina's own commitment, see below; other stalls' positions becoming fixed rather than tentative). Independent of Hina's private gate. |
+| `hina_festival_offering_decided` | WORLD_PROGRESS | **Always true by Day 22** -- a specific, practical festival-facing decision (reduced menu / one weak item cut / one popular item kept / a changed sign or table layout / how small her presence will be), read directly from the Days 1-14 trial arc's own `trial_result_menu_confusion` / `hina_concrete_decision`, never decided live. This is distinct from, and never conditioned on, `player_knows_hina_true_reason` (Day 22's existing private gate, unchanged) -- a player who never earns the private reveal still sees exactly what Hina will offer at the festival. |
+| `player_knows_hina_offering_reason` | PLAYER_KNOWLEDGE | Whether the player is told WHY that specific offering was chosen (practical reasoning only) -- separate from the deeper financial/personal story, which stays behind Day 22's existing evidence gate exactly as before. |
+| `festival_final_state_visible_day23` | WORLD_PROGRESS | **Always true from Day 23** -- final stall positions, Yohei's stock physically present at the Day-20-determined scale, Hina's decided offering visible in place, Jin's last practical setup item finished, the street recognizably transformed from Day 1. Renders whether or not the player investigates or ignores the false alarm. |
+
+**The explicit no-intervention guarantee for Days 20-23**: every WORLD_PROGRESS row above renders
+regardless of player choice. A fully passive player who earns none of Day 21's thanks-gate, Day
+22's private-reveal gate, or Day 23's roaming stop still receives, in order: a visibly transforming
+street (Day 21), a concrete, practical festival decision from Hina and other stalls visibly
+committing (Day 22), and a fully realized, visibly complete pre-festival street (Day 23) -- three
+separate, unavoidable public beats, exactly as detailed as what an engaged player sees, only without
+the private layer underneath. **No private reveal (Hina's true reason, Daisuke's card, Yohei's
+family details, Miyoko's daughter thread, Jin's arrangement, Fumiko's letter) is made easier, more
+visible, or automatically granted by this addition** -- each keeps its exact pre-existing gate.
+
 ## Fix F (Section 4F) — the free-talk contract's proposal categories, now actually wired
 
 `NEWLIFE_30DAY_GAMEBOOK_CAUSAL_RULES_V2.md`'s Section 7 already correctly listed 6 allowed
