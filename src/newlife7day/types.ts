@@ -44,8 +44,21 @@ export interface Core7DayState {
   /** Set at the Day1->Day2 transition once, mirroring `newlifecore`'s own day1WorldEvents.ts
    *  pattern (a flag that flips once, read at query time -- never re-computed after the fact). */
   deliveryArrived: boolean;
+  /** PHASE_22_5 Section "買い物に実ゲーム状態を持たせる" -- a real, persistent number a purchase
+   *  actually changes, so buying is a checkable consequence rather than a confirmation line with
+   *  nothing behind it. Starting value is arbitrary flavor (a few days' pocket money), not tuned
+   *  balance -- this slice has no economy design, only a real state change. */
+  money: number;
+  /** Item labels bought, in purchase order -- the visible, persistent proof of `money` having
+   *  actually moved (shown on the home screen so the player can check it without re-visiting the
+   *  shop). */
+  boughtItems: string[];
   ended: boolean;
 }
+
+export const STARTING_MONEY = 1000;
+export const VEGETABLES_PRICE = 300;
+export const VEGETABLES_LABEL = "野菜";
 
 export function createInitial7DayState(): Core7DayState {
   return {
@@ -58,10 +71,20 @@ export function createInitial7DayState(): Core7DayState {
     npcMemory: { hina: [], yohei: [] },
     keptEyeOutForDelivery: null,
     deliveryArrived: false,
+    money: STARTING_MONEY,
+    boughtItems: [],
     ended: false,
   };
 }
 
 export function canAffordToVisit(state: Core7DayState): boolean {
   return state.actionsUsedToday < ACTIONS_PER_DAY;
+}
+
+/** PHASE_22_5 -- "深い会話は追加1行動消費": opening a deep (free-talk) conversation spends one of
+ *  the day's 2 actions, exactly like moving to a new destination. Reuses the same budget check as
+ *  `canAffordToVisit` (there is only one shared action pool, not a separate "talk budget"), named
+ *  separately so call sites read as what they mean, not just a re-check of the same arithmetic. */
+export function canAffordFreeTalk(state: Core7DayState): boolean {
+  return canAffordToVisit(state);
 }

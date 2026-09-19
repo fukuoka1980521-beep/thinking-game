@@ -103,8 +103,86 @@ describe("NEW LIFE 7-day slice: Day 1 + Day 2 vertical slice (PHASE_22)", () => 
     await user.click(await screen.findByText("今日はもう休む(翌日へ)"));
     expect(await screen.findByText(/二日目の朝/)).toBeInTheDocument();
     await user.click(await screen.findByText("今日はもう休む"));
-    expect(await screen.findByText(/体験版はここで終わりです/)).toBeInTheDocument();
+    expect(await screen.findByText(/二日目が終わった/)).toBeInTheDocument();
+    expect(screen.queryByText(/体験版/)).not.toBeInTheDocument();
     expect(screen.queryByText("洋平商店へ行く")).not.toBeInTheDocument();
     expect(screen.queryByText("商店街へ行く")).not.toBeInTheDocument();
+  });
+
+  it("PHASE_22_5: returning home with an action still remaining never shows tomorrow-framed text", async () => {
+    const user = userEvent.setup();
+    start();
+    await user.click(await screen.findByText("商店街へ行く"));
+    await user.click(await screen.findByText("様子を見る"));
+    await goHome(user);
+    expect(await screen.findByText("DAY 1 / 残りの行動: 1")).toBeInTheDocument();
+    expect(screen.queryByText(/明日/)).not.toBeInTheDocument();
+    expect(await screen.findByText(/まだ今日は動けそうだ/)).toBeInTheDocument();
+  });
+
+  it("PHASE_22_5 scenario A (Hina deep): entering free talk spends the 2nd action, making the other location unreachable that day", async () => {
+    const user = userEvent.setup();
+    start();
+    await user.click(await screen.findByText("商店街へ行く"));
+    await user.click(await screen.findByText("手伝う"));
+    expect(await screen.findByText("もう少し話す（残り行動を1つ使う）")).toBeInTheDocument();
+    await user.click(await screen.findByText("もう少し話す（残り行動を1つ使う）"));
+    await user.click(await screen.findByText("立ち去る"));
+    await user.click(await screen.findByText("仮住まいへ戻る"));
+    expect(await screen.findByText("DAY 1 / 残りの行動: 0")).toBeInTheDocument();
+    expect(screen.queryByText("洋平商店へ行く")).not.toBeInTheDocument();
+    expect(screen.queryByText("商店街へ行く")).not.toBeInTheDocument();
+  });
+
+  it("PHASE_22_5 scenario B (broad path): structural-only visits to both locations never offer free talk without spending an action, and both remain reachable", async () => {
+    const user = userEvent.setup();
+    start();
+    await user.click(await screen.findByText("洋平商店へ行く"));
+    await user.click(await screen.findByText("買い物をする"));
+    expect(await screen.findByText("もう少し話す（残り行動を1つ使う）")).toBeInTheDocument();
+    await goHome(user);
+    expect(await screen.findByText("商店街へ行く")).toBeInTheDocument();
+    await user.click(await screen.findByText("商店街へ行く"));
+    await user.click(await screen.findByText("様子を見る"));
+    await goHome(user);
+    expect(await screen.findByText("DAY 1 / 残りの行動: 0")).toBeInTheDocument();
+  });
+
+  it("PHASE_22_5 scenario C: purchasing has a real, visible, persistent state change (money down, item added)", async () => {
+    const user = userEvent.setup();
+    start();
+    expect(await screen.findByText("所持金: ¥1000")).toBeInTheDocument();
+    await user.click(await screen.findByText("洋平商店へ行く"));
+    await user.click(await screen.findByText("買い物をする"));
+    expect(await screen.findByText(/所持金: ¥700 ｜ 持ち物: 野菜×1/)).toBeInTheDocument();
+    await goHome(user);
+    expect(await screen.findByText("所持金: ¥700 ｜ 持ち物: 野菜×1")).toBeInTheDocument();
+  });
+
+  it("PHASE_22_5: free-talk conversation is preserved as visible memory across a later re-visit and across the leave click", async () => {
+    const user = userEvent.setup();
+    start();
+    await user.click(await screen.findByText("洋平商店へ行く"));
+    await user.click(await screen.findByText("買い物をする"));
+    await user.click(await screen.findByText("もう少し話す（残り行動を1つ使う）"));
+    const input = await screen.findByPlaceholderText("話しかける");
+    await user.type(input, "こんにちは");
+    await user.click(await screen.findByText("話す"));
+    expect(await screen.findByText("こんにちは")).toBeInTheDocument();
+    // the exchange must still be visible after clicking leave, not vanish immediately
+    await user.click(await screen.findByText("立ち去る"));
+    expect(screen.getByText("こんにちは")).toBeInTheDocument();
+  });
+
+  it("PHASE_22_5: Hina's Day 2 ambient line differs from Day 1's (world visibly changed, not just dialogue)", async () => {
+    const user = userEvent.setup();
+    start();
+    await user.click(await screen.findByText("商店街へ行く"));
+    expect(await screen.findByText(/まだ半分も並んでいない/)).toBeInTheDocument();
+    await goHome(user);
+    await user.click(await screen.findByText("今日はもう休む(翌日へ)"));
+    await user.click(await screen.findByText("商店街へ行く"));
+    expect(screen.queryByText(/まだ半分も並んでいない/)).not.toBeInTheDocument();
+    expect(await screen.findByText(/焼き菓子の型がいくつか並び始めている/)).toBeInTheDocument();
   });
 });

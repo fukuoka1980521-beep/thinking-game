@@ -4,7 +4,16 @@
  * (Section 32) at this slice's own, much smaller scale.
  */
 import type { ConversationTurn } from "../newlifecore/types";
-import { ACTIONS_PER_DAY, canAffordToVisit, type Core7DayState, type Slice7DayLocationId, type Slice7DayNpcId } from "./types";
+import {
+  ACTIONS_PER_DAY,
+  VEGETABLES_LABEL,
+  VEGETABLES_PRICE,
+  canAffordFreeTalk,
+  canAffordToVisit,
+  type Core7DayState,
+  type Slice7DayLocationId,
+  type Slice7DayNpcId,
+} from "./types";
 
 export function canReach(state: Core7DayState, location: Slice7DayLocationId): boolean {
   if (state.ended) return false;
@@ -32,6 +41,29 @@ export function recordConversationTurn(state: Core7DayState, npcId: Slice7DayNpc
   return {
     ...state,
     npcMemory: { ...state.npcMemory, [npcId]: [...state.npcMemory[npcId], turn] },
+  };
+}
+
+/** PHASE_22_5 -- "深い会話は追加1行動消費": entering free talk spends 1 of the day's 2 actions, on
+ *  top of whatever the current visit already cost to reach. A no-op (mirrors `moveTo`'s own
+ *  unaffordable case) when the budget is already spent -- the caller is expected to hide the
+ *  "もう少し話す" option in that state, the same way destination buttons hide rather than show
+ *  disabled. */
+export function enterFreeTalk(state: Core7DayState): Core7DayState {
+  if (!canAffordFreeTalk(state)) return state;
+  return { ...state, actionsUsedToday: state.actionsUsedToday + 1 };
+}
+
+/** PHASE_22_5 -- "買い物に実ゲーム状態を持たせる": a real, checkable state change (money down,
+ *  an item added), not just a confirmation line. A no-op if the player can't afford it -- this
+ *  slice's economy is not tuned, but running out is still handled honestly rather than allowed to
+ *  go negative. */
+export function purchaseVegetables(state: Core7DayState): Core7DayState {
+  if (state.money < VEGETABLES_PRICE) return state;
+  return {
+    ...state,
+    money: state.money - VEGETABLES_PRICE,
+    boughtItems: [...state.boughtItems, VEGETABLES_LABEL],
   };
 }
 

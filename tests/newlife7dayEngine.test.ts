@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { advanceToDay2, canAdvanceToDay2, canEndSlice, canReach, endSlice, moveTo, recordConversationTurn, setKeptEyeOutForDelivery } from "../src/newlife7day/engine";
-import { createInitial7DayState } from "../src/newlife7day/types";
+import {
+  advanceToDay2,
+  canAdvanceToDay2,
+  canEndSlice,
+  canReach,
+  endSlice,
+  enterFreeTalk,
+  moveTo,
+  purchaseVegetables,
+  recordConversationTurn,
+  setKeptEyeOutForDelivery,
+} from "../src/newlife7day/engine";
+import { STARTING_MONEY, VEGETABLES_PRICE, canAffordFreeTalk, createInitial7DayState } from "../src/newlife7day/types";
 
 describe("newlife7day engine -- 2-action budget", () => {
   it("starts at TRIAL_HOUSE with 0 actions used and both destinations reachable", () => {
@@ -111,5 +122,71 @@ describe("newlife7day engine -- 2-action budget", () => {
     s = recordConversationTurn(s, "yohei", { day: 1, time: 0, playerUtterance: "こんにちは", npcReply: "おう" });
     expect(s.npcMemory.yohei).toHaveLength(1);
     expect(s.npcMemory.hina).toHaveLength(0);
+  });
+
+  describe("PHASE_22_5 -- deep-talk cost (fixes '2 actions but both locations always reachable')", () => {
+    it("entering free talk spends 1 action, on top of the visit that already cost 1", () => {
+      let s = createInitial7DayState();
+      s = moveTo(s, "YOHEI_STORE");
+      expect(s.actionsUsedToday).toBe(1);
+      expect(canAffordFreeTalk(s)).toBe(true);
+      s = enterFreeTalk(s);
+      expect(s.actionsUsedToday).toBe(2);
+      expect(canAffordFreeTalk(s)).toBe(false);
+    });
+
+    it("going deep with one NPC (visit + free talk) leaves no budget for the other location", () => {
+      let s = createInitial7DayState();
+      s = moveTo(s, "SHOPPING_STREET");
+      s = enterFreeTalk(s);
+      expect(canReach(s, "YOHEI_STORE")).toBe(false);
+      expect(canReach(s, "TRIAL_HOUSE")).toBe(true); // home is always free
+    });
+
+    it("entering free talk is a no-op once the day's budget is already spent", () => {
+      let s = createInitial7DayState();
+      s = moveTo(s, "YOHEI_STORE");
+      s = moveTo(s, "TRIAL_HOUSE");
+      s = moveTo(s, "SHOPPING_STREET");
+      expect(s.actionsUsedToday).toBe(2);
+      const blocked = enterFreeTalk(s);
+      expect(blocked).toBe(s);
+    });
+
+    it("the broad path (structural-only visits to both locations) still costs exactly the 2 visits, no more", () => {
+      let s = createInitial7DayState();
+      s = moveTo(s, "YOHEI_STORE");
+      s = moveTo(s, "TRIAL_HOUSE");
+      s = moveTo(s, "SHOPPING_STREET");
+      expect(s.actionsUsedToday).toBe(2);
+      expect(s.everVisited).toEqual(expect.arrayContaining(["YOHEI_STORE", "SHOPPING_STREET"]));
+    });
+  });
+
+  describe("PHASE_22_5 -- purchase has a real, persistent state change", () => {
+    it("buying vegetables decreases money and records the item", () => {
+      let s = createInitial7DayState();
+      expect(s.money).toBe(STARTING_MONEY);
+      s = purchaseVegetables(s);
+      expect(s.money).toBe(STARTING_MONEY - VEGETABLES_PRICE);
+      expect(s.boughtItems).toEqual(["野菜"]);
+    });
+
+    it("does not go negative -- a purchase beyond available money is a no-op", () => {
+      let s = createInitial7DayState();
+      s = { ...s, money: 100 }; // less than VEGETABLES_PRICE
+      const blocked = purchaseVegetables(s);
+      expect(blocked).toBe(s);
+    });
+
+    it("money and inventory persist across a day transition", () => {
+      let s = createInitial7DayState();
+      s = moveTo(s, "YOHEI_STORE");
+      s = purchaseVegetables(s);
+      s = moveTo(s, "TRIAL_HOUSE");
+      s = advanceToDay2(s);
+      expect(s.money).toBe(STARTING_MONEY - VEGETABLES_PRICE);
+      expect(s.boughtItems).toEqual(["野菜"]);
+    });
   });
 });

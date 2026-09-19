@@ -13,6 +13,24 @@ export function arrivalOrMorningLine(state: Core7DayState): string {
   return "二日目の朝。昨日と同じ部屋なのに、少しだけ町に馴染んだ気がする。";
 }
 
+/**
+ * PHASE_22_5 -- "残り行動があるのに『明日』と出る時間表現修正". Shown at TRIAL_HOUSE when the
+ * player still has at least one action left today (`0 < actionsUsedToday < ACTIONS_PER_DAY`) --
+ * distinct from `eveningLine`, which is reserved for when the day's budget is actually spent.
+ * Reflects on whichever location was visited most recently without any "tomorrow"/"today is done"
+ * framing, since the day plainly is not done yet.
+ */
+export function midDayLine(state: Core7DayState): string {
+  const lastVisited = state.visitedToday[state.visitedToday.length - 1];
+  if (lastVisited === "YOHEI_STORE") {
+    return "洋平商店の様子を見てきた。まだ今日は動けそうだ。";
+  }
+  if (lastVisited === "SHOPPING_STREET") {
+    return "陽菜さんの店の様子を見てきた。まだ今日は動けそうだ。";
+  }
+  return "まだ今日は動けそうだ。";
+}
+
 export function eveningLine(state: Core7DayState): string {
   const sawYohei = state.visitedToday.includes("YOHEI_STORE");
   const sawHina = state.visitedToday.includes("SHOPPING_STREET");
@@ -63,7 +81,12 @@ export function hinaOpeningLine(state: Core7DayState): string {
   return "陽菜は棚の位置を確かめながら言った。「昨日より少しだけ、形になってきた気がします」";
 }
 
-export const HINA_AMBIENT_LINE = "棚には商品がまだ半分も並んでいない。開店はもう少し先のようだ。";
+/** PHASE_22_5 -- "Day2陽菜の世界変化文をDay1と変える": Day 1's ambient line described the shop as
+ *  not-yet-open; Day 2's must show it has moved forward since, mirroring Yohei's own
+ *  DAY1/DAY2 ambient-line split above (this was previously a single, day-independent constant --
+ *  the exact staleness the player review's Q4/raw evidence screenshot 11 flagged). */
+export const HINA_AMBIENT_LINE_DAY1 = "棚には商品がまだ半分も並んでいない。開店はもう少し先のようだ。";
+export const HINA_AMBIENT_LINE_DAY2 = "棚には、焼き菓子の型がいくつか並び始めている。昨日より、少しだけ店らしくなってきた。";
 
 export const YOHEI_BUY_RESULT = "洋平は野菜をいくつか袋に入れて渡した。「まいど。安いもんだけどな」";
 export const YOHEI_KEEP_EYE_OUT_RESULT = "「分かった、気にかけとくよ」と言うと、洋平は少し意外そうな顔をした。「……そうか、悪いな」";
@@ -76,3 +99,21 @@ export const HINA_FAREWELL = "陽菜は軽く頭を下げた。「また来て�
 export const TEMP_HOME_LABEL = "仮住まい";
 export const YOHEI_STORE_LABEL = "洋平商店";
 export const SHOPPING_STREET_LABEL = "商店街";
+
+/** PHASE_22_5 -- "『体験版はここで終わりです』を削除": the previous line spoke as the product
+ *  ("trial version") rather than the story -- the one moment the player review's Q9 flagged as
+ *  breaking the fiction. This line stays entirely in-world and does not promise or imply Day 3. */
+export const SLICE_END_LINE = "二日目が終わった。この町での暮らしは、まだ始まったばかりだ。";
+
+/** PHASE_22_5 -- "買い物に実ゲーム状態を持たせる": a plain, checkable readout of `money`/
+ *  `boughtItems`, shown at the home screen so the consequence of a purchase is visible without
+ *  having to revisit the shop to remember it happened. */
+export function moneyStatusLine(money: number, boughtItems: string[]): string {
+  if (boughtItems.length === 0) return `所持金: ¥${money}`;
+  const counts = new Map<string, number>();
+  for (const item of boughtItems) counts.set(item, (counts.get(item) ?? 0) + 1);
+  const itemsText = Array.from(counts.entries())
+    .map(([label, count]) => `${label}×${count}`)
+    .join("、");
+  return `所持金: ¥${money} ｜ 持ち物: ${itemsText}`;
+}

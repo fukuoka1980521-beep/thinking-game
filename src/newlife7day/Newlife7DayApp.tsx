@@ -11,11 +11,13 @@ import { liveNpcAdapter } from "../newlifecore/dialogue/liveAdapterClient";
 import type { ConversationTurn } from "../newlifecore/types";
 import { buildNpc7DayAiContext } from "./dialogue/contextBuilder";
 import {
-  HINA_AMBIENT_LINE,
+  HINA_AMBIENT_LINE_DAY1,
+  HINA_AMBIENT_LINE_DAY2,
   HINA_FAREWELL,
   HINA_HELP_RESULT,
   HINA_WATCH_RESULT,
   SHOPPING_STREET_LABEL,
+  SLICE_END_LINE,
   TEMP_HOME_LABEL,
   YOHEI_AMBIENT_LINE_DAY1,
   YOHEI_AMBIENT_LINE_DAY2,
@@ -26,10 +28,23 @@ import {
   arrivalOrMorningLine,
   eveningLine,
   hinaOpeningLine,
+  midDayLine,
+  moneyStatusLine,
   yoheiOpeningLine,
 } from "./content";
-import { advanceToDay2, canAdvanceToDay2, canEndSlice, canReach, endSlice, moveTo, recordConversationTurn, setKeptEyeOutForDelivery } from "./engine";
-import { createInitial7DayState, type Core7DayState, type Slice7DayLocationId } from "./types";
+import {
+  advanceToDay2,
+  canAdvanceToDay2,
+  canEndSlice,
+  canReach,
+  endSlice,
+  enterFreeTalk,
+  moveTo,
+  purchaseVegetables,
+  recordConversationTurn,
+  setKeptEyeOutForDelivery,
+} from "./engine";
+import { ACTIONS_PER_DAY, canAffordFreeTalk, createInitial7DayState, type Core7DayState, type Slice7DayLocationId, type Slice7DayNpcId } from "./types";
 
 import hinaImg from "../assets/newlife7day/hina.png";
 import shoppingStreetImg from "../assets/newlife7day/shopping-street.png";
@@ -58,6 +73,23 @@ const USE_LIVE = typeof import.meta.env !== "undefined" && import.meta.env.MODE 
 interface FreeTalkTurn {
   who: "player" | "npc";
   text: string;
+}
+
+/** PHASE_22_5 -- "AI自由会話をゲーム内記憶として残す": `npcMemory` already persists every free-talk
+ *  turn and already feeds it back into the NPC's own `NpcAiContext` (memoryOfPlayer/
+ *  historicalTurnCount/daysSinceLastMeeting), so the AI already "remembers" mechanically -- but
+ *  the player review found no VISIBLE proof of that (the transcript reset to blank on every new
+ *  visit). This re-seeds the free-talk transcript from that same persisted memory instead of
+ *  starting blank, prefixing an earlier day's lines so past-day continuity reads as remembered,
+ *  not as if it just happened again. */
+function freeTalkHistoryFrom(state: Core7DayState, npcId: Slice7DayNpcId): FreeTalkTurn[] {
+  const turns: FreeTalkTurn[] = [];
+  for (const turn of state.npcMemory[npcId]) {
+    const dayPrefix = turn.day !== state.day ? `(${turn.day}日目) ` : "";
+    turns.push({ who: "player", text: `${dayPrefix}${turn.playerUtterance}` });
+    turns.push({ who: "npc", text: turn.npcReply });
+  }
+  return turns;
 }
 
 export function Newlife7DayApp({ onExit }: { onExit: () => void }) {
@@ -118,6 +150,12 @@ export function Newlife7DayApp({ onExit }: { onExit: () => void }) {
   if (state.playerLocation === "TRIAL_HOUSE") {
     const canGoYohei = canReach(state, "YOHEI_STORE");
     const canGoStreet = canReach(state, "SHOPPING_STREET");
+    const homeLine =
+      state.actionsUsedToday === 0
+        ? arrivalOrMorningLine(state)
+        : state.actionsUsedToday < ACTIONS_PER_DAY
+          ? midDayLine(state)
+          : eveningLine(state);
     return (
       <div className="n7d-app">
         <button className="n7d-exit" onClick={onExit}>
@@ -125,10 +163,11 @@ export function Newlife7DayApp({ onExit }: { onExit: () => void }) {
         </button>
         <img className="n7d-hero" src={tempHomeImg} alt={TEMP_HOME_LABEL} />
         <h2 className="n7d-location-name">{TEMP_HOME_LABEL}</h2>
-        <p className="n7d-line">{state.actionsUsedToday === 0 ? arrivalOrMorningLine(state) : eveningLine(state)}</p>
+        <p className="n7d-line">{homeLine}</p>
         <div className="n7d-day-badge">
           DAY {state.day} / 残りの行動: {2 - state.actionsUsedToday}
         </div>
+        <p className="n7d-line n7d-money">{moneyStatusLine(state.money, state.boughtItems)}</p>
         {!state.ended && state.actionsUsedToday < 2 && (
           <div className="n7d-choices">
             <button disabled={!canGoYohei} onClick={() => goTo("YOHEI_STORE")}>
@@ -149,7 +188,7 @@ export function Newlife7DayApp({ onExit }: { onExit: () => void }) {
             今日はもう休む
           </button>
         )}
-        {state.ended && <p className="n7d-line n7d-ended">今日はここまで。(体験版はここで終わりです)</p>}
+        {state.ended && <p className="n7d-line n7d-ended">{SLICE_END_LINE}</p>}
       </div>
     );
   }
@@ -157,7 +196,13 @@ export function Newlife7DayApp({ onExit }: { onExit: () => void }) {
   const npcId = state.playerLocation === "YOHEI_STORE" ? "yohei" : "hina";
   const openingLine = npcId === "yohei" ? yoheiOpeningLine(state) : hinaOpeningLine(state);
   const ambientLine =
-    npcId === "yohei" ? (state.day === 1 ? YOHEI_AMBIENT_LINE_DAY1 : YOHEI_AMBIENT_LINE_DAY2) : HINA_AMBIENT_LINE;
+    npcId === "yohei"
+      ? state.day === 1
+        ? YOHEI_AMBIENT_LINE_DAY1
+        : YOHEI_AMBIENT_LINE_DAY2
+      : state.day === 1
+        ? HINA_AMBIENT_LINE_DAY1
+        : HINA_AMBIENT_LINE_DAY2;
 
   return (
     <div className="n7d-app">
@@ -182,7 +227,9 @@ export function Newlife7DayApp({ onExit }: { onExit: () => void }) {
         <div className="n7d-choices">
           <button
             onClick={() => {
-              pushLine(YOHEI_BUY_RESULT);
+              const next = purchaseVegetables(state);
+              setState(next);
+              pushLine(`${YOHEI_BUY_RESULT}（${moneyStatusLine(next.money, next.boughtItems)}）`);
               setStructuralActionTaken(true);
             }}
           >
@@ -223,33 +270,43 @@ export function Newlife7DayApp({ onExit }: { onExit: () => void }) {
         </div>
       )}
 
-      {structuralActionTaken && !freeTalkOpen && !leaving && (
+      {structuralActionTaken && !freeTalkOpen && !leaving && canAffordFreeTalk(state) && (
         <div className="n7d-choices">
-          <button onClick={() => setFreeTalkOpen(true)}>もう少し話す</button>
+          <button
+            onClick={() => {
+              setFreeTalkTurns(freeTalkHistoryFrom(state, npcId));
+              setState((prev) => enterFreeTalk(prev));
+              setFreeTalkOpen(true);
+            }}
+          >
+            もう少し話す（残り行動を1つ使う）
+          </button>
         </div>
       )}
 
-      {freeTalkOpen && !leaving && (
+      {freeTalkOpen && (
         <div className="n7d-free-talk">
           {freeTalkTurns.map((t, i) => (
             <p key={i} className={t.who === "player" ? "n7d-line n7d-player-turn" : "n7d-line n7d-npc-speech"}>
               {t.text}
             </p>
           ))}
-          <div className="n7d-free-talk-input">
-            <input
-              value={freeTalkInput}
-              onChange={(e) => setFreeTalkInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendFreeTalk(npcId);
-              }}
-              placeholder="話しかける"
-              disabled={freeTalkPending}
-            />
-            <button onClick={() => sendFreeTalk(npcId)} disabled={freeTalkPending}>
-              話す
-            </button>
-          </div>
+          {!leaving && (
+            <div className="n7d-free-talk-input">
+              <input
+                value={freeTalkInput}
+                onChange={(e) => setFreeTalkInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") sendFreeTalk(npcId);
+                }}
+                placeholder="話しかける"
+                disabled={freeTalkPending}
+              />
+              <button onClick={() => sendFreeTalk(npcId)} disabled={freeTalkPending}>
+                話す
+              </button>
+            </div>
+          )}
         </div>
       )}
 
