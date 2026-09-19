@@ -227,6 +227,38 @@ Day 18 -> "what happens to the sign now"). Player intervention only ever changes
 EFFECT and RESOLUTION-shape variables above -- never `guidance_disagreement_surfaced`,
 `visitor_confusion_happened`, or `guidance_sign_revised` themselves.
 
+## PHASE_24.4 addition — the endgame world arc (Days 25-29 corridor repair)
+
+Added to fix RUN_C's last remaining full-month hard-gate failure (`MAX_LOW_PULL_STREAK = 5` at Days
+25-29, disclosed in PHASE_24.2 and confirmed still open at the close of PHASE_24.3). Root cause,
+per this task's own diagnosis: Days 25-29 previously contained only gated private-character
+payoffs (Yohei's son, Daisuke's card, Miyoko's daughter outcome) plus one deliberately-silent
+kindness beat -- a player who earned none of those gates experienced five straight days of nothing.
+**The fix is not to loosen any gate** -- every existing private reveal keeps its exact trigger
+condition, unchanged. The fix is a second, independent layer underneath them: **FESTIVAL AFTERMATH
+-> RETURN TO ORDINARY LIFE -> WHAT CONTINUES AFTER PLAYER LEAVES**, a continuous, low-key,
+unconditional world arc, never a crisis.
+
+| Variable | Layer | Behavior |
+|---|---|---|
+| `festival_aftermath_visible` | WORLD_PROGRESS | **Always true from Day 25** -- half-removed decorations, leftover stock, full trash bags, tired residents, the bench's actual fixed/not-fixed state visible in ordinary use, Hina examining what sold, Yohei counting what's left. Every detail reads directly from prior state (`bench_fixed`, `yohei_festival_stock`, `trial_result_menu_confusion`), never invented fresh. |
+| `hina_post_festival_decision` | WORLD_PROGRESS | **Always true by Day 26** -- one practical decision, distinct from Day 12's trial-based one: `"set_next_test_date"` if `hina_adjustment_timing == "early_calm"` (confident, forward-looking), else `"kept_reduced_range"` (cautious, consolidating). Read from existing state, never decided live. |
+| `player_knows_why_hina_decided` | PLAYER_KNOWLEDGE | True only if the player specifically asks and has real accumulated Hina evidence -- separate from the WORLD FACT that she decided at all, which every player sees regardless. |
+| `hina_shares_deeper_reason` | RELATIONSHIP_EVIDENCE-gated (PRIVATE_TRUST) | Whether she tells the player the fuller "why," distinct from the plain result -- gated the same way her Day 22 reveal already is. |
+| `town_returns_to_normal` | WORLD_PROGRESS | **Always true from Day 27** -- Jin removes the festival's temporary signage/decorations and the delivery hand-cart goes back to ordinary duty; a plain, visible sign the event is over and life continues. |
+| `hina_next_test_planned` | WORLD_PROGRESS | **Always true by Day 28** -- Hina is already planning her next small test, unconditionally (the trial arc's own throughline given a real, forward-looking close, per Section 6's explicit "world has a future" requirement). |
+| `player_knows_next_test_details` | PLAYER_KNOWLEDGE | Gated on Hina relationship evidence, same discipline as every other "how much detail" gate in this design. |
+| `departure_prep_visible` | WORLD_PROGRESS | **Always true from Day 29** -- practical departure signals (packing begins, the room looks temporary again, someone asks when the key goes back, town gossip already references Day 28's next-test news) rendered BEFORE the private-kindness choice, not instead of it. |
+
+**The explicit no-intervention guarantee for Days 25-29**: every WORLD_PROGRESS row above renders
+regardless of player choice, exactly like the Days 1-14 and Days 16-19 arcs before it. A fully
+passive player who earns none of the three remaining private gates (Yohei's son, Daisuke's card,
+Miyoko's outcome) still receives, in order: a visible, state-consistent aftermath (Day 25), a real
+practical decision from Hina (Day 26), a visible sign the town is moving on (Day 27), a concrete
+future plan (Day 28), and visible departure signals before the final private choice (Day 29) --
+five separate, unavoidable beats, never fewer than the engaged player receives, only less privately
+detailed.
+
 ## Fix F (Section 4F) — the free-talk contract's proposal categories, now actually wired
 
 `NEWLIFE_30DAY_GAMEBOOK_CAUSAL_RULES_V2.md`'s Section 7 already correctly listed 6 allowed

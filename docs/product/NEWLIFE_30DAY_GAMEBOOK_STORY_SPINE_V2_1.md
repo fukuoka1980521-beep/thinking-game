@@ -652,114 +652,201 @@ FREE_TALK_CAN_AFFECT: description only, never outcome invention.
 
 ## Movement 5 (Days 25-30)
 
-### Day 25
-MAIN SCENE: the morning after, town a little sleepy -- the specific comedown from whichever version
-of Day 24 actually happened.
-WHY THIS MATTERS NOW: emotional recovery after a major scene (Section 5's explicit allowance).
-PLAYER INTERVENTION: check in on someone specific, or rest. IF ACTS: a warm exchange referencing
-yesterday specifically. IF NOT: a quieter day. WHEN RETURNS: tone only.
+### Day 25 `[PHASE_24.4 ADDITION -- ALWAYS RENDERED: festival_aftermath_visible]`
+MAIN SCENE: the morning after, concrete and specific, not just "sleepy town": half the decorations
+already down, the other half still strung up because nobody's gotten to them; leftover festival
+stock stacked outside Yohei's store (an exact, visible quantity, read from `yohei_festival_stock` --
+a lot left over if it was minimal, almost nothing left if it sold well); full trash bags at the
+corners waiting for collection; residents moving slower than usual, worn out rather than glowing.
+Hina is at her counter actually going through what sold and what didn't -- not vague satisfaction,
+specific items, specific numbers. The bench (`bench_fixed` -- true or false) is simply in ordinary
+use again, exactly as it was left. **None of this depends on where the player spent Day 24's two
+slots or whether the player does anything today** -- it is the same aftermath either way, only the
+exact numbers differ by prior state.
+WHY THIS MATTERS NOW: emotional recovery after a major scene (Section 5's explicit allowance) --
+but now with a concrete world underneath the mood, not mood alone.
+PLAYER INTERVENTION: check in on someone specific, help with the cleanup, or rest. IF ACTS: a warm
+exchange referencing yesterday specifically, or a hand with the actual physical cleanup. IF NOT
+(rests instead): the cleanup happens anyway, described from a distance -- the world does not wait
+for the player to help. WHEN RETURNS: tone only; the aftermath facts themselves are fixed by Day 24.
 FREE TALK: open, warm, reflective.
 OPTIONAL ROAMING AFTER: none additional.
-VISIBLE CONSEQUENCE: soft, satisfied quiet.
+VISIBLE CONSEQUENCE: `festival_aftermath_visible` = true, always, with concrete state-derived detail.
+OPEN_QUESTION_AT_DAY_END: "What will actually remain, now that the festival itself is gone?" --
+grounded directly in the leftover stock and the half-cleared street, not manufactured.
 
-CAUSALITY_LEVEL: QUIET. OPEN_THREAD_CREATED: none. CALLBACK_FROM: Day 24. PLAYER_CAN_CHANGE: tone
-only. PLAYER_CANNOT_CHANGE: yesterday's outcome. FREE_TALK_CAN_AFFECT: tone only.
+CAUSALITY_LEVEL: QUIET (tone) with one always-true WORLD fact underneath. OPEN_THREAD_CREATED: "what
+remains after the festival." CALLBACK_FROM: Day 24. PLAYER_CAN_CHANGE: tone, and whether cleanup is
+witnessed firsthand or from a distance. PLAYER_CANNOT_CHANGE: yesterday's outcome, or that the
+aftermath itself renders. FREE_TALK_CAN_AFFECT: tone only.
 
-### Day 26 `[FIXED -- Fix D, and Section 3B's independent-event rule]`
-MAIN SCENE: Yohei's store, unusually quiet -- the exact gesture from Day 13, recurring with
-different meaning. `yohei_son_call_happened` is TRUE by now regardless of anything the player did
-(it resolved automatically around Day 20, independent world progress).
-WHY THIS MATTERS NOW: whether the player actually LEARNS about it is what's still undecided.
-PLAYER INTERVENTION: notice and ask gently, or be present without asking. IF gate met
-(`noticed_yohei_son_thread` AND `COUNT(yohei_relationship_evidence MINUS {noticed_yohei_son_
-thread}) >= 1` -- the corrected, distinct-evidence gate): hears that they talked. IF gate not met:
-the fact stays true in world-state but isn't shared with the player this scene (a real KNOWLEDGE-vs-
-FACT gap, not an error). WHEN RETURNS: colors Day 30 either way.
-FREE TALK: open, the payoff scene if the gate is met.
+### Day 26 `[FIXED -- Fix D, and Section 3B's independent-event rule]` `[PHASE_24.4 ADDITION -- ALWAYS RENDERED: hina_post_festival_decision]`
+MAIN SCENE: two independent things, in the same scene but never conflated. (1) Yohei's store,
+unusually quiet -- the exact gesture from Day 13, recurring with different meaning.
+`yohei_son_call_happened` is TRUE by now regardless of anything the player did (it resolved
+automatically around Day 20, independent world progress). (2) **Separately, unconditionally**: Hina
+has made one practical, concrete post-festival decision, read directly from her established trial
+outcome, never invented fresh -- if `hina_adjustment_timing == "early_calm"`, she sets a specific
+next test date; otherwise, she keeps the reduced range she settled on and consolidates rather than
+expanding. This is a WORLD FACT: it is true, and visible in the shop's actual physical state (new
+sign text, or the same narrowed range still in place), whether or not the player ever asks about it.
+WHY THIS MATTERS NOW: whether the player actually LEARNS about the Yohei thread is what's still
+undecided; whether Hina's shop changed is not a question at all -- it simply has.
+PLAYER INTERVENTION: notice and ask Yohei gently, or be present without asking; separately, notice
+Hina's shop and optionally ask why. IF Yohei gate met (`noticed_yohei_son_thread` AND
+`COUNT(yohei_relationship_evidence MINUS {noticed_yohei_son_thread}) >= 1`): hears that they talked.
+IF Yohei gate not met: the fact stays true in world-state but isn't shared with the player this
+scene (a real KNOWLEDGE-vs-FACT gap, not an error). Independently, IF the player asks Hina why
+(`player_knows_why_hina_decided`): hears the practical reasoning (PLAYER_KNOWLEDGE); IF the player
+has real accumulated Hina evidence on top of that (`hina_shares_deeper_reason`, a PRIVATE_TRUST
+gate, same discipline as her Day 22 reveal): hears the fuller, more personal reason underneath.
+Asking nothing at all still leaves `hina_post_festival_decision` visibly true. WHEN RETURNS: colors
+Day 30 either way, on both threads independently.
+FREE TALK: open, the Yohei payoff scene if that gate is met; separately, Hina's decision is
+discussable at any depth the evidence supports.
 OPTIONAL ROAMING AFTER: none additional.
-VISIBLE CONSEQUENCE: quiet, real, deliberately unresolved beyond "they talked," if learned at all.
+VISIBLE CONSEQUENCE: quiet, real, deliberately unresolved beyond "they talked," if learned at all
+(Yohei thread); a concrete, always-visible shop-state change (Hina thread), regardless of engagement.
 
-CAUSALITY_LEVEL: HIGH (when learned) / MEDIUM otherwise. OPEN_THREAD_CREATED: none new. CALLBACK_
-FROM: Day 13. PLAYER_CAN_CHANGE: whether the player LEARNS about it this scene. PLAYER_CANNOT_
-CHANGE: whether the call itself happened -- **fixed, independent, resolved on Day 20 regardless**.
-FREE_TALK_CAN_AFFECT: whether the player learns the news, never the underlying event.
+CAUSALITY_LEVEL: HIGH (when learned) / MEDIUM otherwise for the Yohei thread; the Hina thread is
+always WORLD_PROGRESS_VISIBLE regardless of engagement. OPEN_THREAD_CREATED: "will Hina's next step
+go anywhere" (if a next test date was set). CALLBACK_FROM: Day 13 (Yohei); the Days 1-14 trial arc
+(Hina). PLAYER_CAN_CHANGE: whether the player LEARNS about the Yohei call this scene; how much of
+Hina's reasoning the player hears. PLAYER_CANNOT_CHANGE: whether the call itself happened, or
+whether Hina's shop decision itself occurred -- both **fixed, independent, resolved before today
+regardless**. FREE_TALK_CAN_AFFECT: whether the player learns either piece of news, never the
+underlying events.
 
-### Day 27
+### Day 27 `[PHASE_24.4 ADDITION -- ALWAYS RENDERED: town_returns_to_normal]`
 MAIN SCENE: Daisuke's chair, a slower afternoon. IF gate met (`returned_to_daisuke_after_deflection
 >= 2`, now genuinely achievable via the explicit roaming touchpoints on Days 6/12/14/19/23, not just
 hoping the player happens to revisit): the card, finally. ELSE: an ordinary, comfortable afternoon.
-WHY THIS MATTERS NOW: the corrected version of V1's original failure -- persistence after being
-turned away, not raw talk volume, and now with genuine, authored opportunities to build that
-persistence across the month (Fix A resolved).
-PLAYER INTERVENTION: listen, patiently. IF gate met: hears about the unanswered New Year's card.
-WHEN RETURNS: colors Day 30.
-FREE TALK: the deep-talk day for this thread.
+**Independently, unconditionally, visible in the background of this same day**: Jin is out taking
+down the last of the festival's temporary signage and returning the borrowed hand-cart to ordinary
+delivery duty -- the plainest possible sign the event is genuinely over and the street has gone back
+to being a street, not a stage. This requires no player involvement to occur or to be narrated; it
+is simply what the town is doing today.
+WHY THIS MATTERS NOW: the corrected version of V1's original failure for Daisuke's own thread --
+persistence after being turned away, not raw talk volume, now with genuine, authored opportunities
+to build that persistence across the month (Fix A resolved). The Jin beat exists for an unrelated
+reason: to let the player see the town continuing past the festival even with zero engagement today.
+PLAYER INTERVENTION: listen, patiently, to Daisuke. IF gate met: hears about the unanswered New
+Year's card. Separately, the player may notice or ignore Jin's ordinary work outside -- either way,
+it happens. WHEN RETURNS: colors Day 30 (Daisuke thread); nothing further to track (Jin's beat is
+descriptive, not gated).
+FREE TALK: the deep-talk day for the Daisuke thread.
 OPTIONAL ROAMING AFTER: none additional.
-VISIBLE CONSEQUENCE: a quiet parallel to Yohei's own arc, never stated as parallel in-fiction.
+VISIBLE CONSEQUENCE: a quiet parallel to Yohei's own arc, never stated as parallel in-fiction
+(Daisuke thread); `town_returns_to_normal` = true, always (Jin/signage thread).
 
-CAUSALITY_LEVEL: HIGH (when it fires) / MEDIUM otherwise. OPEN_THREAD_CREATED: none new. CALLBACK_
-FROM: Days 8, 12, 19, 23 (whichever roaming touchpoints actually happened). PLAYER_CAN_CHANGE:
-whether the gate was ever met, across the whole month. PLAYER_CANNOT_CHANGE: the friend's specific
-backstory (fixed, vague). FREE_TALK_CAN_AFFECT: the only path to this reveal, gate is evidence-based.
+CAUSALITY_LEVEL: HIGH (when the Daisuke gate fires) / MEDIUM otherwise, with one always-true WORLD
+fact underneath regardless of either. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: Days 8, 12, 19,
+23 (Daisuke, whichever roaming touchpoints actually happened); Day 24 (Jin/signage). PLAYER_CAN_
+CHANGE: whether the Daisuke gate was ever met, across the whole month. PLAYER_CANNOT_CHANGE: the
+friend's specific backstory (fixed, vague); whether the town keeps moving on regardless of the
+player. FREE_TALK_CAN_AFFECT: the only path to the Daisuke reveal, gate is evidence-based; nothing
+about the Jin beat, which is unconditional.
 
-### Day 28
+### Day 28 `[PHASE_24.4 ADDITION -- ALWAYS RENDERED: hina_next_test_planned]`
 MAIN SCENE: the café, Miyoko mentioning she spoke to her daughter again. The authored rule (see
 ledger, informed by OWNER-07) resolves `miyoko_daughter_outcome` deterministically from real
-accumulated evidence -- never hardcoded to one outcome, never a live model decision.
+accumulated evidence -- never hardcoded to one outcome, never a live model decision. **Separately,
+unconditionally**: Hina mentions, in passing, that she's already thinking about her next small test
+-- a specific, concrete detail (a rough date, or an item she wants to try next), not a vague
+sentiment. This is not a sentimental goodbye and not gated on relationship depth to occur at all;
+what IS gated is how much detail the player hears (`player_knows_next_test_details`, on real Hina
+evidence) versus just the bare fact that she's planning something next.
 WHY THIS MATTERS NOW: closes (or legitimately leaves open) the slowest-moving arc of the six, with
 three genuinely different possible outcomes now reachable (`stay`/`compromise`/`undecided`), fixing
-V2's actual bug of only ever producing "compromise."
-PLAYER INTERVENTION: listen, no correct side. IF gate conditions met (see ledger's exact rule):
-hears the specific, rule-determined outcome. WHEN RETURNS: Day 30.
+V2's actual bug of only ever producing "compromise." The Hina beat exists to make plain, before the
+player leaves, that the shop's story keeps going with or without them watching.
+PLAYER INTERVENTION: listen to Miyoko, no correct side. IF gate conditions met (see ledger's exact
+rule): hears the specific, rule-determined outcome. Separately, listen to Hina's plan, or not --
+either way `hina_next_test_planned` becomes true today; asking further only changes how much detail
+is heard. WHEN RETURNS: Day 30, on both threads.
 FREE TALK: open.
 OPTIONAL ROAMING AFTER: none additional.
 VISIBLE CONSEQUENCE: real, adult, not-necessarily-triumphant closure -- one of three genuinely
-different texts depending on which evidence combination actually exists.
+different texts depending on which evidence combination actually exists (Miyoko thread);
+`hina_next_test_planned` = true, always, with detail depth varying (Hina thread).
 
-CAUSALITY_LEVEL: HIGH (when resolved) / MEDIUM otherwise. OPEN_THREAD_CREATED: none new. CALLBACK_
-FROM: Days 11, 16. PLAYER_CAN_CHANGE: which of the three outcomes is reached (by which evidence
-combination exists). PLAYER_CANNOT_CHANGE: today's outcome once the evidence is fixed (the rule is
-deterministic, not swayed live). FREE_TALK_CAN_AFFECT: whether the player hears it today.
+CAUSALITY_LEVEL: HIGH (when Miyoko's thread resolves) / MEDIUM otherwise, with one always-true WORLD
+fact underneath (Hina's next plan) regardless of either. OPEN_THREAD_CREATED: "will Hina's next test
+land better than the first" (if detail was heard). CALLBACK_FROM: Days 11, 16 (Miyoko); the Days
+1-14 trial arc and Day 26 (Hina). PLAYER_CAN_CHANGE: which of Miyoko's three outcomes is reached (by
+which evidence combination exists); how much of Hina's plan is heard. PLAYER_CANNOT_CHANGE: today's
+Miyoko outcome once the evidence is fixed (deterministic, not swayed live); whether Hina has a plan
+at all. FREE_TALK_CAN_AFFECT: whether the player hears Miyoko's outcome today; how much Hina detail
+is heard.
 
-### Day 29 `[FIXED -- Fix C, fumiko_writes_back now has a real setter]`
-MAIN SCENE: two things, both explicitly disclosed exceptions to the usual causality rule (Section
-4's own carve-out, stated plainly, not hidden): (1) an entirely private, unwitnessed opportunity for
-a kindness with no guaranteed payoff (unchanged concept from V2, now most naturally offered to Jin
-if his arrangement was declined or never reached, or to whichever NPC has been least thanked this
-playthrough); (2) **the new, authored resolution of `fumiko_writes_back`**, per the deterministic
-rule in the ledger (`player_knows_fumiko_letter` AND `helped_fumiko_festival_prep` -> `true`;
-`player_knows_fumiko_letter` alone -> `undecided`; neither -> stays `unset`).
-WHY THIS MATTERS NOW: tests whether the player's values hold up with no audience; closes a
-previously-dead variable with a real, evidence-grounded outcome.
-PLAYER INTERVENTION: do the kind thing anyway, or don't (no visible state change either way, by
-design). The Fumiko write-back resolution requires no live player choice today -- it is read from
-Days 15/19's accumulated evidence.
+### Day 29 `[FIXED -- Fix C, fumiko_writes_back now has a real setter]` `[PHASE_24.4 ADDITION -- ALWAYS RENDERED: departure_prep_visible, placed BEFORE the private beat]`
+MAIN SCENE: three things, in this order. (1) **Unconditionally, first**: practical signs the month is
+ending -- the player's own bag half-packed on the floor, the room already looking temporary again the
+way it did on Day 1; someone (Yohei, in passing) casually asks when the key needs to go back; the
+player notices tomorrow is the last full day on the schedule; ordinary town gossip already
+references Hina's next test date from Day 28, showing the town's plans continuing past the player's
+departure. None of this requires any player action to occur -- it is simply what today looks like.
+(2) Then, still today, the deterministic resolution of `fumiko_writes_back`, per the rule in the
+ledger (`player_knows_fumiko_letter` AND `helped_fumiko_festival_prep` -> `true`;
+`player_knows_fumiko_letter` alone -> `undecided`; neither -> stays `unset`). (3) Finally, the
+entirely private, unwitnessed opportunity for a kindness with no guaranteed payoff (unchanged concept
+from V2, most naturally offered to Jin if his arrangement was declined or never reached, or to
+whichever NPC has been least thanked this playthrough) -- both explicitly disclosed exceptions to
+the usual causality rule (Section 4's own carve-out, stated plainly, not hidden) apply only to this
+third beat, never to the first.
+WHY THIS MATTERS NOW: removes the structure where an entire day could pass with nothing observable
+at all; tests whether the player's values hold up with no audience once something real (the
+departure, the letter) has already been established as happening today; closes a previously-dead
+variable with a real, evidence-grounded outcome.
+PLAYER INTERVENTION: on the departure-prep beat, the player may pack, ask about the key, or ignore it
+-- the facts render regardless. Do the kind thing anyway, or don't (no visible state change either
+way, by design, for the kindness specifically). The Fumiko write-back resolution requires no live
+player choice today -- it is read from Days 15/19's accumulated evidence.
 FREE TALK: optional, low stakes.
 OPTIONAL ROAMING AFTER: none additional.
-VISIBLE CONSEQUENCE: private, understated for the kindness; a real, specific outcome for Fumiko's
-letter thread, no longer an orphaned variable.
+VISIBLE CONSEQUENCE: `departure_prep_visible` = true, always, concrete and practical, not
+melodramatic; a real, specific outcome for Fumiko's letter thread, no longer an orphaned variable;
+private, understated for the kindness.
 
-CAUSALITY_LEVEL: QUIET (kindness, by explicit design) with one MEDIUM-weight resolved read (the
-letter). OPEN_THREAD_CREATED: none. CALLBACK_FROM: Days 15, 19 (letter); none (kindness). PLAYER_
-CAN_CHANGE: nothing observable for the kindness; nothing live today for the letter (already
-determined by prior days). PLAYER_CANNOT_CHANGE: symmetric, by design, for the kindness.
-FREE_TALK_CAN_AFFECT: nothing durable.
+CAUSALITY_LEVEL: one always-true WORLD beat (departure prep) plus one MEDIUM-weight resolved read
+(the letter) plus QUIET (kindness, by explicit design). OPEN_THREAD_CREATED: "what does tomorrow, the
+last day, actually look like." CALLBACK_FROM: Day 1 (departure prep, by contrast); Days 15, 19
+(letter); none (kindness). PLAYER_CAN_CHANGE: nothing observable for the kindness; nothing live
+today for the letter (already determined by prior days); how the departure-prep beat is witnessed,
+not whether it happens. PLAYER_CANNOT_CHANGE: symmetric, by design, for the kindness; that the month
+is visibly ending regardless of player choice. FREE_TALK_CAN_AFFECT: nothing durable.
 
 ### Day 30 — retrospective, not "the end"
-MAIN SCENE: the room upstairs, considerably less temporary-looking than Day 1. Nothing new happens --
-explicitly not a crisis day.
-WHY THIS MATTERS NOW: the only day whose entire content is a read-back of everything else.
-PLAYER INTERVENTION: an optional, skippable reflection (reusing `PHASE_12_8`'s existing register).
-IF ACTS: stored verbatim, never scored. IF NOT: equally valid.
+MAIN SCENE: the room upstairs, considerably less temporary-looking than Day 1 was, though it looked
+temporary again as of yesterday's packing. Nothing new happens -- explicitly not a crisis day.
+WHY THIS MATTERS NOW: the only day whose entire content is a read-back of everything else -- and, per
+PHASE_24.4, the one day required to state explicitly what the endgame arc has been building toward:
+the player mattered, but the player was never the center of the universe.
+PLAYER INTERVENTION: an optional, skippable reflection (reusing `PHASE_12_8`'s existing register),
+now explicitly structured around three questions rather than one undifferentiated summary: WHAT I
+CHANGED (evidence-gated outcomes the player's own actions actually produced -- e.g. whether Hina's
+true reason or Yohei's call or Daisuke's card or Miyoko's outcome or Fumiko's letter were ever
+learned, and any promises kept); WHAT CHANGED WITHOUT ME (the Layer-A world facts that were always
+going to be true regardless -- the shop opened or didn't per its own trial arc, the festival
+happened, Hina made her post-festival decision, the town cleaned up and moved on, Jin took the
+signage down); WHAT WILL CONTINUE AFTER I LEAVE (Hina's next test date, whatever plans the six NPCs
+each have for after Day 30, read from Day 28's future-facing beat and the ledger's per-NPC state,
+never invented fresh). IF ACTS: stored verbatim, never scored. IF NOT: equally valid; the three-part
+contrast still renders as narration even if the player writes nothing.
 FREE TALK: the reflection itself, freeform.
 OPTIONAL ROAMING AFTER: none -- nothing left to roam to that changes anything.
 VISIBLE CONSEQUENCE: a genuinely different summary per playthrough, assembled from
-`hina_shop_readiness`, `player_knows_hina_true_reason`, `player_knows_yohei_son_call`,
-`daisuke_renovation_decided` + `player_witnessed_daisuke_decision`, `daisuke_card_known`,
-`jin_arrangement`, `miyoko_daughter_outcome`, `bench_fixed`, `fumiko_writes_back` -- read, never
-re-decided, with WORLD_PROGRESS and PLAYER_KNOWLEDGE now correctly reported as separate facts (e.g.
-"the shop opened" is reported independently of "and you knew why she'd been scared it wouldn't").
+`hina_shop_readiness`, `player_knows_hina_true_reason`, `hina_post_festival_decision`,
+`hina_next_test_planned`, `player_knows_yohei_son_call`, `daisuke_renovation_decided` +
+`player_witnessed_daisuke_decision`, `daisuke_card_known`, `jin_arrangement`, `miyoko_daughter_
+outcome`, `bench_fixed`, `fumiko_writes_back` -- read, never re-decided, with WORLD_PROGRESS and
+PLAYER_KNOWLEDGE now correctly reported as separate facts (e.g. "the shop opened" is reported
+independently of "and you knew why she'd been scared it wouldn't"), and now explicitly sorted into
+the WHAT I CHANGED / WHAT CHANGED WITHOUT ME / WHAT WILL CONTINUE columns above.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: none. CALLBACK_FROM: every gated thread. PLAYER_CAN_
-CHANGE: whether a reflection is written. PLAYER_CANNOT_CHANGE: the substance of what actually
-happened. FREE_TALK_CAN_AFFECT: only the optional reflection text.
+CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: none (the month is over; the point is that the town's
+own threads continue past this line, not that a new one opens for the player). CALLBACK_FROM: every
+gated thread, plus Days 25-29's Layer-A world facts. PLAYER_CAN_CHANGE: whether a reflection is
+written. PLAYER_CANNOT_CHANGE: the substance of what actually happened, or that the world's own
+threads (Hina's next test, the other five NPCs' own plans) continue regardless of the player's
+presence. FREE_TALK_CAN_AFFECT: only the optional reflection text.

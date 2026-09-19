@@ -481,24 +481,65 @@ VAR reassured_hina_about_signage = false
     }
     -> day_end
 
+/* [PHASE_24.4 -- always-rendered endgame world-arc state, set unconditionally, never gated on a
+   player choice. Fixes RUN_C's Days 25-29 hard-gate failure by giving every day, engaged or not,
+   an independent Layer-A world beat underneath the existing gated Layer-B private payoffs.] */
+VAR festival_aftermath_visible = false
+VAR hina_post_festival_decision = "unset"
+VAR player_knows_why_hina_decided = false
+VAR hina_shares_deeper_reason = false
+VAR town_returns_to_normal = false
+VAR hina_next_test_planned = false
+VAR player_knows_next_test_details = false
+VAR departure_prep_visible = false
+
 = day25
     Full scene: spine Day 25.
+    ~ festival_aftermath_visible = true
+    {yohei_festival_stock == "minimal": A lot of stock is still stacked outside Yohei's -- most of it
+    never sold.|yohei_festival_stock == "modest": A modest amount of leftover stock sits outside
+    Yohei's.|yohei_festival_stock == "full": Almost nothing is left outside Yohei's -- it sold well.}
+    Half the decorations are already down; the rest wait because nobody's gotten to them yet. Full
+    trash bags sit at the corners. {bench_fixed: The bench is back in ordinary, tired-looking use,
+    same as always.|not bench_fixed: The bench still wobbles, same as always -- nobody's touched it.}
+    Hina is at her counter, going through exactly what sold and what didn't.
+    What will actually remain, now that the festival itself is gone?
     * [Check in on someone] -> free_talk of your choosing -> day_end
-    * [Rest] -> day_end
+    * [Help with the cleanup] -> a hand with the actual work -> day_end
+    * [Rest] -> The cleanup happens anyway, described from a distance. -> day_end
     -> day_end
 
 = day26
     Full scene: spine Day 26.
     { yohei_son_call_happened == false: ~ yohei_son_call_happened = true }
+    { hina_adjustment_timing == "early_calm":
+        ~ hina_post_festival_decision = "set_next_test_date"
+    - else:
+        ~ hina_post_festival_decision = "kept_reduced_range"
+    }
+    {hina_post_festival_decision == "set_next_test_date": Hina's sign already has a new date pinned
+    to it.|hina_post_festival_decision == "kept_reduced_range": Hina's shop still shows the same
+    narrowed range she settled on during the trial -- consolidating, not expanding.}
     { yohei_evidence has "noticed_yohei_son_thread" and LIST_COUNT(yohei_evidence MINUS
     ("noticed_yohei_son_thread")) >= 1:
-        * [Ask gently] -> free_talk(yohei) -> ~ player_knows_yohei_son_call = true -> day_end
+        * [Ask Yohei gently] -> free_talk(yohei) -> ~ player_knows_yohei_son_call = true -> gather
     - else:
         An ordinary day at the shop -- the call happened, but isn't shared this scene.
-        -> day_end
+        -> gather
     }
+    - (gather)
+    * [Ask Hina why] -> free_talk(hina) -> ~ player_knows_why_hina_decided = true ->
+      { hina_evidence has enough real evidence (per ledger's Day 22 discipline):
+          ~ hina_shares_deeper_reason = true
+      }
+      -> day_end
+    * [Don't ask] -> day_end
+    -> day_end
 
 = day27
+    ~ town_returns_to_normal = true
+    Out past the window, Jin is taking down the last of the festival's temporary signage and
+    wheeling the borrowed hand-cart back to ordinary delivery duty. The street is a street again.
     { daisuke_evidence has "returned_to_daisuke_after_deflection" and (a count of that item across
     the month) >= 2:
         * [Listen] -> free_talk(daisuke) -> ~ daisuke_card_known = true -> day_end
@@ -516,10 +557,23 @@ VAR reassured_hina_about_signage = false
     - else:
         ~ miyoko_daughter_outcome = "undecided"
     }
-    * [Listen] -> free_talk(miyoko) -> day_end
+    ~ hina_next_test_planned = true
+    Hina mentions, in passing, that she's already thinking about what comes next.
+    * [Listen] -> free_talk(miyoko) -> gather
+    - (gather)
+    * [Ask Hina about her plan] -> free_talk(hina) ->
+      { hina_evidence has enough real evidence:
+          ~ player_knows_next_test_details = true
+      }
+      -> day_end
+    * [Don't ask] -> day_end
     -> day_end
 
 = day29
+    ~ departure_prep_visible = true
+    A bag sits half-packed on the floor -- the room looks temporary again, the way it did on Day 1.
+    Yohei asks, in passing, when the key needs to go back. Tomorrow is the last full day. Café talk
+    already mentions Hina's next test date.
     { player_knows_fumiko_letter and (fumiko_evidence has "helped_fumiko_festival_prep"):
         ~ fumiko_writes_back = "true"
     - else if player_knows_fumiko_letter:
@@ -531,6 +585,12 @@ VAR reassured_hina_about_signage = false
 
 = day30
     Full scene: spine Day 30 -- reads every variable above, decides nothing new.
+    WHAT I CHANGED: {player_knows_hina_true_reason}{player_knows_yohei_son_call}{daisuke_card_known}
+    {miyoko_daughter_outcome}{fumiko_writes_back} -- read from evidence, never re-decided.
+    WHAT CHANGED WITHOUT ME: the shop's own trial arc, the festival, {hina_post_festival_decision},
+    {town_returns_to_normal}, the cleanup -- true regardless of engagement.
+    WHAT WILL CONTINUE AFTER I LEAVE: {hina_next_test_planned}, and whatever the other five are each
+    already planning next.
     * [Write a short reflection] -> stored verbatim, never scored -> END.
     * [Skip it] -> END.
 
