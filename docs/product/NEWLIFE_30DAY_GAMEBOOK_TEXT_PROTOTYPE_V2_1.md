@@ -37,6 +37,24 @@ VAR promise_yohei_help_soon = false
 VAR festival_flyer_seen = false
 VAR festival_prep_progress = 0
 VAR yohei_festival_stock = "unset"
+
+/* [PHASE_24.3 -- always-rendered Days 1-14 B-plot state, set unconditionally] */
+VAR hina_trial_planned = false
+VAR player_knows_trial_date = false
+VAR hina_trial_prep_visible_change = false
+VAR yohei_raised_practical_concern = false
+VAR hina_believes_yohei_dislikes_her = false
+VAR jin_fixed_trial_setup_issue = false
+VAR yohei_daisuke_discussed_trial = false
+VAR trial_day_happened = false
+VAR trial_result_menu_confusion = false
+VAR hina_initial_defensive_reaction = false
+VAR hina_view_shifting = false
+VAR hina_sign_menu_adjusted = false
+VAR hina_adjustment_timing = "unset"
+VAR miyoko_commented_on_trial_item = false
+VAR hina_concrete_decision = "unset"
+VAR trial_cost_pressure_visible = false
 ```
 
 ## Shared reusable stitches
@@ -102,14 +120,30 @@ VAR yohei_festival_stock = "unset"
 ```
 = day01
     Full scene: spine Day 1 (single flowing first-morning scene, Hina then Yohei).
-    * [Help Hina carry the box] -> evidence(hina, "helped_hina_move_box") -> day_end
-    * [Just greet Yohei] -> day_end
+    * [Help Hina carry the box] -> evidence(hina, "helped_hina_move_box") -> day01_trial
+    * [Just greet Yohei] -> day01_trial
+    -> day_end
+
+= day01_trial
+    /* Always renders. */
+    ~ hina_trial_planned = true
+    Hina mentions, unprompted, a small trial sale/test-bake she's planning before anything bigger.
+    * [Ask when] -> ~ player_knows_trial_date = true -> day_end
+    * [Just note it] -> day_end
     -> day_end
 
 = day02
     Full scene: spine Day 2 (auto-shown overnight change, no destination choice).
-    * [Comment on the change] -> day_end
-    * [Say nothing] -> day_end
+    * [Comment on the change] -> day02_trial
+    * [Say nothing] -> day02_trial
+    -> day_end
+
+= day02_trial
+    /* Always renders, regardless of the roam below. */
+    ~ hina_trial_prep_visible_change = true
+    ~ yohei_raised_practical_concern = true
+    A visible piece of trial prep has appeared overnight; Yohei, unprompted, says the plan sounds
+    complicated for a first try. Hina doesn't fully agree.
     - -> roam(("hina")) -> day_end
 
 = day03
@@ -119,9 +153,11 @@ VAR yohei_festival_stock = "unset"
     - -> roam(("yohei")) -> day_end
 
 /* [FIXED -- Fix E] Yohei is not present in this scene; only Hina's evidence set is touched
-   directly here. */
+   directly here. [PHASE_24.3] the FACT/BELIEF separation is now explicit. */
 = day04
-    Full scene: spine Day 4 (Hina alone).
+    ~ hina_believes_yohei_dislikes_her = true
+    Full scene: spine Day 4 (Hina alone) -- her BELIEF, distinct from Day 2's FACT
+    (`yohei_raised_practical_concern`).
     * [Reassure her] -> evidence(hina, "reassured_hina_about_yohei") -> day04_roam
     * [Say nothing] -> day04_roam
     -> day_end
@@ -130,7 +166,8 @@ VAR yohei_festival_stock = "unset"
     You could also go raise this with Yohei directly, if you want -- he isn't part of the
     conversation you just had unless you choose to make him part of it.
     * [Go tell Yohei directly] -> evidence(hina, "defended_hina_to_yohei") ->
-      evidence(yohei, "defended_hina_to_yohei") -> day_end
+      evidence(yohei, "defended_hina_to_yohei") -> ~ player_knows_yohei_concern_is_practical = true
+      -> day_end
     * [Leave it for now] -> day_end
     -> day_end
 
@@ -138,55 +175,116 @@ VAR yohei_festival_stock = "unset"
     Full scene: spine Day 5.
     { (jin_evidence has "thanked_jin_for_unseen_work") or (jin_evidence has
     "noticed_jin_fixed_something"):
-        * [Accept] -> ~ jin_arrangement = "accepted" -> day_end
-        * [Decline] -> ~ jin_arrangement = "declined" -> day_end
+        * [Accept] -> ~ jin_arrangement = "accepted" -> day05_trial
+        * [Decline] -> ~ jin_arrangement = "declined" -> day05_trial
     - else:
         (An ordinary day -- the late window at Day 21 remains open.)
-        -> roam(("miyoko")) -> day_end
+        -> day05_trial
     }
 
+= day05_trial
+    /* Always renders. */
+    ~ jin_fixed_trial_setup_issue = true
+    Jin levels an uneven table / fixes a sticking drawer at Hina's counter today, regardless.
+    * [Thank him] -> evidence(jin, "thanked_jin_for_trial_fix") -> day_end
+    * [Don't notice] -> day_end
+    - -> roam(("miyoko")) -> day_end
+
 = day06
-    Full scene: spine Day 6 (independent NPC-NPC moment, happens regardless).
+    /* [PHASE_24.3] Always carries real information now, not just ambient flavor. */
+    ~ yohei_daisuke_discussed_trial = true
+    Full scene: spine Day 6 (Yohei and Daisuke discuss Hina's trial -- happens regardless).
     * [Watch quietly] -> day_end
     * [Move on] -> day_end
     - -> roam(("daisuke")) -> day_end
 
 = day07
-    Full scene: spine Day 7.
-    * [Comment warmly] -> evidence(daisuke, "witnessed_daisuke_comedy_day") -> day_end
+    /* [PHASE_24.3] The trial itself -- always happens, always produces real data. */
+    ~ trial_day_happened = true
+    ~ trial_result_menu_confusion = true
+    Full scene: spine Day 7 -- the trial happens today; real customer-behavior data results,
+    regardless of the player.
+    * [Help during the trial] -> evidence(hina, "helped_during_trial") ->
+      ~ player_witnessed_trial_results = true -> day07_daisuke
+    * [Observe/comment] -> ~ player_witnessed_trial_results = true -> day07_daisuke
+    * [Stay away entirely] -> day07_daisuke
+    -> day_end
+
+= day07_daisuke
+    /* Preserved satellite scene, same day. */
+    * [Comment warmly on the comedy] -> evidence(daisuke, "witnessed_daisuke_comedy_day") -> day_end
     * [Just watch] -> day_end
-    - -> roam(("fumiko")) -> day_end
+    -> day_end
 
 = day08
-    Full scene: spine Day 8 -- the necessary first deflection.
+    /* [PHASE_24.3] Hina's trial reaction is now the main scene; Daisuke's deflection preserved
+       as a same-day secondary scene. */
+    ~ hina_initial_defensive_reaction = true
+    Full scene: spine Day 8 -- Hina explains why her original plan made sense, with real reasons.
+    * [Challenge gently] -> evidence(hina, "challenged_hina_after_trial") -> day08_daisuke
+    * [Support her] -> evidence(hina, "supported_hina_after_trial") -> day08_daisuke
+    * [Stay silent] -> ~ hina_view_shifting = true -> day08_daisuke
+    -> day_end
+
+= day08_daisuke
+    /* Preserved satellite scene, same day. */
     * [Ask something personal anyway] -> evidence(daisuke, "attempted_daisuke_personal") -> day_end
     * [Let the silence stand] -> day_end
     - -> roam(("yohei")) -> day_end
 
 = day09
-    Full scene: spine Day 9.
+    /* [PHASE_24.3] Thematic contrast to Day 8, never stated outright. */
+    Full scene: spine Day 9 (Yohei's spoiled stock, a real loss treated plainly).
     * [Help sort the stock] -> evidence(yohei, "helped_yohei_sort_stock") -> day_end
     * [Just keep him company] -> day_end
     - -> roam(("hina")) -> day_end
 
 = day10
     Full scene: spine Day 10.
-    * [Suggest Jin for the bench] -> ~ suggested_jin_for_bench = true -> day_end
-    * [Leave it] -> day_end
+    * [Suggest Jin for the bench] -> ~ suggested_jin_for_bench = true -> day10_trial
+    * [Leave it] -> day10_trial
+    -> day_end
+
+= day10_trial
+    /* Always renders. */
+    ~ hina_sign_menu_adjusted = true
+    { (hina_evidence has "helped_during_trial") or (hina_evidence has "supported_hina_after_trial")
+    or (hina_evidence has "challenged_hina_after_trial") or (jin_evidence has
+    "thanked_jin_for_trial_fix"):
+        ~ hina_adjustment_timing = "early_calm"
+    - else:
+        ~ hina_adjustment_timing = "late_friction"
+    }
+    Hina's sign/menu is visibly different today -- {hina_adjustment_timing == "early_calm": she
+    seems settled about it.|otherwise: it clearly took her a little longer to get here.}
     - -> roam(("jin")) -> day_end
 
 = day11
     Full scene: spine Day 11.
-    * [React honestly] -> evidence(miyoko, "reacted_to_miyoko_new_beans") -> day_end
-    * [Deflect the question] -> day_end
+    * [React honestly] -> evidence(miyoko, "reacted_to_miyoko_new_beans") -> day11_trial
+    * [Deflect the question] -> day11_trial
+    -> day_end
+
+= day11_trial
+    /* Always renders. */
+    ~ miyoko_commented_on_trial_item = true
+    Miyoko mentions trying one of Hina's trial items, comparing it casually to her own menu.
     - -> roam(("fumiko")) -> day_end
 
-/* [FIXED -- Fix A] Day 12 is no longer Daisuke's decision -- it's an authored touchpoint. */
+/* [FIXED -- Fix A] Day 12 is no longer Daisuke's decision -- it's an authored touchpoint.
+   [PHASE_24.3] Hina's own concrete decision is now folded into the same day. */
 = day12
     Full scene: spine Day 12 (an authored Daisuke touchpoint, not his decision).
     * [Ask again] -> evidence(daisuke, "returned_to_daisuke_after_deflection") ->
-      daisuke_early_check -> day_end
-    * [Let it be] -> day_end
+      daisuke_early_check -> day12_trial
+    * [Let it be] -> day12_trial
+    -> day_end
+
+= day12_trial
+    /* Always renders, read from trial_result_menu_confusion, not decided live. */
+    ~ hina_concrete_decision = "reduced_range"
+    Separately, Hina makes one concrete decision today, read from the trial's own results --
+    trimming her range, keeping the item that unexpectedly sold out.
     - -> roam(("fumiko")) -> day_end
 
 = daisuke_early_check
@@ -199,12 +297,19 @@ VAR yohei_festival_stock = "unset"
 
 = day13
     Full scene: spine Day 13.
-    * [Ask gently] -> free_talk(yohei) -> evidence(yohei, "noticed_yohei_son_thread") -> day_end
-    * [Let it be] -> day_end
+    * [Ask gently] -> free_talk(yohei) -> evidence(yohei, "noticed_yohei_son_thread") -> day13_trial
+    * [Let it be] -> day13_trial
+    -> day_end
+
+= day13_trial
+    /* Always renders. */
+    ~ trial_cost_pressure_visible = true
+    The trial's first real cost becomes visible in the background -- a plain fact, no confession
+    forced.
     - -> roam(("hina")) -> day_end
 
 = day14
-    Full scene: spine Day 14.
+    Full scene: spine Day 14 -- now with earned context from Days 7/10/12/13.
     * [Ask "juggling how?"] -> free_talk(hina) -> evidence(hina, "noticed_hina_money_pressure") ->
       day_end
     * [Let it pass] -> day_end

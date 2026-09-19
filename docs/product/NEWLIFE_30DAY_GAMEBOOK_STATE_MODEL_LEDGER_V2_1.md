@@ -34,6 +34,60 @@ Every major character now tracks these as genuinely separate variables, never co
 | `hina_relationship_evidence` | RELATIONSHIP_EVIDENCE | Unchanged set from V2 (`helped_hina_move_box`, `asked_hina_about_her_goal`, `noticed_hina_money_pressure`, `reassured_hina_about_yohei` [renamed, see Fix E below], `reassured_hina_after_criticism`). |
 | PLAYER_INFLUENCE rule | -- | Specific concrete help (`reassured_hina_after_criticism`, or a NEW item `helped_hina_prep_shelves`) can advance `hina_shop_readiness` ONE tier early, on top of its automatic schedule -- it can never single-handedly cause the shop to reach `open` on its own, and `player_knows_hina_true_reason` has NO effect on `hina_shop_readiness` whatsoever (**the specific conflation the evaluator flagged, now explicitly severed**). |
 
+## PHASE_24.3 addition — Hina's pre-opening trial arc (Days 1-14 corridor repair)
+
+Added to fix the Days 1-14 low-`TOMORROW_PULL` streak found in PHASE_24.2's full-month revalidation
+(`docs/research/evaluation/phase-24/RUN_B_FULL_V2_2_RAW.md`, `..._RUN_C_FULL_V2_2_RAW.md`). Runs
+as a B-plot woven THROUGH the ten already-preserved Days 1-14 beats (Day 3 flyer, Day 4 misread,
+Day 7 comedy, Day 8 deflection, Day 9 stock, Day 10 bench, Day 11 beans, Day 12 renovation, Day 13
+phone, Day 14 money-pressure) -- none replaced. Human core: a creator (Hina) plans a small test
+before committing further; reality (actual customer behavior at the trial) produces data her
+original plan didn't anticipate; she's initially a little defensive about it, with plausible reasons,
+not a caricature; another person's simple factual question, or the data itself, is what actually
+shifts her view -- not an argument being "won." Informed by OWNER-01/02/04/05/07 (creator
+defensiveness; rushing past discovery; the visible current reality beats assumption; technical/plan
+success isn't product success; measure reality, don't assume the benefit). No real business or
+identifiable event reproduced.
+
+Every row below is explicitly tagged with its layer (Section 4's required five: WORLD_PROGRESS /
+NPC_BELIEF / PLAYER_KNOWLEDGE / RELATIONSHIP_EVIDENCE / PLAYER_INFLUENCE), never conflated.
+
+| Variable | Layer | Behavior |
+|---|---|---|
+| `hina_trial_planned` | WORLD_PROGRESS | **Always true from Day 1** -- Hina announces/is visibly prepping a small trial-sale/test-bake day, dated for around Day 7. Not gated on any player choice. |
+| `hina_trial_prep_visible_change` | WORLD_PROGRESS | **Always true from Day 2** -- a sign, shelf arrangement, trial menu, or piece of equipment visibly appears/changes overnight, checkable independent of the player. |
+| `yohei_raised_practical_concern` | WORLD_PROGRESS (a FACT) | **Always true from Day 2** -- Yohei (or another NPC) makes one practical comment that the plan seems complicated. This is a real, stated concern about the PLAN, not about Hina personally. |
+| `hina_believes_yohei_dislikes_her` | NPC_BELIEF | Hina's own subjective misreading of `yohei_raised_practical_concern` as personal dislike -- explicitly modeled as a BELIEF, separate from the FACT above, so the state model itself cannot conflate "he has a practical concern" with "he dislikes her." |
+| `jin_fixed_trial_setup_issue` | WORLD_PROGRESS | **Always true from Day 5** -- Jin does one piece of concrete setup/repair work connected to Hina's trial, regardless of any accumulated relationship evidence with him. |
+| `yohei_daisuke_discussed_trial` | WORLD_PROGRESS | **Always true from Day 6** -- an NPC-NPC scene (independent of the player, per Section 13's established graph) where the upcoming trial is discussed, giving even a fully passive player secondhand information. |
+| `trial_day_happened` | WORLD_PROGRESS | **Always true from Day 7** -- the trial itself occurs, unconditionally. |
+| `trial_result_menu_confusion` | WORLD_PROGRESS | **Always true from Day 7**, a specific, concrete, observable customer-behavior fact (e.g. too many choices slowed ordering; one item sold out, another barely moved) -- never a disaster, just real data. |
+| `hina_initial_defensive_reaction` | NPC_BELIEF | **Always true from Day 8** -- she explains, with plausible reasons, why her original plan made sense. A real, in-character beat, not a caricature. |
+| `hina_view_shifting` | WORLD_PROGRESS | **Always true from Day 8**, regardless of player silence -- another NPC asks a simple factual question ("which one actually sold?"), and the data itself begins moving her view, independent of whether the player says anything. |
+| `hina_sign_menu_adjusted` | WORLD_PROGRESS | **Always true by Day 10** -- a visible change to her sign/menu/display order. PLAYER_INFLUENCE (below) affects only WHEN and HOW SMOOTHLY, never WHETHER. |
+| `miyoko_commented_on_trial_item` | WORLD_PROGRESS | **Always true from Day 11** -- an NPC-NPC crossover (Miyoko comparing/commenting on one of Hina's trial items), no player action required. |
+| `hina_concrete_decision` | WORLD_PROGRESS | **Always true by Day 12** -- one specific, independent decision (reduce range / simplify sign / reorder display / delay an item / keep an unexpectedly popular one), read from `trial_result_menu_confusion`, not decided live. |
+| `trial_cost_pressure_visible` | WORLD_PROGRESS | **Always true from Day 13** -- the first real cost/invoice/cash-pressure consequence of the trial becomes visible in the background. No confession forced; a fact, not a scene demanding the player's presence. |
+| `player_knows_trial_date` | PLAYER_KNOWLEDGE | True if the player engages Day 1's announcement. |
+| `player_knows_yohei_concern_is_practical` | PLAYER_KNOWLEDGE | True only if the player is told/shown this distinctly from `hina_believes_yohei_dislikes_her` -- the state model enforces these can never be merged into one flag. |
+| `player_witnessed_trial_results` | PLAYER_KNOWLEDGE | True if present on Day 7. |
+| `helped_hina_trial_prep` | RELATIONSHIP_EVIDENCE | Structural, Days 1-2. |
+| `noticed_jin_trial_fix` / `thanked_jin_for_trial_fix` | RELATIONSHIP_EVIDENCE | Structural, Day 5. |
+| `helped_during_trial` | RELATIONSHIP_EVIDENCE | Structural, Day 7. |
+| `supported_hina_after_trial` / `challenged_hina_after_trial` | RELATIONSHIP_EVIDENCE | Structural/free-talk, Day 8 -- **both are valid, evidence-creating responses**; challenging her respectfully is not penalized relative to supporting her. |
+| `helped_hina_adjust_sign` | RELATIONSHIP_EVIDENCE | Structural, Day 10. |
+| `hina_adjustment_timing` | PLAYER_INFLUENCE (derived) | `"early_calm"` if any Day 5-9 evidence exists by Day 10; `"late_friction"` otherwise -- **`hina_sign_menu_adjusted` itself is unaffected**, only its manner and date within the Day 8-10 window. |
+| `hina_accepted_lesson_speed` | PLAYER_INFLUENCE (derived) | Colors how quickly Day 8's dialogue reads as accepting vs. still defending -- never whether she eventually adjusts (that is fixed, per `hina_concrete_decision`). |
+
+**The explicit no-intervention guarantee for Days 1-14** (same discipline as PHASE_24.2's Days
+16-19 fix): every one of the WORLD_PROGRESS rows above renders regardless of player choice. A
+fully passive player still receives, in order: a dated future event to wonder about (Day 1), a
+visible overnight change plus a real disagreement about the plan (Day 2), a real customer-behavior
+result (Day 7), a real reaction plus a nudge from another character (Day 8), a visible adjustment
+(Day 10), an NPC-NPC crossover (Day 11), a concrete decision (Day 12), and a visible cost pressure
+(Day 13) -- eight separate, unavoidable beats across the fourteen days, on top of the ten already-
+preserved beats this arc weaves through.
+
 ## Fix E (Section 4E) — Day 4's evidence item was semantically wrong
 
 V2's `defended_hina_to_yohei` was created from a Hina-only conversation and incorrectly credited

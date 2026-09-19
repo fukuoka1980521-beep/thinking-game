@@ -35,9 +35,20 @@ FREE TALK: open at either point in the scene.
 OPTIONAL ROAMING AFTER: none offered Day 1 -- the day is deliberately just this one scene.
 VISIBLE CONSEQUENCE: Hina's later dialogue differs slightly if helped.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: Hina's shop-progress thread. CALLBACK_FROM: none.
-PLAYER_CAN_CHANGE: whether `helped_hina_move_box` exists. PLAYER_CANNOT_CHANGE: `hina_shop_
-readiness`'s starting tier (fixed at `not_started`). FREE_TALK_CAN_AFFECT: tone only.
+`[PHASE_24.3 ADDITION -- ALWAYS RENDERED]`: woven into the same scene, Hina mentions -- unprompted,
+to anyone nearby -- that she's planning a small trial sale, a test-bake day, before she commits to
+anything bigger toward the festival. `hina_trial_planned = true`, unconditionally. This gives the
+player one concrete, dated, forward-looking question by the end of Day 1 (Section 6's explicit
+requirement), regardless of whether they helped with the box. PLAYER INTERVENTION (optional, does
+not compete with the box-helping choice): ask when, or just note it. IF ACTS: `player_knows_trial_
+date = true`. IF NOT: the date isn't confirmed to the player yet, but the trial is happening either
+way.
+
+CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: Hina's shop-progress thread; her trial-sale date.
+CALLBACK_FROM: none. PLAYER_CAN_CHANGE: whether `helped_hina_move_box` and `player_knows_trial_date`
+exist. PLAYER_CANNOT_CHANGE: `hina_shop_readiness`'s starting tier (fixed at `not_started`); that
+the trial itself is planned (always true). FREE_TALK_CAN_AFFECT: tone only. OPEN_QUESTION_AT_DAY_
+END: "what will the trial actually look like?"
 
 ### Day 2
 MAIN SCENE: whichever of the two Day 1 didn't dwell on (Yohei's corner, specifically) shows a small,
@@ -48,13 +59,20 @@ PLAYER INTERVENTION: notice and comment, or not. IF ACTS: a small, specific ackn
 IF NOT: the change stands, unremarked. WHEN RETURNS: colors whether Yohei's dialogue register later
 treats the player as observant (flavor only, no hard gate).
 FREE TALK: open.
-OPTIONAL ROAMING AFTER: a brief, low-effort stop at Hina's is available (no gated evidence, ambient
-only -- ordinary continuity, not a new event).
-VISIBLE CONSEQUENCE: the overnight change itself is checkable, not just narrated.
+OPTIONAL ROAMING AFTER: a brief, low-effort stop at Hina's is available -- **`[PHASE_24.3
+ADDITION -- ALWAYS RENDERED]`**: visiting or not, a visible piece of Hina's trial prep has appeared
+overnight (a hand-lettered sign, a trial menu, a shifted shelf -- `hina_trial_prep_visible_change =
+true`), and Yohei, unprompted, makes one practical comment that the plan sounds complicated for a
+first try. Hina doesn't fully agree. `yohei_raised_practical_concern = true` -- a stated FACT about
+the plan, not yet anything about how Hina personally reads it (that separation is Day 4's job). Both
+facts render unconditionally, independent of the roaming choice.
+VISIBLE CONSEQUENCE: the overnight change itself is checkable, not just narrated; a real, aired
+disagreement about the plan exists whether or not the player witnessed it directly.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: "the town moves without me" (felt, not mechanical).
-CALLBACK_FROM: Day 1. PLAYER_CAN_CHANGE: nothing mechanical yet. PLAYER_CANNOT_CHANGE: the overnight
-change itself. FREE_TALK_CAN_AFFECT: tone only.
+CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: "the town moves without me" (felt, not mechanical);
+the plan-complexity disagreement. CALLBACK_FROM: Day 1. PLAYER_CAN_CHANGE: nothing mechanical yet.
+PLAYER_CANNOT_CHANGE: the overnight change itself; that the disagreement exists. FREE_TALK_CAN_
+AFFECT: tone only. OPEN_QUESTION_AT_DAY_END: "is Yohei right that it's too complicated, or is Hina?"
 
 ### Day 3
 MAIN SCENE: at the Community Hall, a new flyer is already pinned; Fumiko is visibly busier than
@@ -67,14 +85,27 @@ FREE TALK: open.
 OPTIONAL ROAMING AFTER: a brief stop at Yohei's is available, ambient only.
 VISIBLE CONSEQUENCE: Fumiko's brisk "you'll see, in time" is a real, specific response.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: the festival. CALLBACK_FROM: none. PLAYER_CAN_CHANGE:
-whether `festival_flyer_seen` is set. PLAYER_CANNOT_CHANGE: what the festival actually is (revealed
-later). FREE_TALK_CAN_AFFECT: tone only.
+`[PHASE_24.3 ADDITION]`: lightly connected, not forced -- if the player mentions Hina's trial while
+here, Fumiko notes that a good trial run could give Hina something real to bring to the festival
+later, without promising it will. The town now visibly has TWO horizons: near (Hina's trial,
+~Day 7) and later (the festival, still unspecified). Festival participation is never guaranteed by
+this connection.
 
-### Day 4 `[FIXED -- Fix E]`
+CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: the festival; the near/later horizon pairing.
+CALLBACK_FROM: none. PLAYER_CAN_CHANGE: whether `festival_flyer_seen` is set. PLAYER_CANNOT_CHANGE:
+what the festival actually is (revealed later); whether Hina's trial and the festival end up
+connected in reality (not decided today). FREE_TALK_CAN_AFFECT: tone only. OPEN_QUESTION_AT_DAY_
+END: "what is this festival everyone keeps almost mentioning?"
+
+### Day 4 `[FIXED -- Fix E; PHASE_24.3 -- FACT/BELIEF now explicitly separated]`
 MAIN SCENE: Hina, visibly tense, admits -- to the player, alone -- she's not sure Yohei likes her.
-Auto-entered; Yohei is NOT present in this scene.
-WHY THIS MATTERS NOW: a real, specific worry, stated where only the player can hear it.
+Auto-entered; Yohei is NOT present in this scene. **This is explicitly `hina_believes_yohei_
+dislikes_her` (an NPC_BELIEF), not the same fact as Day 2's `yohei_raised_practical_concern` (a
+WORLD_PROGRESS FACT about the plan)** -- Hina is reading his practical comment as personal, and the
+state model itself keeps these two rows permanently distinct so no later scene can accidentally
+merge them.
+WHY THIS MATTERS NOW: a real, specific worry, stated where only the player can hear it -- and a
+real example of a belief forming from a fact, visibly, in front of the player.
 PLAYER INTERVENTION: reassure her that it's not personal (Yohei treats every newcomer this way), or
 say nothing. IF ACTS: creates `reassured_hina_about_yohei` -- **added ONLY to Hina's evidence, per
 Fix E** (Yohei was never present and is told nothing here, so he gains nothing from a conversation
@@ -91,9 +122,12 @@ VISIBLE CONSEQUENCE: a real, private moment of trust with Hina; Yohei's own thaw
 comes only from a scene he's actually in.
 
 CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: Yohei-Hina thaw (now correctly gated on a scene Yohei
-witnesses). CALLBACK_FROM: Day 1. PLAYER_CAN_CHANGE: whether `reassured_hina_about_yohei` exists;
-whether `defended_hina_to_yohei` is ever separately created. PLAYER_CANNOT_CHANGE: Yohei's baseline
-wariness pattern itself. FREE_TALK_CAN_AFFECT: can create either evidence item, in the correct scene.
+witnesses). CALLBACK_FROM: Days 1-2. PLAYER_CAN_CHANGE: whether `reassured_hina_about_yohei` exists;
+whether `defended_hina_to_yohei` is ever separately created; whether `player_knows_yohei_concern_
+is_practical` becomes true (only if told distinctly from the belief). PLAYER_CANNOT_CHANGE: Yohei's
+baseline wariness pattern itself; `yohei_raised_practical_concern`'s own existence (fixed since Day
+2). FREE_TALK_CAN_AFFECT: can create either evidence item, in the correct scene. OPEN_QUESTION_AT_
+DAY_END: "is Hina right about Yohei, or is she reading him wrong?"
 
 ### Day 5
 MAIN SCENE: Jin, mid-task, encountered because of where the last few days led (not a destination
@@ -108,20 +142,34 @@ FREE TALK: open.
 OPTIONAL ROAMING AFTER: a brief stop at the café is available, ambient only.
 VISIBLE CONSEQUENCE: a real "yeah, alright" or an easy shrug, immediately, if offered at all.
 
-CAUSALITY_LEVEL: HIGH (when offered) / MEDIUM otherwise (still deepens the relationship per Section
-5's own quiet-day allowance). OPEN_THREAD_CREATED: Jin's arrangement thread, if unresolved. CALLBACK_
-FROM: Days 1-4's ambient Jin evidence, if any. PLAYER_CAN_CHANGE: `jin_arrangement`'s value, if
-offered. PLAYER_CANNOT_CHANGE: whether the offer fires at all today. FREE_TALK_CAN_AFFECT: cannot
-manufacture the offer early.
+`[PHASE_24.3 ADDITION -- ALWAYS RENDERED]`: regardless of the arrangement-offer branch above, Jin
+does one concrete piece of setup work connected to Hina's trial today -- levels an uneven table, or
+fixes a sticking drawer in her counter -- `jin_fixed_trial_setup_issue = true`, unconditionally, no
+relationship evidence required for this to happen. PLAYER INTERVENTION (optional): notice and thank
+him, or not. IF ACTS: `thanked_jin_for_trial_fix` created. IF NOT: the work still happened; he
+never needed to be seen doing it.
 
-### Day 6
-MAIN SCENE: two old friends, already mid-conversation somewhere in town (Yohei and Daisuke, an old
-joke landing a little flat) -- the player arrives into something already happening.
-WHY THIS MATTERS NOW: proves the town is one social fabric, not six separate rooms.
+CAUSALITY_LEVEL: HIGH (when the arrangement offer fires) / MEDIUM otherwise. OPEN_THREAD_CREATED:
+Jin's arrangement thread, if unresolved. CALLBACK_FROM: Days 1-4's ambient Jin evidence, if any.
+PLAYER_CAN_CHANGE: `jin_arrangement`'s value, if offered; whether he's specifically thanked today.
+PLAYER_CANNOT_CHANGE: whether the offer fires at all today; whether Jin's trial-setup fix happens
+(always true). FREE_TALK_CAN_AFFECT: cannot manufacture the offer early. OPEN_QUESTION_AT_DAY_END:
+"is the trial setup actually coming together?"
+
+### Day 6 `[PHASE_24.3 -- now carries real information even for a fully passive player]`
+MAIN SCENE: Yohei and Daisuke, already mid-conversation somewhere in town -- but this time the old
+joke gives way to them actually discussing Hina's upcoming trial: `yohei_daisuke_discussed_trial =
+true`, unconditionally. Yohei repeats his practical-complexity concern (consistent with Day 2, never
+softened just because he's talking to a friend instead of the player); Daisuke, neutral, wonders
+aloud how it'll actually go. The player overhears real, specific opinions forming independently of
+anything they've done.
+WHY THIS MATTERS NOW: proves the town is one social fabric, not six separate rooms -- and gives a
+skeptical/passive player real information about the trial without requiring them to have asked
+anyone anything.
 PLAYER INTERVENTION: watch quietly, or step away -- genuinely cosmetic at the level of this single
 choice (an explicitly disclosed exception, same category as V2's Day 23/29, not hidden). IF ACTS OR
-NOT: the NPC-NPC moment happens identically either way; only whether the PLAYER personally saw it
-differs (flavor only).
+NOT: the conversation's content is identical either way; only whether the PLAYER personally
+overheard it differs (a PLAYER_KNOWLEDGE distinction, not a world-state one).
 FREE TALK: open, low stakes.
 OPTIONAL ROAMING AFTER: a brief stop at Daisuke's shop is available -- **this is the first of the
 explicit later Daisuke touchpoints required by Fix A** -- a light visit here can create
@@ -130,54 +178,91 @@ this day (chronologically it hasn't yet, so this roaming stop is ambient-only th
 roaming option recurs on later days once Day 8 has passed, see Days 14/19/23 below).
 VISIBLE CONSEQUENCE: warm, textural, low-stakes.
 
-CAUSALITY_LEVEL: QUIET (explicitly, satisfying Section 5's "reveal character/deepen relationship"
-bullet through ambient texture, not through the single flavor choice). OPEN_THREAD_CREATED: none
-new. CALLBACK_FROM: none. PLAYER_CAN_CHANGE: nothing durable from the main choice. PLAYER_CANNOT_
-CHANGE: the NPC-NPC relationship itself. FREE_TALK_CAN_AFFECT: tone only.
+CAUSALITY_LEVEL: MEDIUM (raised from QUIET -- the conversation now carries real, new information
+about an active thread, even though the single "watch or step away" choice remains cosmetic).
+OPEN_THREAD_CREATED: none new (deepens the trial thread). CALLBACK_FROM: Days 1-2. PLAYER_CAN_
+CHANGE: nothing durable from the main choice. PLAYER_CANNOT_CHANGE: the NPC-NPC relationship
+itself; the conversation's content. FREE_TALK_CAN_AFFECT: tone only. OPEN_QUESTION_AT_DAY_END:
+"will Yohei turn out to be right about the trial being too complicated?"
 
 ---
 
 ## Movement 2 (Days 7-12)
 
-### Day 7
-MAIN SCENE: Daisuke's chair, already mid-complaint from an impossible customer -- comedy, auto-
-entered.
-WHY THIS MATTERS NOW: pacing (Section 5), and a light, real touchpoint with Daisuke before Day 8's
-deeper attempt.
-PLAYER INTERVENTION: comment warmly on how he handles it, or just watch. IF ACTS: creates
-`witnessed_daisuke_comedy_day` (weak evidence, still real). IF NOT: no evidence, purely a laugh.
-WHEN RETURNS: contributes to his evidence total (now requiring `>= 2` per Fix in the ledger before
-it can move his decision date early).
-FREE TALK: open, low stakes.
-OPTIONAL ROAMING AFTER: a brief stop at Fumiko's hall is available, ambient only.
-VISIBLE CONSEQUENCE: strained professionalism survives, comic relief lands.
+### Day 7 `[PHASE_24.3 -- now the trial-day centerpiece, Daisuke's comedy preserved as a same-day
+satellite scene]`
+MAIN SCENE: **the trial itself happens today, unconditionally** -- `trial_day_happened = true`.
+Hina's small test-sale/test-bake plays out in real time. `trial_result_menu_confusion = true`: a
+genuine, observable customer-behavior fact -- too many choices slowed ordering, one item sold out
+fast while another barely moved, something Hina assumed was obvious (which item went where) wasn't.
+Not a disaster; reality producing data, per the human core. This happens regardless of whether the
+player is present.
+WHY THIS MATTERS NOW: by end of Day 7 the design requires one observable world result to have
+occurred regardless of the player (Section 6) -- this is that result.
+PLAYER INTERVENTION: help during the trial, observe quietly, comment, stay silent, or even disagree
+with the emerging read that the menu was confusing -- all valid. IF ACTS (help): creates
+`helped_during_trial`, `player_witnessed_trial_results = true`. IF ACTS (observe/comment): creates
+`player_witnessed_trial_results = true` only. IF NOT (absent entirely): the customer behavior still
+happened and is still real; the player simply wasn't there to see it directly, and later scenes
+will reference it as something that happened, not something the player caused or prevented.
+FREE TALK: open during the trial -- **free talk may NOT decide whether customers were confused or
+what actually sold; that is fixed, system-owned data** (Section 9's explicit boundary).
+OPTIONAL ROAMING/SATELLITE SCENE (preserved from V2.1, not replaced): Daisuke's chair, the same
+impossible-customer comedy beat as before, available the same day for a player who wants a lighter
+moment alongside the trial. PLAYER INTERVENTION (Daisuke): comment warmly, or just watch. IF ACTS:
+creates `witnessed_daisuke_comedy_day` (weak evidence, still real, contributing to his `>= 2`
+evidence threshold). IF NOT: no evidence, purely a laugh.
+VISIBLE CONSEQUENCE: real, specific, checkable customer-behavior data now exists; Daisuke's comedy
+beat lands exactly as before if visited.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: none. PLAYER_CAN_CHANGE:
-whether the evidence item exists. PLAYER_CANNOT_CHANGE: the scene's own comic outcome. FREE_TALK_
-CAN_AFFECT: can create the weak evidence item.
+CAUSALITY_LEVEL: HIGH (raised from MEDIUM -- this is now the arc's central observable event).
+OPEN_THREAD_CREATED: the trial's results, awaiting Hina's reaction (Day 8). CALLBACK_FROM: Days
+1-2, 5-6. PLAYER_CAN_CHANGE: whether the player personally witnessed/helped; whether the Daisuke
+evidence item exists. PLAYER_CANNOT_CHANGE: `trial_result_menu_confusion`'s own content (fixed,
+system-owned); that the trial happens at all today. FREE_TALK_CAN_AFFECT: cannot decide the
+customer-behavior facts, only the player's own commentary on them. OPEN_QUESTION_AT_DAY_END: "how
+will Hina take the results tomorrow?"
 
-### Day 8
-MAIN SCENE: Daisuke's chair, quieter this time -- an opening for something more personal.
-WHY THIS MATTERS NOW: the necessary FIRST deflection, before "returning after deflection" can mean
-anything.
-PLAYER INTERVENTION: ask something real anyway, or let a comfortable silence stand. IF ACTS: creates
-`attempted_daisuke_personal`; he deflects, smoothly. IF NOT: no evidence, an easy, ordinary visit.
-WHEN RETURNS: any LATER visit (structural OR via a roaming stop) where the player asks again creates
-`returned_to_daisuke_after_deflection`, read through Day 27 -- and, per the ledger's fixed rule,
-`COUNT(daisuke_relationship_evidence) >= 2` (not this single item alone) is what's able to move his
-independent decision date from its Day-20 default to Day 12.
-FREE TALK: this IS the deep-talk moment.
-OPTIONAL ROAMING AFTER: a brief stop at Yohei's is available, ambient only.
-VISIBLE CONSEQUENCE: a smooth, in-character deflection -- a real character beat, not a dead end.
+### Day 8 `[PHASE_24.3 -- Hina's trial reaction now the main scene, Daisuke's deflection preserved
+as a same-day secondary scene]`
+MAIN SCENE: Hina, the morning after -- `hina_initial_defensive_reaction = true`, unconditionally.
+She explains, with real, plausible reasons (not a caricature), why the original plan made sense: the
+variety was meant to give people options, the layout matched how she'd always pictured the counter.
+This is a genuine, in-character defense, not a strawman. PLAYER INTERVENTION: challenge her gently,
+support her, or stay silent -- all three are valid, evidence-creating responses (Section 3's
+explicit instruction: do not turn her into a caricature; challenging respectfully is not penalized).
+IF ACTS (challenge): creates `challenged_hina_after_trial`. IF ACTS (support): creates `supported_
+hina_after_trial`. IF NOT (silent): `hina_view_shifting = true` fires anyway -- another NPC (Yohei
+or Miyoko, whoever is narratively closest) asks her a simple factual question, "which one actually
+sold?", and the data itself starts the same work an active challenge would have. WHEN RETURNS: colors
+`hina_adjustment_timing`'s early/late split, read at Day 10.
+FREE TALK: open, useful for either the challenge or support branch.
+OPTIONAL ROAMING/SATELLITE SCENE (preserved from V2.1): Daisuke's chair, the personal-question
+deflection beat, available the same day. PLAYER INTERVENTION (Daisuke): ask something real anyway,
+or let a comfortable silence stand. IF ACTS: creates `attempted_daisuke_personal`; he deflects,
+smoothly. WHEN RETURNS: any LATER visit where the player asks again creates `returned_to_daisuke_
+after_deflection`, read through Day 27; `COUNT(daisuke_relationship_evidence) >= 2` is what can move
+his independent decision date from Day 20 to Day 12.
+VISIBLE CONSEQUENCE: a real, plausible defense from Hina, met with a real, differentiated response;
+Daisuke's deflection beat lands exactly as before if visited.
 
-CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: Daisuke's card thread (unnamed to the player yet).
-CALLBACK_FROM: Day 7. PLAYER_CAN_CHANGE: whether `attempted_daisuke_personal` exists, setting up
-future evidence. PLAYER_CANNOT_CHANGE: today's deflection itself. FREE_TALK_CAN_AFFECT: creates the
-evidence directly.
+CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: Daisuke's card thread (unnamed to the player yet); how
+Hina's view will keep shifting. CALLBACK_FROM: Day 7. PLAYER_CAN_CHANGE: which Hina-evidence item
+exists; whether `attempted_daisuke_personal` exists. PLAYER_CANNOT_CHANGE: today's Daisuke deflection
+itself; that `hina_view_shifting` happens even in total silence (fixed, system-owned). FREE_TALK_
+CAN_AFFECT: creates the relevant evidence directly, never decides the trial data itself.
+OPEN_QUESTION_AT_DAY_END: "will Hina actually change anything, or just talk about it?"
 
-### Day 9
+### Day 9 `[PHASE_24.3 -- kept as an observable thematic contrast to Hina's Day 8, never stated
+outright]`
 MAIN SCENE: Yohei's store, a crate visibly set aside -- spoiled stock, a real operational loss.
-WHY THIS MATTERS NOW: grounds his business-pressure texture ahead of the festival-budget day.
+Unlabeled, unstated: he treats it as information about business (write it off, adjust, move on),
+not as a personal insult -- the same shape of thing Hina is working through, at a different size,
+never named as a parallel in-fiction. In the background, `hina_trial_planned`'s aftermath continues
+quietly (she's known to be turning the results over).
+WHY THIS MATTERS NOW: grounds his business-pressure texture ahead of the festival-budget day, and
+gives an attentive player a second, contrasting example of the same lesson without ever being told
+so.
 PLAYER INTERVENTION: help sort what's still good, or just keep him company. IF ACTS: creates
 `helped_yohei_sort_stock`. IF NOT: no evidence, an ordinary shared moment. WHEN RETURNS: this is
 now REQUIRED as the "distinct additional evidence" for the Day-26-equivalent gate, per Fix D --
@@ -186,9 +271,10 @@ FREE TALK: open.
 OPTIONAL ROAMING AFTER: a brief stop at Hina's is available, ambient only.
 VISIBLE CONSEQUENCE: a plain, undramatic "that's business" shrug either way.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: none. PLAYER_CAN_CHANGE:
-whether the evidence item exists. PLAYER_CANNOT_CHANGE: how much stock was lost. FREE_TALK_CAN_
-AFFECT: can create the evidence.
+CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: Day 7-8 (thematic, unstated).
+PLAYER_CAN_CHANGE: whether the evidence item exists. PLAYER_CANNOT_CHANGE: how much stock was lost.
+FREE_TALK_CAN_AFFECT: can create the evidence. OPEN_QUESTION_AT_DAY_END: "will Hina end up handling
+her own setback this plainly?"
 
 ### Day 10
 MAIN SCENE: the Hall, an old bench wobbling in the corner as Fumiko works nearby.
@@ -201,9 +287,19 @@ FREE TALK: open (this specific item is structural-only, per the ledger).
 OPTIONAL ROAMING AFTER: a brief stop at Jin's is available, ambient only.
 VISIBLE CONSEQUENCE: Fumiko "considers it," a real, specific reaction.
 
-CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: the bench. CALLBACK_FROM: none. PLAYER_CAN_CHANGE:
-whether the bench is ever fixed at all. PLAYER_CANNOT_CHANGE: the letter thread underneath it
-(separate gate). FREE_TALK_CAN_AFFECT: cannot substitute for the structural suggestion.
+`[PHASE_24.3 ADDITION -- ALWAYS RENDERED]`: separately, at Hina's shop, `hina_sign_menu_adjusted =
+true` by today, unconditionally -- her sign or menu is visibly different: fewer items, clearer
+labels, a changed display order. `hina_adjustment_timing` = `"early_calm"` if any Day 5-9 evidence
+(the trial fix thanked, help/challenge/support given, Daisuke-adjacent warmth) exists, else
+`"late_friction"` -- **the adjustment itself is fixed either way; only its manner and exact date
+within the Day 8-10 window differ.**
+
+CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: the bench. CALLBACK_FROM: none (bench); Days 7-8 (the
+sign adjustment). PLAYER_CAN_CHANGE: whether the bench is ever fixed at all; `hina_adjustment_
+timing`'s value. PLAYER_CANNOT_CHANGE: the letter thread underneath the bench (separate gate);
+whether `hina_sign_menu_adjusted` happens at all (fixed). FREE_TALK_CAN_AFFECT: cannot substitute
+for the structural bench-suggestion; can contribute to `hina_adjustment_timing`. OPEN_QUESTION_AT_
+DAY_END: "did the sign change actually help, or is it too soon to tell?"
 
 ### Day 11
 MAIN SCENE: the café, a new bag of beans already on the counter, Miyoko watching the player's face
@@ -217,9 +313,15 @@ FREE TALK: open, low stakes.
 OPTIONAL ROAMING AFTER: a brief stop at Fumiko's is available, ambient only.
 VISIBLE CONSEQUENCE: a warm, uncomplicated good day either way.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: none. PLAYER_CAN_CHANGE:
-whether the evidence exists. PLAYER_CANNOT_CHANGE: whether the beans land well. FREE_TALK_CAN_
-AFFECT: can create the evidence.
+`[PHASE_24.3 ADDITION -- ALWAYS RENDERED]`: woven into the same scene, Miyoko mentions she tried
+one of Hina's trial-day items and compares it, casually, to something on her own menu -- `miyoko_
+commented_on_trial_item = true`, unconditionally, no player action required. A second, independent
+piece of real-world feedback on the trial, entirely off-screen from the player's own choices.
+
+CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: Day 7 (the trial). PLAYER_
+CAN_CHANGE: whether the beans evidence exists. PLAYER_CANNOT_CHANGE: whether the beans land well;
+whether Miyoko's comment on Hina's item happens (fixed). FREE_TALK_CAN_AFFECT: can create the beans
+evidence. OPEN_QUESTION_AT_DAY_END: "is the town's read on Hina's trial turning positive?"
 
 ### Day 12 `[FIXED -- Fix A, repurposed]`
 MAIN SCENE: **no longer Daisuke's decision day** (his decision is now independent world progress,
@@ -236,10 +338,23 @@ FREE TALK: open.
 OPTIONAL ROAMING AFTER: a brief stop at the Hall is available, ambient only.
 VISIBLE CONSEQUENCE: real, incremental warmth or a repeated, comfortable deflection.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: Days 7/8. PLAYER_CAN_CHANGE:
-whether enough evidence exists to move his decision earlier. PLAYER_CANNOT_CHANGE: that the decision
-happens at all (fixed, independent, by Day 20 at the latest). FREE_TALK_CAN_AFFECT: creates the
-evidence.
+`[PHASE_24.3 ADDITION -- ALWAYS RENDERED]`: separately, Hina makes one concrete decision today,
+read directly from `trial_result_menu_confusion` (not decided live, not requiring the player):
+reduces her initial product range, or keeps the one item that unexpectedly sold out, or delays
+something she now realizes wasn't ready. `hina_concrete_decision` set, unconditionally --
+real WORLD PROGRESS, the arc's own turning point.
+PLAYER INTERVENTION (this specific beat): none required; player intervention across Days 5-10
+already determined `hina_adjustment_timing`/confidence, read here, not re-decided.
+
+CAUSALITY_LEVEL: HIGH (raised from MEDIUM -- Hina's decision is a real turning point). OPEN_THREAD_
+CREATED: none new (Daisuke); Hina's decision closes the trial-reaction arc's main beat. CALLBACK_
+FROM: Days 7/8 (Daisuke); Days 7-10 (Hina). PLAYER_CAN_CHANGE: whether enough Daisuke evidence
+exists to move his decision earlier; the CONFIDENCE/manner with which Hina's decision reads (via
+Days 5-10's accumulated evidence). PLAYER_CANNOT_CHANGE: that Daisuke's decision happens at all
+(fixed, by Day 20 at the latest); that Hina's concrete decision happens at all (fixed, today).
+FREE_TALK_CAN_AFFECT: creates the Daisuke evidence; cannot alter which concrete decision Hina makes.
+OPEN_QUESTION_AT_DAY_END: "was that the right call for her -- and what does the festival horizon
+look like now?"
 
 ---
 
@@ -253,18 +368,28 @@ son_thread`. IF NOT: the thread never becomes visible this playthrough -- a real
 difference. WHEN RETURNS: read at the Day-26-equivalent scene, now correctly requiring a SEPARATE
 piece of evidence too (Fix D).
 FREE TALK: this IS the deep-talk day.
-OPTIONAL ROAMING AFTER: a brief stop at Hina's is available, ambient only.
-VISIBLE CONSEQUENCE: he goes quiet, deflects, but it visibly landed as real.
+OPTIONAL ROAMING AFTER: a brief stop at Hina's is available -- **`[PHASE_24.3 ADDITION -- ALWAYS
+RENDERED]`**: whether visited or not, `trial_cost_pressure_visible = true` from today,
+unconditionally -- the trial's first real cost (ingredients, a small equipment repair, whatever the
+sign-change required) becomes visible in the background, a plain fact, not a forced confession.
+VISIBLE CONSEQUENCE: he goes quiet, deflects, but it visibly landed as real; a real, small financial
+pressure is now part of Hina's visible situation, whether or not the player notices it yet.
 
-CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: Yohei's son thread. CALLBACK_FROM: none. PLAYER_CAN_
-CHANGE: whether this thread ever becomes visible at all. PLAYER_CANNOT_CHANGE: `yohei_son_call_
-happened`'s own timing -- **this is now entirely independent world progress, unaffected by today's
-choice, per Fix (Section 3 option B)**. FREE_TALK_CAN_AFFECT: directly creates the noticing
-evidence, never the underlying event.
+CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: Yohei's son thread; the trial's cost pressure. CALLBACK_
+FROM: Days 7/12 (the cost pressure). PLAYER_CAN_CHANGE: whether the son-thread ever becomes visible
+at all. PLAYER_CANNOT_CHANGE: `yohei_son_call_happened`'s own timing (independent world progress,
+per Fix Section 3 option B); whether `trial_cost_pressure_visible` becomes true (fixed, today).
+FREE_TALK_CAN_AFFECT: directly creates the noticing evidence, never the underlying event. OPEN_
+QUESTION_AT_DAY_END: "how much did that trial actually cost her?"
 
-### Day 14
-MAIN SCENE: Hina's shop, a comment about "juggling a few things" -- a little too casual.
-WHY THIS MATTERS NOW: raises stakes ahead of her eventual reveal.
+### Day 14 `[PHASE_24.3 -- this beat now has earned context from the preceding 13 days, per Section
+3's explicit instruction]`
+MAIN SCENE: Hina's shop, a comment about "juggling a few things" -- a little too casual. Unlike a
+cold open, the player has already seen the trial (Day 7), the adjustment (Day 10), her own concrete
+decision (Day 12), and the cost pressure becoming visible (Day 13) -- this line now lands as the
+one thing tying all of that together, not a fresh, unmotivated reveal.
+WHY THIS MATTERS NOW: raises stakes ahead of her eventual reveal, now grounded in real, externally
+observable evidence rather than a single line of dialogue asked to carry the whole thread alone.
 PLAYER INTERVENTION: ask "juggling how?", or let it pass. IF ACTS: creates `noticed_hina_money_
 pressure` (note: `hina_money_pressure` itself is already true regardless, per the ledger -- this
 choice only creates PLAYER_KNOWLEDGE/evidence, never the underlying fact). IF NOT: the comment goes
@@ -275,9 +400,11 @@ this can create `returned_to_daisuke_after_deflection` (count now potentially 2,
 threshold if Day 12's roaming also happened).
 VISIBLE CONSEQUENCE: a small, real vulnerability, easy to miss.
 
-CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: none new (deepens Day 1). CALLBACK_FROM: Day 1.
-PLAYER_CAN_CHANGE: whether the evidence exists. PLAYER_CANNOT_CHANGE: `hina_money_pressure` itself
-(already true, not created by this scene). FREE_TALK_CAN_AFFECT: directly creates the evidence.
+CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: none new (deepens Day 1). CALLBACK_FROM: Days 1, 7, 10,
+12, 13. PLAYER_CAN_CHANGE: whether the evidence exists. PLAYER_CANNOT_CHANGE: `hina_money_pressure`
+itself (already true, not created by this scene). FREE_TALK_CAN_AFFECT: directly creates the
+evidence. OPEN_QUESTION_AT_DAY_END: "what does she actually need, beyond just getting through the
+festival?"
 
 ### Day 15
 MAIN SCENE: the Hall, a letter sitting unopened on Fumiko's desk.
