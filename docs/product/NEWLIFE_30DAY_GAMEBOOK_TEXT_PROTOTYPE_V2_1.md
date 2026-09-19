@@ -217,35 +217,91 @@ VAR yohei_festival_stock = "unset"
     * [Don't pry] -> day_end
     - -> roam(("miyoko")) -> day_end
 
+/* [PHASE_24.2 -- always-rendered B-plot state, set unconditionally, never gated on a player
+   choice] */
+VAR guidance_disagreement_surfaced = false
+VAR visitor_confusion_happened = false
+VAR guidance_sign_revised = false
+VAR told_fumiko_about_signage_concern = false
+VAR helped_confused_visitor = false
+VAR reassured_hina_about_signage = false
+
 = day16
-    Full scene: spine Day 16.
+    Full scene: spine Day 16 (Miyoko's daughter).
     * [Listen] -> free_talk(miyoko) -> evidence(miyoko, "listened_to_miyoko_daughter_worry") ->
-      day_end
-    * [Just be present] -> day_end
+      day16_signage
+    * [Just be present] -> day16_signage
+    -> day16_signage
+
+= day16_signage
+    /* Always renders -- not gated on the Miyoko choice above. */
+    ~ guidance_disagreement_surfaced = true
+    On the way, the new festival guidance sign is up. Hina mutters a newcomer could misread it;
+    Fumiko insists it's fine.
+    * [Back Hina up to Fumiko] -> ~ told_fumiko_about_signage_concern = true -> day_end
+    * [Let it pass] -> day_end
     - -> roam(("yohei")) -> day_end
 
 = day17
-    Full scene: spine Day 17.
-    * [Agree to help "next time"] -> ~ promise_yohei_help_soon = true -> day_end
-    * [Demur] -> day_end
+    Full scene: spine Day 17 (Yohei's promise).
+    * [Agree to help "next time"] -> ~ promise_yohei_help_soon = true -> day17_signage
+    * [Demur] -> day17_signage
+    -> day17_signage
+
+= day17_signage
+    /* Always renders -- the confusion happens regardless of the promise choice above. */
+    ~ visitor_confusion_happened = true
+    A delivery courier scouting the festival route follows the sign to the wrong end of the
+    street, visibly confused.
+    * [Help redirect them] -> ~ helped_confused_visitor = true -> day_end
+    * [Let someone else handle it] -> day_end
     - -> roam(("miyoko", "fumiko")) -> day_end
 
 = day18
+    /* [FIX -- no longer capable of rendering as a truly empty day: the B-plot fallout below
+       always fires regardless of this branch.] */
     { promise_fumiko_help_soon and promise_yohei_help_soon:
         Full scene: spine Day 18 -- the collision.
-        * [Keep Yohei's, explain to Fumiko] -> evidence(yohei, "kept_promise") -> day_end
-        * [Keep Fumiko's, explain to Yohei] -> evidence(fumiko, "kept_promise") -> day_end
+        * [Keep Yohei's, explain to Fumiko] -> evidence(yohei, "kept_promise") -> day18_signage
+        * [Keep Fumiko's, explain to Yohei] -> evidence(fumiko, "kept_promise") -> day18_signage
         * [A smaller gesture to both] -> evidence(yohei, "kept_promise") ->
-          evidence(fumiko, "kept_promise") -> day_end
+          evidence(fumiko, "kept_promise") -> day18_signage
     - else:
-        An ordinary day -- no promise conflict exists to fire.
-        -> day_end
+        An ordinary day for the promise thread specifically -- but not an empty one, see below.
+        -> day18_signage
     }
 
+= day18_signage
+    /* Always renders: word of yesterday's confusion has reached Fumiko; a real NPC-NPC reaction,
+       independent of the player, per Section 13's own graph. */
+    { told_fumiko_about_signage_concern or helped_confused_visitor:
+        Fumiko is already turning the sign over more calmly, having heard the concern early.
+    - else:
+        Fumiko is visibly rattled and a little defensive about the sign, having only just heard.
+    }
+    { reassured_hina_about_signage:
+    - else:
+        Hina reads as quietly vindicated but a little dismissed.
+        * [Reassure Hina now] -> ~ reassured_hina_about_signage = true -> day_end
+        * [Leave it] -> day_end
+    }
+    -> day_end
+
 = day19
-    Full scene: spine Day 19.
-    * [Help with something concrete] -> evidence(fumiko, "helped_fumiko_festival_prep") ->
+    /* Always renders, unconditionally, woven into Fumiko's own festival-prep scene. */
+    ~ guidance_sign_revised = true
+    { told_fumiko_about_signage_concern or helped_confused_visitor or reassured_hina_about_signage:
+        ~ temp fumiko_revision_manner = "calm"
+    - else:
+        ~ temp fumiko_revision_manner = "defensive"
+    }
+    Full scene: spine Day 19 (Fumiko's prep) -- the sign gets redrawn today, {fumiko_revision_
+    manner == "calm": calmly, already having thought it over.|otherwise: a little defensively at
+    first, but redrawn all the same.} The fix comes from what was actually observed yesterday, not
+    from anyone having won an argument.
+    * [Help with festival prep generally] -> evidence(fumiko, "helped_fumiko_festival_prep") ->
       ~ festival_prep_progress = festival_prep_progress + 1 -> day_end
+    * [Help specifically with the sign] -> ~ told_fumiko_about_signage_concern = true -> day_end
     * [Leave her to it] -> day_end
     - -> roam(("daisuke")) -> day_end
 
@@ -308,6 +364,8 @@ VAR yohei_festival_stock = "unset"
     still wobbles, and that's fine too.}
     {player_knows_hina_true_reason: Hina is out front, trying something small today anyway.|not
     player_knows_hina_true_reason: watches from her half-finished shop.}
+    The festival guidance sign, corrected since Day 19, points visitors the right way without
+    incident.
     { slots > 0:
         * [Spend a slot at Yohei's stall] -> free_talk(yohei) -> ~ slots = slots - 1 -> top
         * [Spend a slot at the café table] -> free_talk(miyoko) -> ~ slots = slots - 1 -> top

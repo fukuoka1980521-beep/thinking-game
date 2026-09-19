@@ -134,6 +134,45 @@ scene that actually sets it -- a real, confirmed dead variable.
 | `fumiko_writes_back` | WORLD_PROGRESS | **NEW, authored setter**: resolved at a new Day 29-adjacent scene (see spine), by rule: `IF player_knows_fumiko_letter AND helped_fumiko_festival_prep: fumiko_writes_back = true` (real attentiveness across two different moments) `ELSE IF player_knows_fumiko_letter: fumiko_writes_back = "undecided"` (she's still thinking about it) `ELSE: fumiko_writes_back = "unset"` (the thread never became visible enough to resolve at all). |
 | `fumiko_relationship_evidence` | RELATIONSHIP_EVIDENCE | `suggested_jin_for_bench`, `asked_about_fumikos_letter`, `helped_fumiko_festival_prep`. |
 
+## PHASE_24.2 addition — the guidance-sign micro-arc (Days 16-19 corridor repair)
+
+Added to fix the Days 16-19 low-`TOMORROW_PULL` corridor found in PHASE_24.1's RUN_B/RUN_C
+(`docs/research/evaluation/phase-24/NEWLIFE_30DAY_CLAUDE_VERDICT_V2_1.md`). Runs as a B-plot
+*under* the existing Day 16 (Miyoko)/17 (Yohei promise)/18 (collision)/19 (Fumiko prep) main
+scenes -- it does not replace any of them. Human core: a creator (Fumiko) believes something she
+made (the festival guidance sign) is clear; another person (Hina) says it's confusing; the creator
+doesn't fully accept the feedback at first; a real, observed event later proves the feedback had a
+point; the fix comes from observing reality, not from anyone "winning" the argument. Informed by
+OWNER-01 (creator defensiveness toward criticism), OWNER-04 (the visible current reality beats
+assumption), and OWNER-07 (measure reality, don't treat expected benefit as fact) -- no real
+business or identifiable event reproduced.
+
+| Variable | Kind | Behavior |
+|---|---|---|
+| `guidance_disagreement_surfaced` | WORLD_EVENT | **Always true from Day 16**, regardless of the player -- Hina notices the new festival sign could mislead a newcomer; Fumiko initially thinks it's fine. Narrated as ambient scene text every playthrough, not gated on any choice. |
+| `visitor_confusion_happened` | WORLD_EVENT | **Always true from Day 17**, regardless of the player -- a delivery courier scouting the festival follows the sign to the wrong end of the street. Narrated as ambient scene text every playthrough. |
+| `guidance_sign_revised` | WORLD_EVENT | **Always true by Day 19**, regardless of the player -- the sign gets corrected because the confusion actually happened and was seen, not because anyone was persuaded by argument alone. This is the one fact PLAYER_INFLUENCE may never prevent or skip, per Section 2's explicit "reality eventually reveals the problem regardless of player intervention" rule. |
+| `player_knows_guidance_disagreement` | PLAYER_KNOWLEDGE | True if the player engages the Day 16 aside at all (reading the ambient text counts as narrated; this flag specifically tracks whether the player *responded* to it). |
+| `player_witnessed_visitor_confusion` | PLAYER_KNOWLEDGE | True if the player is present for the Day 17 aside. |
+| `told_fumiko_about_signage_concern` | RELATIONSHIP_EVIDENCE (Fumiko) | Structural, Day 16 or 17 -- the player actively tells Fumiko that Hina has a point, BEFORE the visitor incident is common knowledge. |
+| `helped_confused_visitor` | RELATIONSHIP_EVIDENCE (town-wide, counts as Fumiko+Hina evidence) | Structural, Day 17 -- the player redirects the confused visitor. |
+| `reassured_hina_about_signage` | RELATIONSHIP_EVIDENCE (Hina) | Structural/free-talk, Day 16 or 18 -- comforts Hina if she reads as dismissed. |
+| `fumiko_accepted_feedback_early` | PLAYER_INFLUENCE (derived, not independently settable) | `= told_fumiko_about_signage_concern` (only true if raised BEFORE Day 17's incident, i.e. on Day 16). Colors the MANNER of Day 19's revision, never whether it happens. |
+| `fumiko_revision_manner` | RESOLUTION shape | `"calm"` if `fumiko_accepted_feedback_early` OR (`told_fumiko_about_signage_concern` OR `helped_confused_visitor`) exists by Day 19; `"defensive"` otherwise -- **the sign is revised either way**; only the telling differs. |
+| `hina_feels_respected` | RELATIONSHIP_EFFECT | `= reassured_hina_about_signage OR told_fumiko_about_signage_concern`. If false, she's quietly vindicated but privately reads as dismissed -- a real, textured, non-blocking outcome, not a failure state. |
+| `player_remembered_as_helpful_signage` | RELATIONSHIP_EFFECT | `= told_fumiko_about_signage_concern OR helped_confused_visitor`. |
+
+**The explicit no-intervention guarantee for Days 16-19** (Section 3's hard requirement, "never NO
+PLAYER ACTION = NO SCENE"): even with zero player choices made anywhere in this corridor, Days 16-19
+each still render a real WORLD_EVENT beat (the disagreement, the confusion, the fallout, the fix), a
+real NPC-NPC reaction (Fumiko and Hina's own dynamic moves independent of the player, exactly like
+the Section 13 relationship graph already established for other pairs), a visible, checkable
+progression (the sign's own text/layout is literally different by Day 19), and a forward-pointing
+hook at every step (Day 16 -> "will anything come of this," Day 17 -> "how does Fumiko take it,"
+Day 18 -> "what happens to the sign now"). Player intervention only ever changes the RELATIONSHIP_
+EFFECT and RESOLUTION-shape variables above -- never `guidance_disagreement_surfaced`,
+`visitor_confusion_happened`, or `guidance_sign_revised` themselves.
+
 ## Fix F (Section 4F) — the free-talk contract's proposal categories, now actually wired
 
 `NEWLIFE_30DAY_GAMEBOOK_CAUSAL_RULES_V2.md`'s Section 7 already correctly listed 6 allowed

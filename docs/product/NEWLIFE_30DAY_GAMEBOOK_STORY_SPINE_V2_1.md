@@ -305,9 +305,21 @@ FREE TALK: open.
 OPTIONAL ROAMING AFTER: a brief stop at Yohei's is available, ambient only.
 VISIBLE CONSEQUENCE: real, unresolved worry shared, met with presence.
 
-CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: Day 11. PLAYER_CAN_CHANGE:
-whether the evidence exists. PLAYER_CANNOT_CHANGE: today's non-resolution (fixed). FREE_TALK_CAN_
-AFFECT: directly creates the evidence.
+`[PHASE_24.2 ADDITION -- B-PLOT, ALWAYS RENDERED]`: on the way to or from the café, the newly-
+posted festival guidance sign is visible. Hina, passing by, mutters that a newcomer could easily
+misread which way the stalls actually run. Fumiko, nearby, insists it's clear enough as it is. This
+WORLD_EVENT (`guidance_disagreement_surfaced = true`) renders every playthrough, regardless of
+whether the player engages the main scene at all. PLAYER INTERVENTION (optional, does not compete
+with the café scene): back Hina up to Fumiko directly, or let it pass. IF ACTS: creates
+`told_fumiko_about_signage_concern`, `player_knows_guidance_disagreement = true`. IF NOT: the
+disagreement stands, unresolved, visible to anyone paying attention. WHEN RETURNS: Day 19's revision
+manner.
+
+CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: none new (Miyoko); the guidance-sign disagreement
+(B-plot). CALLBACK_FROM: Day 11. PLAYER_CAN_CHANGE: whether the Miyoko evidence exists; whether
+Fumiko hears the concern early. PLAYER_CANNOT_CHANGE: today's Miyoko non-resolution (fixed); whether
+the disagreement itself exists (always true). FREE_TALK_CAN_AFFECT: directly creates the Miyoko
+evidence; can also create the signage evidence if raised.
 
 ### Day 17
 MAIN SCENE: Yohei's store, doing inventory, mentions he'd like a hand with the shelves "next time."
@@ -320,28 +332,56 @@ OPTIONAL ROAMING AFTER: a brief stop at Miyoko's is available, ambient only, and
 Fumiko's checks in on the letter thread's texture (no new gate).
 VISIBLE CONSEQUENCE: a plain, specific commitment now on record.
 
-CAUSALITY_LEVEL: MEDIUM. OPEN_THREAD_CREATED: the Yohei promise. CALLBACK_FROM: none. PLAYER_CAN_
-CHANGE: whether the promise exists. PLAYER_CANNOT_CHANGE: nothing else today. FREE_TALK_CAN_AFFECT:
-cannot itself create a promise (structural-only).
+`[PHASE_24.2 ADDITION -- B-PLOT, ALWAYS RENDERED]`: regardless of anything above, a delivery
+courier scouting the festival route follows the sign exactly as posted and ends up at the wrong end
+of the street -- visibly confused, a little annoyed, asking the nearest person for directions. This
+WORLD_EVENT (`visitor_confusion_happened = true`) happens this same day every playthrough,
+independent of the player. PLAYER INTERVENTION (optional): help redirect them, or let someone else
+sort it out. IF ACTS: creates `helped_confused_visitor`, `player_witnessed_visitor_confusion =
+true`. IF NOT: the courier finds their way eventually anyway, a little worse for the detour, and
+word of the mix-up reaches Fumiko regardless. WHEN RETURNS: colors Day 18's ambient fallout and Day
+19's revision manner.
+
+CAUSALITY_LEVEL: HIGH (raised from MEDIUM -- the B-plot's own visible event). OPEN_THREAD_CREATED:
+the Yohei promise; the visitor-confusion fallout. CALLBACK_FROM: Day 16 (the disagreement). PLAYER_
+CAN_CHANGE: whether the promise exists; whether the player is the one who helps the visitor.
+PLAYER_CANNOT_CHANGE: whether the confusion happens at all (always true). FREE_TALK_CAN_AFFECT:
+cannot itself create the Yohei promise (structural-only); can create the visitor-help evidence.
 
 ### Day 18
 MAIN SCENE: two promises, both due "soon," land the same afternoon -- ONLY if both
 `Promise(fumiko, help_soon)` and `Promise(yohei, help_soon)` actually exist; otherwise this is an
-ordinary day (a real structural difference from a version that fires on loose warmth alone).
+ordinary day for the promise-collision specifically (a real structural difference from a version
+that fires on loose warmth alone).
 WHY THIS MATTERS NOW: the game now visibly tracks the player's own stated commitments.
 PLAYER INTERVENTION: keep one and explain to the other, or a smaller gesture to both. IF ACTS
 (either specific choice): a real, differentiated, NPC-remembered outcome. WHEN RETURNS: whichever
 promise's disposition is set is referenced again within the following week (never silently
 forgotten).
 FREE TALK: useful for the "explain" branch.
-OPTIONAL ROAMING AFTER: none additional -- this scene's own resolution is the day's whole content.
+OPTIONAL ROAMING AFTER: none additional from the promise-collision itself.
 VISIBLE CONSEQUENCE: a real, differentiated outcome, not a generic "you handled it."
 
-CAUSALITY_LEVEL: HIGH (when it fires) / QUIET otherwise (satisfying Section 5 via whichever single
-promise still exists in isolation). OPEN_THREAD_CREATED: whichever promise is deferred. CALLBACK_
-FROM: Days 15/17. PLAYER_CAN_CHANGE: which promise gets kept, and how. PLAYER_CANNOT_CHANGE: that a
-choice must be made once both genuinely exist. FREE_TALK_CAN_AFFECT: shapes the explanation, not
-which promise exists.
+`[PHASE_24.2 ADDITION -- B-PLOT, ALWAYS RENDERED, THE FIX FOR THIS DAY'S FORMER "EMPTY IF NO
+PROMISE EXISTS" GAP]`: **regardless of whether the promise-collision fires at all**, Day 18 also
+always renders the guidance-sign fallout: word of yesterday's confused courier has reached Fumiko,
+and she's visibly rattled by it -- defensive if `fumiko_accepted_feedback_early` is false, already
+turning it over more calmly if it's true. Hina, for her part, reads as quietly vindicated but
+privately a little dismissed unless `reassured_hina_about_signage` already happened. This is a real
+NPC-NPC reaction (Fumiko and Hina's own dynamic, moving independent of the player, per Section 13's
+established graph) with a genuine tomorrow hook ("she says she'll think about the sign again").
+PLAYER INTERVENTION (optional, available even if the promise-collision above never fired, which is
+exactly what keeps this day from ever being empty): reassure Hina now if she seems dismissed. IF
+ACTS: creates `reassured_hina_about_signage`. WHEN RETURNS: Day 19.
+
+CAUSALITY_LEVEL: HIGH (when the promise-collision fires) / MEDIUM otherwise, **never QUIET, because
+the B-plot's own NPC-NPC reaction and tomorrow hook are now guaranteed regardless** -- the specific,
+disclosed fix for this day's previous capacity to go empty for a player with no promises. OPEN_
+THREAD_CREATED: whichever promise is deferred, if any; the sign's now-visible fallout. CALLBACK_
+FROM: Days 15/17 (promises); Day 17 (the confusion). PLAYER_CAN_CHANGE: which promise gets kept, if
+any; whether Hina is reassured today. PLAYER_CANNOT_CHANGE: that a promise choice must be made once
+both genuinely exist; that Fumiko reacts to the confusion at all. FREE_TALK_CAN_AFFECT: shapes the
+promise explanation; can create the Hina-reassurance evidence.
 
 ---
 
@@ -351,19 +391,32 @@ which promise exists.
 MAIN SCENE: the Hall, visibly a mess of papers -- Fumiko brisker than usual, stretched thin. Per
 OWNER-05's pattern, a checklist can be fully "done" while something human is still missing -- she
 catches herself relying on the flyer alone and decides to personally invite people instead.
-WHY THIS MATTERS NOW: directly determines how prepared Day 24 actually is.
-PLAYER INTERVENTION: offer to help with something concrete, or leave her to it. IF ACTS: creates
-`helped_fumiko_festival_prep`, `festival_prep_progress += 1`. IF NOT: she manages anyway, more
-tired. WHEN RETURNS: read into Day 24, and one of the two inputs to the new Day-29-adjacent
+**Woven directly into this same scene, `[PHASE_24.2 ADDITION]`**: the guidance sign gets revised
+today, `guidance_sign_revised = true`, **unconditionally** -- reality (yesterday's confused
+courier) made the case argument alone hadn't. This is the human core's actual point (OWNER-01/04/07):
+the fix comes from what was observed, not from anyone winning a debate. `fumiko_revision_manner`
+(`"calm"` if `fumiko_accepted_feedback_early` or any signage evidence exists by now, `"defensive"`
+otherwise) colors HOW she talks about it while she redraws it, never WHETHER she does.
+WHY THIS MATTERS NOW: directly determines how prepared Day 24 actually is; closes the B-plot with
+the sign visibly, checkably different by the festival.
+PLAYER INTERVENTION: offer to help with the festival prep generally, or help specifically with the
+sign's actual redraw, or leave her to it. IF ACTS (general prep): creates `helped_fumiko_festival_
+prep`, `festival_prep_progress += 1`. IF ACTS (the sign specifically): also creates `player_
+remembered_as_helpful_signage` if not already true. IF NOT: she manages both anyway, more tired,
+and the sign still gets fixed regardless. WHEN RETURNS: read into Day 24 (the sign's own text is
+now part of that scene's visible detail), and one of the two inputs to the Day-29-adjacent
 write-back rule (Fix C).
 FREE TALK: open.
 OPTIONAL ROAMING AFTER: **a brief stop at Daisuke's is available** (a further return-after-
 deflection opportunity, per Fix A).
-VISIBLE CONSEQUENCE: a specific, small task actually completed.
+VISIBLE CONSEQUENCE: a specific, small task actually completed; the sign itself, visibly corrected.
 
-CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: Day 3. PLAYER_CAN_CHANGE:
-`festival_prep_progress` and whether the write-back rule's second input exists. PLAYER_CANNOT_
-CHANGE: that the festival happens at all. FREE_TALK_CAN_AFFECT: can create the evidence.
+CAUSALITY_LEVEL: HIGH. OPEN_THREAD_CREATED: none new. CALLBACK_FROM: Day 3; Days 16/17/18 (the
+B-plot's own payoff day). PLAYER_CAN_CHANGE: `festival_prep_progress`; whether the write-back
+rule's second input exists; `fumiko_revision_manner`'s exact texture. PLAYER_CANNOT_CHANGE: that
+the festival happens at all; **that the sign gets revised at all (fixed, guaranteed by the
+observed event, not by player persuasion)**. FREE_TALK_CAN_AFFECT: can create the prep evidence;
+cannot prevent or skip the revision itself.
 
 ### Day 20 `[FIXED -- Daisuke's independent world-progress default now resolves here if not
 moved earlier]`
