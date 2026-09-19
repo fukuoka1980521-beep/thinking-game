@@ -1,6 +1,7 @@
 import type { ConversationTurn, LocationId, NpcId } from "../types";
 import type { NpcHiddenBackground } from "../npcDefs";
 import type { ShopItem } from "../content/shop";
+import type { CurrentChoiceContext } from "./choiceContext";
 
 /** Directive Section 9 -- everything the AI is given per free-text turn. AI is only ever asked to
  *  perform ONE NPC's reply from this; it never receives or infers anything not listed here
@@ -95,6 +96,19 @@ export interface NpcAiContext {
   /** Section 7 RECENT_ACTIVITIES -- mirrors `recentPurchasesToday`'s exact shape for GAMEPLAY
    *  ACTIVITY sessions with this NPC today. */
   recentActivitiesToday: string[];
+  /**
+   * PHASE_19_NEW_LIFE_CONTEXT_COMPLETENESS_AND_PRE_HV_HARDENING_V1 Section 4 -- `null` whenever no
+   * opportunity is currently eligible to be offered (the common case). Non-null only while a real,
+   * player-answerable choice is live and undecided; once accepted/declined/stepped-back, that
+   * already reaches `knownFacts` as an ordinary WorldFact (see `dialogue/choiceContext.ts`'s own
+   * doc comment for why this field does not also model those states). The live prompt uses this to
+   * let the NPC react naturally to a vague reference ("さっきの話") without ever deciding it.
+   */
+  currentChoiceContext: CurrentChoiceContext | null;
+  /** Section 6/12 -- Shizuko-only cross-day Fortune callback material (the card's own authored
+   *  follow-up line), `null` for every other NPC and whenever no callback applies. See
+   *  `content/day1.ts`'s `fortuneMemoryContextFor`. */
+  fortuneMemory: string | null;
   playerInput: string;
 }
 

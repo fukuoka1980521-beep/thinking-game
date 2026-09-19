@@ -100,6 +100,18 @@ ${context.unresolvedThreadsKnown.length > 0 ? context.unresolvedThreadsKnown.joi
 【今日一緒に何かした記録】
 ${context.recentActivitiesToday.length > 0 ? context.recentActivitiesToday.join(" / ") : "（特になし）"}
 
+【今、答えを待っている誘い・依頼（PHASE_19 -- あれば最優先級。プレイヤーが「さっきの話」「あの
+件」のように曖昧に聞いてきても、これが今まさに答えを待っている話です。あなたはこれについて自然に
+反応してよく、意見や後押し・心配を伝えてもよいですが、実際に引き受けた・断ったと決めるのはプレイ
+ヤー自身がボタンで選ぶことであり、あなたのセリフではありません。「もう引き受けたことになった」
+「じゃあ断ったってことで」のように、あなたの発言だけでこの件を決着させてはいけません）】
+${context.currentChoiceContext ? `${context.currentChoiceContext.subject}` : "（今、答えを待っている誘い・依頼は特にない）"}
+
+【前回、この人物が占いのカードについて話した内容（PHASE_19 -- あれば、プレイヤーが「あのカード」
+「この前の話」のように聞いてきたときに使ってください。存在しないのに聞かれてもいないカードの話を
+自分から持ち出す必要はありません）】
+${context.fortuneMemory ?? "（特になし）"}
+
 【今の場面】
 ${context.currentScene}（DAY${context.day}, ${context.timeLabel}）
 

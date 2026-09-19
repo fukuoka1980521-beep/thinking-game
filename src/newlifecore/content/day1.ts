@@ -304,6 +304,22 @@ export function lastFortuneCardLabelFor(npc: NpcId, state: CoreState): string | 
   return card ? card.label : null;
 }
 
+/**
+ * PHASE_19 Section 6/12 -- for the AI CONTEXT rather than the UI chip: before this, `NpcAiContext`
+ * carried nothing about `state.lastFortuneCard` at all, so free-text asking Shizuko about "that
+ * card" had no canonical signal to answer from. Unlike `lastFortuneCardLabelFor` (a one-time
+ * greeting chip, deliberately silent once today's first exchange has happened), this stays
+ * available for the whole day the follow-up is relevant -- a live conversation can naturally touch
+ * the topic more than once, and `memoryOfPlayer` (not this function) is what already prevents the
+ * model from re-opening a topic that was just discussed. Returns the card's own authored
+ * `followUpLine` verbatim (never a synthesized summary) -- no new fact is invented here.
+ */
+export function fortuneMemoryContextFor(npc: NpcId, state: CoreState): string | null {
+  if (npc !== "shizuko" || !state.lastFortuneCard || state.lastFortuneCard.day >= state.day) return null;
+  const card = fortuneCardById(state.lastFortuneCard.cardId);
+  return card ? card.followUpLine : null;
+}
+
 export interface LocationScene {
   location: LocationId;
   ambientLine: string;

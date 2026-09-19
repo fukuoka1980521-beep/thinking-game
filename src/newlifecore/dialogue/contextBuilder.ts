@@ -6,6 +6,8 @@ import { daysSinceLastMeeting, computePlayerNpcTags } from "../content/socialMem
 import { LOCAL_PROBLEM_DEFS } from "../content/localProblemDefs";
 import { isLocalProblemDiscovered, isLocalProblemResolved } from "../content/localProblemEngine";
 import { activeEventContextFor, recentActivitiesToday, recentSharedEventsToday, unresolvedThreadsKnown } from "./sceneContext";
+import { currentChoiceContextFor } from "./choiceContext";
+import { fortuneMemoryContextFor } from "../content/day1";
 import { formatClock } from "../types";
 import type { CoreState, NpcId } from "../types";
 import type { NpcAiContext } from "./types";
@@ -78,6 +80,8 @@ export function buildNpcAiContext(npc: NpcId, state: CoreState, playerInput: str
     recentSharedEventsToday: recentSharedEventsToday(npc, state),
     unresolvedThreadsKnown: unresolvedThreadsKnown(npc, state),
     recentActivitiesToday: recentActivitiesToday(npc, state),
+    currentChoiceContext: currentChoiceContextFor(npc, state),
+    fortuneMemory: fortuneMemoryContextFor(npc, state),
     playerInput,
   };
 }
