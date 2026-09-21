@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { advanceDay, applyAction, createInitialState, resolveDay24Outcome } from "../src/newlife/state";
 import { getScene, TOTAL_DAYS } from "../src/newlife/content";
-import { answerFreeText } from "../src/newlife/npcVoice";
+import { answerFreeText, clarificationLine, detectIntent } from "../src/newlife/npcVoice";
 import { DAISUKE_OCCUPATION, NPC_IDS, type NewLife30State, type NpcId } from "../src/newlife/types";
 
 const BARBER_PATTERN = /理容|床屋|理髪|barber/i;
@@ -124,6 +124,156 @@ describe("NEW LIFE 30-day engine — direct-question semantic routing", () => {
   it("workshop lending answers Daisuke's own decision, not a guaranteed yes", () => {
     const state = createInitialState();
     expect(answerFreeText("daisuke", "工房、貸してくれるんですか？", state)).not.toMatch(/一時間なら片づけられる/);
+  });
+});
+
+describe("NEW LIFE 30-day engine — Phase 28 meaning-first paraphrase matrix", () => {
+  // Each domain has 11 materially different natural-Japanese phrasings:
+  // polite, casual, indirect, greeting-prefixed, and mildly malformed —
+  // per PHASE_28_MEANING_FIRST_CONVERSATION_HARDENING_V1 instruction 5.
+  const MENU_PARAPHRASES = [
+    "どんな焼き菓子を売っているんですか？",
+    "おはようございます。どんな焼き菓子売るのですか",
+    "スコーンっていくらですか？",
+    "クッキーの値段を教えてください。",
+    "今日売ってる商品は何ですか？",
+    "何を売ってるんですか？",
+    "焼き菓子の種類、教えてくれますか？",
+    "お菓子は何種類あるの？",
+    "品物の値段っていくら",
+    "スコーンとクッキー、それぞれいくらですか",
+    "何が売り物ですか",
+  ];
+  const RESERVATION_PARAPHRASES = [
+    "予約は何個ですか？",
+    "予約の数を教えてください。",
+    "取り置きは何点ありますか？",
+    "店頭で買えるのは何個ですか？",
+    "予約と店頭、それぞれ何個ですか？",
+    "予約分と店頭分の内訳を教えて。",
+    "予約って何点あるの？",
+    "店頭は何点残ってるんですか？",
+    "取り置き分はいくつ？",
+    "予約の割り振りはどうなってますか",
+    "こんにちは、予約は何個か聞きたいです",
+  ];
+  const SEATS_PARAPHRASES = [
+    "席は使えますか？",
+    "座ってもいいですか？",
+    "喫茶の席、空いてますか？",
+    "待つ間、座れますか？",
+    "四席って本当ですか？",
+    "ここ座れる?",
+    "待合として席を使ってもいいですか",
+    "美代子さんの喫茶、席は何席ですか",
+    "お茶を頼まなくても座れますか？",
+    "席、空いてる？",
+    "すみません、座っていいですか",
+  ];
+  const WORKSHOP_PARAPHRASES = [
+    "工房、貸してくれるんですか？",
+    "大輔さんの工房は借りられますか？",
+    "作業場、使わせてもらえますか？",
+    "工房を貸してもらえるか教えてください。",
+    "工房のこと、決まりました？",
+    "作業場は貸してもらえるの？",
+    "工房、借りられる?",
+    "椅子じゃなくて工房のほうは貸してくれるんですか",
+    "工房の返事、もらえましたか？",
+    "作業場を使ってもいいですか",
+    "こんばんは、工房のことなんですが借りられますか",
+  ];
+  const YESTERDAY_PARAPHRASES = [
+    "昨日は何があったんですか？",
+    "昨日、何かあった?",
+    "前の日はどんな様子でしたか？",
+    "前日に何があったのか教えて。",
+    "昨日のこと、聞いてもいいですか？",
+    "昨日は何が起きたの?",
+    "前日の出来事を教えてください",
+    "昨日、なにかありました？",
+    "昨日は大変だったんですか？",
+    "前の日の様子、どうでした?",
+    "お疲れ様です、昨日何があったか知りたいです",
+  ];
+  const PROFIT_PARAPHRASES = [
+    "儲かりましたか？",
+    "利益は出ていますか？",
+    "採算は取れてるんですか？",
+    "黒字ですか、それとも赤字ですか？",
+    "経費ってどれくらいかかったの？",
+    "コストはいくらでしたか？",
+    "この先も続けられますか？",
+    "続けていけそうですか？",
+    "持続できそうですか？",
+    "利益、出た?",
+    "こんにちは、儲かってるかどうか知りたいです",
+  ];
+
+  it.each(MENU_PARAPHRASES)("routes %j to the menu domain", (phrase) => {
+    expect(detectIntent(phrase)).toBe("menu");
+  });
+  it.each(RESERVATION_PARAPHRASES)("routes %j to the reservation_count domain", (phrase) => {
+    expect(detectIntent(phrase)).toBe("reservation_count");
+  });
+  it.each(SEATS_PARAPHRASES)("routes %j to the seats domain", (phrase) => {
+    expect(detectIntent(phrase)).toBe("seats");
+  });
+  it.each(WORKSHOP_PARAPHRASES)("routes %j to the workshop domain", (phrase) => {
+    expect(detectIntent(phrase)).toBe("workshop");
+  });
+  it.each(YESTERDAY_PARAPHRASES)("routes %j to the yesterday domain", (phrase) => {
+    expect(detectIntent(phrase)).toBe("yesterday");
+  });
+  it.each(PROFIT_PARAPHRASES)("routes %j to the profit domain", (phrase) => {
+    expect(detectIntent(phrase)).toBe("profit");
+  });
+
+  it("answers direct-answer-first: product names before quantities/price for every menu paraphrase", () => {
+    const state = createInitialState();
+    for (const phrase of MENU_PARAPHRASES) {
+      const reply = answerFreeText("hina", phrase, state);
+      expect(reply.indexOf("スコーン")).toBeGreaterThanOrEqual(0);
+      expect(reply.indexOf("スコーン")).toBeLessThan(reply.indexOf("280円"));
+    }
+  });
+
+  it("the Owner's exact reported failure sentence never returns the flavor non-answer", () => {
+    const state = createInitialState();
+    const reply = answerFreeText("hina", "おはようございます。どんな焼き菓子売るのですか", state);
+    expect(reply).not.toMatch(/先に数を見ます/);
+    expect(reply).toMatch(/スコーン/);
+    expect(reply).toMatch(/クッキー/);
+  });
+});
+
+describe("NEW LIFE 30-day engine — Phase 28 question-nonanswer guard", () => {
+  const UNRECOGNIZED_QUESTIONS = [
+    "今日は何して過ごしてるんですか？",
+    "休みの日は何してるの？",
+    "この町の好きなところはどこですか？",
+    "一番古い建物はどこですか？",
+  ];
+
+  it.each(UNRECOGNIZED_QUESTIONS)("a clearly-a-question input with no confident domain match (%j) gets a clarification, not a domain answer or flavor line", (phrase) => {
+    expect(detectIntent(phrase)).toBeNull();
+    for (const npc of NPC_IDS) {
+      const state = createInitialState();
+      const reply = answerFreeText(npc, phrase, state);
+      expect(reply).toBe(clarificationLine(npc));
+    }
+  });
+
+  it("a plain statement with no question/request semantics still gets a flavor line, not a clarification", () => {
+    const state = createInitialState();
+    const statements = ["おはようございます", "今日もいい天気ですね", "ありがとうございます", "また明日"];
+    for (const statement of statements) {
+      expect(detectIntent(statement)).toBeNull();
+      for (const npc of NPC_IDS) {
+        const reply = answerFreeText(npc, statement, state);
+        expect(reply).not.toBe(clarificationLine(npc));
+      }
+    }
   });
 });
 
