@@ -39,6 +39,8 @@ jobs:
           base_branch: "master"
           branch_prefix: "claude/newlife/"
           track_progress: true
+          claude_args: |
+            --allowedTools "Bash(npm:*),Bash(npx:*)"
 
       - name: Run Claude Code with API key fallback
         if: env.CLAUDE_CODE_OAUTH_TOKEN == '' && env.ANTHROPIC_API_KEY != ''
@@ -49,6 +51,8 @@ jobs:
           base_branch: "master"
           branch_prefix: "claude/newlife/"
           track_progress: true
+          claude_args: |
+            --allowedTools "Bash(npm:*),Bash(npx:*)"
 
       - name: Report one-time authentication setup requirement
         if: env.CLAUDE_CODE_OAUTH_TOKEN == '' && env.ANTHROPIC_API_KEY == ''
