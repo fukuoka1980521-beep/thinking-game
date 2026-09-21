@@ -15,12 +15,20 @@
  * Per-character diction follows NEWLIFE_CHARACTER_MODELS_V3.md "SPEECH
  * MODEL" fields; the six fact intents follow
  * NEWLIFE_PHASE26_SCENARIO_VALIDATION_V1.md "直接質問の確認表".
+ *
+ * ROUTING ORDER (Phase 28B "conversational act first"): a player line is
+ * classified by CONVERSATIONAL ACT before it is classified by topic, and
+ * only genuinely content-light chatter reaches the generic flavor pool.
+ * See `docs/newlife/evaluation/PHASE_28B_CONVERSATIONAL_ACT_REPAIR_V1.md`
+ * for the human-found failure this replaced: a directed statement about
+ * the NPC's manner of speaking ("口調が堅苦しいよ") was falling into the
+ * flavor pool and returning an unrelated line — a broken adjacency pair.
  */
 import { NPC_NAMES, type NewLife30State, type NpcId } from "./types";
 
 type Intent = "menu" | "reservation_count" | "seats" | "workshop" | "yesterday" | "profit" | "barber_check";
 
-function detectIntent(text: string): Intent | null {
+export function detectIntent(text: string): Intent | null {
   const t = text.trim();
   if (!t) return null;
   if (/理容|床屋|理髪|barber/i.test(t)) return "barber_check";
@@ -130,11 +138,246 @@ function flavorLine(npc: NpcId, seed: number): string {
   return lines[seed % lines.length];
 }
 
+/** Test-only escape hatch: is `line` one of the npc's generic (topic-free) flavor lines? */
+export function isFlavorLine(npc: NpcId, line: string): boolean {
+  return GENERIC_FLAVOR[npc].includes(line);
+}
+
+// ---------------------------------------------------------------------------
+// Conversational-act layer (Phase 28B).
+//
+// A directed statement (feedback about the NPC, a compliment, criticism,
+// agreement, disagreement, greeting, leave-taking, or a repair request) is
+// classified *before* topic routing, and answered by acknowledging what the
+// player actually said. Only a plain observation or genuinely low-information
+// chatter is allowed to fall through to `flavorLine`.
+// ---------------------------------------------------------------------------
+
+export type ConversationalAct =
+  | "tone_feedback"
+  | "repair_request"
+  | "compliment"
+  | "criticism"
+  | "agreement"
+  | "disagreement"
+  | "greeting"
+  | "leave_taking";
+
+const FOOD_TEXTURE_CONTEXT = /クッキー|スコーン|焼き菓子|お菓子|菓子|パン|生地/;
+
+// A remark about the NPC's own manner of speaking, not about a product or
+// fact. Requires either an explicit "style" noun paired with a stiffness
+// adjective, an explicit request to speak more casually, or a bare stiffness
+// adjective directed at the NPC with no competing food-texture context (so
+// "クッキーが固い" is not misread as tone feedback).
+function isToneFeedback(t: string): boolean {
+  if (FOOD_TEXTURE_CONTEXT.test(t)) return false;
+  const STYLE_WORD = /口調|言い方|話し方|喋り方|しゃべり方|物言い/;
+  const STIFF_WITH_STYLE = /堅苦し|他人行儀|よそよそし|機械っぽ|ロボット|そっけな|冷た|固|硬|変/;
+  const BARE_STIFF = /堅苦し|他人行儀|よそよそし|機械っぽ|ロボット|そっけな|冷たい|固い|硬い/;
+  const CASUAL_REQUEST = /もっと.*(普通|自然|気楽|フランク).*(話|喋)|タメ口/;
+  if (CASUAL_REQUEST.test(t)) return true;
+  if (STYLE_WORD.test(t) && STIFF_WITH_STYLE.test(t)) return true;
+  if (BARE_STIFF.test(t)) return true;
+  return false;
+}
+
+function isRepairRequest(t: string): boolean {
+  return /もう一(度|回).*(言|話)|^え[?？]?$|よく聞こえなかった|聞き取れなかった|どういう意味|何て言った|もう一回(お願い|言って)/.test(t);
+}
+
+function isQuestionLike(t: string): boolean {
+  if (/[?？]/.test(t)) return true;
+  if (/(です)?か[。.\s]*$/.test(t)) return true;
+  if (/(かな|かしら|っけ)[。.\s]*$/.test(t)) return true;
+  if (/教えて|ください|くれます|くれる\??$|もらえ/.test(t)) return true;
+  if (/^(どんな|何|なに|いつ|どこ|誰|だれ|なぜ|どうして|いくら|どれ)/.test(t)) return true;
+  return false;
+}
+
+function isCompliment(t: string): boolean {
+  return /美味し|上手|すごい|素敵|助かる|ありがとう|良かった|いいね|好き/.test(t);
+}
+
+function isCriticism(t: string): boolean {
+  return /まずい|ひどい|遅い|下手|がっかり|残念|よくない|不満/.test(t);
+}
+
+function isAgreement(t: string): boolean {
+  return /そうですね|そうだね|なるほど|わかりました|わかった|了解|賛成|いいと思う/.test(t);
+}
+
+function isDisagreement(t: string): boolean {
+  return /それは違う|嫌だ|反対|おかしいと思う|そうは思わない|納得できない/.test(t);
+}
+
+const GREETING_RE = /^(おはよう|こんにちは|こんばんは|やあ|どうも|はじめまして)/;
+function isGreeting(t: string): boolean {
+  return GREETING_RE.test(t);
+}
+
+const LEAVE_TAKING_RE = /さようなら|またね|じゃあね|失礼します|お先に|バイバイ|また明日|ではまた/;
+function isLeaveTaking(t: string): boolean {
+  return LEAVE_TAKING_RE.test(t);
+}
+
+/**
+ * Classifies the player's line as a conversational act when it is a directed
+ * statement about the conversation itself (feedback, compliment, criticism,
+ * agreement, disagreement, greeting, leave-taking, repair request). Returns
+ * `null` for factual questions/requests (handled by `detectIntent`) and for
+ * plain observations/low-information chatter (handled by `flavorLine`).
+ */
+export function detectAct(text: string): ConversationalAct | null {
+  const t = text.trim();
+  if (!t) return null;
+  if (isToneFeedback(t)) return "tone_feedback";
+  if (isRepairRequest(t)) return "repair_request";
+  // Compliment/criticism/agreement/disagreement are statement acts: a real
+  // question ("美味しいですか？") must still reach fact routing/clarification,
+  // not be swallowed here.
+  if (!isQuestionLike(t)) {
+    if (isCompliment(t)) return "compliment";
+    if (isCriticism(t)) return "criticism";
+    if (isAgreement(t)) return "agreement";
+    if (isDisagreement(t)) return "disagreement";
+  }
+  // Greeting/leave-taking only win when nothing else about the line (fact
+  // topic, question) already claimed it — checked by the caller after
+  // `detectIntent` comes back empty, so a compound line like "おはようござ
+  // います。どんな焼き菓子売るのですか" still answers the menu fact first.
+  if (isGreeting(t)) return "greeting";
+  if (isLeaveTaking(t)) return "leave_taking";
+  return null;
+}
+
+const TONE_FEEDBACK_LINE: Record<NpcId, string> = {
+  hina: "あ……力んでました。すみません、もう少し普通に話しますね。",
+  yohei: "言い方がきつかったか。悪い、砕けて言うぞ。",
+  daisuke: "そうか? ちょっと硬くなってたかもな。……いつもの調子でいくよ。",
+  jin: "……硬かったか。悪い。",
+  miyoko: "あら、そうだった? ごめんなさいね、もう少し気楽に話すわ。",
+  fumiko: "堅かったかしら。ごめんなさい、もう少し普通に話すわね。",
+};
+
+const REPAIR_REQUEST_LINE: Record<NpcId, string> = {
+  hina: "すみません、うまく伝わってなかったですね。何が知りたいか、もう一度お願いできますか。",
+  yohei: "……もう一回言ってくれ。",
+  daisuke: "悪い、聞き逃した。もう一回頼む。",
+  jin: "……もう一度。",
+  miyoko: "ごめんなさい、聞き取れなかったわ。もう一度お願いできる?",
+  fumiko: "聞き取れなかったわ。要点だけもう一度お願い。",
+};
+
+const COMPLIMENT_LINE: Record<NpcId, string> = {
+  hina: "うれしいです、ありがとうございます!",
+  yohei: "……そうか。",
+  daisuke: "だろ? もっと褒めていいぞ。",
+  jin: "……そうか。",
+  miyoko: "うれしいこと言ってくれるわね、ありがとう。",
+  fumiko: "評価はありがたいわ。引き続き、確認は続けるけどね。",
+};
+
+const CRITICISM_LINE: Record<NpcId, string> = {
+  hina: "……そう言われると刺さります。どこが気になったか、教えてもらえますか。",
+  yohei: "そうか。具体的にどこだ。",
+  daisuke: "うっ、痛いとこ突くな……。まあ、聞くよ。",
+  jin: "……悪い。直す。",
+  miyoko: "そう、教えてくれてありがとう。次はもっと気をつけるわ。",
+  fumiko: "指摘はありがたいわ。どこを直せばいいか、具体的に聞かせて。",
+};
+
+const AGREEMENT_LINE: Record<NpcId, string> = {
+  hina: "よかった、分かってもらえて。",
+  yohei: "……そうか。",
+  daisuke: "だよな。話が早くて助かる。",
+  jin: "……分かった。",
+  miyoko: "そう言ってもらえると安心するわ。",
+  fumiko: "了解。じゃあその線で進めるわね。",
+};
+
+const DISAGREEMENT_LINE: Record<NpcId, string> = {
+  hina: "……そうですか。でも、私は今の考えのままでいきたいです。",
+  yohei: "そうは思わんな。数字はこれだ。",
+  daisuke: "うーん、そこは譲れないところもあってさ。",
+  jin: "……無理だ。二人ならやる。",
+  miyoko: "そう感じたのね。でも、私はこのやり方を続けるわ。",
+  fumiko: "意見は分かったわ。でも、担当と期限は変えられない。",
+};
+
+const GREETING_LINE: Record<NpcId, string> = {
+  hina: "こんにちは! 今日もよろしくお願いします。",
+  yohei: "……よう。",
+  daisuke: "おう、来たか。",
+  jin: "……どうも。",
+  miyoko: "いらっしゃい、ゆっくりしていってね。",
+  fumiko: "こんにちは。今日はどの用件かしら。",
+};
+
+const LEAVE_TAKING_LINE: Record<NpcId, string> = {
+  hina: "はい、また来てくださいね!",
+  yohei: "……ああ、また。",
+  daisuke: "おう、またな。",
+  jin: "……また。",
+  miyoko: "気をつけて、また来てね。",
+  fumiko: "また連絡するわ。お疲れさま。",
+};
+
+/** Unmapped-but-clearly-a-question fallback: never a flavor line for a directed question. */
+const TOPIC_CLARIFICATION_LINE: Record<NpcId, string> = {
+  hina: "すみません、何について知りたいか、もう少し具体的に聞いてもいいですか。",
+  yohei: "……何の話だ。もう少し具体的に言ってくれ。",
+  daisuke: "ん? 何のことか、もうちょい詳しく頼む。",
+  jin: "……何のことだ。",
+  miyoko: "ごめんなさい、何のことか、もう少し教えてくれる?",
+  fumiko: "何について確認したいのか、具体的に言ってもらえる?",
+};
+
+export function actLine(act: ConversationalAct, npc: NpcId): string {
+  switch (act) {
+    case "tone_feedback": return TONE_FEEDBACK_LINE[npc];
+    case "repair_request": return REPAIR_REQUEST_LINE[npc];
+    case "compliment": return COMPLIMENT_LINE[npc];
+    case "criticism": return CRITICISM_LINE[npc];
+    case "agreement": return AGREEMENT_LINE[npc];
+    case "disagreement": return DISAGREEMENT_LINE[npc];
+    case "greeting": return GREETING_LINE[npc];
+    case "leave_taking": return LEAVE_TAKING_LINE[npc];
+  }
+}
+
+export function clarificationLine(npc: NpcId): string {
+  return TOPIC_CLARIFICATION_LINE[npc];
+}
+
 /**
  * Answers a free-text line addressed to one NPC. Read-only: takes state by
  * reference and never writes to it. Returns display text only.
+ *
+ * Order: (1) directed acts that are about the conversation itself and don't
+ * compete with a fact lookup (tone feedback, repair request); (2) the fact
+ * topic domains — a compound line like a greeting-prefixed question still
+ * answers the fact; (3) act types that only apply once no fact topic claimed
+ * the line (compliment/criticism/agreement/disagreement/greeting/leave-taking);
+ * (4) a clarification line for a line that is clearly a question/request but
+ * maps to no known fact domain; (5) generic flavor, reserved for genuinely
+ * content-light chatter or plain observations.
  */
 export function answerFreeText(npc: NpcId, text: string, state: NewLife30State): string {
+  const t = text.trim();
+
+  // Priority 1: acts about the conversation itself that never compete with a
+  // fact lookup (a food-texture complaint is excluded from tone_feedback by
+  // `isToneFeedback` itself, so this can't shadow a real menu question).
+  if (t) {
+    const preDomainAct = detectAct(t);
+    if (preDomainAct === "tone_feedback" || preDomainAct === "repair_request") {
+      return actLine(preDomainAct, npc);
+    }
+  }
+
+  // Priority 2: fact topic domains — a compound line like a greeting-prefixed
+  // question still answers the fact, not the greeting.
   const intent = detectIntent(text);
   if (intent === "barber_check" && npc === "daisuke") return BARBER_CORRECTION;
   if (intent === "menu") return menuAnswer(npc);
@@ -143,6 +386,20 @@ export function answerFreeText(npc: NpcId, text: string, state: NewLife30State):
   if (intent === "workshop") return workshopAnswer(npc, state, state.day);
   if (intent === "yesterday") return yesterdayAnswer(npc, state, state.day);
   if (intent === "profit") return profitAnswer(npc, state.day);
+
+  // Priority 3: remaining conversational acts (compliment/criticism/agreement/
+  // disagreement/greeting/leave-taking) — only reached once no fact topic
+  // claimed the line.
+  if (t) {
+    const act = detectAct(t);
+    if (act) return actLine(act, npc);
+  }
+
+  // Priority 4: a line that is clearly a question/request but maps to no
+  // known fact domain gets a clarification, never a flavor nonanswer.
+  if (t && isQuestionLike(t)) return clarificationLine(npc);
+
+  // Priority 5: genuinely content-light chatter or a plain observation.
   const seed = text.length + state.day + state.log.length;
   return flavorLine(npc, seed);
 }
