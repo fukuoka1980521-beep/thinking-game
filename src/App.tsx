@@ -11,6 +11,7 @@ import { UserTestThanksScreen } from "./screens/UserTestThanksScreen";
 import { CaseSession } from "./CaseSession";
 import { Case1CApp } from "./case1c/Case1CApp";
 import { Case1TestResultsScreen } from "./case1c/Case1TestResultsScreen";
+import { NewLife30App } from "./newlife/NewLife30App";
 import {
   loadInProgressSession,
   loadCompletedLogs,
@@ -33,7 +34,8 @@ type View =
   | { kind: "USER_TEST" }
   | { kind: "USER_TEST_THANKS" }
   | { kind: "CASE1C" }
-  | { kind: "CASE1C_RESULTS" };
+  | { kind: "CASE1C_RESULTS" }
+  | { kind: "NEWLIFE30" };
 
 // Section 7: after roughly this many cases in one sitting, offer the play-run summary.
 const SESSION_SUMMARY_THRESHOLD = 5;
@@ -52,12 +54,18 @@ const SESSION_SUMMARY_THRESHOLD = 5;
  * NOT wired into this build. Owner's release directive scopes this external test to CASE1 only;
  * wiring them back in only requires restoring the 2 imports/routes/HomeScreen props this Run
  * removed -- their source under src/episodes/ and src/pilot/ is untouched.
+ *
+ * PHASE 27 (NEW LIFE issue #1): `?newlife30=1` follows the exact same pattern as `?case1test`
+ * above -- a hidden direct link, not wired into HomeScreen or any other screen, for an isolated,
+ * unrelated design candidate (`src/newlife/`). HUMAN_VALIDATION_STATUS is PENDING for this slice;
+ * it is not part of the CASE1 external test and does not affect it.
  */
 function initialViewFromLocation(): View {
   if (typeof window === "undefined") return { kind: "HOME" };
   const params = new URLSearchParams(window.location.search);
   if (params.has("case1results")) return { kind: "CASE1C_RESULTS" };
   if (params.has("case1test")) return { kind: "CASE1C" };
+  if (params.has("newlife30")) return { kind: "NEWLIFE30" };
   return { kind: "HOME" };
 }
 
@@ -261,6 +269,10 @@ export default function App() {
 
   if (view.kind === "CASE1C_RESULTS") {
     return <Case1TestResultsScreen onExit={() => setView({ kind: "HOME" })} />;
+  }
+
+  if (view.kind === "NEWLIFE30") {
+    return <NewLife30App onExit={() => setView({ kind: "HOME" })} />;
   }
 
   return (
