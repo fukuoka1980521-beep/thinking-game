@@ -29,11 +29,13 @@ function detectIntent(text: string): Intent | null {
   if (/席.*(使|空|座)/.test(t)) return "seats";
   if (/予約.*(何|点|個)|(何|点|個).*予約/.test(t)) return "reservation_count";
   if (/昨日.*(何|あった)/.test(t)) return "yesterday";
-  if (/何を売|商品|スコーン|クッキー/.test(t)) return "menu";
+  if (
+    /(何|どんな).*(焼き菓子|お菓子|菓子)|(焼き菓子|お菓子|菓子).*(何|どんな|売)|(何を?売|何売|何が売|売る.*何)|商品|スコーン|クッキー/.test(t)
+  ) return "menu";
   return null;
 }
 
-const MENU_FACT = "スコーン二十個、一個280円。クッキーは十袋、一袋240円。合わせて30点で、うち12点が予約、18点が店頭分です。";
+const MENU_FACT = "スコーンとクッキーです。スコーンは二十個で一個280円。クッキーは十袋で一袋240円。合わせて30点で、うち12点が予約、18点が店頭分です。";
 
 function menuAnswer(npc: NpcId): string {
   switch (npc) {
