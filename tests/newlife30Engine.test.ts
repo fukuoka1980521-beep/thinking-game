@@ -97,6 +97,14 @@ describe("NEW LIFE 30-day engine — direct-question semantic routing", () => {
     const state = createInitialState();
     expect(answerFreeText("hina", "何を売ってるんですか？", state)).toMatch(/280円|240円/);
   });
+  it("understands a natural greeting + baked-goods question and answers the semantic target first", () => {
+    const state = createInitialState();
+    const reply = answerFreeText("hina", "おはようございます。どんな焼き菓子売るのですか", state);
+    expect(reply).toMatch(/スコーン/);
+    expect(reply).toMatch(/クッキー/);
+    expect(reply).not.toMatch(/先に数を見ます/);
+  });
+
 
   it("answers the reservation split with concrete counts", () => {
     const state = createInitialState();
