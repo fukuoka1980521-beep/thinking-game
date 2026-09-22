@@ -27,6 +27,8 @@ param(
   [string]$ProjectId
 )
 
+$KnownProjectId = "gas-test-runner-20260620-wjxf"
+
 $ErrorActionPreference = "Continue"
 
 $RequiredApis = @(
@@ -75,8 +77,11 @@ if ([string]::IsNullOrWhiteSpace($ProjectId)) {
   $ProjectId = (gcloud config get-value project 2>$null)
 }
 if ([string]::IsNullOrWhiteSpace($ProjectId) -or $ProjectId -eq "(unset)") {
-  Write-Host "No project configured and none passed via -ProjectId." -ForegroundColor Red
-  Write-Host "Run: gcloud config set project <project-id>   or   pass -ProjectId <project-id>" -ForegroundColor Red
+  $ProjectId = $KnownProjectId
+  Write-Host "No active gcloud project was configured; using the repository's previously selected Vertex AI project: $ProjectId" -ForegroundColor Yellow
+}
+if ([string]::IsNullOrWhiteSpace($ProjectId)) {
+  Write-Host "No project could be resolved." -ForegroundColor Red
   $hasProject = $false
 } else {
   Write-Host "Using project: $ProjectId" -ForegroundColor Green
