@@ -24,15 +24,11 @@ import type {
 } from "./contract";
 import type { ConversationalAct } from "../npcVoice";
 
-// Cold start (the function is not deployed yet, so this has never been
-// measured against a live endpoint) plus one model call must fit inside
-// this budget with headroom, matching the reasoning in
-// `src/lib/aiDialogueClient.ts`'s own `REQUEST_TIMEOUT_MS` comment. Kept
-// shorter than CASE1's 55s: a NEW LIFE free-talk turn has no retry-on-empty
-// server-side behavior (see `functions/newlife-dialogue/index.js`), and a
-// slow reply here has a silent, instant deterministic fallback instead of a
-// dead end, so there is no reason to make the player wait as long.
-const REQUEST_TIMEOUT_MS = 20_000;
+// The server can retry once on an empty Gemini response. The earlier CASE1
+// real Vertex-AI deployment measured that this needs client-side headroom
+// beyond one model call, so NEW LIFE uses the same 25s budget rather than
+// timing out before the server's transparent retry can finish.
+const REQUEST_TIMEOUT_MS = 25_000;
 
 const MAX_UTTERANCE_LENGTH = 200;
 
