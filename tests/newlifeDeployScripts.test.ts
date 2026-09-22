@@ -152,3 +152,23 @@ describe("scripts/newlife-deploy smoke-test and live-eval fixed sets", () => {
     expect(unknownCase!.day).toBeLessThan(20);
   });
 });
+
+
+describe("scripts/newlife-deploy — previously proven GCP target", () => {
+  it("defaults deployment to the repository's previously selected Vertex AI project and sets GCP_PROJECT explicitly", () => {
+    const deploySource = readFileSync(path.join(REPO_ROOT, "scripts/newlife-deploy/deploy.ps1"), "utf8");
+    expect(deploySource).toContain('gas-test-runner-20260620-wjxf');
+    expect(deploySource).toContain('--set-env-vars=GCP_PROJECT=$ProjectId');
+  });
+
+  it("readiness check can fall back to the previously selected project without mutating gcloud config", () => {
+    const readinessSource = readFileSync(path.join(REPO_ROOT, "scripts/newlife-deploy/check-readiness.ps1"), "utf8");
+    expect(readinessSource).toContain('$KnownProjectId = "gas-test-runner-20260620-wjxf"');
+    expect(readinessSource).not.toContain("gcloud config set project $KnownProjectId");
+  });
+
+  it("client timeout leaves headroom for the server's one transparent retry", () => {
+    const clientSource = readFileSync(path.join(REPO_ROOT, "src/newlife/semantic/httpInterpreter.ts"), "utf8");
+    expect(clientSource).toContain("const REQUEST_TIMEOUT_MS = 25_000");
+  });
+});
