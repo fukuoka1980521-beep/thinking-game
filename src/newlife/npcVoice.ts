@@ -28,18 +28,92 @@ import { NPC_NAMES, type NewLife30State, type NpcId } from "./types";
 
 type Intent = "menu" | "reservation_count" | "seats" | "workshop" | "yesterday" | "profit" | "barber_check";
 
-export function detectIntent(text: string): Intent | null {
-  const t = text.trim();
+/**
+ * `String.prototype.normalize("NFKC")` folds full-width digits/letters and
+ * many punctuation variants (e.g. full-width "？" already matches our
+ * regexes directly, full-width "１２" → "12") onto a single form. True
+ * Kanji-numeral parsing (二十 → 20) is intentionally not implemented: no
+ * fact lookup in this file compares a *player-supplied* quantity against
+ * anything — every fact is a fixed constant — so there is nowhere that
+ * would actually consume a parsed number.
+ */
+function normalizeForRouting(raw: string): string {
+  const t = raw.normalize("NFKC").trim();
+  return t.replace(
+    /^(おはようございます|おはよう|こんにちは|こんばんは|お疲れ様です|お疲れ様|すみません|あの、?|ねえ|もしもし)[、,。.!！\s]*/u,
+    "",
+  );
+}
+
+/**
+ * True if the input reads as a question or a request, regardless of
+ * whether it maps to a known fact domain. Used both to select a fact
+ * domain (topic keyword + this) and, when no domain matches, to decide
+ * between a clarification (this is true) and a flavor line (this is
+ * false) — see the file-level note above.
+ */
+function isQuestionLike(raw: string): boolean {
+  const t = normalizeForRouting(raw);
+  if (!t) return false;
+  if (/[?？]/.test(t)) return true;
+  // Sentence-final "か" (です/ます/でした/でしょう + か, in any tense/register)
+  // is the standard Japanese question particle even without a "?".
+  if (/か[。.!！]?\s*$/.test(t)) return true;
+  if (/(かな|かしら|っけ)[。.!！]?\s*$/.test(t)) return true;
+  if (/(教えて|おしえて|聞きたい|聞かせて|知りたい|ください|下さい|お願い)/.test(t)) return true;
+  if (/(どんな|いくつ|いくら|どこ|だれ|誰|どっち|どちら|なぜ|どうして)/.test(t)) return true;
+  if (/何(を|が|は|で|の)/.test(t)) return true;
+  return false;
+}
+
+function isBarberMention(t: string): boolean {
+  return /理容|床屋|理髪|barber/i.test(t);
+}
+
+function isMenuQuestion(t: string): boolean {
+  if (/(何を?売|何売|何が売|売る.*何)/.test(t)) return true;
+  return /(焼き菓子|お菓子|菓子|スコーン|クッキー|商品|品物|値段|価格|幾ら|いくら)/.test(t) && isQuestionLike(t);
+}
+
+function isReservationQuestion(t: string): boolean {
+  if (/予約|取り置き/.test(t)) return isQuestionLike(t);
+  return /店頭/.test(t) && /(何|いくつ|何点|何個|内訳|割り振り)/.test(t);
+}
+
+function isSeatsQuestion(t: string): boolean {
+  return /(席|座)/.test(t) && isQuestionLike(t);
+}
+
+function isWorkshopQuestion(t: string): boolean {
+  return /(工房|作業場)/.test(t) && isQuestionLike(t);
+}
+
+function isYesterdayQuestion(t: string): boolean {
+  return /(昨日|前の日|前日)/.test(t) && isQuestionLike(t);
+}
+
+function isProfitQuestion(t: string): boolean {
+  return /(儲か|利益|採算|黒字|赤字|経費|コスト|続けられ|続けていけ|持続)/.test(t) && isQuestionLike(t);
+}
+
+/**
+ * Exported for direct testing of the paraphrase matrix (see
+ * tests/newlife30Engine.test.ts) without needing to thread every case
+ * through a specific NPC's voice. Order matters: product-name questions
+ * ("どんな焼き菓子？") are checked before the count-split domain so a
+ * question about *what's for sale* doesn't get misrouted just because it
+ * also happens to mention "店頭".
+ */
+export function detectIntent(rawText: string): Intent | null {
+  const t = normalizeForRouting(rawText);
   if (!t) return null;
-  if (/理容|床屋|理髪|barber/i.test(t)) return "barber_check";
-  if (/儲か|利益|採算|黒字|赤字/.test(t)) return "profit";
-  if (/工房.*貸|貸.*工房/.test(t)) return "workshop";
-  if (/席.*(使|空|座)/.test(t)) return "seats";
-  if (/予約.*(何|点|個)|(何|点|個).*予約/.test(t)) return "reservation_count";
-  if (/昨日.*(何|あった)/.test(t)) return "yesterday";
-  if (
-    /(何|どんな).*(焼き菓子|お菓子|菓子)|(焼き菓子|お菓子|菓子).*(何|どんな|売)|(何を?売|何売|何が売|売る.*何)|商品|スコーン|クッキー/.test(t)
-  ) return "menu";
+  if (isBarberMention(t)) return "barber_check";
+  if (isProfitQuestion(t)) return "profit";
+  if (isWorkshopQuestion(t)) return "workshop";
+  if (isSeatsQuestion(t)) return "seats";
+  if (isMenuQuestion(t)) return "menu";
+  if (isReservationQuestion(t)) return "reservation_count";
+  if (isYesterdayQuestion(t)) return "yesterday";
   return null;
 }
 
@@ -184,15 +258,6 @@ function isToneFeedback(t: string): boolean {
 
 function isRepairRequest(t: string): boolean {
   return /もう一(度|回).*(言|話)|^え[?？]?$|よく聞こえなかった|聞き取れなかった|どういう意味|何て言った|もう一回(お願い|言って)/.test(t);
-}
-
-function isQuestionLike(t: string): boolean {
-  if (/[?？]/.test(t)) return true;
-  if (/(です)?か[。.\s]*$/.test(t)) return true;
-  if (/(かな|かしら|っけ)[。.\s]*$/.test(t)) return true;
-  if (/教えて|ください|くれます|くれる\??$|もらえ/.test(t)) return true;
-  if (/^(どんな|何|なに|いつ|どこ|誰|だれ|なぜ|どうして|いくら|どれ)/.test(t)) return true;
-  return false;
 }
 
 function isCompliment(t: string): boolean {
