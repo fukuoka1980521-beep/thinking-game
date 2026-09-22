@@ -95,10 +95,24 @@ if (-not $Deploy) {
 }
 
 Write-Host "Deploying now (explicit -Deploy passed)..." -ForegroundColor Cyan
-$deployedUrl = (& gcloud @deployArgs 2>&1 | Select-Object -Last 1)
-if ($LASTEXITCODE -ne 0) {
-  Write-Host "Deploy FAILED. Output above." -ForegroundColor Red
+$deployOutput = @(& gcloud @deployArgs 2>&1)
+$deployExit = $LASTEXITCODE
+$deployOutput | ForEach-Object { Write-Host $_ }
+if ($deployExit -ne 0) {
+  Write-Host "Deploy FAILED." -ForegroundColor Red
   exit 1
+}
+
+# Prefer an HTTPS line from the formatted deploy output. If gcloud emitted
+# warnings after the URI, query the deployed function directly instead of
+# accidentally saving a warning as the endpoint.
+$deployedUrl = ($deployOutput | ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^https://.+' } | Select-Object -Last 1)
+if ([string]::IsNullOrWhiteSpace($deployedUrl)) {
+  $deployedUrl = (& gcloud functions describe newlife-dialogue --gen2 --region=asia-northeast1 --project=$ProjectId --format="value(serviceConfig.uri)" 2>$null).Trim()
+}
+if ([string]::IsNullOrWhiteSpace($deployedUrl) -or $deployedUrl -notmatch '^https://') {
+  Write-Host "Deploy succeeded but the HTTPS endpoint could not be resolved mechanically." -ForegroundColor Red
+  exit 2
 }
 
 Write-Host ""
