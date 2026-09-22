@@ -11,8 +11,9 @@
   20s, 256Mi) — this script does not invent different defaults.
 
 .PARAMETER ProjectId
-  Required. Deliberately not auto-detected here (unlike check-readiness.ps1)
-  so a deploy can never silently target the wrong project.
+  Defaults to the GCP project already chosen and used for the earlier real
+  Vertex AI deployment in this repository: gas-test-runner-20260620-wjxf.
+  Pass -ProjectId explicitly to override.
 
 .PARAMETER EnableApis
   Switch. If passed, runs `gcloud services enable` for the five required
@@ -35,7 +36,7 @@
   ./scripts/newlife-deploy/deploy.ps1 -ProjectId my-project-123 -EnableApis -Deploy -RunSmokeTest
 #>
 param(
-  [Parameter(Mandatory = $true)][string]$ProjectId,
+  [string]$ProjectId = "gas-test-runner-20260620-wjxf",
   [switch]$EnableApis,
   [switch]$Deploy,
   [switch]$RunSmokeTest
@@ -82,6 +83,7 @@ $deployArgs = @(
   "--timeout=20s",
   "--max-instances=10",
   "--project=$ProjectId",
+  "--set-env-vars=GCP_PROJECT=$ProjectId",
   "--format=value(serviceConfig.uri)"
 )
 Write-Host "Deploy command:"
