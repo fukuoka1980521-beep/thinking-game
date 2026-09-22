@@ -1,0 +1,50 @@
+name: NEW LIFE Deployment Readiness CI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "scripts/newlife-deploy/**"
+      - ".github/workflows/newlife-deploy-readiness-ci.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "scripts/newlife-deploy/**"
+      - ".github/workflows/newlife-deploy-readiness-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check PowerShell syntax
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Get-ChildItem scripts/newlife-deploy/*.ps1 | ForEach-Object {
+            $null = [scriptblock]::Create((Get-Content $_.FullName -Raw))
+            Write-Host "PowerShell syntax OK: $($_.Name)"
+          }
+
+      - name: Check Node script syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in scripts/newlife-deploy/*.mjs; do
+            node --check "$f"
+            echo "Node syntax OK: $f"
+          done
+
+      - name: Run deployment helper tests
+        run: npm install --no-audit --no-fund && npx vitest run tests/newlifeDeployScripts.test.ts
