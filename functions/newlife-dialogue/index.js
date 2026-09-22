@@ -63,19 +63,30 @@ exports.newlifeDialogue = async (req, res) => {
 
   try {
     const client = getClient();
-    const response = await client.models.generateContent({
-      model: MODEL,
-      contents: buildPrompt(snapshot.npc, utterance, snapshot),
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.4,
-        maxOutputTokens: 1024,
-        responseMimeType: "application/json",
-        responseSchema: RESPONSE_SCHEMA,
-      },
-    });
+    const generateOnce = () =>
+      client.models.generateContent({
+        model: MODEL,
+        contents: buildPrompt(snapshot.npc, utterance, snapshot),
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature: 0.4,
+          // Reuse the repository's September 2026 real Vertex-AI evidence:
+          // gemini-2.5-flash can spend a large share of the budget on
+          // internal thinking and occasionally return no visible text when
+          // the budget is too small. CASE1 was stabilized with 2048 plus
+          // one transparent retry; NEW LIFE uses the same proven pattern.
+          maxOutputTokens: 2048,
+          responseMimeType: "application/json",
+          responseSchema: RESPONSE_SCHEMA,
+        },
+      });
 
-    const text = (response.text || "").trim();
+    let response = await generateOnce();
+    let text = (response.text || "").trim();
+    if (!text) {
+      response = await generateOnce();
+      text = (response.text || "").trim();
+    }
     if (!text) {
       res.status(502).json({ error: "empty_model_response" });
       return;
