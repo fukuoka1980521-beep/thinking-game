@@ -2,8 +2,13 @@ import { useMemo, useState } from "react";
 import "./newlife30.css";
 import { advanceDay, applyAction, createInitialState, day11PhaseLabel } from "./state";
 import { getScene, TOTAL_DAYS } from "./content";
-import { answerFreeText, npcDisplayName } from "./npcVoice";
+import { npcDisplayName } from "./npcVoice";
 import { NPC_IDS, type NewLife30State, type NpcId } from "./types";
+import { NEWLIFE_DIALOGUE_ENDPOINT_URL } from "./semantic/config";
+import { getNewLifeAiDialogueConsent, setNewLifeAiDialogueConsent, type NewLifeAiDialogueConsentStatus } from "./semantic/consent";
+import { HttpSemanticInterpreter } from "./semantic/httpInterpreter";
+import { resolveFreeText } from "./semantic/coordinator";
+import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 
 interface Props {
   onExit: () => void;
@@ -40,6 +45,19 @@ export function NewLife30App({ onExit }: Props) {
   const [transcript, setTranscript] = useState<TranscriptLine[]>([]);
   const [addressee, setAddressee] = useState<NpcId>("hina");
   const [freeText, setFreeText] = useState("");
+  const [pending, setPending] = useState(false);
+  const [consentStatus, setConsentStatus] = useState<NewLifeAiDialogueConsentStatus | null>(() => getNewLifeAiDialogueConsent());
+  const [pendingSubmission, setPendingSubmission] = useState<{ npc: NpcId; text: string } | null>(null);
+
+  // With the shipped empty endpoint (`config.ts`), this is always `null` and
+  // `resolveFreeText` never attempts a network call -- byte-identical to
+  // calling `answerFreeText` directly, matching Phase 27/28/28B's existing
+  // deterministic router unchanged.
+  const interpreter = useMemo(
+    () => (NEWLIFE_DIALOGUE_ENDPOINT_URL ? new HttpSemanticInterpreter(NEWLIFE_DIALOGUE_ENDPOINT_URL) : null),
+    [],
+  );
+  const showConsentPrompt = Boolean(NEWLIFE_DIALOGUE_ENDPOINT_URL) && pendingSubmission !== null && consentStatus === null;
 
   const scene = useMemo(() => getScene(state.day, state.day11Phase, state.day24Outcome), [state.day, state.day11Phase, state.day24Outcome]);
 
@@ -58,17 +76,46 @@ export function NewLife30App({ onExit }: Props) {
     resetTranscriptFor(advanceDay(state));
   }
 
+  async function submitFreeText(npc: NpcId, text: string, consentAccepted: boolean) {
+    setPending(true);
+    try {
+      const result = await resolveFreeText(npc, text, state, { interpreter, consentAccepted });
+      setTranscript((prev) => [...prev, { speaker: "あなた", text }, { speaker: npcDisplayName(npc), text: result.text }]);
+    } finally {
+      setPending(false);
+    }
+  }
+
   function handleAskSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (pending) return;
     const text = freeText.trim();
     if (!text) return;
-    const reply = answerFreeText(addressee, text, state);
-    setTranscript((prev) => [
-      ...prev,
-      { speaker: "あなた", text },
-      { speaker: npcDisplayName(addressee), text: reply },
-    ]);
     setFreeText("");
+
+    if (NEWLIFE_DIALOGUE_ENDPOINT_URL && consentStatus === null) {
+      setPendingSubmission({ npc: addressee, text });
+      return;
+    }
+    void submitFreeText(addressee, text, consentStatus === "accepted");
+  }
+
+  function handleConsentAccept() {
+    setNewLifeAiDialogueConsent("accepted");
+    setConsentStatus("accepted");
+    if (pendingSubmission) {
+      void submitFreeText(pendingSubmission.npc, pendingSubmission.text, true);
+      setPendingSubmission(null);
+    }
+  }
+
+  function handleConsentDecline() {
+    setNewLifeAiDialogueConsent("declined");
+    setConsentStatus("declined");
+    if (pendingSubmission) {
+      void submitFreeText(pendingSubmission.npc, pendingSubmission.text, false);
+      setPendingSubmission(null);
+    }
   }
 
   const npcsForSelect = scene.npcsPresent.length > 0 ? scene.npcsPresent : NPC_IDS;
@@ -119,9 +166,13 @@ export function NewLife30App({ onExit }: Props) {
         ))}
       </div>
 
+      {showConsentPrompt ? (
+        <NewLifeAiConsentPrompt onAccept={handleConsentAccept} onDecline={handleConsentDecline} />
+      ) : null}
+
       <form className="newlife30-freetalk" onSubmit={handleAskSubmit}>
         <div className="newlife30-freetalk-row">
-          <select value={addressee} onChange={(e) => setAddressee(e.target.value as NpcId)}>
+          <select value={addressee} onChange={(e) => setAddressee(e.target.value as NpcId)} disabled={pending}>
             {npcsForSelect.map((npc) => (
               <option key={npc} value={npc}>
                 {npcDisplayName(npc)}
@@ -133,9 +184,13 @@ export function NewLife30App({ onExit }: Props) {
             placeholder="自由に話しかける（例：何を売ってるの？）"
             value={freeText}
             onChange={(e) => setFreeText(e.target.value)}
+            disabled={pending}
           />
-          <button type="submit">話す</button>
+          <button type="submit" disabled={pending}>
+            話す
+          </button>
         </div>
+        {pending ? <p className="newlife30-pending">考え中…</p> : null}
       </form>
 
       <button className="newlife30-advance" onClick={handleAdvance}>

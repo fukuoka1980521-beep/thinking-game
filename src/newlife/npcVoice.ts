@@ -55,7 +55,7 @@ function normalizeForRouting(raw: string): string {
  * between a clarification (this is true) and a flavor line (this is
  * false) — see the file-level note above.
  */
-function isQuestionLike(raw: string): boolean {
+export function isQuestionLike(raw: string): boolean {
   const t = normalizeForRouting(raw);
   if (!t) return false;
   if (/[?？]/.test(t)) return true;
@@ -151,6 +151,25 @@ function productCareAnswer(npc: NpcId, day: number, rawText: string): string {
   const care = "レシピと焼き上がりはかなり見ます。材料の産地みたいなところまでは、まだ決めてません。";
   return `${cost}${care}`;
 }
+
+/**
+ * Neutral canonical fact strings for the four domains that (unlike
+ * menu/profit above) have no single per-NPC line already written in this
+ * file's neutral voice. Exported so `factsProjection.ts` cites these directly
+ * instead of hand-duplicating the same numbers (Phase 29 §14 known
+ * limitation: only menu/profit were unified that way). This does not change
+ * any NPC's existing displayed wording below — those stay exactly as written
+ * — it only gives the semantic-layer projection one shared source instead of
+ * an independently authored copy, so a future edit to a state-dependent fact
+ * here cannot silently desynchronize from what the projection reports.
+ */
+export const RESERVATION_FACT = "予約12点、店頭18点、合わせて30点。";
+export const SEATS_BOUNDED_FACT = "美代子さんの喫茶は四席まで、お客さん用。";
+export const SEATS_ASSUMED_FACT = "美代子さんの席の扱いはまだ本人が明言していない。";
+export const WORKSHOP_YES_FACT = "大輔の工房は一時間だけ貸せる。";
+export const WORKSHOP_NO_FACT = "今回、大輔の工房は貸さない。";
+export const YESTERDAY_CLEAR_FACT = "初日から予約と店頭を分けて掲示できていた。";
+export const YESTERDAY_CORRECTED_FACT = "初めの掲示があいまいで、その版を見た客が来たことがある。今は直っている。";
 
 function reservationAnswer(npc: NpcId): string {
   switch (npc) {
@@ -495,4 +514,30 @@ export function answerFreeText(npc: NpcId, text: string, state: NewLife30State):
 
 export function npcDisplayName(npc: NpcId): string {
   return NPC_NAMES[npc];
+}
+
+/**
+ * Phase 30 hybrid-runtime hook: true exactly when `answerFreeText` would
+ * fall through to `clarificationLine` — a line that is clearly a
+ * question/request but maps to no fact domain and no conversational act.
+ * This is deliberately the *only* trigger the Phase 30 coordinator
+ * (`src/newlife/semantic/coordinator.ts`) uses to decide whether a live
+ * semantic layer is worth consulting: every other branch of
+ * `answerFreeText` (a recognized fact domain, a recognized conversational
+ * act, or genuinely content-light chatter) is already a confident
+ * deterministic answer and gets no network call, matching Phase 30
+ * instruction 11 ("deterministic fast path may continue to handle
+ * already-proven SOCIAL acts/facts"). Mirrors `answerFreeText`'s own
+ * priority order exactly rather than calling it and comparing strings, so it
+ * stays a pure boolean check with no risk of matching on an NPC's line that
+ * *happens* to equal the clarification text for an unrelated reason.
+ */
+export function isAmbiguousFreeText(text: string): boolean {
+  const t = text.trim();
+  if (!t) return false;
+  const preDomainAct = detectAct(t);
+  if (preDomainAct === "tone_feedback" || preDomainAct === "repair_request") return false;
+  if (detectIntent(text) !== null) return false;
+  if (detectAct(t) !== null) return false;
+  return isQuestionLike(t);
 }
