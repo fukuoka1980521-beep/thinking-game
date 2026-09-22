@@ -1,0 +1,14 @@
+{
+  "name": "thinking-game-newlife-dialogue-function",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PHASE_30_SERVERLESS_SEMANTIC_RUNTIME_IMPLEMENTATION_V1: minimal stateless HTTP Cloud Function that interprets one NEW LIFE free-talk turn via Vertex AI Gemini and returns a structured SemanticInterpretation. Separate from functions/dialogue/ (CASE1) per docs/DATA_BOUNDARY.md's purpose-separation rule. Holds no secret material -- authenticates to Vertex AI via the function's own Cloud Run service account (Application Default Credentials), never a hardcoded API key. Never receives the full NewLife30State, never persists anything, never logs request bodies or player free text.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.0",
+    "@google/genai": "^0.3.0"
+  }
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../src/App";
 import { markOnboardingSeen } from "../src/lib/onboarding";
@@ -47,6 +47,14 @@ describe("NEW LIFE 30-day free-talk UI smoke test (Phase 28)", () => {
     const input = screen.getByPlaceholderText(/自由に話しかける/);
     await user.type(input, text);
     await user.click(screen.getByRole("button", { name: "話す" }));
+    // Phase 30: free-talk now resolves through the async hybrid coordinator
+    // (coordinator.ts) even with the shipped empty endpoint, where it
+    // settles in one microtask hop with no real network call. Waiting for
+    // the submit button to re-enable (set by the same `finally` that
+    // appends the transcript line) is a robust way to know the turn has
+    // fully settled before asserting on transcript content, rather than
+    // coupling every assertion to fetch/timer mocking it doesn't need.
+    await waitFor(() => expect(screen.getByRole("button", { name: "話す" })).not.toBeDisabled());
     return screen;
   }
 
