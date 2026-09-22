@@ -215,3 +215,8 @@ HUMAN_VALIDATION_STATUS = PENDING
 READY_FOR_CHATGPT_REVIEW = YES
 READY_FOR_OWNER_MINIMAL_ACTION = YES (see §5 for the exact two branches)
 ```
+
+
+## 9. Repository CI path coverage
+
+After this branch was produced, the base branch's `.github/workflows/newlife-pr-ci.yml` was expanded to cover `tests/newlife*`, `scripts/newlife-deploy/**`, `functions/newlife-dialogue/**`, `docs/newlife/evaluation/**`, and `tsconfig.json`. This PR therefore receives the normal NEW LIFE CI gate rather than relying only on the originating Claude run's local evidence.
