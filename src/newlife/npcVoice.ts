@@ -125,7 +125,7 @@ export function detectIntent(rawText: string): Intent | null {
   return null;
 }
 
-const MENU_FACT = "スコーンとクッキーです。スコーンは二十個で一個280円。クッキーは十袋で一袋240円。合わせて30点で、うち12点が予約、18点が店頭分です。";
+export const MENU_FACT = "スコーンとクッキーです。スコーンは二十個で一個280円。クッキーは十袋で一袋240円。合わせて30点で、うち12点が予約、18点が店頭分です。";
 
 function menuAnswer(npc: NpcId): string {
   switch (npc) {
@@ -209,12 +209,13 @@ function yesterdayAnswer(npc: NpcId, state: NewLife30State, day: number): string
   }
 }
 
+export const PROFIT_FACT = "売上は八千円。材料2,800円、包材500円、設営2,000円、場所と印刷300円で経費は5,600円。差は2,400円。";
+
 function profitAnswer(npc: NpcId, day: number): string {
   if (day < 20) return "集計前です。まだ言えません。";
-  const base = "売上は八千円。材料2,800円、包材500円、設営2,000円、場所と印刷300円で経費は5,600円。差は2,400円。";
-  if (npc === "hina") return `${base}約八時間の作業を入れると一時間三百円ほど。これを利益とは呼べません。`;
-  if (npc === "yohei") return `${base}数はこれだ。`;
-  return `${base}まだ継続できるとは言えない額よ。`;
+  if (npc === "hina") return `${PROFIT_FACT}約八時間の作業を入れると一時間三百円ほど。これを利益とは呼べません。`;
+  if (npc === "yohei") return `${PROFIT_FACT}数はこれだ。`;
+  return `${PROFIT_FACT}まだ継続できるとは言えない額よ。`;
 }
 
 const BARBER_CORRECTION =
