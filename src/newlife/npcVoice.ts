@@ -26,7 +26,7 @@
  */
 import { NPC_NAMES, type NewLife30State, type NpcId } from "./types";
 
-type Intent = "menu" | "reservation_count" | "seats" | "workshop" | "yesterday" | "profit" | "barber_check";
+type Intent = "menu" | "product_care" | "reservation_count" | "seats" | "workshop" | "yesterday" | "profit" | "barber_check";
 
 /**
  * `String.prototype.normalize("NFKC")` folds full-width digits/letters and
@@ -38,7 +38,10 @@ type Intent = "menu" | "reservation_count" | "seats" | "workshop" | "yesterday" 
  * would actually consume a parsed number.
  */
 function normalizeForRouting(raw: string): string {
-  const t = raw.normalize("NFKC").trim();
+  let t = raw.normalize("NFKC").trim();
+  // Owner playtest: common speech-to-text / typing slip "名に売る" for "何を売る".
+  // Keep correction narrow so legitimate uses of 名 are not rewritten globally.
+  t = t.replace(/^名に売/u, "何を売");
   return t.replace(
     /^(おはようございます|おはよう|こんにちは|こんばんは|お疲れ様です|お疲れ様|すみません|あの、?|ねえ|もしもし)[、,。.!！\s]*/u,
     "",
@@ -92,8 +95,12 @@ function isYesterdayQuestion(t: string): boolean {
   return /(昨日|前の日|前日)/.test(t) && isQuestionLike(t);
 }
 
+function isProductCareQuestion(t: string): boolean {
+  return /(こだわ|拘り|大事に|重視|工夫|レシピ|配合|焼き上がり|材料.*(選|使))/u.test(t) && isQuestionLike(t);
+}
+
 function isProfitQuestion(t: string): boolean {
-  return /(儲か|利益|採算|黒字|赤字|経費|コスト|続けられ|続けていけ|持続)/.test(t) && isQuestionLike(t);
+  return /(儲か|利益|採算|黒字|赤字|経費|コスト|原価|材料費|続けられ|続けていけ|持続)/.test(t) && isQuestionLike(t);
 }
 
 /**
@@ -108,6 +115,7 @@ export function detectIntent(rawText: string): Intent | null {
   const t = normalizeForRouting(rawText);
   if (!t) return null;
   if (isBarberMention(t)) return "barber_check";
+  if (isProductCareQuestion(t)) return "product_care";
   if (isProfitQuestion(t)) return "profit";
   if (isWorkshopQuestion(t)) return "workshop";
   if (isSeatsQuestion(t)) return "seats";
@@ -128,6 +136,20 @@ function menuAnswer(npc: NpcId): string {
     default:
       return "それは陽菜に聞くのが早いわ。私が知ってるのは十二が予約、十八が店頭という数だけ。";
   }
+}
+
+function productCareAnswer(npc: NpcId, day: number, rawText: string): string {
+  if (npc !== "hina") {
+    return "そこは陽菜本人に聞くのが一番確かだよ。";
+  }
+  const asksCost = /(原価|材料費|コスト|高い)/.test(rawText);
+  const cost = asksCost
+    ? day < 20
+      ? "材料費はまだ集計前なので、高いかどうかは今は言えません。"
+      : "材料費は2,800円です。"
+    : "";
+  const care = "レシピと焼き上がりはかなり見ます。材料の産地みたいなところまでは、まだ決めてません。";
+  return `${cost}${care}`;
 }
 
 function reservationAnswer(npc: NpcId): string {
@@ -446,6 +468,7 @@ export function answerFreeText(npc: NpcId, text: string, state: NewLife30State):
   const intent = detectIntent(text);
   if (intent === "barber_check" && npc === "daisuke") return BARBER_CORRECTION;
   if (intent === "menu") return menuAnswer(npc);
+  if (intent === "product_care") return productCareAnswer(npc, state.day, text);
   if (intent === "reservation_count") return reservationAnswer(npc);
   if (intent === "seats") return seatsAnswer(npc, state);
   if (intent === "workshop") return workshopAnswer(npc, state, state.day);
