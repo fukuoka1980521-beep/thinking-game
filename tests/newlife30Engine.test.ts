@@ -277,6 +277,39 @@ describe("NEW LIFE 30-day engine — Phase 28 question-nonanswer guard", () => {
   });
 });
 
+
+
+describe("NEW LIFE 30-day engine — Owner product-care conversation regression", () => {
+  it("tolerates the observed 名に売る typo narrowly and still answers what is sold", () => {
+    const state = createInitialState();
+    const reply = answerFreeText("hina", "名に売るのですか", state);
+    expect(reply).toMatch(/スコーン/);
+    expect(reply).toMatch(/クッキー/);
+  });
+
+  it("answers the exact compound cost + product-care question instead of generic clarification", () => {
+    const state = createInitialState();
+    const reply = answerFreeText("hina", "原価高いのですか、なにかこだわっているてんありますか", state);
+    expect(reply).toMatch(/材料費はまだ集計前/);
+    expect(reply).toMatch(/レシピ|焼き上がり/);
+    expect(reply).not.toMatch(/もう少し具体的/);
+  });
+
+  it("does not misroute 商品についてのこだわり to the menu/count dump", () => {
+    const state = createInitialState();
+    expect(detectIntent("商品についてのこだわりありますか")).toBe("product_care");
+    const reply = answerFreeText("hina", "商品についてのこだわりありますか", state);
+    expect(reply).toMatch(/レシピ|焼き上がり/);
+    expect(reply).not.toMatch(/30点|予約|店頭分/);
+  });
+
+  it("keeps unestablished ingredient sourcing unknown rather than inventing premium-material lore", () => {
+    const state = createInitialState();
+    const reply = answerFreeText("hina", "材料にこだわりありますか？", state);
+    expect(reply).toMatch(/産地.*まだ決めてません/);
+  });
+});
+
 describe("NEW LIFE 30-day engine — canonical state cannot be directly changed by free-talk output", () => {
   it("answerFreeText never mutates the state object it is given", () => {
     const state = createInitialState();
