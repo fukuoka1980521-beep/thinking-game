@@ -187,3 +187,14 @@ describe("functions/newlife-dialogue/lib.js — no secret material", () => {
     }
   });
 });
+
+
+describe("functions/newlife-dialogue/index.js — prior real Vertex AI lessons", () => {
+  it("uses the proven 2048 output-token budget and one empty-response retry pattern", () => {
+    const fs = require("node:fs");
+    const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-dialogue", "index.js"), "utf-8");
+    expect(source).toContain("maxOutputTokens: 2048");
+    expect(source).toContain("const generateOnce = () =>");
+    expect(source).toMatch(/if \(!text\)[\s\S]*response = await generateOnce\(\)/);
+  });
+});
