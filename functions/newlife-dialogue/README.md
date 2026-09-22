@@ -101,8 +101,12 @@ player's free text (see the `catch` block in `index.js`).
 
 ## Prerequisites (Owner action, not automatable)
 
-Identical prerequisites to `functions/dialogue/` (same GCP project can host
-both functions):
+Identical prerequisites to `functions/dialogue/`. This repository already
+has real Vertex AI deployment evidence on the previously selected project
+`gas-test-runner-20260620-wjxf`; billing was enabled there and the CASE1
+dialogue function was successfully exercised against Gemini in September 2026.
+The readiness script re-checks current access/billing/APIs before any new
+deployment rather than assuming that historical state still holds:
 
 1. A billing account linked to the GCP project (`gcloud billing projects
    describe <project>` must show `billingEnabled: true`).
@@ -127,7 +131,8 @@ gcloud functions deploy newlife-dialogue \
   --memory=256Mi \
   --timeout=20s \
   --max-instances=10 \
-  --project=<project-id>
+  --project=gas-test-runner-20260620-wjxf \
+  --set-env-vars=GCP_PROJECT=gas-test-runner-20260620-wjxf
 ```
 
 After deploy, copy the printed HTTPS trigger URL into
@@ -151,8 +156,8 @@ own disclosed limitation.
 
 ## Remaining gates before this can ship
 
-1. The GCP billing/API-enablement prerequisite above (Owner-only).
-2. Deploying this function and setting `NEWLIFE_DIALOGUE_ENDPOINT_URL`.
+1. Re-check the previously used GCP project's current auth/billing/API state.
+2. Deploy this function and set `NEWLIFE_DIALOGUE_ENDPOINT_URL`.
 3. A human review of the NEW LIFE-specific consent-screen copy
    (`src/newlife/semantic/NewLifeAiConsentPrompt.tsx`) before it ships —
    this Run wrote the copy and tests but does not and cannot claim human
