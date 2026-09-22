@@ -9,6 +9,13 @@ describe("NewLifeAiConsentPrompt (Phase 30 instruction 12)", () => {
     expect(screen.getByText(/外部のAIサービスへ送信/)).toBeInTheDocument();
   });
 
+
+  it("describes the minimized payload precisely and excludes action history/other NPC data", () => {
+    render(<NewLifeAiConsentPrompt onAccept={() => {}} onDecline={() => {}} />);
+    expect(screen.getByText(/話している相手（NPC）や現在の日数/)).toBeInTheDocument();
+    expect(screen.getByText(/行動履歴や他のNPCの情報は送信されません/)).toBeInTheDocument();
+  });
+
   it("discloses that declining keeps the game playable via the deterministic fallback", () => {
     render(<NewLifeAiConsentPrompt onAccept={() => {}} onDecline={() => {}} />);
     expect(screen.getByText(/同意しない場合も.*ゲームを続けられます/)).toBeInTheDocument();
