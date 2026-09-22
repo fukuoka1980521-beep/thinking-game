@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import App from "../src/App";
 import { markOnboardingSeen } from "../src/lib/onboarding";
+import { clarificationLine } from "../src/newlife/npcVoice";
 
 // Route isolation: ?newlife30=1 must behave exactly like the existing
 // ?case1test hidden-link pattern in App.tsx -- opt-in only, never linked
@@ -28,5 +30,39 @@ describe("NEW LIFE 30-day route isolation", () => {
     window.history.pushState({}, "", "/?newlife30=1");
     render(<App />);
     expect(screen.getByText(/HUMAN_VALIDATION_STATUS: PENDING/)).toBeInTheDocument();
+  });
+});
+
+// Phase 28 UI smoke test (instruction 14): drives the actual free-talk form
+// on the hidden route through jsdom + Testing Library -- the same UI
+// verification tooling this repo already uses for "UI_WALKTHROUGH" in
+// case1c.test.tsx. A real browser (Playwright) is not available in this
+// sandbox; this exercises the real rendered component tree and real event
+// handlers, not just the pure npcVoice functions in isolation.
+describe("NEW LIFE 30-day free-talk UI smoke test (Phase 28)", () => {
+  async function askHina(text: string) {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText(/自由に話しかける/);
+    await user.type(input, text);
+    await user.click(screen.getByRole("button", { name: "話す" }));
+    return screen;
+  }
+
+  it("the Owner's exact reported failure sentence renders the real menu facts in the transcript, not the old flavor non-answer", async () => {
+    const ui = await askHina("おはようございます。どんな焼き菓子売るのですか");
+    expect(ui.getByText(/スコーンとクッキーです/)).toBeInTheDocument();
+    expect(ui.queryByText(/先に数を見ます/)).not.toBeInTheDocument();
+  });
+
+  it("an unrecognized question renders the in-character clarification, not a flavor line", async () => {
+    const ui = await askHina("この町の好きなところはどこですか？");
+    expect(ui.getByText(clarificationLine("hina"))).toBeInTheDocument();
+  });
+
+  it("a plain non-question statement still renders a flavor line, not the clarification", async () => {
+    const ui = await askHina("今日もいい天気ですね");
+    expect(ui.queryByText(clarificationLine("hina"))).not.toBeInTheDocument();
   });
 });
