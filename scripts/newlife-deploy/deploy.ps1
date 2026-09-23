@@ -58,6 +58,14 @@ $RequiredApis = @(
 
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "../..")
 $FunctionSource = Join-Path $RepoRoot "functions/newlife-dialogue"
+$resultFile = Join-Path $RepoRoot "deploy-result.json"
+
+# Invalidate any stale result up front, before any gcloud call. If this run fails or is
+# skipped (-Deploy omitted) partway through, no leftover file from an earlier run can be
+# picked up by run-phase33-local.ps1 / wire-endpoint.mjs and mistaken for this run's output.
+if (Test-Path $resultFile) {
+  Remove-Item -Path $resultFile -Force
+}
 
 Write-Host "NEW LIFE deploy helper — project: $ProjectId" -ForegroundColor Yellow
 Write-Host "EnableApis switch: $($EnableApis.IsPresent)   Deploy switch: $($Deploy.IsPresent)   RunSmokeTest switch: $($RunSmokeTest.IsPresent)"
@@ -69,6 +77,10 @@ Write-Host "  $enableCmd"
 if ($EnableApis) {
   Write-Host "Running it now (explicit -EnableApis passed)..." -ForegroundColor Cyan
   Invoke-Expression $enableCmd
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "gcloud services enable FAILED (exit $LASTEXITCODE)." -ForegroundColor Red
+    exit 1
+  }
 } else {
   Write-Host "NOT run (pass -EnableApis to actually run it)." -ForegroundColor Yellow
 }
@@ -121,8 +133,23 @@ if ([string]::IsNullOrWhiteSpace($deployedUrl) -or $deployedUrl -notmatch '^http
 
 Write-Host ""
 Write-Host "Deployed. HTTPS trigger URL: $deployedUrl" -ForegroundColor Green
-$resultFile = Join-Path $RepoRoot "deploy-result.json"
-@{ projectId = $ProjectId; url = $deployedUrl; deployedAt = (Get-Date).ToString("o") } | ConvertTo-Json | Set-Content -Path $resultFile
+$deployedAt = (Get-Date).ToString("o")
+try {
+  @{ projectId = $ProjectId; url = $deployedUrl; deployedAt = $deployedAt } | ConvertTo-Json | Set-Content -Path $resultFile -ErrorAction Stop
+} catch {
+  Write-Host "Writing $resultFile FAILED: $($_.Exception.Message)" -ForegroundColor Red
+  exit 3
+}
+# Read back what was actually written -- a partial/corrupt write must not be silently accepted
+# by the caller, which trusts this file's content as this run's deploy result.
+$writtenResult = $null
+if (Test-Path $resultFile) {
+  try { $writtenResult = Get-Content $resultFile -Raw | ConvertFrom-Json } catch { $writtenResult = $null }
+}
+if (-not $writtenResult -or "$($writtenResult.url)".Trim() -ne $deployedUrl -or "$($writtenResult.deployedAt)".Trim() -ne $deployedAt) {
+  Write-Host "$resultFile did not verify after write (content mismatch or unreadable)." -ForegroundColor Red
+  exit 3
+}
 Write-Host "Captured to $resultFile (not committed automatically)."
 
 Write-Host ""
