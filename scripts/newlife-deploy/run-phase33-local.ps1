@@ -50,7 +50,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
   Fail "Git was not found on this PC." 10
 }
 
-$originalBranch = (& git branch --show-current).Trim()
+$originalBranch = "$(& git branch --show-current)".Trim()
 if ([string]::IsNullOrWhiteSpace($originalBranch)) {
   $originalBranch = "master"
 }
