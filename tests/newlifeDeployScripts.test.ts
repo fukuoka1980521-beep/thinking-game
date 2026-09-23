@@ -172,3 +172,17 @@ describe("scripts/newlife-deploy — previously proven GCP target", () => {
     expect(clientSource).toContain("const REQUEST_TIMEOUT_MS = 25_000");
   });
 });
+
+
+describe("scripts/newlife-deploy — Phase 33 local context restore", () => {
+  it("original-branch capture is null-safe under PowerShell native empty output", () => {
+    const source = readFileSync(path.join(REPO_ROOT, "scripts/newlife-deploy/run-phase33-local.ps1"), "utf8");
+    expect(source).toContain('$originalBranch = "$(& git branch --show-current)".Trim()');
+  });
+
+  it("canonical Phase 33 doc records the post-push restore and stash-preservation behavior", () => {
+    const doc = readFileSync(path.join(REPO_ROOT, "docs/newlife/evaluation/PHASE_33_ONE_CLICK_LOCAL_EXECUTION_V1.md"), "utf8");
+    expect(doc).toContain("switches back to the Owner's original local branch");
+    expect(doc).toContain("stash is preserved");
+  });
+});
