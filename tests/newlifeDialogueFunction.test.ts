@@ -198,3 +198,28 @@ describe("functions/newlife-dialogue/index.js — prior real Vertex AI lessons",
     expect(source).toMatch(/if \(!text\)[\s\S]*response = await generateOnce\(\)/);
   });
 });
+
+
+describe("functions/newlife-dialogue/lib.js — fixed-window limiter", () => {
+  it("allows only the configured number of model calls inside one window and resets after expiry", () => {
+    const { createFixedWindowLimiter } = require("../functions/newlife-dialogue/lib");
+    let now = 1_000;
+    const limiter = createFixedWindowLimiter(2, 60_000, () => now);
+    expect(limiter.consume()).toBe(true);
+    expect(limiter.consume()).toBe(true);
+    expect(limiter.consume()).toBe(false);
+    now += 60_000;
+    expect(limiter.consume()).toBe(true);
+  });
+
+  it("pins the Owner-validation model-call cap and one-instance deploy guard", () => {
+    const fs = require("node:fs");
+    const path = require("node:path");
+    const repoRoot = path.join(__dirname, "..");
+    const indexSource = fs.readFileSync(path.join(repoRoot, "functions", "newlife-dialogue", "index.js"), "utf8");
+    const deploySource = fs.readFileSync(path.join(repoRoot, "scripts", "newlife-deploy", "deploy.ps1"), "utf8");
+    expect(indexSource).toContain('NEWLIFE_DIALOGUE_MAX_CALLS_PER_MINUTE || "20"');
+    expect(deploySource).toContain('"--max-instances=1"');
+    expect(deploySource).toContain("NEWLIFE_DIALOGUE_MAX_CALLS_PER_MINUTE=20");
+  });
+});
