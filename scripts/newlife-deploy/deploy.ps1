@@ -42,7 +42,11 @@ param(
   [switch]$RunSmokeTest
 )
 
-$ErrorActionPreference = "Stop"
+# NOTE: intentionally "Continue", not "Stop" — see run-phase33-local.ps1's identical note. gcloud
+# routinely writes informational banners to stderr, which Windows PowerShell 5.1 turns into a
+# terminating NativeCommandError under "Stop" even on a 0 exit code. Every consequential call
+# below already checks $LASTEXITCODE explicitly.
+$ErrorActionPreference = "Continue"
 
 $RequiredApis = @(
   "aiplatform.googleapis.com",
