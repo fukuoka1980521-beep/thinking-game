@@ -1,9 +1,37 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "../src/App";
 import { markOnboardingSeen } from "../src/lib/onboarding";
 import { clarificationLine } from "../src/newlife/npcVoice";
+import { setNewLifeAiDialogueConsent } from "../src/newlife/semantic/consent";
+
+// This whole file's free-talk assertions below are written against the
+// deterministic-only router (see the comment on `askHina`), which is only
+// what actually runs when `src/newlife/semantic/config.ts` ships an empty
+// endpoint (as it does pre-Phase-33), OR once Phase 33 wires a real one AND
+// the player has declined AI-dialogue consent (NewLife30App.tsx's
+// `resolveFreeText` call passes `consentAccepted: consentStatus ===
+// "accepted"`, and coordinator.ts treats a declined/unset consent exactly
+// like "no interpreter" -- Phase 30 instruction 12). A fresh jsdom render
+// otherwise starts with consent undecided (`localStorage` empty), so once an
+// endpoint is wired, NewLife30App shows the mandatory `NewLifeAiConsentPrompt`
+// on first submission instead of ever reaching the router this file tests --
+// a separate, already-covered flow (tests/newlife30AiConsentFlow.test.tsx).
+// Pre-declining here restores the deterministic-only baseline this file's
+// tests are actually about, regardless of config.ts's currently-shipped
+// value. Stubbing `fetch` to always fail is cheap extra insurance against a
+// real network call ever being attempted here, for the same reason.
+const originalFetch = global.fetch;
+beforeAll(() => {
+  vi.stubGlobal("fetch", vi.fn(() => Promise.reject(new Error("no live provider in tests"))));
+});
+afterAll(() => {
+  vi.stubGlobal("fetch", originalFetch);
+});
+beforeEach(() => {
+  setNewLifeAiDialogueConsent("declined");
+});
 
 // Route isolation: ?newlife30=1 must behave exactly like the existing
 // ?case1test hidden-link pattern in App.tsx -- opt-in only, never linked

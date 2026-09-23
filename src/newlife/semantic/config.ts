@@ -10,4 +10,4 @@
  * zero behavior change from the Phase 27/28/28B deterministic router that
  * currently ships behind `?newlife30=1`.
  */
-export const NEWLIFE_DIALOGUE_ENDPOINT_URL = "";
+export const NEWLIFE_DIALOGUE_ENDPOINT_URL = "https://newlife-dialogue-zqtk74q2ra-an.a.run.app";

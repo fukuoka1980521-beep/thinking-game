@@ -30,28 +30,36 @@ import path from "node:path";
 const REPO_ROOT = path.resolve(__dirname, "..");
 
 describe("scripts/newlife-deploy/lib.mjs against the real config.ts", () => {
-  it("extracts the currently-shipped empty endpoint from the real file", () => {
+  // NOTE: these 3 tests deliberately do NOT hardcode "the real file's current endpoint is empty".
+  // A successful Phase 33 run (wire-endpoint.mjs --apply --commit) legitimately, permanently
+  // changes that value from "" to a real deployed HTTPS URL -- these tests read whatever is
+  // currently shipped and assert lib.mjs's logic is correct *relative to that*, so they keep
+  // passing before AND after the first real deploy, instead of pinning a one-time-only snapshot.
+  it("extracts the currently-shipped endpoint from the real file (empty pre-deploy, a real HTTPS URL after)", () => {
     const content = readFileSync(path.join(REPO_ROOT, CONFIG_FILE_RELATIVE_PATH), "utf8");
-    expect(extractCurrentEndpointUrl(content)).toBe("");
+    const currentUrl = extractCurrentEndpointUrl(content);
+    expect(currentUrl === "" || /^https:\/\//.test(currentUrl)).toBe(true);
   });
 
   it("builds an updated file that only changes the constant line, and the diff shows exactly that", () => {
     const content = readFileSync(path.join(REPO_ROOT, CONFIG_FILE_RELATIVE_PATH), "utf8");
+    const currentUrl = extractCurrentEndpointUrl(content);
     const updated = buildUpdatedConfigContent(content, "https://example.com/newlife-dialogue");
     expect(updated).toContain('export const NEWLIFE_DIALOGUE_ENDPOINT_URL = "https://example.com/newlife-dialogue";');
     expect(extractCurrentEndpointUrl(updated)).toBe("https://example.com/newlife-dialogue");
 
     const diff = diffLines(content, updated);
     expect(diff).toEqual([
-      '- export const NEWLIFE_DIALOGUE_ENDPOINT_URL = "";',
+      `- export const NEWLIFE_DIALOGUE_ENDPOINT_URL = "${currentUrl}";`,
       '+ export const NEWLIFE_DIALOGUE_ENDPOINT_URL = "https://example.com/newlife-dialogue";',
     ]);
   });
 
-  it("round-trips back to empty (rollback case)", () => {
+  it("round-trips back to the original shipped value (rollback case)", () => {
     const content = readFileSync(path.join(REPO_ROOT, CONFIG_FILE_RELATIVE_PATH), "utf8");
+    const currentUrl = extractCurrentEndpointUrl(content);
     const wired = buildUpdatedConfigContent(content, "https://example.com/newlife-dialogue");
-    const rolledBack = buildUpdatedConfigContent(wired, "");
+    const rolledBack = buildUpdatedConfigContent(wired, currentUrl);
     expect(rolledBack).toBe(content);
   });
 
