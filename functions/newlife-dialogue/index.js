@@ -1,5 +1,5 @@
 const { GoogleGenAI, Type } = require("@google/genai");
-const { CHARACTER_PROFILES, SYSTEM_INSTRUCTION, buildResponseSchema, buildPrompt, validateInput, applyCors } = require("./lib");
+const { CHARACTER_PROFILES, SYSTEM_INSTRUCTION, buildResponseSchema, buildPrompt, validateInput, applyCors, createFixedWindowLimiter } = require("./lib");
 
 // Same no-secret pattern as functions/dialogue/index.js: the only identity
 // this function ever uses is its own Cloud Run/Cloud Functions service
@@ -14,6 +14,11 @@ const { CHARACTER_PROFILES, SYSTEM_INSTRUCTION, buildResponseSchema, buildPrompt
 const PROJECT = process.env.GCP_PROJECT || process.env.GOOGLE_CLOUD_PROJECT;
 const LOCATION = process.env.NEWLIFE_DIALOGUE_LOCATION || "asia-northeast1";
 const MODEL = process.env.NEWLIFE_DIALOGUE_MODEL || "gemini-2.5-flash";
+const MAX_MODEL_CALLS_PER_MINUTE = Math.max(
+  1,
+  Number.parseInt(process.env.NEWLIFE_DIALOGUE_MAX_CALLS_PER_MINUTE || "20", 10) || 20
+);
+const modelCallLimiter = createFixedWindowLimiter(MAX_MODEL_CALLS_PER_MINUTE, 60_000);
 
 const RESPONSE_SCHEMA = buildResponseSchema(Type);
 
@@ -63,8 +68,13 @@ exports.newlifeDialogue = async (req, res) => {
 
   try {
     const client = getClient();
-    const generateOnce = () =>
-      client.models.generateContent({
+    const generateOnce = () => {
+      if (!modelCallLimiter.consume()) {
+        const error = new Error("local_model_rate_limit");
+        error.code = "LOCAL_MODEL_RATE_LIMIT";
+        throw error;
+      }
+      return client.models.generateContent({
         model: MODEL,
         contents: buildPrompt(snapshot.npc, utterance, snapshot),
         config: {
@@ -80,6 +90,7 @@ exports.newlifeDialogue = async (req, res) => {
           responseSchema: RESPONSE_SCHEMA,
         },
       });
+    };
 
     let response = await generateOnce();
     let text = (response.text || "").trim();
@@ -102,6 +113,11 @@ exports.newlifeDialogue = async (req, res) => {
 
     res.status(200).json(parsed);
   } catch (err) {
+    if (err && err.code === "LOCAL_MODEL_RATE_LIMIT") {
+      res.set("Retry-After", "60");
+      res.status(429).json({ error: "rate_limited" });
+      return;
+    }
     // Never leak provider error internals, and never log the request body
     // or player free text -- only the error's own type/message.
     console.error("newlife-dialogue function error:", err && err.message ? err.message : err);
