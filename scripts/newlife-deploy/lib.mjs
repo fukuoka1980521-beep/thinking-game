@@ -35,10 +35,10 @@ export function buildUpdatedConfigContent(content, newUrl) {
   return content.replace(ENDPOINT_CONST_PATTERN, `export const NEWLIFE_DIALOGUE_ENDPOINT_URL = "${newUrl}";`);
 }
 
-/** Minimal unified-style line diff for a two-line-changing edit — enough for an Owner/reviewer to see exactly what a --apply run would change, without pulling in a diff library. */
+/** Minimal unified-style line diff for a two-line-changing edit — enough for an Owner/reviewer to see exactly what a --apply run would change, without pulling in a diff library. Strips a trailing "\r" per line first so CRLF-checked-out files (common on Windows) don't leak an invisible carriage-return into the printed diff. */
 export function diffLines(oldContent, newContent) {
-  const oldLines = oldContent.split("\n");
-  const newLines = newContent.split("\n");
+  const oldLines = oldContent.split("\n").map((line) => line.replace(/\r$/, ""));
+  const newLines = newContent.split("\n").map((line) => line.replace(/\r$/, ""));
   const out = [];
   const max = Math.max(oldLines.length, newLines.length);
   for (let i = 0; i < max; i++) {
