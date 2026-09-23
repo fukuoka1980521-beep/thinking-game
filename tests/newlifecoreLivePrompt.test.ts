@@ -9,8 +9,8 @@ import { createInitialCoreState, type NpcId } from "../src/newlifecore/types";
 // tests/safety.test.ts guards that) but is pure/side-effect-free at import time (the only
 // side-effecting call, execSync("gcloud ..."), happens lazily inside getAccessToken(), never at
 // module load), so importing it here to test its real prompt STRING is safe and accurate --
-// not a second, hand-copied re-implementation of the prompt logic.
-// @ts-expect-error -- untyped plain-JS dev-only module (same pattern as vite.config.ts's own import of it)
+// not a second, hand-copied re-implementation of the prompt logic. tsconfig's repo-wide `allowJs`
+// already lets tsc check this plain-JS module directly -- no `@ts-expect-error` needed.
 import { buildPrompt } from "../devtools/newlifeCoreVertexLiveAdapterCore.mjs";
 
 const ALL_NPCS: NpcId[] = ["kamiya", "yohei", "miyoko", "jin", "daisuke"];

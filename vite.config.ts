@@ -1,11 +1,10 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-// devtools/bgwVertexDevPlugin.mjs is a plain-JS, dev-server-only module (never bundled into the
-// client) -- untyped by design rather than adding a repo-wide allowJs/checkJs setting.
-// @ts-expect-error -- untyped plain-JS dev-only module, see comment above
+// devtools/bgwVertexDevPlugin.mjs (and its sibling below) are plain-JS, dev-server-only modules
+// (never bundled into the client). tsconfig's repo-wide `allowJs` already lets tsc check them via
+// their own JSDoc `@returns {import("vite").Plugin}` annotations -- no `@ts-expect-error` needed.
 import { bgwVertexDevPlugin } from "./devtools/bgwVertexDevPlugin.mjs";
-// @ts-expect-error -- untyped plain-JS dev-only module, sibling to the one above (not a modification of it)
 import { newlifeCoreVertexDevPlugin } from "./devtools/newlifeCoreVertexDevPlugin.mjs";
 
 // GitHub Pages serves this project from https://<user>.github.io/thinking-game/,

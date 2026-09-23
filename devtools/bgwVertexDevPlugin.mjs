@@ -5,6 +5,7 @@
 // included in the response sent back to the browser.
 import { getLiveNpcDialogueEnvelope } from "./bgwVertexLiveAdapterCore.mjs";
 
+/** @returns {import("vite").Plugin} */
 export function bgwVertexDevPlugin() {
   return {
     name: "bgw-vertex-dev-plugin",

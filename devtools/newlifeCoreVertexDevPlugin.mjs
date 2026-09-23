@@ -3,6 +3,7 @@
 // devtools/bgwVertexDevPlugin.mjs.
 import { getLiveNpcReply } from "./newlifeCoreVertexLiveAdapterCore.mjs";
 
+/** @returns {import("vite").Plugin} */
 export function newlifeCoreVertexDevPlugin() {
   return {
     name: "newlifecore-vertex-dev-plugin",
