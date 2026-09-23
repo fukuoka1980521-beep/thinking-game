@@ -7,7 +7,7 @@
   it makes no API calls at all. Nothing here enables an API, mutates
   billing/IAM, or deploys, unless you explicitly pass the matching switch.
   This mirrors the README.md deploy command exactly (region asia-northeast1,
-  runtime nodejs20, entry point newlifeDialogue, max-instances 10, timeout
+  runtime nodejs20, entry point newlifeDialogue, max-instances 1 during Owner validation, timeout
   20s, 256Mi) — this script does not invent different defaults.
 
 .PARAMETER ProjectId
@@ -81,9 +81,9 @@ $deployArgs = @(
   "--allow-unauthenticated",
   "--memory=256Mi",
   "--timeout=20s",
-  "--max-instances=10",
+  "--max-instances=1",
   "--project=$ProjectId",
-  "--set-env-vars=GCP_PROJECT=$ProjectId",
+  "--set-env-vars=GCP_PROJECT=$ProjectId,NEWLIFE_DIALOGUE_MAX_CALLS_PER_MINUTE=20",
   "--format=value(serviceConfig.uri)"
 )
 Write-Host "Deploy command:"
