@@ -16,6 +16,7 @@ import { NewlifeV02App } from "./newlifev02/NewlifeV02App";
 import { NewlifeV03App } from "./newlifev03/NewlifeV03App";
 import { NewlifeCoreApp } from "./newlifecore/NewlifeCoreApp";
 import { Newlife7DayApp } from "./newlife7day/Newlife7DayApp";
+import { NewLife30App } from "./newlife/NewLife30App";
 import {
   loadInProgressSession,
   loadCompletedLogs,
@@ -43,7 +44,8 @@ type View =
   | { kind: "NEWLIFE_V02" }
   | { kind: "NEWLIFE_V03" }
   | { kind: "NEWLIFE_CORE" }
-  | { kind: "NEWLIFE_7DAY" };
+  | { kind: "NEWLIFE_7DAY" }
+  | { kind: "NEWLIFE30" };
 
 // Section 7: after roughly this many cases in one sitting, offer the play-run summary.
 const SESSION_SUMMARY_THRESHOLD = 5;
@@ -62,6 +64,11 @@ const SESSION_SUMMARY_THRESHOLD = 5;
  * NOT wired into this build. Owner's release directive scopes this external test to CASE1 only;
  * wiring them back in only requires restoring the 2 imports/routes/HomeScreen props this Run
  * removed -- their source under src/episodes/ and src/pilot/ is untouched.
+ *
+ * PHASE 27 (NEW LIFE issue #1): `?newlife30=1` follows the exact same pattern as `?case1test`
+ * above -- a hidden direct link, not wired into HomeScreen or any other screen, for an isolated,
+ * unrelated design candidate (`src/newlife/`). HUMAN_VALIDATION_STATUS is PENDING for this slice;
+ * it is not part of the CASE1 external test and does not affect it.
  */
 function initialViewFromLocation(): View {
   if (typeof window === "undefined") return { kind: "HOME" };
@@ -73,6 +80,7 @@ function initialViewFromLocation(): View {
   if (params.has("newlifev03")) return { kind: "NEWLIFE_V03" };
   if (params.has("newlifecore")) return { kind: "NEWLIFE_CORE" };
   if (params.has("newlife7day")) return { kind: "NEWLIFE_7DAY" };
+  if (params.has("newlife30")) return { kind: "NEWLIFE30" };
   return { kind: "HOME" };
 }
 
@@ -296,6 +304,10 @@ export default function App() {
 
   if (view.kind === "NEWLIFE_7DAY") {
     return <Newlife7DayApp onExit={() => setView({ kind: "HOME" })} />;
+  }
+
+  if (view.kind === "NEWLIFE30") {
+    return <NewLife30App onExit={() => setView({ kind: "HOME" })} />;
   }
 
   return (

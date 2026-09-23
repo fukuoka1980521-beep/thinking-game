@@ -26,25 +26,31 @@ const allSource = sourceFiles.map((f) => readFileSync(f, "utf-8")).join("\n");
 // SECOND documented, intentional network call, same pattern: `liveAdapterClient.ts` calls only a
 // same-origin, dev-server-only local endpoint (`/api/bgw-npc-dialogue`) -- never a third-party
 // host directly, never a credential (guarded separately below, unchanged). See
-// docs/research/evaluation/phase-12-0/LIVE_VERTEX_LOCAL_ADAPTER_DESIGN_V1.md. Every OTHER file in
-// src/ must remain exactly as network-free as before -- this list is not opened further without
-// the same explicit documentation.
+// docs/research/evaluation/phase-12-0/LIVE_VERTEX_LOCAL_ADAPTER_DESIGN_V1.md. NEW_LIFE_CORE_REDESIGN_V1
+// adds a THIRD, same pattern, at newlifecore/dialogue/liveAdapterClient.ts. PHASE_30_SERVERLESS_SEMANTIC_RUNTIME
+// (NEW LIFE) adds a FOURTH: the NEW LIFE semantic-interpreter Cloud Function proxy
+// (functions/newlife-dialogue/, docs/DATA_BOUNDARY.md's purpose-specific exception). Every OTHER
+// file in src/ must remain exactly as network-free as before -- this list is not opened further
+// without the same explicit documentation.
 const DIALOGUE_CLIENT_FILE = join(SRC_DIR, "lib", "aiDialogueClient.ts");
 const BGW_LIVE_ADAPTER_CLIENT_FILE = join(SRC_DIR, "research", "bounded-generative-world", "liveAdapterClient.ts");
-// NEW_LIFE_CORE_REDESIGN_V1: a THIRD documented, intentional network call, same pattern as the
-// other two -- newlifecore/dialogue/liveAdapterClient.ts calls only a same-origin, dev-server-only
-// local endpoint (`/api/newlifecore-npc-dialogue`), never a third-party host directly, never a
-// credential (guarded separately below, unchanged).
 const NEWLIFECORE_LIVE_ADAPTER_CLIENT_FILE = join(SRC_DIR, "newlifecore", "dialogue", "liveAdapterClient.ts");
-const DOCUMENTED_NETWORK_FILES = [DIALOGUE_CLIENT_FILE, BGW_LIVE_ADAPTER_CLIENT_FILE, NEWLIFECORE_LIVE_ADAPTER_CLIENT_FILE];
+const NEWLIFE_HTTP_INTERPRETER_FILE = join(SRC_DIR, "newlife", "semantic", "httpInterpreter.ts");
+const DOCUMENTED_NETWORK_FILES = [
+  DIALOGUE_CLIENT_FILE,
+  BGW_LIVE_ADAPTER_CLIENT_FILE,
+  NEWLIFECORE_LIVE_ADAPTER_CLIENT_FILE,
+  NEWLIFE_HTTP_INTERPRETER_FILE,
+];
 const nonDialogueFiles = sourceFiles.filter((f) => !DOCUMENTED_NETWORK_FILES.includes(f));
 const nonDialogueSource = nonDialogueFiles.map((f) => readFileSync(f, "utf-8")).join("\n");
 const dialogueClientSource = readFileSync(DIALOGUE_CLIENT_FILE, "utf-8");
 const bgwLiveAdapterClientSource = readFileSync(BGW_LIVE_ADAPTER_CLIENT_FILE, "utf-8");
 const newlifecoreLiveAdapterClientSource = readFileSync(NEWLIFECORE_LIVE_ADAPTER_CLIENT_FILE, "utf-8");
+const newlifeHttpInterpreterSource = readFileSync(NEWLIFE_HTTP_INTERPRETER_FILE, "utf-8");
 
 describe("safety: no external network usage outside the documented dialogue clients", () => {
-  it("never calls fetch, XMLHttpRequest, or WebSocket anywhere in src/ except the 2 documented network client files", () => {
+  it("never calls fetch, XMLHttpRequest, or WebSocket anywhere in src/ except the 4 documented network client files", () => {
     expect(nonDialogueSource).not.toMatch(/\bfetch\s*\(/);
     expect(nonDialogueSource).not.toMatch(/XMLHttpRequest/);
     expect(allSource).not.toMatch(/new WebSocket/);
@@ -69,12 +75,21 @@ describe("safety: no external network usage outside the documented dialogue clie
     expect(newlifecoreLiveAdapterClientSource).not.toMatch(/https?:\/\//);
   });
 
+  it("httpInterpreter.ts (NEW LIFE) makes exactly one fetch call", () => {
+    const fetchCalls = newlifeHttpInterpreterSource.match(/\bfetch\s*\(/g) ?? [];
+    expect(fetchCalls).toHaveLength(1);
+  });
+
   it("PersonalizedAiDialogueGate never attempts the network call while no endpoint URL is configured", () => {
     const gateSource = readFileSync(join(SRC_DIR, "components", "PersonalizedAiDialogueGate.tsx"), "utf-8");
     expect(gateSource).toMatch(/if\s*\(\s*!DIALOGUE_ENDPOINT_URL\s*\)/);
   });
 
-  it("never references a generative-AI API package or client in the frontend bundle (the Cloud Function in functions/dialogue/ is a separate, non-bundled deployment artifact)", () => {
+  it("HttpSemanticInterpreter never attempts the network call while no endpoint URL is configured", () => {
+    expect(newlifeHttpInterpreterSource).toMatch(/if\s*\(\s*!this\.endpointUrl\s*\)/);
+  });
+
+  it("never references a generative-AI API package or client in the frontend bundle (the Cloud Functions in functions/dialogue/ and functions/newlife-dialogue/ are separate, non-bundled deployment artifacts)", () => {
     for (const term of ["openai", "anthropic", "generativeai", "@google/genai"]) {
       expect(allSource.toLowerCase()).not.toContain(term);
     }

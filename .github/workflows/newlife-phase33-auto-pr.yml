@@ -1,0 +1,98 @@
+name: NEW LIFE Phase 33 Auto PR
+
+on:
+  push:
+    branches:
+      - "local/newlife-phase33-*"
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open or find Phase 33 PR and report to Issue #1
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = context.ref.replace('refs/heads/', '');
+            const compareUrl = `https://github.com/${owner}/${repo}/compare/master...${branch}?expand=1`;
+
+            let pr = null;
+            const existing = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              head: `${owner}:${branch}`,
+              base: 'master',
+              per_page: 20,
+            });
+            if (existing.data.length > 0) {
+              pr = existing.data[0];
+            } else {
+              try {
+                const created = await github.rest.pulls.create({
+                  owner,
+                  repo,
+                  head: branch,
+                  base: 'master',
+                  title: 'feat(newlife): wire Phase 33 live semantic endpoint',
+                  body: [
+                    '## Phase 33 local live run',
+                    '',
+                    'This PR was opened automatically after the Owner PC completed the prepared local Phase 33 flow:',
+                    '- existing gcloud auth/project/billing readiness check',
+                    '- NEW LIFE Cloud Function deploy + synthetic smoke test',
+                    '- endpoint wiring',
+                    '- fixed live-model evaluation',
+                    '- evidence capture under `docs/newlife/evaluation/evidence/phase33/`',
+                    '',
+                    'HUMAN_VALIDATION_STATUS=PENDING.',
+                    'READY_FOR_PRODUCT_RELEASE=NO.',
+                    '',
+                    'Review the live evidence and repository CI before merge.'
+                  ].join('\n'),
+                });
+                pr = created.data;
+              } catch (error) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: 1,
+                  body: [
+                    '[PHASE33_LOCAL_BRANCH_PUSHED]',
+                    `BRANCH: ${branch}`,
+                    'AUTO_PR: FAILED',
+                    `COMPARE: ${compareUrl}`,
+                    `ERROR: ${error.message}`,
+                    'The branch is safely pushed; no Owner log/file relay is required.'
+                  ].join('\n'),
+                });
+                core.setFailed(`Could not create PR automatically: ${error.message}`);
+                return;
+              }
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: 1,
+              body: [
+                '[CLAUDE_TO_CHATGPT]',
+                'PROJECT: NEW_LIFE',
+                'PHASE: PHASE_33_LOCAL_GCP_DEPLOY_AND_LIVE_EVAL_V1',
+                `BRANCH: ${branch}`,
+                `PR: #${pr.number} ${pr.html_url}`,
+                'LOCAL_BRANCH_PUSH: PASS',
+                'LIVE_EVIDENCE: docs/newlife/evaluation/evidence/phase33/',
+                'HUMAN_VALIDATION_STATUS: PENDING',
+                'READY_FOR_CHATGPT_REVIEW: YES',
+                'READY_FOR_PRODUCT_RELEASE: NO',
+                'OWNER_ACTION_REQUIRED: NO for repository handoff; next human gate is only final live playtest judgment unless review finds a true blocker.'
+              ].join('\n'),
+            });
