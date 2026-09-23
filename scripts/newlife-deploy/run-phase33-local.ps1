@@ -50,16 +50,26 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
   Fail "Git was not found on this PC." 10
 }
 
+$originalBranch = (& git branch --show-current).Trim()
+if ([string]::IsNullOrWhiteSpace($originalBranch)) {
+  $originalBranch = "master"
+}
+$phase33StashRef = $null
 $dirty = @(git status --porcelain)
 if ($LASTEXITCODE -ne 0) {
   Fail "This folder is not a usable git worktree: $RepoRoot" 10
 }
 if ($dirty.Count -gt 0) {
   $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
-  Write-Host "Local changes found. Saving them reversibly to git stash: phase33-auto-save-$stamp" -ForegroundColor Yellow
-  & git stash push --include-untracked -m "phase33-auto-save-$stamp"
+  $stashMarker = "phase33-auto-save-$stamp"
+  Write-Host "Local changes found. Saving them reversibly to git stash: $stashMarker" -ForegroundColor Yellow
+  & git stash push --include-untracked -m $stashMarker
   if ($LASTEXITCODE -ne 0) {
     Fail "Could not safely stash local changes. Nothing further was changed." 12
+  }
+  $stashLine = (& git stash list --format="%gd%x09%s" | Where-Object { $_ -like "*$stashMarker*" } | Select-Object -First 1)
+  if (-not [string]::IsNullOrWhiteSpace($stashLine)) {
+    $phase33StashRef = ($stashLine -split ([char]9), 2)[0]
   }
 }
 
@@ -194,6 +204,24 @@ if ($staged.Count -gt 0) {
 Write-Host ""
 Write-Host "[8/8] Pushing Phase 33 branch..." -ForegroundColor Yellow
 Run-Git @("push", "-u", "origin", $branchName)
+
+# Restore the Owner's original local branch/work only after the Phase 33
+# branch is safely pushed. If a stash cannot be applied cleanly, keep it
+# intact and report the exact ref instead of risking data loss.
+Write-Host ""
+Write-Host "Restoring the original local working context..." -ForegroundColor Yellow
+& git switch $originalBranch
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "Could not switch back to original branch '$originalBranch'. Phase 33 branch is already safely pushed." -ForegroundColor Yellow
+} elseif (-not [string]::IsNullOrWhiteSpace($phase33StashRef)) {
+  & git stash apply $phase33StashRef
+  if ($LASTEXITCODE -eq 0) {
+    & git stash drop $phase33StashRef
+    Write-Host "Original uncommitted work restored." -ForegroundColor Green
+  } else {
+    Write-Host "Original work could not be applied cleanly. It remains safely stored at $phase33StashRef." -ForegroundColor Yellow
+  }
+}
 
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor Green
