@@ -12,25 +12,26 @@ ground truth, other cases, Growth history, or any device/user identifier — to 
 `functions/dialogue/`. See `docs/DECISIONS.md` for why, and `src/lib/aiDialogueClient.ts` for the exact
 payload shape. Declining, or every other case, keeps the full local-only guarantee below unchanged.
 
-**A second, separate, purpose-specific exception is proposed as of
-PHASE_30_SERVERLESS_SEMANTIC_RUNTIME_IMPLEMENTATION_V1 (NEW LIFE, GitHub issue #1) — NOT ACTIVE**: once the
-Owner explicitly consents (`thinking-game:newlife-ai-dialogue-consent:v1`, a distinct key from CASE-001's —
-accepting one never implies accepting the other, per this document's own "each purpose needs its own
-opt-in" rule below), NEW LIFE's free-talk turns *for an utterance the deterministic router judges ambiguous*
+**A second, separate, purpose-specific exception was proposed as of
+PHASE_30_SERVERLESS_SEMANTIC_RUNTIME_IMPLEMENTATION_V1 (NEW LIFE, GitHub issue #1) and is ACTIVE as of
+PHASE_33_LIVE_SEMANTIC_ENDPOINT**: once the Owner explicitly consents
+(`thinking-game:newlife-ai-dialogue-consent:v1`, a distinct key from CASE-001's — accepting one never
+implies accepting the other, per this document's own "each purpose needs its own opt-in" rule below), NEW
+LIFE's free-talk turns *for an utterance the deterministic router judges ambiguous*
 (`src/newlife/npcVoice.ts`'s `isAmbiguousFreeText` — most turns, including every recognized fact question or
-social act, are never sent anywhere) would send that one utterance plus a `FactsSnapshot` (`npc`, `day`,
+social act, are never sent anywhere) send that one utterance plus a `FactsSnapshot` (`npc`, `day`,
 `known` facts, `unknown` fact categories, `negativeConstraints`) — never the full `NewLife30State` (no action
 `log`, no `playerReport`, no `publicBlame`), no other NPC's data, no device/user identifier — to a Vertex AI
 Gemini call via a separate Cloud Function, `functions/newlife-dialogue/` (not the same deployed endpoint as
 CASE-001's). See `docs/newlife/evaluation/PHASE_30_SERVERLESS_SEMANTIC_RUNTIME_IMPLEMENTATION_V1.md` for the
 full design and `src/newlife/semantic/httpInterpreter.ts` for the exact payload shape.
-**This exception is marked NOT ACTIVE**: `src/newlife/semantic/config.ts`'s `NEWLIFE_DIALOGUE_ENDPOINT_URL`
-ships empty, so `src/newlife/semantic/coordinator.ts` never attempts this network call and the consent
-prompt never appears — deployed behavior is the unchanged Phase 27/28/28B deterministic router. It becomes
-active only once the function is actually deployed (an Owner-only GCP billing/API-enablement prerequisite,
-identical in kind to CASE-001's own) and that constant is set, at which point declining, or the endpoint
-remaining unset, keeps the full local-only guarantee below unchanged for NEW LIFE exactly as it already does
-for CASE-001.
+**This exception is now ACTIVE**: `src/newlife/semantic/config.ts`'s `NEWLIFE_DIALOGUE_ENDPOINT_URL` is set
+to the deployed function's HTTPS URL (asia-northeast1, project `gas-test-runner-20260620-wjxf`), so a
+consenting player's ambiguous free-talk turn does reach `src/newlife/semantic/coordinator.ts`'s network call
+and the NEW LIFE-specific consent prompt does appear the first time one is attempted. Declining, or an
+unambiguous turn, keeps the full local-only guarantee below unchanged for NEW LIFE exactly as it already
+does for CASE-001. Clearing `NEWLIFE_DIALOGUE_ENDPOINT_URL` back to empty reverts to the unchanged Phase
+27/28/28B deterministic router with zero network calls.
 
 ## Three data categories (Section N)
 

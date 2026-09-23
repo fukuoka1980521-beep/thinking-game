@@ -17,7 +17,12 @@ param(
   [string]$ProjectId = "gas-test-runner-20260620-wjxf"
 )
 
-$ErrorActionPreference = "Stop"
+# NOTE: intentionally "Continue", not "Stop". Windows PowerShell 5.1 wraps a native command's
+# stderr output (this script's gcloud calls redirect it via 2>&1 / 2>$null to inspect it) as a
+# terminating NativeCommandError under "Stop", even when the command itself exits 0 -- gcloud
+# routinely writes informational banners to stderr. Every consequential call below already checks
+# $LASTEXITCODE explicitly (via Fail()/Run-Git()), so "Continue" loses no real error handling.
+$ErrorActionPreference = "Continue"
 $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot "../..")
 Set-Location $RepoRoot
 
@@ -155,6 +160,17 @@ $deployResult = Get-Content $resultFile -Raw | ConvertFrom-Json
 $url = "$($deployResult.url)".Trim()
 if ($url -notmatch "^https://") {
   Fail "The deployed HTTPS URL in deploy-result.json is invalid." 31
+}
+# Freshness check: deploy.ps1 deletes this file before it runs and only re-creates it after a
+# verified write, so a valid-looking but stale file from an earlier, unrelated run must not be
+# accepted here either -- require it to have been written within this step's own timeframe.
+$deployedAt = [DateTimeOffset]::MinValue
+if (-not [DateTimeOffset]::TryParse("$($deployResult.deployedAt)", [ref]$deployedAt)) {
+  Fail "deploy-result.json has no valid deployedAt timestamp." 31
+}
+$age = [DateTimeOffset]::UtcNow - $deployedAt.ToUniversalTime()
+if ($age -gt [TimeSpan]::FromMinutes(10) -or $age -lt [TimeSpan]::FromMinutes(-1)) {
+  Fail "deploy-result.json is not fresh (deployedAt $($deployResult.deployedAt) is $($age.TotalMinutes.ToString('0.0')) min old) -- refusing to wire a stale result." 31
 }
 Write-Host "Live function endpoint resolved mechanically." -ForegroundColor Green
 
