@@ -36,7 +36,14 @@ function parseArgs(argv) {
 
 function run(cmd, cmdArgs) {
   console.log(`\n$ ${cmd} ${cmdArgs.join(" ")}`);
-  execFileSync(cmd, cmdArgs, { cwd: REPO_ROOT, stdio: "inherit" });
+  // shell: true only for "npm" on win32 -- there it's npm.cmd, a batch file, and Node's own
+  // safety fix (CVE-2024-27980) makes execFileSync reject spawning .cmd/.bat directly (EINVAL)
+  // unless shell: true is set; plain ENOENT before that fix, same root cause either way. Scoped to
+  // just "npm" (not "git", a real .exe that never needed this) since shell: true concatenates args
+  // rather than escaping them -- every npm call site here passes only fixed, safe literals
+  // ("run"/"typecheck"/"test"/"build"), never interpolated/untrusted input.
+  const useShell = cmd === "npm" && process.platform === "win32";
+  execFileSync(cmd, cmdArgs, { cwd: REPO_ROOT, stdio: "inherit", shell: useShell });
 }
 
 function main() {
