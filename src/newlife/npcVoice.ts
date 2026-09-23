@@ -73,7 +73,17 @@ function isBarberMention(t: string): boolean {
   return /理容|床屋|理髪|barber/i.test(t);
 }
 
+function isMotivationQuestion(t: string): boolean {
+  // Human playtest: "焼き菓子売るなんてどんなきっかけ？" is about WHY
+  // Hina started, not WHAT she sells. Topic nouns alone must not steal a
+  // motivation/character question and turn it into the menu fact dump.
+  return /(きっかけ|理由|わけ|なぜ|どうして|なんで|何で)/.test(t) &&
+    /(始め|売る|売ろう|やろう|店|商売)/.test(t) &&
+    isQuestionLike(t);
+}
+
 function isMenuQuestion(t: string): boolean {
+  if (isMotivationQuestion(t)) return false;
   if (/(何を?売|何売|何が売|売る.*何)/.test(t)) return true;
   return /(焼き菓子|お菓子|菓子|スコーン|クッキー|商品|品物|値段|価格|幾ら|いくら)/.test(t) && isQuestionLike(t);
 }
@@ -289,8 +299,8 @@ const FOOD_TEXTURE_CONTEXT = /クッキー|スコーン|焼き菓子|お菓子|�
 function isToneFeedback(t: string): boolean {
   if (FOOD_TEXTURE_CONTEXT.test(t)) return false;
   const STYLE_WORD = /口調|言い方|話し方|喋り方|しゃべり方|物言い/;
-  const STIFF_WITH_STYLE = /堅苦し|他人行儀|よそよそし|機械っぽ|ロボット|そっけな|冷た|固|硬|変/;
-  const BARE_STIFF = /堅苦し|他人行儀|よそよそし|機械っぽ|ロボット|そっけな|冷たい|固い|硬い/;
+  const STIFF_WITH_STYLE = /堅苦し|他人行儀|よそよそし|機械っぽ|ロボット|そっけな|冷た|きつ|強すぎ|固|硬|変/;
+  const BARE_STIFF = /堅苦し|他人行儀|よそよそし|機械っぽ|ロボット|そっけな|冷たい|きつい|強すぎ|固い|硬い/;
   const CASUAL_REQUEST = /もっと.*(普通|自然|気楽|フランク).*(話|喋)|タメ口/;
   if (CASUAL_REQUEST.test(t)) return true;
   if (STYLE_WORD.test(t) && STIFF_WITH_STYLE.test(t)) return true;
