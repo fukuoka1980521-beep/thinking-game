@@ -186,3 +186,13 @@ describe("scripts/newlife-deploy — Phase 33 local context restore", () => {
     expect(doc).toContain("stash is preserved");
   });
 });
+
+
+describe("scripts/newlife-deploy — null-safe native command output", () => {
+  it("gcloud native outputs are string-cast before Trim in the Phase 33 runner and deploy fallback", () => {
+    const runner = readFileSync(path.join(REPO_ROOT, "scripts/newlife-deploy/run-phase33-local.ps1"), "utf8");
+    const deploy = readFileSync(path.join(REPO_ROOT, "scripts/newlife-deploy/deploy.ps1"), "utf8");
+    expect(runner).toContain('$account = "$(& gcloud config get-value account 2>$null)".Trim()');
+    expect(deploy).toContain('$deployedUrl = "$(& gcloud functions describe newlife-dialogue');
+  });
+});
