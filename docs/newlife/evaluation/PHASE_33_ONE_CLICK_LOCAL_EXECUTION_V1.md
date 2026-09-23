@@ -20,7 +20,10 @@ When run, it:
 10. wires the deployed endpoint and reruns typecheck/tests/build;
 11. runs the fixed live-model evaluation set;
 12. commits safe synthetic evidence;
-13. pushes the branch.
+13. pushes the branch;
+14. switches back to the Owner's original local branch and reapplies the Phase 33 auto-stash if one was created. The stash is dropped only after a clean apply; if restoration conflicts, the stash is preserved and its exact ref is reported instead of risking data loss.
+
+This post-push restore is an intentional spec-synced safety change so Phase 33 does not leave the Owner's unrelated local work displaced.
 
 After that push, `.github/workflows/newlife-phase33-auto-pr.yml` automatically opens (or finds) the PR and reports the PR back to Issue #1.
 

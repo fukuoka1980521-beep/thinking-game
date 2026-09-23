@@ -108,7 +108,7 @@ if ($deployExit -ne 0) {
 # accidentally saving a warning as the endpoint.
 $deployedUrl = ($deployOutput | ForEach-Object { "$_".Trim() } | Where-Object { $_ -match '^https://.+' } | Select-Object -Last 1)
 if ([string]::IsNullOrWhiteSpace($deployedUrl)) {
-  $deployedUrl = (& gcloud functions describe newlife-dialogue --gen2 --region=asia-northeast1 --project=$ProjectId --format="value(serviceConfig.uri)" 2>$null).Trim()
+  $deployedUrl = "$(& gcloud functions describe newlife-dialogue --gen2 --region=asia-northeast1 --project=$ProjectId --format="value(serviceConfig.uri)" 2>$null)".Trim()
 }
 if ([string]::IsNullOrWhiteSpace($deployedUrl) -or $deployedUrl -notmatch '^https://') {
   Write-Host "Deploy succeeded but the HTTPS endpoint could not be resolved mechanically." -ForegroundColor Red

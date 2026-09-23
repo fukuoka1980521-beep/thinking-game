@@ -50,7 +50,7 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
   Fail "Git was not found on this PC." 10
 }
 
-$originalBranch = (& git branch --show-current).Trim()
+$originalBranch = "$(& git branch --show-current)".Trim()
 if ([string]::IsNullOrWhiteSpace($originalBranch)) {
   $originalBranch = "master"
 }
@@ -89,14 +89,14 @@ if (-not (Get-Command gcloud -ErrorAction SilentlyContinue)) {
   Fail "Human action required: install Google Cloud CLI, then run this same file again." 20
 }
 
-$account = (& gcloud config get-value account 2>$null).Trim()
+$account = "$(& gcloud config get-value account 2>$null)".Trim()
 if ([string]::IsNullOrWhiteSpace($account) -or $account -eq "(unset)") {
   Write-Host "No active gcloud login. Opening the Google login flow now..." -ForegroundColor Yellow
   & gcloud auth login
   if ($LASTEXITCODE -ne 0) {
     Fail "Google login did not complete. Run this file again after login succeeds." 21
   }
-  $account = (& gcloud config get-value account 2>$null).Trim()
+  $account = "$(& gcloud config get-value account 2>$null)".Trim()
 }
 if ([string]::IsNullOrWhiteSpace($account) -or $account -eq "(unset)") {
   Fail "gcloud still has no authenticated account after the login attempt." 21
