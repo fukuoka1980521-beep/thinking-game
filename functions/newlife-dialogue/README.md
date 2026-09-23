@@ -84,7 +84,7 @@ player's free text (see the `catch` block in `index.js`).
 
 ## Cost controls
 
-- `--max-instances=10` at deploy (same cheap circuit-breaker
+- `--max-instances=1` at deploy (same cheap circuit-breaker
   `functions/dialogue/` uses against an unauthenticated public endpoint).
 - The CORS allowlist below is the second line of defense.
 - `utterance` is capped at 200 characters server-side (`MAX_UTTERANCE_LENGTH`
@@ -130,7 +130,7 @@ gcloud functions deploy newlife-dialogue \
   --allow-unauthenticated \
   --memory=256Mi \
   --timeout=20s \
-  --max-instances=10 \
+  --max-instances=1 \
   --project=gas-test-runner-20260620-wjxf \
   --set-env-vars=GCP_PROJECT=gas-test-runner-20260620-wjxf
 ```
@@ -168,3 +168,19 @@ own disclosed limitation.
    against a real endpoint — the first Run that deploys this needs its own
    automated + human evaluation pass on live output, not just "the types
    compile and the request validation is tested."
+
+
+## Owner-validation cost guard
+
+The Phase 33 deployment intentionally uses `--max-instances=1` and
+`NEWLIFE_DIALOGUE_MAX_CALLS_PER_MINUTE=20`. This is a prototype-validation
+circuit breaker, not a security boundary: CORS does not stop non-browser
+clients from forging an Origin header. The per-instance limiter returns HTTP
+429 before a Vertex AI call when the local fixed window is exhausted. It is
+combined with one maximum Cloud Functions instance so the test endpoint
+cannot scale horizontally during Owner validation.
+
+If NEW LIFE later becomes a public product, replace this prototype guard with
+a production abuse-control layer (for example App Check / authenticated access
+or another server-verified client-attestation mechanism) before increasing
+capacity.
