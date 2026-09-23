@@ -179,6 +179,29 @@ function validateInput(body) {
   return null;
 }
 
+function createFixedWindowLimiter(limit, windowMs, nowFn = Date.now) {
+  let windowStart = nowFn();
+  let used = 0;
+
+  return {
+    consume() {
+      const now = nowFn();
+      if (now - windowStart >= windowMs) {
+        windowStart = now;
+        used = 0;
+      }
+      if (used >= limit) return false;
+      used += 1;
+      return true;
+    },
+    remaining() {
+      const now = nowFn();
+      if (now - windowStart >= windowMs) return limit;
+      return Math.max(0, limit - used);
+    },
+  };
+}
+
 function applyCors(req, res) {
   const origin = req.get("Origin");
   if (origin && ALLOWED_ORIGINS.has(origin)) {
@@ -206,4 +229,5 @@ module.exports = {
   buildPrompt,
   validateInput,
   applyCors,
+  createFixedWindowLimiter,
 };
