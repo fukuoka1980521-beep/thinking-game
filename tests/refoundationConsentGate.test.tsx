@@ -68,7 +68,7 @@ describe("NEW LIFE refoundation — AI consent gate (endpoint configured)", () =
   });
 
   it("accepting routes NPC-line generation through the live adapter (fetch is called) with a real request shape", async () => {
-    const fetchSpy = vi.fn(async () => ({
+    const fetchSpy = vi.fn(async (_url: string, _init?: RequestInit) => ({
       ok: true,
       status: 200,
       json: async () => ({ npc: "MIKA", text: "……分かった、話す。" }),
