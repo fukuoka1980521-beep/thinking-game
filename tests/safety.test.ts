@@ -22,21 +22,34 @@ const sourceFiles = collectSourceFiles(SRC_DIR);
 const allSource = sourceFiles.map((f) => readFileSync(f, "utf-8")).join("\n");
 
 // REAL_AI_DIALOGUE Run (Section 12/26) + PHASE_30_SERVERLESS_SEMANTIC_RUNTIME
-// (NEW LIFE): exactly two intentional, disclosed network calls exist now --
-// the CASE1 dialogue Cloud Function proxy, and the separate NEW LIFE
-// semantic-interpreter Cloud Function proxy (functions/newlife-dialogue/,
-// docs/DATA_BOUNDARY.md's second purpose-specific exception). Every other
-// file in src/ must remain exactly as network-free as before.
+// (NEW LIFE) + refoundation live-provider integration: exactly three
+// intentional, disclosed network call *sites* exist now -- the CASE1
+// dialogue Cloud Function proxy, the legacy NEW LIFE semantic-interpreter
+// Cloud Function proxy (functions/newlife-dialogue/), and the isolated
+// refoundation live-provider proxy (functions/newlife-refoundation-ai/,
+// still undeployed -- see src/newlife/refoundation/config.ts's empty
+// endpoint constant). Every other file in src/ must remain exactly as
+// network-free as before. httpAdapters.ts is one file implementing *two*
+// adapter classes (HttpSemanticInterpreterAdapter/HttpNpcGenerationAdapter)
+// that share one `postJson` helper, so it makes exactly one `fetch(` call
+// site even though it backs two adapters -- matching the "one fetch call
+// per disclosed file" shape the other two files already established.
 const DIALOGUE_CLIENT_FILE = join(SRC_DIR, "lib", "aiDialogueClient.ts");
 const NEWLIFE_HTTP_INTERPRETER_FILE = join(SRC_DIR, "newlife", "semantic", "httpInterpreter.ts");
-const DISCLOSED_NETWORK_FILES = new Set([DIALOGUE_CLIENT_FILE, NEWLIFE_HTTP_INTERPRETER_FILE]);
+const REFOUNDATION_HTTP_ADAPTERS_FILE = join(SRC_DIR, "newlife", "refoundation", "httpAdapters.ts");
+const DISCLOSED_NETWORK_FILES = new Set([
+  DIALOGUE_CLIENT_FILE,
+  NEWLIFE_HTTP_INTERPRETER_FILE,
+  REFOUNDATION_HTTP_ADAPTERS_FILE,
+]);
 const nonDialogueFiles = sourceFiles.filter((f) => !DISCLOSED_NETWORK_FILES.has(f));
 const nonDialogueSource = nonDialogueFiles.map((f) => readFileSync(f, "utf-8")).join("\n");
 const dialogueClientSource = readFileSync(DIALOGUE_CLIENT_FILE, "utf-8");
 const newlifeHttpInterpreterSource = readFileSync(NEWLIFE_HTTP_INTERPRETER_FILE, "utf-8");
+const refoundationHttpAdaptersSource = readFileSync(REFOUNDATION_HTTP_ADAPTERS_FILE, "utf-8");
 
-describe("safety: no external network usage outside the two documented dialogue clients", () => {
-  it("never calls fetch, XMLHttpRequest, or WebSocket anywhere in src/ except the two disclosed clients", () => {
+describe("safety: no external network usage outside the three documented dialogue clients", () => {
+  it("never calls fetch, XMLHttpRequest, or WebSocket anywhere in src/ except the three disclosed clients", () => {
     expect(nonDialogueSource).not.toMatch(/\bfetch\s*\(/);
     expect(nonDialogueSource).not.toMatch(/XMLHttpRequest/);
     expect(allSource).not.toMatch(/new WebSocket/);
@@ -50,6 +63,15 @@ describe("safety: no external network usage outside the two documented dialogue 
   it("httpInterpreter.ts (NEW LIFE) makes exactly one fetch call", () => {
     const fetchCalls = newlifeHttpInterpreterSource.match(/\bfetch\s*\(/g) ?? [];
     expect(fetchCalls).toHaveLength(1);
+  });
+
+  it("httpAdapters.ts (refoundation) makes exactly one fetch call, shared by both adapter classes", () => {
+    const fetchCalls = refoundationHttpAdaptersSource.match(/\bfetch\s*\(/g) ?? [];
+    expect(fetchCalls).toHaveLength(1);
+  });
+
+  it("HttpSemanticInterpreterAdapter/HttpNpcGenerationAdapter never attempt the network call while no endpoint URL is configured", () => {
+    expect(refoundationHttpAdaptersSource).toMatch(/if\s*\(\s*!endpointUrl\s*\)/);
   });
 
   it("PersonalizedAiDialogueGate never attempts the network call while no endpoint URL is configured", () => {
