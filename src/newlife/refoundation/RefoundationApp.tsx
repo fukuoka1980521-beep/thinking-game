@@ -27,6 +27,21 @@
  * HUMAN_VALIDATION_STATUS = PENDING, same as `NewLife30App.tsx`'s own
  * disclosure for its slice. This is not a claim of human playtest
  * validation.
+ *
+ * LIVE PROVIDER (added after stage 7's initial commit, still undeployed):
+ * when `NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL` (`config.ts`) is non-empty
+ * AND the player has explicitly accepted the refoundation-scoped consent
+ * prompt (`consent.ts`, a separate opt-in from both CASE1's and legacy NEW
+ * LIFE's own consent keys, per `docs/DATA_BOUNDARY.md`'s "each purpose
+ * needs its own opt-in"), this component switches from the `Null*` adapters
+ * to `HttpSemanticInterpreterAdapter`/`HttpNpcGenerationAdapter`
+ * (`httpAdapters.ts`), which call `functions/newlife-refoundation-ai/`.
+ * With the shipped-empty endpoint constant, or without consent, behavior is
+ * unchanged from the original stage 7 commit: `Null*` adapters, no network
+ * call, no consent prompt ever shown. There is no third state that looks
+ * like a live AI response but isn't — every non-`"ok"` adapter outcome
+ * still resolves through the same conservative fallback path
+ * (`interpretTurn`/`generateNpcLine`) as the `Null*` adapters always used.
  */
 import { useMemo, useState } from "react";
 import {
@@ -48,8 +63,15 @@ import {
   spendTime,
   type WorldClock,
 } from "./timeEconomy";
-import { NullSemanticInterpreterAdapter, interpretTurn } from "./semanticInterpreter";
-import { NullNpcGenerationAdapter, generateNpcLine } from "./npcGeneration";
+import { NullSemanticInterpreterAdapter, interpretTurn, type SemanticInterpreterAdapter } from "./semanticInterpreter";
+import { NullNpcGenerationAdapter, generateNpcLine, type NpcGenerationAdapter } from "./npcGeneration";
+import { HttpSemanticInterpreterAdapter, HttpNpcGenerationAdapter } from "./httpAdapters";
+import { NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL } from "./config";
+import {
+  getRefoundationAiDialogueConsent,
+  setRefoundationAiDialogueConsent,
+  type RefoundationAiDialogueConsentStatus,
+} from "./consent";
 import { useBoundaryCheckTool } from "./thoughtTools";
 import type { ActionType, BoundaryMode, NpcRelationshipRecord, RelationalEvent, RelationshipState } from "./types";
 
@@ -57,7 +79,9 @@ interface Props {
   onExit: () => void;
 }
 
-type Phase = "PURPOSE" | "PLAY";
+const LIVE_PROVIDER_CONFIGURED = NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL.length > 0;
+
+type Phase = "PURPOSE" | "CONSENT" | "PLAY";
 type SpeakerId = "SYSTEM" | "PLAYER" | "MIKA" | "RYO";
 type TargetNpc = "MIKA" | "RYO";
 
@@ -154,6 +178,31 @@ const RESOLUTION_ACTIONS: ActionButton[] = [
 
 const nullSemanticAdapter = new NullSemanticInterpreterAdapter();
 const nullNpcAdapter = new NullNpcGenerationAdapter();
+// Constructed unconditionally (cheap: just stores a URL string) but only
+// ever invoked when LIVE_PROVIDER_CONFIGURED and consent is "accepted" —
+// see resolveAdapters() below. With the shipped-empty endpoint constant
+// these behave identically to the Null adapters (HttpSemanticInterpreterAdapter's
+// own empty-endpoint check returns "unavailable" without a network call).
+const httpSemanticAdapter = new HttpSemanticInterpreterAdapter(NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL);
+const httpNpcAdapter = new HttpNpcGenerationAdapter(NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL);
+
+/**
+ * No silent fallback masquerading as AI success: the live adapters are only
+ * ever selected when both the endpoint is configured AND the player has
+ * explicitly accepted this feature's own consent prompt. Any other state
+ * (declined, not yet asked, or no endpoint at all) uses the same `Null*`
+ * adapters this component always used, which `interpretTurn`/
+ * `generateNpcLine` route through the identical conservative-fallback path.
+ */
+function resolveAdapters(consent: RefoundationAiDialogueConsentStatus | null): {
+  semantic: SemanticInterpreterAdapter;
+  npc: NpcGenerationAdapter;
+} {
+  if (LIVE_PROVIDER_CONFIGURED && consent === "accepted") {
+    return { semantic: httpSemanticAdapter, npc: httpNpcAdapter };
+  }
+  return { semantic: nullSemanticAdapter, npc: nullNpcAdapter };
+}
 
 function speakerLabel(speaker: SpeakerId): string {
   switch (speaker) {
@@ -173,6 +222,20 @@ export function RefoundationApp({ onExit }: Props) {
   const [state, setState] = useState<GameState>(createInitialGameState);
   const [freeText, setFreeText] = useState("");
   const [pending, setPending] = useState(false);
+  const [consent, setConsent] = useState<RefoundationAiDialogueConsentStatus | null>(() =>
+    LIVE_PROVIDER_CONFIGURED ? getRefoundationAiDialogueConsent() : "declined",
+  );
+  const adapters = useMemo(() => resolveAdapters(consent), [consent]);
+
+  function beginPlay() {
+    setPhase(LIVE_PROVIDER_CONFIGURED && consent === null ? "CONSENT" : "PLAY");
+  }
+
+  function respondToConsent(status: RefoundationAiDialogueConsentStatus) {
+    setRefoundationAiDialogueConsent(status);
+    setConsent(status);
+    setPhase("PLAY");
+  }
 
   const ended = remainingMinutes(state.clock) <= 0 || state.ending.taskLedger.commitment !== null;
   const hasHadConsequence =
@@ -212,7 +275,7 @@ export function RefoundationApp({ onExit }: Props) {
     const npcLine =
       target === null
         ? null
-        : await generateNpcLine(nullNpcAdapter, {
+        : await generateNpcLine(adapters.npc, {
             npc: target,
             relationshipState: target === "MIKA" ? nextMika.relationshipState : nextRyo.relationshipState,
             boundaryStatus: nextEnding.boundaryEstablished
@@ -253,7 +316,7 @@ export function RefoundationApp({ onExit }: Props) {
   async function handleFreeText() {
     if (!freeText.trim() || ended || pending) return;
     setPending(true);
-    const result = await interpretTurn(nullSemanticAdapter, {
+    const result = await interpretTurn(adapters.semantic, {
       utterance: freeText,
       speaker: "PLAYER",
       caseContext: "free-text turn, addressed to the scene generally",
@@ -269,7 +332,9 @@ export function RefoundationApp({ onExit }: Props) {
           ...prev.transcript,
           {
             speaker: "SYSTEM",
-            text: "（このビルドにはまだAIアダプタが接続されていません。自由入力は確認待ちとして扱われます — 下の選択肢から行動を選べます。）",
+            text: LIVE_PROVIDER_CONFIGURED
+              ? "（AIの応答を取得できませんでした。自由入力は確認待ちとして扱われます — 下の選択肢から行動を選べます。）"
+              : "（このビルドにはまだAIアダプタが接続されていません。自由入力は確認待ちとして扱われます — 下の選択肢から行動を選べます。）",
           },
         ],
       }));
@@ -289,8 +354,26 @@ export function RefoundationApp({ onExit }: Props) {
         <p style={{ fontSize: 13, color: "#555" }}>
           正解や教訓は用意されていません。（HUMAN_VALIDATION_STATUS = PENDING — このスライスはまだ人による検証を受けていません。）
         </p>
-        <button onClick={() => setPhase("PLAY")}>はじめる</button>{" "}
+        <button onClick={beginPlay}>はじめる</button>{" "}
         <button onClick={onExit}>戻る</button>
+      </div>
+    );
+  }
+
+  if (phase === "CONSENT") {
+    return (
+      <div style={{ maxWidth: 640, margin: "40px auto", padding: 24, fontFamily: "sans-serif", lineHeight: 1.7 }}>
+        <h1 style={{ fontSize: 20 }}>AIによる会話について</h1>
+        <p style={{ fontSize: 14 }}>
+          このビルドでは、NPCとの自由な会話とセリフ生成に外部のAIモデル（Vertex AI Gemini）を使うことができます。
+          あなたが自由入力欄に書いた内容は、そのターンの分類のためだけにサーバーへ送られます。ゲームの状態そのものはこの端末側の確定的な仕組みが管理し、
+          AIの応答が直接ゲーム状態を書き換えることはありません。
+        </p>
+        <p style={{ fontSize: 13, color: "#555" }}>
+          同意しない場合も、あらかじめ用意された選択肢と道具でこのケースを最後まで進められます。
+        </p>
+        <button onClick={() => respondToConsent("accepted")}>同意してAIを使う</button>{" "}
+        <button onClick={() => respondToConsent("declined")}>同意しない（選択肢のみで進める）</button>
       </div>
     );
   }
@@ -321,7 +404,11 @@ export function RefoundationApp({ onExit }: Props) {
             <input
               value={freeText}
               onChange={(e) => setFreeText(e.target.value)}
-              placeholder="自由に話す（このビルドではAI応答は未接続です）"
+              placeholder={
+                LIVE_PROVIDER_CONFIGURED && consent === "accepted"
+                  ? "自由に話す"
+                  : "自由に話す（このビルドではAI応答は未接続です）"
+              }
               style={{ width: "70%" }}
               disabled={pending}
             />{" "}
