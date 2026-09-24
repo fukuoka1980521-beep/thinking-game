@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  THOUGHT_TOOL_ALTERNATIVE_PLAN_DISCOUNT_MINUTES,
   TIME_COSTS,
   VERTICAL_SLICE_CASE_001_TOTAL_MINUTES,
   costOf,
@@ -22,7 +23,10 @@ describe("TIME_COSTS table (V3 review packet, verbatim)", () => {
     expect(TIME_COSTS.CUT_SCENE_OR_BRIDGE_TRANSITIONS).toBe(10);
     expect(TIME_COSTS.UNDERSTUDY).toBe(18);
     expect(TIME_COSTS.THOUGHT_TOOL_BOUNDARY_CHECK).toBe(1);
+    expect(TIME_COSTS.THOUGHT_TOOL_ROLE_SWAP).toBe(1); // "Counterfactual role swap... Costs 1 min."
+    expect(TIME_COSTS.THOUGHT_TOOL_TASK_PERSONAL_SPLIT).toBe(0); // not stated in V3; conservative default (V32 §2.3)
     expect(TIME_COSTS.CLARIFY).toBe(0); // V14 §7
+    expect(THOUGHT_TOOL_ALTERNATIVE_PLAN_DISCOUNT_MINUTES).toBe(2); // "Saves 2 min plan-generation cost"
   });
 });
 

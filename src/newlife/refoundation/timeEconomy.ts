@@ -33,6 +33,8 @@ export type TimeCostCategory =
   | "CUT_SCENE_OR_BRIDGE_TRANSITIONS"
   | "UNDERSTUDY"
   | "THOUGHT_TOOL_BOUNDARY_CHECK"
+  | "THOUGHT_TOOL_ROLE_SWAP"
+  | "THOUGHT_TOOL_TASK_PERSONAL_SPLIT"
   | "CLARIFY";
 
 /**
@@ -54,9 +56,26 @@ export const TIME_COSTS: Readonly<Record<TimeCostCategory, number>> = {
   UNDERSTUDY: 18,
   // "Structured boundary check. 1 min rather than 2" (thought tools section).
   THOUGHT_TOOL_BOUNDARY_CHECK: 1,
+  // V3 packet thought-tools section: "Counterfactual role swap... Costs 1 min."
+  THOUGHT_TOOL_ROLE_SWAP: 1,
+  // V3 packet thought-tools section does not state a minute cost for the
+  // task/personal split tool (unlike the other three, which each name a
+  // number) — 0 is the most conservative reading available from the text,
+  // flagged as an assumption in V32_THOUGHT_TOOLS_CONTRACT_V1.md §2.3
+  // rather than silently invented.
+  THOUGHT_TOOL_TASK_PERSONAL_SPLIT: 0,
   // V14 §7: "if even the requested act is unclear, CLARIFY at 0 in-world minutes."
   CLARIFY: 0,
 };
+
+/**
+ * V3 packet thought-tools section: "嫌なこと + 代わりにできること... Saves 2
+ * min plan-generation cost." Unlike the other three tools' costs (a flat
+ * category above), this one is a discount applied to a *later* REWRITE-shaped
+ * action, not a cost of invoking the tool itself — see `thoughtTools.ts`'s
+ * `applyAlternativePlanDiscount`.
+ */
+export const THOUGHT_TOOL_ALTERNATIVE_PLAN_DISCOUNT_MINUTES = 2;
 
 /** `MOVE_CONVERSATION_PRIVATE`'s cost is additive on top of a base category, per the packet's own "+2 min" phrasing — not a category on its own. */
 export const TIME_COSTS_ARE_ADDITIVE: ReadonlySet<TimeCostCategory> = new Set([
