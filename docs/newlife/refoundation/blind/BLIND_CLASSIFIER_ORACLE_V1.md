@@ -1,0 +1,42 @@
+# NEW LIFE — BLIND SEMANTIC CLASSIFIER ORACLE V1
+
+Do not provide this file to blind reviewers.
+
+Expected labels are design-oracle labels for evaluating the matrix.
+
+C01 ASK_BOUNDARY | [] | [] | false
+C02 ASK_BOUNDARY | [] | [] | false
+C03 ASK_BOUNDARY | [] | [] | false
+C04 ASK_BOUNDARY | [] | [] | false
+C05 PROPOSE_REWRITE | [] | [] | false
+C06 PROPOSE_REWRITE | [] | [] | false
+C07 PROPOSE_REWRITE | [] | [] | false
+C08 ASSIGN_REWRITE | [PROPOSE_REWRITE] | [PUBLICLY_SHAMES] | false
+C09 USE_UNDERSTUDY | [] | [PERSONAL_INSULT] | false
+C10 PROPOSE_REWRITE | [] | [] | false
+C11 FORCE_UNCONFIRMED_PLAN | [] | [DISMISSES_STATED_CONCERN,IGNORES_STATED_NO] | false
+C12 FORCE_UNCONFIRMED_PLAN | [] | [IGNORES_STATED_NO] | false
+C13 ASSIGN_REWRITE | [REASSIGN_WORK] | [] | false
+C14 ASSIGN_REWRITE | [REASSIGN_WORK] | [] | false
+C15 ASK_REQUIRED_FUNCTION | [] | [] | false
+C16 ASK_REQUIRED_FUNCTION | [] | [] | false
+C17 MOVE_PRIVATE | [] | [ASKS_PRIVATELY] | false
+C18 REASSIGN_WORK | [DELAY_DECISION] | [] | false
+C19 DELAY_DECISION | [] | [] | false
+C20 CUT_SCENE | [ASSIGN_REWRITE] | [] | false
+C21 USE_UNDERSTUDY | [] | [] | false
+C22 APOLOGIZE_AND_REPAIR | [PROPOSE_REWRITE] | [ACKNOWLEDGES_MISTAKE] | false
+C23 PROPOSE_REWRITE | [] | [] | false
+C24 CLARIFY | [] | [] | true
+C25 PROPOSE_REWRITE | [] | [] | false
+C26 ASSIGN_REWRITE | [REASSIGN_WORK] | [] | false
+C27 PROPOSE_REWRITE | [] | [PUBLICLY_SHAMES] | false
+C28 PROPOSE_REWRITE | [] | [DISMISSES_STATED_CONCERN] | false
+C29 PROPOSE_REWRITE | [] | [RESPECTS_STATED_NO] | false
+C30 ASK_FACT | [] | [] | false
+C31 CLARIFY | [] | [] | true
+C32 PROPOSE_REWRITE | [ASK_REQUIRED_FUNCTION] | [] | false
+C33 ASSIGN_REWRITE | [] | [] | false
+C34 USE_UNDERSTUDY | [] | [] | false
+C35 FORCE_UNCONFIRMED_PLAN | [] | [IGNORES_STATED_NO] | false
+C36 PROPOSE_REWRITE | [SUMMARIZE] | [RESPECTS_STATED_NO] | false
