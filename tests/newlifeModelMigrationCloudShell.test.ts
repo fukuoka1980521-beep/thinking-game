@@ -47,6 +47,8 @@ describe("PDE-008 model migration Cloud Shell probe", () => {
     expect(cloud).toContain("blind-results-");
     expect(cloud).toContain("blind-map-");
     expect(cloud).toContain("keep RAW_BUNDLE withheld");
+    expect(cloud).toContain('MODEL_LOCATION_COMPATIBILITY_V1.md "$FINAL_DIR/unblind/"');
+    expect(cloud).not.toContain('MODEL_LOCATION_COMPATIBILITY_V1.md "$FINAL_DIR/blind/"');
   });
 
   it("uses ADC and never creates/downloads a service-account key", () => {
