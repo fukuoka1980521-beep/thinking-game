@@ -44,6 +44,15 @@ describe("NEW LIFE PDE-009 live human test", () => {
     expect(page).toContain("await new Promise(r=>setTimeout(r,700))");
   });
 
+
+  it("allows longer provider latency and identifies which AI stage failed", () => {
+    expect(page).toContain("setTimeout(()=>ctrl.abort(),45000)");
+    expect(page).toContain("意味解釈で失敗:");
+    expect(page).toContain("NPC返答生成で失敗:");
+    expect(script).toContain("--timeout=45s");
+    expect(script).toContain("--max-time 50");
+  });
+
   it("smoke-tests both backend operations before exposing the human-test URL", () => {
     expect(script).toContain("Smoke 1/2: interpret_turn");
     expect(script).toContain("Smoke 2/2: generate_npc_line");
