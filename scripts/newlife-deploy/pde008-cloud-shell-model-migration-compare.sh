@@ -100,7 +100,7 @@ cp "$OUT_ROOT/location/model-location-availability.json" "$FINAL_DIR/unblind/"
 find "$OUT_ROOT/legacy-global" "$OUT_ROOT/refoundation-global" -type f -name 'blind-results-*.json' -exec cp {} "$FINAL_DIR/blind/" \;
 find "$OUT_ROOT/legacy-global" "$OUT_ROOT/refoundation-global" -type f \( -name 'raw-results-*.json' -o -name 'blind-map-*.json' \) -exec cp {} "$FINAL_DIR/unblind/" \;
 cp docs/newlife/migration/EVALUATION_RUBRIC_V1.md "$FINAL_DIR/blind/"
-cp docs/newlife/migration/MODEL_LOCATION_COMPATIBILITY_V1.md "$FINAL_DIR/blind/"
+cp docs/newlife/migration/MODEL_LOCATION_COMPATIBILITY_V1.md "$FINAL_DIR/unblind/"
 
 python3 - "$FINAL_DIR" <<'PY'
 import json, pathlib, sys
