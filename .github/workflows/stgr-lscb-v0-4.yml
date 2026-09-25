@@ -1,0 +1,64 @@
+name: STGR LSCB v0.4 Auth Probe
+
+on:
+  push:
+    branches:
+      - research/stgr-lscb-v0-4
+    paths:
+      - ".github/workflows/stgr-lscb-v0-4.yml"
+      - "research/stgr-lscb-v0-4/**"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: stgr-lscb-v0-4
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify repository variables
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -z "${{ vars.GCP_PROJECT_ID }}" ] && missing+=("GCP_PROJECT_ID")
+          [ -z "${{ vars.GCP_WIF_PROVIDER }}" ] && missing+=("GCP_WIF_PROVIDER")
+          [ -z "${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}" ] && missing+=("GCP_DEPLOY_SERVICE_ACCOUNT")
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "::error::Missing vars: ${missing[*]}"
+            exit 2
+          fi
+          echo "GCP variables present."
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Probe direct Vertex permission
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROJECT="${{ vars.GCP_PROJECT_ID }}"
+          LOCATION="asia-southeast1"
+          MODEL="gemini-3.5-flash"
+          TOKEN="$(gcloud auth print-access-token)"
+          code="$(curl -sS -o /tmp/resp.json -w '%{http_code}' \
+            -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Content-Type: application/json" \
+            "https://${LOCATION}-aiplatform.googleapis.com/v1/projects/${PROJECT}/locations/${LOCATION}/publishers/google/models/${MODEL}:generateContent" \
+            -d '{"contents":[{"role":"user","parts":[{"text":"Return only the word OK."}]}],"generationConfig":{"maxOutputTokens":64}}')"
+          echo "HTTP=$code"
+          cat /tmp/resp.json
+          test "$code" = "200"
