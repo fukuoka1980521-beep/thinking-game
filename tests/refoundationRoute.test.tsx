@@ -90,7 +90,7 @@ describe("NEW LIFE refoundation UI smoke test (V11 stage 7)", () => {
     await user.click(screen.getByRole("button", { name: "送る" }));
 
     expect(await screen.findByText("何が引っかかっている？")).toBeInTheDocument();
-    expect(await screen.findByText(/美香は台本を持ったまま/)).toBeInTheDocument();
+    expect(await screen.findByText(/美香はこちらを見て、話す準備をしている/)).toBeInTheDocument();
   });
 
   it("routes free text to Ryo when Ryo is explicitly selected", async () => {
@@ -100,7 +100,7 @@ describe("NEW LIFE refoundation UI smoke test (V11 stage 7)", () => {
     await user.click(screen.getByRole("button", { name: "送る" }));
 
     expect(await screen.findByText("変えたら何が困る？")).toBeInTheDocument();
-    expect(await screen.findByText(/亮は台本に目を落としたまま/)).toBeInTheDocument();
+    expect(await screen.findByText(/亮は客席からこちらに向き直る/)).toBeInTheDocument();
   });
 
   it("reaches a non-ranked ending after a resolution action, without surfacing raw ontology labels", async () => {
