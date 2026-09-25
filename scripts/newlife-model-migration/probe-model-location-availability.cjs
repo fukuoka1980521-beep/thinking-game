@@ -33,7 +33,7 @@ function parseArgs(argv) {
 }
 
 function classifyError(message) {
-  if (/not[ _-]?found|NOT_FOUND|\\b404\\b|not supported|unsupported|does not exist/i.test(message)) {
+  if (/not[ _-]?found|NOT_FOUND|\b404\b|not supported|unsupported|does not exist/i.test(message)) {
     return "UNAVAILABLE_OR_UNSUPPORTED";
   }
   if (/quota|resource.?exhausted|429/i.test(message)) return "QUOTA_OR_CAPACITY";
