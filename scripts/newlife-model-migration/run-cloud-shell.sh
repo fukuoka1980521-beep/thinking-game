@@ -45,7 +45,7 @@ echo "Region:  $LOCATION"
 echo "Runs:    $RUNS"
 echo "No cloud configuration will be changed."
 
-npm ci --omit=dev --prefix functions/newlife-dialogue
+npm install --omit=dev --no-package-lock --prefix functions/newlife-dialogue
 
 export GCP_PROJECT="$PROJECT_ID"
 export GOOGLE_CLOUD_PROJECT="$PROJECT_ID"
