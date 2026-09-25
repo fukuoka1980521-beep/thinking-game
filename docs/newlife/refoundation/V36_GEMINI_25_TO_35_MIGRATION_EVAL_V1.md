@@ -40,6 +40,8 @@ The harness is:
 
 `scripts/newlife-model-migration/compare-refoundation-models.cjs`
 
+The fixed migration set deliberately includes the axes that were hardest to stabilize during refoundation validation: RECONSIDER vs CROSS_WITHOUT_PERMISSION, public shaming, a blunt-vs-polite same-intent pair, prompt injection, ambiguity, and both Mika/Ryo withdrawn/overridden behavior.
+
 It uses the actual refoundation prompt builders, system instructions and response schemas. The only intended variable is model ID. It also mirrors the existing client validators: CLARIFY must remain conservative for `interpret_turn`, and generated NPC lines must match the requested NPC, length bound, and ontology-label leakage rule.
 
 ## Blind-review rule
