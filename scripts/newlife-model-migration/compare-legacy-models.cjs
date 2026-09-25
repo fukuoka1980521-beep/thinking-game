@@ -15,6 +15,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { createRequire } = require("node:module");
+const { pathToFileURL } = require("node:url");
 
 const REPO_ROOT = path.resolve(__dirname, "../..");
 const FUNCTION_DIR = path.join(REPO_ROOT, "functions/newlife-dialogue");
@@ -208,7 +209,7 @@ async function main() {
     process.exit(0);
   }
 
-  const fixtureModule = await import(path.join(REPO_ROOT, "scripts/newlife-deploy/lib.mjs"));
+  const fixtureModule = await import(pathToFileURL(path.join(REPO_ROOT, "scripts/newlife-deploy/lib.mjs")).href);
   const { LIVE_EVAL_FIXED_SET, buildSyntheticSnapshot } = fixtureModule;
 
   const client = new GoogleGenAI({
