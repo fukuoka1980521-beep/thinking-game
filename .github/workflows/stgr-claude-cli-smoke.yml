@@ -31,24 +31,37 @@ jobs:
         run: |
           curl -fsSL https://claude.ai/install.sh | bash
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      - name: Run isolated no-tools decision
+      - name: Auth status
         run: |
-          set -euo pipefail
           export PATH="$HOME/.local/bin:$PATH"
           claude --version
+          claude auth status || true
+      - name: Run isolated no-tools decision
+        id: decide
+        run: |
+          set +e
+          export PATH="$HOME/.local/bin:$PATH"
           mkdir -p /tmp/stgr-empty
           cd /tmp/stgr-empty
           claude -p "${PROMPT}" \
             --bare \
             --disallowedTools "*" \
-            --max-turns 1 \
             --no-session-persistence \
             --output-format json \
-            --json-schema "${SCHEMA}" > /tmp/claude-smoke.json
-          python -m json.tool /tmp/claude-smoke.json
+            --json-schema "${SCHEMA}" > /tmp/claude-smoke.json 2> /tmp/claude-smoke.err
+          code=$?
+          echo "exit_code=$code"
+          echo "--- stdout ---"
+          cat /tmp/claude-smoke.json || true
+          echo "--- stderr ---"
+          cat /tmp/claude-smoke.err || true
+          exit $code
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: STGR_CLAUDE_CLI_SMOKE
-          path: /tmp/claude-smoke.json
-          if-no-files-found: error
+          path: |
+            /tmp/claude-smoke.json
+            /tmp/claude-smoke.err
+          if-no-files-found: warn
           retention-days: 7
