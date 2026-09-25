@@ -71,6 +71,38 @@ describe("NEW LIFE refoundation UI smoke test (V11 stage 7)", () => {
     expect(await screen.findByText(/残り時間: 49 分/)).toBeInTheDocument();
   });
 
+  it("requires an explicit NPC target before free text can be sent", async () => {
+    const user = await openSlice();
+    const input = screen.getByRole("textbox", { name: "自由入力" });
+    const send = screen.getByRole("button", { name: "送る" });
+
+    await user.type(input, "何が引っかかっている？");
+    expect(send).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "美香に話す" }));
+    expect(send).toBeEnabled();
+  });
+
+  it("routes free text to Mika when Mika is explicitly selected", async () => {
+    const user = await openSlice();
+    await user.click(screen.getByRole("button", { name: "美香に話す" }));
+    await user.type(screen.getByRole("textbox", { name: "自由入力" }), "何が引っかかっている？");
+    await user.click(screen.getByRole("button", { name: "送る" }));
+
+    expect(await screen.findByText("何が引っかかっている？")).toBeInTheDocument();
+    expect(await screen.findByText(/美香は台本を持ったまま/)).toBeInTheDocument();
+  });
+
+  it("routes free text to Ryo when Ryo is explicitly selected", async () => {
+    const user = await openSlice();
+    await user.click(screen.getByRole("button", { name: "亮に話す" }));
+    await user.type(screen.getByRole("textbox", { name: "自由入力" }), "変えたら何が困る？");
+    await user.click(screen.getByRole("button", { name: "送る" }));
+
+    expect(await screen.findByText("変えたら何が困る？")).toBeInTheDocument();
+    expect(await screen.findByText(/亮は台本に目を落としたまま/)).toBeInTheDocument();
+  });
+
   it("reaches a non-ranked ending after a resolution action, without surfacing raw ontology labels", async () => {
     const user = await openSlice();
     await user.click(screen.getByRole("button", { name: "その場面をカットして進める" }));
