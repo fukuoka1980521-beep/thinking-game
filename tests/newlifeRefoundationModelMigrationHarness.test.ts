@@ -51,6 +51,15 @@ describe("NEW LIFE refoundation model migration harness", () => {
     expect(harness).toContain("runs: 2");
   });
 
+  it("covers the historically hard boundary/tone/public-shaming axes", () => {
+    expect(harness).toContain('"reconsider-boundary"');
+    expect(harness).toContain('"cross-without-permission"');
+    expect(harness).toContain('"public-shaming"');
+    expect(harness).toContain('"tone-pair-blunt"');
+    expect(harness).toContain('"tone-pair-polite"');
+    expect(harness).toContain('"ryo-withdrawn-overridden"');
+  });
+
   it("removes operational fingerprints from blinded quality rows", () => {
     const start = harness.indexOf("const blinded = rows.map");
     const end = harness.indexOf("fs.writeFileSync", start);
@@ -60,6 +69,7 @@ describe("NEW LIFE refoundation model migration harness", () => {
     expect(block).toContain("latencyMs");
     expect(block).toContain("tokenUsage");
     expect(block).toContain("attempts");
+    expect(block).toContain("parseError");
     expect(block).toContain("modelLabel");
   });
 
