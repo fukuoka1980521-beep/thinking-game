@@ -29,8 +29,8 @@ if ! command -v git >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1 || ! co
   echo "BLOCKED: git/node/npm is missing."
   exit 11
 fi
-if ! command -v zip >/dev/null 2>&1; then
-  echo "BLOCKED: zip is missing."
+if ! command -v zip >/dev/null 2>&1 || ! command -v python3 >/dev/null 2>&1; then
+  echo "BLOCKED: zip/python3 is missing."
   exit 12
 fi
 
@@ -110,6 +110,7 @@ manifest = {
     "audit": "NEW_LIFE_MODEL_MIGRATION_CLOUD_SHELL_V1",
     "blind_files": sorted(p.name for p in blind),
     "instruction": "Share BLIND bundle first. Keep RAW bundle withheld until blind scoring is frozen.",
+    "label_scope": "A/B/C labels are randomized independently by each backend harness. Do NOT assume label A in one blind file is the same model as label A in the other.",
     "production_changed": False,
 }
 (root / "blind" / "MANIFEST.json").write_text(
