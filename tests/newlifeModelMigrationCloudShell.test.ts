@@ -33,6 +33,12 @@ describe("PDE-008 model migration Cloud Shell probe", () => {
     expect(cloud).toContain("This script will NOT enable it");
   });
 
+  it("installs function dependencies without requiring absent lockfiles", () => {
+    expect(cloud).not.toContain("npm ci --silent --prefix functions/newlife-dialogue");
+    expect(cloud).toContain("npm install --silent --omit=dev --no-audit --no-fund --package-lock=false --prefix functions/newlife-dialogue");
+    expect(cloud).toContain("npm install --silent --omit=dev --no-audit --no-fund --package-lock=false --prefix functions/newlife-refoundation-ai");
+  });
+
   it("uses the accepted comparison harnesses on global with two runs by default", () => {
     expect(cloud).toContain("compare-legacy-models.mjs");
     expect(cloud).toContain("compare-refoundation-models.cjs");
