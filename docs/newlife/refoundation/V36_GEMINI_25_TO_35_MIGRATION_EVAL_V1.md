@@ -40,7 +40,7 @@ The harness is:
 
 `scripts/newlife-model-migration/compare-refoundation-models.cjs`
 
-It uses the actual refoundation prompt builders, system instructions and response schemas. The only intended variable is model ID.
+It uses the actual refoundation prompt builders, system instructions and response schemas. The only intended variable is model ID. It also mirrors the existing client validators: CLARIFY must remain conservative for `interpret_turn`, and generated NPC lines must match the requested NPC, length bound, and ontology-label leakage rule.
 
 ## Blind-review rule
 
@@ -50,7 +50,7 @@ The harness writes:
 - blind results using A/B/C;
 - a separate blind-map file.
 
-The blind-map must stay hidden until the evaluator freezes its judgment.
+The blind-map must stay hidden until the evaluator freezes its judgment. The blinded quality file also omits latency, token usage and retry counts so those operational fingerprints do not become a shortcut for guessing model identity. Provider call order is counterbalanced across case/run positions, and the default comparison repeats each case/model twice.
 
 Do not treat an AI evaluator as product validation. The blind pass exists to reduce model-name bias and Owner-specific overfitting, not to replace human play.
 
