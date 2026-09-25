@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NEW LIFE V37 — 会話・思考整理テスト</title>
+<style>
+:root{color-scheme:dark;--bg:#0a0d12;--panel:#121823;--line:#2d394d;--text:#f3f6fa;--muted:#aab5c6;--ok:#9ee0a4;--bad:#ff9c9c;--accent:#efbd72}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#10141c,#090b10 70%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Yu Gothic UI",sans-serif}
+main{max-width:920px;margin:0 auto;padding:18px}.card{border:1px solid var(--line);border-radius:16px;background:rgba(18,24,35,.96);padding:18px;margin:12px 0}
+h1{font-size:22px;margin:0 0 8px}h2{font-size:16px;margin:0 0 10px}.muted{color:var(--muted);font-size:13px;line-height:1.6}
+.status{font-size:13px;padding:9px 11px;border-radius:10px;background:#0c1118;border:1px solid var(--line)}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.transcript{min-height:260px;max-height:500px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:12px;background:#0c1118}
+.line{margin:8px 0;line-height:1.7}.who{font-weight:700}.mika{color:#f3b7d3}.ryo{color:#9dc4ff}.you{color:#ffe2a9}.system{color:#9aa6b6;font-size:13px}
+.row{display:flex;gap:8px}.row input{flex:1;min-width:0;background:#0b1017;color:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit}
+button{border:1px solid #516985;background:#1f2b3b;color:white;border-radius:10px;padding:10px 14px;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
+.targets{display:flex;gap:8px;flex-wrap:wrap}.targets button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.panel{border:1px dashed #4b7961;border-radius:12px;padding:12px;background:#0d1812}.panel h3{margin:0 0 8px;font-size:14px}
+details{border:1px dashed #3d4c63;border-radius:10px;padding:9px;margin-top:10px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.metric{border:1px solid var(--line);border-radius:10px;padding:10px}.metric label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.metric select,textarea{width:100%;background:#0b1017;color:#fff;border:1px solid var(--line);border-radius:8px;padding:9px}.result{white-space:pre-wrap;background:#0b1017;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}.row{flex-direction:column}}
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>NEW LIFE V37 — 会話・思考整理テスト</h1>
+    <p class="muted">V37の新設計を直接確認します。自由入力は一度の <code>converse_turn</code> で、サーバー側にあるストーリー正本とキャラクター背景を使って返答します。必要なときだけ別レイヤーの「思考整理」を呼び出せます。</p>
+    <div id="status" class="status bad">LIVE AI endpoint を確認中…</div>
+  </div>
+
+  <div id="consentCard" class="card" style="display:none">
+    <h2>AI利用の確認</h2>
+    <p class="muted">入力文と直近の会話は、Google Cloud上のNEW LIFE専用AIへ送られます。キャラクター正本はサーバー側にあり、ブラウザから書き換えません。このテストページは会話品質と思考整理を確認するための隔離ページです。</p>
+    <button id="consent">同意して始める</button>
+  </div>
+
+  <div id="game" style="display:none">
+    <div class="card">
+      <h2>今回の依頼</h2>
+      <p class="muted">16:40。明日18:00が初公演。主役の美香が、ある場面をこのままでは演じないと言い、演出の亮は今から変えると全体の段取りが崩れると困っています。17:30までに、明日の公演をどうするか決める必要があります。</p>
+      <div id="transcript" class="transcript"></div>
+    </div>
+
+    <div class="card">
+      <h2>自由会話</h2>
+      <div class="targets">
+        <button id="targetMika" type="button" aria-pressed="false">美香に話す</button>
+        <button id="targetRyo" type="button" aria-pressed="false">亮に話す</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <input id="utterance" maxlength="400" autocomplete="off" placeholder="相手を選び、自分の言葉で話す"/>
+        <button id="send" disabled>話す</button>
+      </div>
+      <details>
+        <summary>AIの意味理解と候補状態を見る</summary>
+        <pre id="debug" class="muted" style="white-space:pre-wrap"></pre>
+      </details>
+    </div>
+
+    <div class="card">
+      <button id="organize">考えを整理する</button>
+      <p class="muted">これは美香・亮のセリフではなく、問題解決を助ける別レイヤーです。</p>
+      <div id="thought" class="panel" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h2>あなたの評価</h2>
+      <div class="grid">
+        <div class="metric"><label>意味理解</label><select id="meaning"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+        <div class="metric"><label>自然さ</label><select id="natural"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+        <div class="metric"><label>キャラらしさ</label><select id="character"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+        <div class="metric"><label>前進性</label><select id="progress"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+      </div>
+      <textarea id="note" rows="4" placeholder="違和感・良かった点・意味が通らなかった発言をそのまま書く"></textarea>
+      <button id="save" style="margin-top:8px">評価を保存・表示</button>
+      <div id="result" class="result" style="display:none"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const params=new URLSearchParams(location.search);
+const endpoint=params.get("endpoint")||localStorage.getItem("newlife_v37_endpoint")||"";
+const statusEl=document.getElementById("status");
+const consentCard=document.getElementById("consentCard");
+const game=document.getElementById("game");
+const transcriptEl=document.getElementById("transcript");
+const input=document.getElementById("utterance");
+const send=document.getElementById("send");
+const debug=document.getElementById("debug");
+const thought=document.getElementById("thought");
+let target=null,busy=false,remainingMinutes=50,boundaryStatus="UNKNOWN",relationship={MIKA:"NEUTRAL",RYO:"NEUTRAL"},activeCommitment=null;
+const history=[];
+
+function safeEndpoint(url){try{const u=new URL(url);return u.protocol==="https:"&&(u.hostname.endsWith(".run.app")||u.hostname.endsWith(".cloudfunctions.net"))}catch{return false}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+function addLine(who,text,cls){history.push({speaker:who,text});transcriptEl.insertAdjacentHTML("beforeend",'<div class="line '+cls+'"><span class="who">'+esc(who==="PLAYER"?"あなた":who==="MIKA"?"美香":who==="RYO"?"亮":"システム")+':</span> '+esc(text)+'</div>');transcriptEl.scrollTop=transcriptEl.scrollHeight}
+function recentDialogue(){return history.slice(-8).map(x=>({speaker:x.speaker,text:x.text}))}
+
+async function post(body){
+  let lastError=null;
+  for(let attempt=1;attempt<=2;attempt++){
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),45000);
+    try{
+      const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:ctrl.signal});
+      const textBody=await res.text();
+      let data;try{data=JSON.parse(textBody)}catch{throw new Error("AI応答がJSONではありません")}
+      if(!res.ok){const e=new Error(data?.error||("HTTP "+res.status));e.status=res.status;throw e}
+      return data;
+    }catch(err){
+      lastError=err;
+      const retryable=!err?.status||err.status===502||err.name==="AbortError";
+      if(attempt===1&&retryable){await new Promise(r=>setTimeout(r,700));continue}
+      throw err;
+    }finally{clearTimeout(timer)}
+  }
+  throw lastError||new Error("AI接続に失敗しました");
+}
+
+function selectTarget(id){
+  target=id;
+  document.getElementById("targetMika").setAttribute("aria-pressed",id==="MIKA");
+  document.getElementById("targetRyo").setAttribute("aria-pressed",id==="RYO");
+  input.placeholder=(id==="MIKA"?"美香":"亮")+"に自由に話す";
+  send.disabled=!input.value.trim()||busy;
+  input.focus();
+}
+document.getElementById("targetMika").onclick=()=>selectTarget("MIKA");
+document.getElementById("targetRyo").onclick=()=>selectTarget("RYO");
+input.oninput=()=>{send.disabled=!target||!input.value.trim()||busy};
+input.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)send.click()};
+
+async function talk(){
+  const utterance=input.value.trim();
+  if(!utterance||!target||busy)return;
+  busy=true;send.disabled=true;
+  addLine("PLAYER",utterance,"you");
+  input.value="";
+  try{
+    const data=await post({
+      operation:"converse_turn",
+      caseId:"COMMUNITY_THEATER_V1",
+      targetNpc:target,
+      rawPlayerUtterance:utterance,
+      recentDialogue:recentDialogue().slice(0,-1),
+      dynamicState:{
+        relationshipState:relationship[target],
+        boundaryStatus,
+        remainingMinutes,
+        activeCommitment
+      }
+    });
+    debug.textContent=JSON.stringify(data,null,2);
+    if(!data||data.npc!==target||typeof data.npcLine!=="string"||!data.npcLine.trim())throw new Error("会話応答の形式が不正です");
+    addLine(target,data.npcLine,target==="MIKA"?"mika":"ryo");
+    remainingMinutes=Math.max(0,remainingMinutes-2);
+  }catch(err){
+    addLine("SYSTEM","AI接続エラー: "+(err?.message||String(err)),"system");
+  }finally{
+    busy=false;send.disabled=!target||!input.value.trim();
+  }
+}
+send.onclick=talk;
+
+document.getElementById("organize").onclick=async()=>{
+  const btn=document.getElementById("organize");btn.disabled=true;
+  try{
+    const data=await post({
+      operation:"organize_thought",
+      validatedWorldFacts:"明日18:00が初回公演。チケットは販売済み。17:30までに対応方針を決める必要がある。美香は現状の場面をそのまま演じることを拒否している。亮は今からの変更が段取りに影響すると考えている。",
+      recentDialogue:recentDialogue(),
+      currentProblem:"美香と亮の対立を理解し、明日の公演をどう進めるか決める。"
+    });
+    const section=(title,arr)=>Array.isArray(arr)&&arr.length?'<p><strong>'+esc(title)+':</strong> '+arr.map(esc).join(" / ")+'</p>':"";
+    thought.innerHTML='<h3>思考整理（キャラクターの発言ではありません）</h3>'+
+      section("わかっている",data.known)+section("そうかもしれない",data.possible)+section("まだわからない",data.unknown)+section("選択肢",data.options)+
+      (data.nextCheck?'<p><strong>次に確かめること:</strong> '+esc(data.nextCheck)+'</p>':"");
+    thought.style.display="block";
+  }catch(err){
+    thought.innerHTML='<h3>思考整理</h3><p class="bad">取得失敗: '+esc(err?.message||String(err))+'</p>';thought.style.display="block";
+  }finally{btn.disabled=false}
+};
+
+if(safeEndpoint(endpoint)){
+  localStorage.setItem("newlife_v37_endpoint",endpoint);
+  statusEl.className="status ok";statusEl.textContent="V37 LIVE AI endpoint 設定済み。";
+  consentCard.style.display="block";
+}else{
+  statusEl.className="status bad";
+  statusEl.innerHTML='V37 LIVE AI endpoint が未設定です。Cloud ShellのPDE010準備スクリプト完了後のテストURLから開いてください。';
+}
+document.getElementById("consent").onclick=()=>{
+  consentCard.style.display="none";game.style.display="block";
+  addLine("MIKA","この場面、明日はやりません。ここを変えないなら、私は出ません。","mika");
+  addLine("RYO","昨日まではやってただろ。今ここで変えたら、全員の段取りが崩れる。","ryo");
+};
+document.getElementById("save").onclick=()=>{
+  const result={meaning:Number(document.getElementById("meaning").value),naturalness:Number(document.getElementById("natural").value),character:Number(document.getElementById("character").value),forwardProgress:Number(document.getElementById("progress").value),note:document.getElementById("note").value.trim(),turns:history,at:new Date().toISOString()};
+  localStorage.setItem("newlife_v37_result",JSON.stringify(result));
+  const box=document.getElementById("result");box.style.display="block";box.textContent=JSON.stringify(result,null,2);
+};
+</script>
+</body>
+</html>
