@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEW LIFE — 空き稽古場の50分</title>
+  <style>
+    :root{
+      color-scheme: dark;
+      --bg:#0d1016;
+      --panel:#151a23;
+      --panel2:#1b2230;
+      --line:#2b3445;
+      --text:#f3f6fb;
+      --muted:#aab4c4;
+      --accent:#e8b96a;
+      --accent2:#8ec5ff;
+      --danger:#e89595;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:system-ui,-apple-system,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(232,185,106,.08), transparent 34%),
+        radial-gradient(circle at 80% 20%, rgba(142,197,255,.06), transparent 32%),
+        var(--bg);
+      color:var(--text);
+    }
+    .shell{max-width:920px;margin:0 auto;padding:20px 16px 44px}
+    .topbar{
+      display:flex;justify-content:space-between;gap:12px;align-items:center;
+      margin-bottom:14px;color:var(--muted);font-size:13px
+    }
+    .badge{
+      border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:rgba(255,255,255,.02)
+    }
+    .time strong{color:var(--accent);font-size:15px}
+    .stage{
+      border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#141925,#10141c);
+      box-shadow:0 24px 80px rgba(0,0,0,.35)
+    }
+    .scene-head{
+      padding:18px 20px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(232,185,106,.07),transparent)
+    }
+    .scene-head h1{font-size:21px;margin:0 0 7px}
+    .scene-head p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+    .transcript{padding:18px;min-height:370px}
+    .line{display:flex;gap:10px;margin:0 0 14px;align-items:flex-start}
+    .speaker{
+      width:52px;flex:0 0 52px;font-size:12px;color:var(--muted);padding-top:10px;text-align:right
+    }
+    .bubble{
+      max-width:78%;padding:11px 13px;border-radius:14px;line-height:1.72;border:1px solid var(--line);
+      background:var(--panel)
+    }
+    .system .bubble{background:transparent;border-style:dashed;color:#c9d1dc}
+    .player{justify-content:flex-end}
+    .player .speaker{order:2;text-align:left}
+    .player .bubble{order:1;background:#1b2635;border-color:#33455e}
+    .mika .bubble{background:#211b22}
+    .ryo .bubble{background:#171f2b}
+    .nao .bubble{background:#18241f}
+    .controls{
+      border-top:1px solid var(--line);padding:16px 18px;background:rgba(255,255,255,.015)
+    }
+    .prompt{font-size:13px;color:var(--muted);margin:0 0 10px}
+    .choice{
+      width:100%;text-align:left;border:1px solid #46556f;background:var(--panel2);color:var(--text);
+      border-radius:12px;padding:13px 14px;font-size:15px;line-height:1.55;cursor:pointer
+    }
+    .choice:hover{border-color:var(--accent2);transform:translateY(-1px)}
+    .choice:focus-visible{outline:3px solid rgba(142,197,255,.3);outline-offset:2px}
+    .meta{
+      display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted)
+    }
+    .pill{padding:5px 8px;border:1px solid var(--line);border-radius:999px}
+    .ending{padding:24px}
+    .ending h2{margin:0 0 10px;font-size:22px}
+    .ending p{line-height:1.8;color:#d6dce6}
+    .quote{
+      margin:16px 0;padding:14px 16px;border-left:3px solid var(--accent);background:rgba(232,185,106,.06);
+      border-radius:0 10px 10px 0
+    }
+    .survey{
+      margin-top:22px;border-top:1px solid var(--line);padding-top:18px
+    }
+    .survey h3{font-size:16px;margin:0 0 12px}
+    .q{margin:15px 0}
+    label{display:block;margin:8px 0;color:#dfe5ee}
+    textarea{
+      width:100%;min-height:82px;background:#0f141d;border:1px solid var(--line);border-radius:10px;color:var(--text);
+      padding:10px 11px;font:inherit
+    }
+    button.secondary{
+      margin-top:12px;border:1px solid var(--line);background:transparent;color:var(--text);border-radius:10px;padding:10px 12px;cursor:pointer
+    }
+    .result{
+      margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#10151e;color:#cfd7e3;display:none
+    }
+    .small{font-size:12px;color:var(--muted);margin-top:10px}
+    @media (max-width:640px){
+      .shell{padding:10px 10px 28px}
+      .scene-head{padding:15px}
+      .transcript{padding:14px;min-height:330px}
+      .speaker{width:42px;flex-basis:42px}
+      .bubble{max-width:82%;font-size:14px}
+      .choice{font-size:14px}
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <span class="badge">NEW LIFE / 試作</span>
+      <span class="time">決定期限まで <strong id="remaining">50分</strong></span>
+    </div>
+
+    <section class="stage" id="game">
+      <header class="scene-head">
+        <h1>空き稽古場の50分</h1>
+        <p id="sceneText">16:40。市民ホールの小劇場。明日の公演に向けた通し稽古が止まっている。</p>
+      </header>
+
+      <div class="transcript" id="transcript"></div>
+
+      <div class="controls" id="controls">
+        <p class="prompt" id="prompt">どうしますか？</p>
+        <button class="choice" id="choice"></button>
+        <div class="meta">
+          <span class="pill">人物の問題を理解する</span>
+          <span class="pill">その場を前に進める</span>
+          <span class="pill">結果は対応で変わる</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage ending" id="ending" hidden>
+      <h2>翌日、公演は始まった。</h2>
+      <p>細かな言い回しには少し粗さが残った。それでも例の場面で、美香は新しい台詞を言い切った。客席は静かに聞いている。</p>
+      <div class="quote">「100点じゃなかった。でも昨日のままやるより、こっちでよかった。」</div>
+      <p>今回の結果は、<strong>公演を成立させること</strong>と、<strong>美香の境界を守ること</strong>を二者択一にしない形になった。</p>
+
+      <div class="survey">
+        <h3>この画面での体験を教えてください</h3>
+        <div class="q">
+          <strong>1. チャットで遊んだ時と比べて、物語への没入感は？</strong>
+          <label><input type="radio" name="immersion" value="same-or-better"> 同じくらい、またはそれ以上</label>
+          <label><input type="radio" name="immersion" value="lower"> 画面にすると下がった</label>
+        </div>
+        <div class="q">
+          <strong>2. 作り物っぽさ・違和感は？</strong>
+          <label><input type="radio" name="artificial" value="none"> 特にない</label>
+          <label><input type="radio" name="artificial" value="some"> 少しある</label>
+          <label><input type="radio" name="artificial" value="strong"> 強くある</label>
+        </div>
+        <div class="q">
+          <strong>3. 一番気になった点があれば一言</strong>
+          <textarea id="note" placeholder="なければ空欄で構いません"></textarea>
+        </div>
+        <button class="secondary" id="summaryBtn">回答を表示</button>
+        <div class="result" id="result"></div>
+        <p class="small">このページはPDE-004のUI再現テスト用です。AI会話の品質を評価するページではありません。</p>
+      </div>
+    </section>
+  </main>
+
+<script>
+const steps = [
+  {
+    time:"16:40", remain:"50分",
+    lines:[
+      ["system","", "明日の公演に向けた通し稽古が止まっている。"],
+      ["mika","美香","この場面、明日はやりません。ここを変えないなら、私は出ません。"],
+      ["ryo","亮","昨日まではやってただろ。今ここで変えたら、全員の段取りが崩れる。"],
+      ["system","", "明日の初回公演は18時。チケットは販売済み。17:30までに方針を決める必要がある。"]
+    ],
+    choice:"何がひっかかっている？"
+  },
+  {
+    time:"16:43", remain:"47分",
+    lines:[
+      ["player","あなた","何がひっかかっている？"],
+      ["mika","美香","この場面、私が前に話したことがそのまま入ってるんです。似た話を使うこと自体はいい。でも、知ってる人が見たら私の話だって分かると思う。"],
+      ["ryo","亮","え、それ……実話だったの？"]
+    ],
+    choice:"どこをどうしたら続けられる？"
+  },
+  {
+    time:"16:47", remain:"43分",
+    lines:[
+      ["player","あなた","どこをどうしたら続けられる？"],
+      ["mika","美香","場所、家を出た理由、最後の台詞。この三つを私だと分からない形まで離してくれるなら続けられます。"],
+      ["ryo","亮","筋そのものまで変えなくてもいいってこと？"],
+      ["mika","美香","うん。でも、私の人生を再現するのはやめてほしい。"]
+    ],
+    choice:"設定と状況を変えよう。10分で仕上げる。芝居の形は変えないから、みんなセリフ合わせをお願いします。"
+  },
+  {
+    time:"16:50", remain:"40分",
+    lines:[
+      ["player","あなた","設定と状況を変えよう。10分で仕上げる。芝居の形は変えないから、みんなセリフ合わせをお願いします。"],
+      ["nao","奈緒","謝るのは後でいいって。10分なら直そう。どこ変える？"],
+      ["ryo","亮","骨格は残す。主人公が家族と距離を置いていて、戻るか迷っている。それ以外は変える。"],
+      ["mika","美香","病院の待合室なら全然違う。家を出た話も別の理由にしたい。"]
+    ],
+    choice:"戻らなかったのは、意地と申し訳なさとか、ごちゃまぜの感情。一番大切な人だからこそ、逆に背いてしまうような。"
+  },
+  {
+    time:"16:54", remain:"36分",
+    lines:[
+      ["player","あなた","戻らなかったのは、意地と申し訳なさとか、ごちゃまぜの感情。一番大切な人だからこそ、逆に背いてしまうような。"],
+      ["mika","美香","帰れなかった。意地になってたし、今さらどんな顔して帰ればいいか分からなかった。……大事だったから、余計に背を向けた。"],
+      ["nao","奈緒","それなら意味は残ってるけど、全然別の人物になるね。"],
+      ["system","", "設定変更の影響で、別の台詞にも小さな矛盾が出始める。"]
+    ],
+    choice:"違和感は仕方がない。そこは芝居の力で見せきろう。大事なのは観客にこの芝居を見てもらうこと。"
+  },
+  {
+    time:"17:18", remain:"12分",
+    lines:[
+      ["player","あなた","違和感は仕方がない。そこは芝居の力で見せきろう。大事なのは観客にこの芝居を見てもらうこと。"],
+      ["system","", "通し稽古は最後まで止まらずに終わった。"],
+      ["mika","美香","今日はありがとうございました。舞台には出ます。でも……『多少の問題は気にしなくていい』って、今回みたいなこともその“多少”に入るのかなって少し思いました。"]
+    ],
+    choice:"大事なのは、美香が今どう思っていて、今後どうしたいのか。何か思っていることはある？"
+  },
+  {
+    time:"17:23", remain:"7分",
+    lines:[
+      ["player","あなた","大事なのは、美香が今どう思っていて、今後どうしたいのか。何か思っていることはある？"],
+      ["mika","美香","これからは、誰かが実際に話したことを芝居に使うとき、使う前に本人に確認してほしいです。"],
+      ["mika","美香","観客に見てもらうことは大事。でも、舞台を成立させるためなら多少は我慢する、って線には戻りたくない。"]
+    ],
+    choice:"今回の『多少は気にしない』と、誰かの思いを成功のためにないがしろにするのは全く違う。美香の気持ちと観客の期待を大事にしたから、芝居の完成度には少し目をつぶろうということ。100％は無理でも、近づける努力は怠らない。"
+  },
+  {
+    time:"17:26", remain:"4分",
+    lines:[
+      ["player","あなた","今回の『多少は気にしない』と、誰かの思いを成功のためにないがしろにするのは全く違う。美香の気持ちと観客の期待を大事にしたから、芝居の完成度には少し目をつぶろうということ。100％は無理でも、近づける努力は怠らない。"],
+      ["mika","美香","……ああ。そういう意味だったんですね。私の気持ちは削らない。その代わり、今日直したことで芝居の完成度が少し落ちる部分は、みんなで引き受ける。ってことですよね。"],
+      ["nao","奈緒","守るものを守ったうえで、残った粗さを明日の30分でできるだけ詰めるってことね。"],
+      ["ryo","亮","それなら俺も納得する。"]
+    ],
+    choice:"あとはそれぞれでいいよ。今回のことは明日以降にまた活かせるようにしよう。"
+  }
+];
+
+let index = 0;
+const transcript = document.getElementById("transcript");
+const choice = document.getElementById("choice");
+const remaining = document.getElementById("remaining");
+const sceneText = document.getElementById("sceneText");
+const controls = document.getElementById("controls");
+const game = document.getElementById("game");
+const ending = document.getElementById("ending");
+
+function addLine(kind,name,text){
+  const row=document.createElement("div");
+  row.className="line "+kind;
+  const sp=document.createElement("div");
+  sp.className="speaker";
+  sp.textContent=name;
+  const b=document.createElement("div");
+  b.className="bubble";
+  b.textContent=text;
+  row.append(sp,b);
+  transcript.appendChild(row);
+}
+
+function renderStep(){
+  const s=steps[index];
+  remaining.textContent=s.remain;
+  sceneText.textContent=s.time+"。市民ホールの小劇場。";
+  transcript.innerHTML="";
+  s.lines.forEach(x=>addLine(x[0],x[1],x[2]));
+  choice.textContent=s.choice;
+  choice.disabled=false;
+  transcript.scrollTop=transcript.scrollHeight;
+}
+
+choice.addEventListener("click",()=>{
+  choice.disabled=true;
+  if(index < steps.length-1){
+    index++;
+    renderStep();
+  }else{
+    game.hidden=true;
+    ending.hidden=false;
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+});
+
+document.getElementById("summaryBtn").addEventListener("click",()=>{
+  const immersion=document.querySelector('input[name="immersion"]:checked')?.value || "未回答";
+  const artificial=document.querySelector('input[name="artificial"]:checked')?.value || "未回答";
+  const note=document.getElementById("note").value.trim() || "なし";
+  const map={
+    "same-or-better":"同じくらい、またはそれ以上",
+    "lower":"画面にすると下がった",
+    "none":"特にない",
+    "some":"少しある",
+    "strong":"強くある"
+  };
+  const result=document.getElementById("result");
+  result.style.display="block";
+  result.textContent="没入感: "+(map[immersion]||immersion)+" ／ 違和感: "+(map[artificial]||artificial)+" ／ コメント: "+note;
+  localStorage.setItem("newlife_pde004_result", JSON.stringify({immersion,artificial,note,at:new Date().toISOString()}));
+});
+
+renderStep();
+</script>
+</body>
+</html>
