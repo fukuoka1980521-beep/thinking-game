@@ -89,9 +89,11 @@ describe("newlife-refoundation-live.yml (canonical, pre-activation copy)", () =>
     expect(workflow).toContain("--set-env-vars=GCP_PROJECT=");
   });
 
-  it("never deploys or references the legacy dialogue functions", () => {
-    expect(workflow).not.toContain("functions/newlife-dialogue");
-    expect(workflow).not.toMatch(/functions\/dialogue\b/);
+  it("never deploys the legacy dialogue functions", () => {
+    // Comments may name legacy paths to document the isolation boundary.
+    // Only executable deploy/source arguments are prohibited.
+    expect(workflow).not.toMatch(/gcloud functions deploy\s+(?:newlife-dialogue|dialogue)\b/);
+    expect(workflow).not.toMatch(/--source=(?:functions\/newlife-dialogue|functions\/dialogue)(?:\s|\\|$)/);
   });
 
   it("verifies required APIs rather than silently attempting to enable them", () => {
@@ -167,8 +169,10 @@ describe("bootstrap-refoundation-wif.sh (one-time Owner-run GCP setup)", () => {
   it("grants the deploy service account deploy-scoped roles, never owner/editor", () => {
     expect(bootstrapScript).toMatch(/roles\/cloudfunctions\.developer/);
     expect(bootstrapScript).toMatch(/roles\/run\.admin/);
-    expect(bootstrapScript).not.toMatch(/roles\/owner/);
-    expect(bootstrapScript).not.toMatch(/roles\/editor/);
+    // Inspect actual --role assignments only; comments intentionally name
+    // forbidden broad roles to explain the least-privilege boundary.
+    expect(bootstrapScript).not.toMatch(/--role=["']?roles\/owner\b/);
+    expect(bootstrapScript).not.toMatch(/--role=["']?roles\/editor\b/);
     expect(bootstrapScript).not.toMatch(/serviceusage\.services\.enable/);
   });
 
