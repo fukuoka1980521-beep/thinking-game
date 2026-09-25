@@ -73,6 +73,11 @@ describe("NEW LIFE refoundation model migration harness", () => {
     expect(block).toContain("modelLabel");
   });
 
+  it("uses generic parse-failure reasons in blind-safe validation", () => {
+    expect(harness).not.toContain('reason: result.parseError || "no_parsed_output"');
+    expect(harness).toContain('"unparseable_output"');
+  });
+
   it("contains no deployment or endpoint mutation", () => {
     expect(harness).not.toContain("gcloud functions deploy");
     expect(harness).not.toContain("gcloud services enable");
