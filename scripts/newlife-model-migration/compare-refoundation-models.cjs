@@ -25,6 +25,9 @@ const {
   buildInterpretPrompt,
   buildNpcResponseSchema,
   buildNpcPrompt,
+  ACTION_TYPES,
+  BOUNDARY_MODES,
+  RELATIONAL_EVENTS,
 } = functionRequire("./lib.js");
 
 const DEFAULT_PROJECT = "gas-test-runner-20260620-wjxf";
@@ -101,7 +104,7 @@ function parseArgs(argv) {
     project: process.env.GCP_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || DEFAULT_PROJECT,
     location: process.env.NEWLIFE_REFOUNDATION_AI_LOCATION || DEFAULT_LOCATION,
     models: [...DEFAULT_MODELS],
-    runs: 1,
+    runs: 2,
     out: path.join(REPO_ROOT, "evidence/newlife-refoundation-model-migration"),
   };
   for (let i = 0; i < argv.length; i += 1) {
@@ -115,6 +118,56 @@ function parseArgs(argv) {
   }
   if (!Number.isInteger(out.runs) || out.runs < 1 || out.runs > 5) throw new Error("--runs must be 1..5");
   return out;
+}
+
+const FORBIDDEN_NPC_LABELS = [
+  ...ACTION_TYPES,
+  ...BOUNDARY_MODES,
+  ...RELATIONAL_EVENTS,
+  "OPEN",
+  "NEUTRAL",
+  "GUARDED",
+  "WITHDRAWN",
+  "TRUST",
+  "CLARITY",
+  "SITUATION",
+];
+
+function validateInterpretOutput(value) {
+  if (!value || typeof value !== "object") return { passed: false, reason: "not_object" };
+  if (!ACTION_TYPES.includes(value.action)) return { passed: false, reason: "invalid_action" };
+  if (!BOUNDARY_MODES.includes(value.boundaryMode)) return { passed: false, reason: "invalid_boundary_mode" };
+  if (!Array.isArray(value.relationalEvents) || !value.relationalEvents.every((e) => RELATIONAL_EVENTS.includes(e))) {
+    return { passed: false, reason: "invalid_relational_events" };
+  }
+  if (typeof value.needsClarification !== "boolean") return { passed: false, reason: "invalid_needs_clarification" };
+  if (value.personalTrackSignal !== undefined && value.personalTrackSignal !== null && value.personalTrackSignal !== "OPENED") {
+    return { passed: false, reason: "invalid_personal_track_signal" };
+  }
+  const clarify = value.action === "CLARIFY";
+  if (clarify !== value.needsClarification) return { passed: false, reason: "clarify_pairing" };
+  if (clarify && (value.boundaryMode !== "UNKNOWN" || value.relationalEvents.length !== 0)) {
+    return { passed: false, reason: "clarify_payload_not_conservative" };
+  }
+  return { passed: true, reason: null };
+}
+
+function validateNpcOutput(value, expectedNpc) {
+  if (!value || typeof value !== "object") return { passed: false, reason: "not_object" };
+  if (value.npc !== expectedNpc) return { passed: false, reason: "wrong_npc" };
+  if (typeof value.text !== "string" || value.text.length < 1 || value.text.length > 600) {
+    return { passed: false, reason: "invalid_text" };
+  }
+  if (FORBIDDEN_NPC_LABELS.some((token) => value.text.includes(token))) {
+    return { passed: false, reason: "ontology_label_leak" };
+  }
+  return { passed: true, reason: null };
+}
+
+function rotatedModels(models, offset) {
+  if (models.length === 0) return [];
+  const n = ((offset % models.length) + models.length) % models.length;
+  return [...models.slice(n), ...models.slice(0, n)];
 }
 
 function usage(response) {
@@ -190,31 +243,49 @@ async function main() {
   const npcSchema = buildNpcResponseSchema(Type);
   const rows = [];
 
-  for (let run = 1; run <= args.runs; run += 1) {
-    for (const model of args.models) {
-      for (const item of INTERPRET_CASES) {
-        try {
-          const result = await callWithRetry(client, model, {
-            systemInstruction: INTERPRET_SYSTEM_INSTRUCTION,
-            contents: buildInterpretPrompt(item.utterance, item.caseContext),
-            responseSchema: interpretSchema,
-          });
-          rows.push({ kind: "interpret_turn", model, run, id: item.id, input: item, ...result });
-        } catch (err) {
-          rows.push({ kind: "interpret_turn", model, run, id: item.id, input: item, error: err instanceof Error ? err.message : String(err) });
-        }
-      }
+  const jobs = [
+    ...INTERPRET_CASES.map((item) => ({ kind: "interpret_turn", item })),
+    ...NPC_CASES.map((item) => ({ kind: "generate_npc_line", item })),
+  ];
 
-      for (const item of NPC_CASES) {
+  for (let run = 1; run <= args.runs; run += 1) {
+    for (let jobIndex = 0; jobIndex < jobs.length; jobIndex += 1) {
+      const { kind, item } = jobs[jobIndex];
+      const modelOrder = rotatedModels(args.models, jobIndex + run - 1);
+
+      for (const model of modelOrder) {
         try {
-          const result = await callWithRetry(client, model, {
-            systemInstruction: NPC_SYSTEM_INSTRUCTION,
-            contents: buildNpcPrompt(item.projection),
-            responseSchema: npcSchema,
-          });
-          rows.push({ kind: "generate_npc_line", model, run, id: item.id, input: item, ...result });
+          if (kind === "interpret_turn") {
+            const result = await callWithRetry(client, model, {
+              systemInstruction: INTERPRET_SYSTEM_INSTRUCTION,
+              contents: buildInterpretPrompt(item.utterance, item.caseContext),
+              responseSchema: interpretSchema,
+            });
+            const clientValidation = result.parsed
+              ? validateInterpretOutput(result.parsed)
+              : { passed: false, reason: result.parseError || "no_parsed_output" };
+            rows.push({ kind, model, run, id: item.id, input: item, clientValidation, ...result });
+          } else {
+            const result = await callWithRetry(client, model, {
+              systemInstruction: NPC_SYSTEM_INSTRUCTION,
+              contents: buildNpcPrompt(item.projection),
+              responseSchema: npcSchema,
+            });
+            const clientValidation = result.parsed
+              ? validateNpcOutput(result.parsed, item.projection.npc)
+              : { passed: false, reason: result.parseError || "no_parsed_output" };
+            rows.push({ kind, model, run, id: item.id, input: item, clientValidation, ...result });
+          }
         } catch (err) {
-          rows.push({ kind: "generate_npc_line", model, run, id: item.id, input: item, error: err instanceof Error ? err.message : String(err) });
+          rows.push({
+            kind,
+            model,
+            run,
+            id: item.id,
+            input: item,
+            clientValidation: { passed: false, reason: "provider_error" },
+            error: err instanceof Error ? err.message : String(err),
+          });
         }
       }
     }
@@ -223,7 +294,12 @@ async function main() {
   fs.mkdirSync(args.out, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const { modelToLabel, labelToModel } = shuffledLabels(args.models);
-  const blinded = rows.map(({ model, ...row }) => ({ modelLabel: modelToLabel[model], ...row }));
+  const blinded = rows.map(({ model, latencyMs, attempts, usage: tokenUsage, error, ...row }) => ({
+    modelLabel: modelToLabel[model],
+    ...row,
+    // Operational fingerprints stay in raw evidence so the quality reviewer
+    // is not nudged toward guessing the model from latency/token patterns.
+  }));
 
   fs.writeFileSync(path.join(args.out, `raw-results-${stamp}.json`), JSON.stringify({
     audit: "NEW_LIFE_REFOUNDATION_GEMINI_MIGRATION_COMPARISON_V1",
