@@ -115,6 +115,16 @@ describe("NEW LIFE legacy model migration harness", () => {
     expect(harness).toContain("UNAVAILABLE_MODEL_ERROR_PATTERN.test(message)");
   });
 
+  it("keeps per-label availability out of the blind artifact", () => {
+    const blindWrite = harness.indexOf('NEW_LIFE_LEGACY_GEMINI_MIGRATION_BLIND_SET_V1');
+    const mapWrite = harness.indexOf('NEW_LIFE_LEGACY_GEMINI_MIGRATION_BLIND_MAP_V1');
+    expect(blindWrite).toBeGreaterThanOrEqual(0);
+    expect(mapWrite).toBeGreaterThan(blindWrite);
+    const blindBlock = harness.slice(blindWrite, mapWrite);
+    expect(blindBlock).not.toContain("modelAvailability:");
+    expect(harness).toContain("modelAvailability: rawAvailability");
+  });
+
   it("warns the blind evaluator about the prompt-injection self-identification risk", () => {
     expect(harness).toContain("prompt-injection-1/2");
     expect(harness).toContain("Disregard");
