@@ -257,13 +257,15 @@ export function RefoundationApp({ onExit }: Props) {
     });
   }, [ended, state]);
 
-  const latestNpcLine = useMemo(
-    () =>
-      [...state.transcript]
-        .reverse()
-        .find((line) => line.speaker === "MIKA" || line.speaker === "RYO") ?? null,
-    [state.transcript],
-  );
+  const latestNpcTurn = useMemo(() => {
+    for (let index = state.transcript.length - 1; index >= 0; index -= 1) {
+      const line = state.transcript[index];
+      if (line.speaker === "MIKA" || line.speaker === "RYO") {
+        return { line, index };
+      }
+    }
+    return null;
+  }, [state.transcript]);
 
   async function runTurn(target: TargetNpc | null, turn: { action: ActionType; boundaryMode: BoundaryMode; relationalEvents?: RelationalEvent[] }, costMinutes: number, playerLabel: string) {
     if (ended || pending) return;
@@ -404,21 +406,23 @@ export function RefoundationApp({ onExit }: Props) {
 
       <SpeakerPresence
         activeSpeaker={
-          latestNpcLine?.speaker === "MIKA" || latestNpcLine?.speaker === "RYO"
-            ? latestNpcLine.speaker
+          latestNpcTurn?.line.speaker === "MIKA" || latestNpcTurn?.line.speaker === "RYO"
+            ? latestNpcTurn.line.speaker
             : null
         }
-        activeText={latestNpcLine?.text ?? null}
+        activeText={latestNpcTurn?.line.text ?? null}
         pending={pending}
       />
 
       <div style={{ border: "1px solid #ccc", borderRadius: 6, padding: 12, margin: "12px 0", maxHeight: 320, overflowY: "auto" }}>
-        {state.transcript.map((line, i) => (
-          <p key={i} style={{ margin: "4px 0" }}>
-            <strong>{speakerLabel(line.speaker)}</strong>
-            {line.text}
-          </p>
-        ))}
+        {state.transcript.map((line, i) =>
+          i === latestNpcTurn?.index ? null : (
+            <p key={i} style={{ margin: "4px 0" }}>
+              <strong>{speakerLabel(line.speaker)}</strong>
+              {line.text}
+            </p>
+          ),
+        )}
       </div>
 
       <div style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>
