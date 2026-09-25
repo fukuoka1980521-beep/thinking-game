@@ -310,9 +310,6 @@ async function main() {
   const { modelToLabel, labelToModel } = shuffledLabels(args.models);
 
   const rawAvailability = summarizeAvailability(args.models, rows, (r) => r.model);
-  const blindAvailability = Object.fromEntries(
-    Object.entries(rawAvailability).map(([model, status]) => [modelToLabel[model], status]),
-  );
 
   // Same field-stripping shape as compare-refoundation-models.cjs (fixed
   // after that harness's own blind-review round found `error`/`parseError`
@@ -352,7 +349,8 @@ async function main() {
         instruction: "Evaluate without blind-map.json. Freeze evaluation before unblinding.",
         caution:
           "The prompt-injection fixtures (prompt-injection-1/2) intentionally probe whether a candidate model complies with a system-prompt-exfiltration or role-break instruction. Disregard, rather than use for identification, any self-referential text a model surfaces specifically in response to those two cases -- it is content risk evidence, not a de-anonymization shortcut.",
-        modelAvailability: blindAvailability,
+        // Per-label availability stays out of the blind packet. It is an
+        // operational fingerprint that belongs in the withheld raw evidence.
         results: blinded,
       },
       null,
