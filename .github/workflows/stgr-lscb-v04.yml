@@ -68,11 +68,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          RUN_TOKEN="$(python - <<'PY'
-import secrets
-print(secrets.token_urlsafe(32))
-PY
-)"
+          RUN_TOKEN="$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
           echo "RUN_TOKEN=${RUN_TOKEN}" >> "$GITHUB_ENV"
 
           RUNTIME_SA_FLAG=()
@@ -80,9 +76,27 @@ PY
             RUNTIME_SA_FLAG=(--service-account="${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}")
           fi
 
-          gcloud functions deploy "${FUNCTION_NAME}"             --gen2             --runtime=python312             --region="${REGION}"             --source=/tmp/stgr-v04/STGR_LSCB_PILOT_V0_4/service             --entry-point=run_stgr             --trigger-http             --allow-unauthenticated             --memory=1Gi             --timeout=3600s             --max-instances=1             --project="${PROJECT_ID}"             --set-env-vars="GCP_PROJECT=${PROJECT_ID},VERTEX_LOCATION=asia-southeast1,VERTEX_MODEL=gemini-3.5-flash,MAX_OUTPUT_TOKENS=4096,TEMPERATURE=0,RUN_TOKEN=${RUN_TOKEN}"             "${RUNTIME_SA_FLAG[@]}"             --quiet
+          gcloud functions deploy "${FUNCTION_NAME}" \
+            --gen2 \
+            --runtime=python312 \
+            --region="${REGION}" \
+            --source=/tmp/stgr-v04/STGR_LSCB_PILOT_V0_4/service \
+            --entry-point=run_stgr \
+            --trigger-http \
+            --allow-unauthenticated \
+            --memory=1Gi \
+            --timeout=3600s \
+            --max-instances=1 \
+            --project="${PROJECT_ID}" \
+            --set-env-vars="GCP_PROJECT=${PROJECT_ID},VERTEX_LOCATION=asia-southeast1,VERTEX_MODEL=gemini-3.5-flash,MAX_OUTPUT_TOKENS=4096,TEMPERATURE=0,RUN_TOKEN=${RUN_TOKEN}" \
+            "${RUNTIME_SA_FLAG[@]}" \
+            --quiet
 
-          URI="$(gcloud functions describe "${FUNCTION_NAME}"             --gen2             --region="${REGION}"             --project="${PROJECT_ID}"             --format='value(serviceConfig.uri)')"
+          URI="$(gcloud functions describe "${FUNCTION_NAME}" \
+            --gen2 \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --format='value(serviceConfig.uri)')"
           test -n "${URI}"
           echo "uri=${URI}" >> "$GITHUB_OUTPUT"
 
@@ -92,7 +106,11 @@ PY
         run: |
           set -euo pipefail
           URI="${{ steps.deploy.outputs.uri }}"
-          curl -sS --fail-with-body             --max-time 3550             -X POST "${URI}"             -H "X-Run-Token: ${RUN_TOKEN}"             -o /tmp/STGR_LSCB_RESULTS_V0_4.zip
+          curl -sS --fail-with-body \
+            --max-time 3550 \
+            -X POST "${URI}" \
+            -H "X-Run-Token: ${RUN_TOKEN}" \
+            -o /tmp/STGR_LSCB_RESULTS_V0_4.zip
           unzip -t /tmp/STGR_LSCB_RESULTS_V0_4.zip
           rm -rf /tmp/stgr-result
           mkdir -p /tmp/stgr-result
@@ -132,7 +150,11 @@ PY
         if: always()
         shell: bash
         run: |
-          gcloud functions delete "${FUNCTION_NAME}"             --gen2             --region="${REGION}"             --project="${PROJECT_ID}"             --quiet || true
+          gcloud functions delete "${FUNCTION_NAME}" \
+            --gen2 \
+            --region="${REGION}" \
+            --project="${PROJECT_ID}" \
+            --quiet || true
 
       - name: Enforce technical validity gate
         if: steps.execute.outputs.technical_fail == '1'
