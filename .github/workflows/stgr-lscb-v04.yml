@@ -1,0 +1,142 @@
+name: STGR LSCB v0.4 Research Run
+
+on:
+  push:
+    branches:
+      - research/stgr-lscb-v04
+    paths:
+      - research/stgr-lscb-v04/RUN_V04
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: stgr-lscb-v04-research
+  cancel-in-progress: false
+
+jobs:
+  run-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: asia-northeast1
+      FUNCTION_NAME: stgr-lscb-v04-runner
+      PACKAGE_SHA256: e24dec441f4026ade03e52e9db92de3dce5894e397515d9ab5a903df76230544
+    steps:
+      - name: Checkout isolated research branch
+        uses: actions/checkout@v4
+
+      - name: Verify GCP route
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -z "${{ vars.GCP_PROJECT_ID }}" ] && missing+=("GCP_PROJECT_ID")
+          [ -z "${{ vars.GCP_WIF_PROVIDER }}" ] && missing+=("GCP_WIF_PROVIDER")
+          [ -z "${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}" ] && missing+=("GCP_DEPLOY_SERVICE_ACCOUNT")
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "::error::Missing repository variables: ${missing[*]}"
+            exit 1
+          fi
+
+      - name: Authenticate to GCP via existing WIF
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Decode and validate v0.4 package
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d research/stgr-lscb-v04/package_function.b64 > /tmp/STGR_LSCB_PILOT_V0_4_FUNCTION.zip
+          echo "${PACKAGE_SHA256}  /tmp/STGR_LSCB_PILOT_V0_4_FUNCTION.zip" | sha256sum -c -
+          rm -rf /tmp/stgr-v04
+          mkdir -p /tmp/stgr-v04
+          unzip -q /tmp/STGR_LSCB_PILOT_V0_4_FUNCTION.zip -d /tmp/stgr-v04
+          python -m py_compile /tmp/stgr-v04/STGR_LSCB_PILOT_V0_4/service/main.py /tmp/stgr-v04/STGR_LSCB_PILOT_V0_4/service/experiment.py
+          echo "PACKAGE_VALIDATED=YES"
+
+      - name: Deploy isolated temporary runner
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUN_TOKEN="$(python - <<'PY'
+import secrets
+print(secrets.token_urlsafe(32))
+PY
+)"
+          echo "RUN_TOKEN=${RUN_TOKEN}" >> "$GITHUB_ENV"
+
+          RUNTIME_SA_FLAG=()
+          if [ -n "${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}" ]; then
+            RUNTIME_SA_FLAG=(--service-account="${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}")
+          fi
+
+          gcloud functions deploy "${FUNCTION_NAME}"             --gen2             --runtime=python312             --region="${REGION}"             --source=/tmp/stgr-v04/STGR_LSCB_PILOT_V0_4/service             --entry-point=run_stgr             --trigger-http             --allow-unauthenticated             --memory=1Gi             --timeout=3600s             --max-instances=1             --project="${PROJECT_ID}"             --set-env-vars="GCP_PROJECT=${PROJECT_ID},VERTEX_LOCATION=asia-southeast1,VERTEX_MODEL=gemini-3.5-flash,MAX_OUTPUT_TOKENS=4096,TEMPERATURE=0,RUN_TOKEN=${RUN_TOKEN}"             "${RUNTIME_SA_FLAG[@]}"             --quiet
+
+          URI="$(gcloud functions describe "${FUNCTION_NAME}"             --gen2             --region="${REGION}"             --project="${PROJECT_ID}"             --format='value(serviceConfig.uri)')"
+          test -n "${URI}"
+          echo "uri=${URI}" >> "$GITHUB_OUTPUT"
+
+      - name: Run all 96 trials and blinded quality judging
+        id: execute
+        shell: bash
+        run: |
+          set -euo pipefail
+          URI="${{ steps.deploy.outputs.uri }}"
+          curl -sS --fail-with-body             --max-time 3550             -X POST "${URI}"             -H "X-Run-Token: ${RUN_TOKEN}"             -o /tmp/STGR_LSCB_RESULTS_V0_4.zip
+          unzip -t /tmp/STGR_LSCB_RESULTS_V0_4.zip
+          rm -rf /tmp/stgr-result
+          mkdir -p /tmp/stgr-result
+          unzip -q /tmp/STGR_LSCB_RESULTS_V0_4.zip -d /tmp/stgr-result
+          if [ -f /tmp/stgr-result/results/TECHNICAL_FAILURE.json ]; then
+            echo "technical_fail=1" >> "$GITHUB_OUTPUT"
+          else
+            test -f /tmp/stgr-result/results/research_report.md
+            test -f /tmp/stgr-result/results/scored_runs.csv
+            test -f /tmp/stgr-result/results/raw_runs.jsonl
+            echo "technical_fail=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Persist exact result evidence on research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf research/stgr-lscb-v04/run_output
+          mkdir -p research/stgr-lscb-v04/run_output
+          cp -a /tmp/stgr-result/. research/stgr-lscb-v04/run_output/
+          sha256sum /tmp/STGR_LSCB_RESULTS_V0_4.zip > research/stgr-lscb-v04/RESULT_ZIP_SHA256.txt
+          git config user.name "stgr-research-bot"
+          git config user.email "stgr-research-bot@users.noreply.github.com"
+          git add research/stgr-lscb-v04/run_output research/stgr-lscb-v04/RESULT_ZIP_SHA256.txt
+          git commit -m "research(stgr): persist v0.4 results [skip ci]"
+          git push origin HEAD:research/stgr-lscb-v04
+
+      - name: Upload complete result ZIP as Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: STGR_LSCB_RESULTS_V0_4
+          path: /tmp/STGR_LSCB_RESULTS_V0_4.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Delete temporary runner
+        if: always()
+        shell: bash
+        run: |
+          gcloud functions delete "${FUNCTION_NAME}"             --gen2             --region="${REGION}"             --project="${PROJECT_ID}"             --quiet || true
+
+      - name: Enforce technical validity gate
+        if: steps.execute.outputs.technical_fail == '1'
+        shell: bash
+        run: |
+          echo "::error::v0.4 stopped at TECHNICAL_FAIL. Evidence was preserved; H1-H6 must not be interpreted."
+          exit 2
