@@ -31,6 +31,19 @@ describe("NEW LIFE PDE-009 live human test", () => {
     expect(script).not.toContain("gcloud services enable");
   });
 
+
+  it("includes the scene facts needed to answer why Mika raised the issue now and how Ryo can compromise", () => {
+    expect(page).toContain("美香は昨日、最終版をちゃんと読んで");
+    expect(page).toContain("公開台本にそのまま使ってよいと明示的に同意したわけではない");
+    expect(page).toContain("美香本人の実話そのものが必須ではない");
+  });
+
+  it("retries one transient AI/network failure instead of ending the conversation immediately", () => {
+    expect(page).toContain("for(let attempt=1;attempt<=2;attempt++)");
+    expect(page).toContain("err.status===502");
+    expect(page).toContain("await new Promise(r=>setTimeout(r,700))");
+  });
+
   it("smoke-tests both backend operations before exposing the human-test URL", () => {
     expect(script).toContain("Smoke 1/2: interpret_turn");
     expect(script).toContain("Smoke 2/2: generate_npc_line");
