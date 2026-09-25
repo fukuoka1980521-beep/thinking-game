@@ -1,7 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { HttpNpcGenerationAdapter, HttpSemanticInterpreterAdapter } from "./httpAdapters";
+import {
+  HttpConversationAdapter,
+  HttpNpcGenerationAdapter,
+  HttpSemanticInterpreterAdapter,
+  HttpThoughtOrganizerAdapter,
+} from "./httpAdapters";
 import { isValidRawTurnClassification } from "./semanticInterpreter";
 import { isValidRawNpcLine } from "./npcGeneration";
+import { isValidRawConverseResult, type CharacterConversationRequest } from "./converse";
+import { isValidRawThoughtOrganizerResult } from "./thoughtOrganizer";
 
 function jsonResponse(body: unknown, ok = true, status = 200): Response {
   return {
@@ -204,6 +211,153 @@ describe("HttpNpcGenerationAdapter", () => {
       lastPlayerTurn: null,
       sceneContext: "",
     });
+    expect(result).toEqual({ status: "unavailable", reason: "no_endpoint_configured" });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("HttpConversationAdapter (V37 §1/§4)", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  const request: CharacterConversationRequest = {
+    caseId: "COMMUNITY_THEATER_V1",
+    targetNpc: "MIKA",
+    rawPlayerUtterance: "なんで今まで言わなかったの？",
+    recentDialogue: [{ speaker: "SYSTEM", text: "16:40。通し稽古が止まっている。" }],
+    dynamicState: { relationshipState: "NEUTRAL", boundaryStatus: "UNKNOWN", remainingMinutes: 50, activeCommitment: null },
+  };
+
+  it("sends only caseId/targetNpc/rawPlayerUtterance/recentDialogue/dynamicState -- never a scene-fact or character-dossier field (canon stays server-side)", async () => {
+    let sentBody: unknown;
+    globalThis.fetch = vi.fn(async (_url, init) => {
+      sentBody = JSON.parse((init as RequestInit).body as string);
+      return jsonResponse({
+        npc: "MIKA",
+        npcLine: "……",
+        understoodPlayerMeaning: "",
+        candidateTurn: { action: "CLARIFY", boundaryMode: "UNKNOWN", relationalEvents: [], needsClarification: true },
+        candidateFactRevealIds: [],
+        candidateCommitments: [],
+        uncertainty: "HIGH",
+        thoughtSupportSignal: false,
+      });
+    }) as unknown as typeof fetch;
+
+    const adapter = new HttpConversationAdapter("https://example.test/fn");
+    await adapter.converse(request);
+
+    expect(sentBody).toEqual({
+      operation: "converse_turn",
+      caseId: request.caseId,
+      targetNpc: request.targetNpc,
+      rawPlayerUtterance: request.rawPlayerUtterance,
+      recentDialogue: request.recentDialogue,
+      dynamicState: request.dynamicState,
+    });
+    expect(JSON.stringify(sentBody)).not.toMatch(/dossier|sceneCanon|forbiddenKnowledge/i);
+  });
+
+  it("promotes a well-formed response to { status: 'ok', raw }, verifiable by the real validator", async () => {
+    const wellFormed = {
+      npc: "MIKA",
+      npcLine: "それなら考えられます。",
+      understoodPlayerMeaning: "代替案の有無を尋ねている。",
+      candidateTurn: { action: "ASK_BOUNDARY", boundaryMode: "DISCOVER", relationalEvents: [], needsClarification: false },
+      candidateFactRevealIds: [],
+      candidateCommitments: [],
+      uncertainty: "LOW",
+      thoughtSupportSignal: false,
+    };
+    globalThis.fetch = vi.fn(async () => jsonResponse(wellFormed)) as unknown as typeof fetch;
+    const adapter = new HttpConversationAdapter("https://example.test/fn");
+    const result = await adapter.converse(request);
+    expect(result.status).toBe("ok");
+    if (result.status === "ok") {
+      expect(isValidRawConverseResult(result.raw, "MIKA")).toBe(true);
+    }
+  });
+
+  it("treats a malformed shape as an untrusted raw value, not a thrown error", async () => {
+    globalThis.fetch = vi.fn(async () => jsonResponse({ garbage: true })) as unknown as typeof fetch;
+    const adapter = new HttpConversationAdapter("https://example.test/fn");
+    const result = await adapter.converse(request);
+    expect(result.status).toBe("ok");
+    if (result.status === "ok") {
+      expect(isValidRawConverseResult(result.raw, "MIKA")).toBe(false);
+    }
+  });
+
+  it("reports unavailable without ever calling fetch when the endpoint is empty (undeployed default)", async () => {
+    const fetchSpy = vi.fn();
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+    const adapter = new HttpConversationAdapter("");
+    const result = await adapter.converse(request);
+    expect(result).toEqual({ status: "unavailable", reason: "no_endpoint_configured" });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("resolves to unavailable, never throws, on a network failure", async () => {
+    globalThis.fetch = vi.fn(async () => {
+      throw new TypeError("network down");
+    }) as unknown as typeof fetch;
+    const adapter = new HttpConversationAdapter("https://example.test/fn");
+    await expect(adapter.converse(request)).resolves.toEqual({ status: "unavailable", reason: "network_error" });
+  });
+});
+
+describe("HttpThoughtOrganizerAdapter (V37 §5)", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  it("sends only validatedWorldFacts/recentDialogue/currentProblem -- never an NPC-identifying field", async () => {
+    let sentBody: unknown;
+    globalThis.fetch = vi.fn(async (_url, init) => {
+      sentBody = JSON.parse((init as RequestInit).body as string);
+      return jsonResponse({ known: [], possible: [], unknown: [], options: [], nextCheck: null });
+    }) as unknown as typeof fetch;
+
+    const adapter = new HttpThoughtOrganizerAdapter("https://example.test/fn");
+    await adapter.organize({
+      validatedWorldFacts: "17:30までに決める必要がある。",
+      recentDialogue: [],
+      currentProblem: "この場面をどう扱うか。",
+    });
+
+    expect(sentBody).toEqual({
+      operation: "organize_thought",
+      validatedWorldFacts: "17:30までに決める必要がある。",
+      recentDialogue: [],
+      currentProblem: "この場面をどう扱うか。",
+    });
+    expect(sentBody && typeof sentBody === "object" && "npc" in sentBody).toBe(false);
+  });
+
+  it("promotes a well-formed response to { status: 'ok', raw }, verifiable by the real validator", async () => {
+    globalThis.fetch = vi.fn(async () =>
+      jsonResponse({ known: ["x"], possible: [], unknown: [], options: ["y"], nextCheck: null }),
+    ) as unknown as typeof fetch;
+    const adapter = new HttpThoughtOrganizerAdapter("https://example.test/fn");
+    const result = await adapter.organize({ validatedWorldFacts: "", recentDialogue: [], currentProblem: "x" });
+    expect(result.status).toBe("ok");
+    if (result.status === "ok") {
+      expect(isValidRawThoughtOrganizerResult(result.raw)).toBe(true);
+    }
+  });
+
+  it("reports unavailable without calling fetch when the endpoint is empty", async () => {
+    const fetchSpy = vi.fn();
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+    const adapter = new HttpThoughtOrganizerAdapter("");
+    const result = await adapter.organize({ validatedWorldFacts: "", recentDialogue: [], currentProblem: "x" });
     expect(result).toEqual({ status: "unavailable", reason: "no_endpoint_configured" });
     expect(fetchSpy).not.toHaveBeenCalled();
   });

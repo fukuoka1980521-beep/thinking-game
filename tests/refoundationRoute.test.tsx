@@ -123,4 +123,22 @@ describe("NEW LIFE refoundation UI smoke test (V11 stage 7)", () => {
     await screen.findByText("結果（優劣はありません）");
     expect(screen.queryByRole("button", { name: "代役を立てる" })).not.toBeInTheDocument();
   });
+
+  it("the 考えを整理する button is absent before any consequence, and appears afterward (V37 §5: not after every turn)", async () => {
+    const user = await openSlice();
+    expect(screen.queryByRole("button", { name: "考えを整理する" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "美香に何が変わったのか尋ねる" }));
+    expect(await screen.findByRole("button", { name: "考えを整理する" })).toBeInTheDocument();
+  });
+
+  it("考えを整理する shows a distinctly-labeled panel (never a character line) with no provider configured", async () => {
+    const user = await openSlice();
+    await user.click(screen.getByRole("button", { name: "美香に何が変わったのか尋ねる" }));
+    await user.click(screen.getByRole("button", { name: "考えを整理する" }));
+
+    expect(await screen.findByText("思考整理（キャラクターの発言ではありません）")).toBeInTheDocument();
+    // NullThoughtOrganizerAdapter -> organizeThought's safe fallback (no
+    // provider configured, never a guess).
+    expect(screen.getByText(/このビルドでは思考整理AIに接続されていません/)).toBeInTheDocument();
+  });
 });

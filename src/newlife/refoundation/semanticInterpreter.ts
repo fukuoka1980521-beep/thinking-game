@@ -46,6 +46,17 @@
  * swappable, and still pass through this same validator/fallback path — it
  * could not bypass conservative-ambiguity handling or claim primacy over a
  * model adapter without a separate normative patch authorizing that.
+ *
+ * SUPERSEDED AS THE PRIMARY FREE-CONVERSATION PATH (V37 §7): classifying raw
+ * text into a narrow `TurnClassification` *before* generation was the
+ * pattern V37 explicitly rejected (V37 §0/§6 — "classifying each player
+ * utterance into a narrow action label... feeding NPC generation a thin
+ * projection" does not scale). `interpretTurn` is retained here for
+ * compatibility/testing, but `RefoundationApp.tsx`'s normal free-text path
+ * now calls `converseTurn` (`converse.ts`) directly, which understands the
+ * raw utterance and produces a classification (`candidateTurn`) and a
+ * character-consistent reply in one richer, context-aware call instead of
+ * two thin sequential ones.
  */
 import {
   ALL_ACTION_TYPES,

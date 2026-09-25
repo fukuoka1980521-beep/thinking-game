@@ -1,5 +1,6 @@
 /**
- * NEW LIFE refoundation — minimal vertical-slice UI (V11 order, stage 7 of 8).
+ * NEW LIFE refoundation — minimal vertical-slice UI (V11 order, stage 7 of 8;
+ * free-conversation path upgraded per V37 GENERATIVE CHARACTER REASONING).
  *
  * ISOLATED FEATURE SLICE: reachable only via `?newlife-refoundation=1`
  * (see `App.tsx`), following the exact same pattern as the existing
@@ -8,40 +9,44 @@
  * `src/newlife/npcVoice.ts`, `NewLife30App.tsx`) is untouched; this
  * component imports nothing from them.
  *
- * Wires together the already-validated stage 1-6 modules
- * (`types`/`relationshipReducer`/`ending`/`timeEconomy`/`semanticInterpreter`/
- * `npcGeneration`/`thoughtTools`) into one playable loop for the vertical
- * slice case (`V3_OPENING_COMMUNITY_THEATER_CONFLICT_V1.md`). This is the
- * first stage where a real `SemanticInterpreterAdapter`/`NpcGenerationAdapter`
- * would matter — both are still only the `Null*` implementation this Run
- * (no live model configured anywhere in this repository), so the free-text
- * input below always resolves to the conservative CLARIFY fallback, and NPC
- * lines are always the deterministic per-relationship-state fallback line.
- * That is disclosed on-screen, not hidden: the point of this stage is
- * proving the deterministic state machinery end-to-end (time spend,
- * relationship transitions, boundary/ending derivation, thought tools), not
- * claiming a working AI conversation loop, which stage 4/5's own status
- * (`NullSemanticInterpreterAdapter`/`NullNpcGenerationAdapter` as the only
- * implementations that exist) never promised.
+ * Wires together the already-validated deterministic modules
+ * (`types`/`relationshipReducer`/`ending`/`timeEconomy`/`thoughtTools`) with
+ * the two V37 generative-reasoning modules (`converse`/`thoughtOrganizer`)
+ * into one playable loop for the vertical slice case
+ * (`V3_OPENING_COMMUNITY_THEATER_CONFLICT_V1.md`). Free text goes straight to
+ * `converseTurn` (V37 §4) — one call that understands the raw utterance in
+ * context and answers as the character, rather than the earlier two-call
+ * "classify with `interpretTurn`, then render with `generateNpcLine`"
+ * sequence (`semanticInterpreter.ts`/`npcGeneration.ts` remain for
+ * compatibility/testing only, V37 §7). Button/tool actions stay
+ * deterministic and still use `generateNpcLine` for their NPC line, per V37
+ * §4's "existing button actions may remain deterministic."
+ *
+ * With no live provider configured (`NullConversationAdapter`/
+ * `NullNpcGenerationAdapter`/`NullThoughtOrganizerAdapter`, the only
+ * implementations that exist absent a deployed backend), free-text input
+ * resolves to the conservative CLARIFY fallback and NPC lines are the
+ * deterministic per-relationship-state fallback line — disclosed on-screen,
+ * not hidden.
  *
  * HUMAN_VALIDATION_STATUS = PENDING, same as `NewLife30App.tsx`'s own
  * disclosure for its slice. This is not a claim of human playtest
  * validation.
  *
- * LIVE PROVIDER (added after stage 7's initial commit, still undeployed):
- * when `NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL` (`config.ts`) is non-empty
- * AND the player has explicitly accepted the refoundation-scoped consent
- * prompt (`consent.ts`, a separate opt-in from both CASE1's and legacy NEW
- * LIFE's own consent keys, per `docs/DATA_BOUNDARY.md`'s "each purpose
- * needs its own opt-in"), this component switches from the `Null*` adapters
- * to `HttpSemanticInterpreterAdapter`/`HttpNpcGenerationAdapter`
- * (`httpAdapters.ts`), which call `functions/newlife-refoundation-ai/`.
- * With the shipped-empty endpoint constant, or without consent, behavior is
- * unchanged from the original stage 7 commit: `Null*` adapters, no network
- * call, no consent prompt ever shown. There is no third state that looks
- * like a live AI response but isn't — every non-`"ok"` adapter outcome
- * still resolves through the same conservative fallback path
- * (`interpretTurn`/`generateNpcLine`) as the `Null*` adapters always used.
+ * LIVE PROVIDER (still undeployed): when `NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL`
+ * (`config.ts`) is non-empty AND the player has explicitly accepted the
+ * refoundation-scoped consent prompt (`consent.ts`, a separate opt-in from
+ * both CASE1's and legacy NEW LIFE's own consent keys, per
+ * `docs/DATA_BOUNDARY.md`'s "each purpose needs its own opt-in"), this
+ * component switches from the `Null*` adapters to `HttpConversationAdapter`/
+ * `HttpNpcGenerationAdapter`/`HttpThoughtOrganizerAdapter` (`httpAdapters.ts`),
+ * which call `functions/newlife-refoundation-ai/`. With the shipped-empty
+ * endpoint constant, or without consent, behavior is unchanged: `Null*`
+ * adapters, no network call, no consent prompt ever shown. There is no third
+ * state that looks like a live AI response but isn't — every non-`"ok"`
+ * adapter outcome still resolves through the same conservative fallback
+ * path (`converseTurn`/`generateNpcLine`/`organizeThought`) as the `Null*`
+ * adapters always used.
  */
 import { useMemo, useState } from "react";
 import {
@@ -51,6 +56,7 @@ import {
 import {
   createInitialCaseEndingState,
   applyEndingTurn,
+  deriveEndingBoundary,
   deriveEndingVector,
   type CaseEndingState,
   type EndingVector,
@@ -63,9 +69,20 @@ import {
   spendTime,
   type WorldClock,
 } from "./timeEconomy";
-import { NullSemanticInterpreterAdapter, interpretTurn, type SemanticInterpreterAdapter } from "./semanticInterpreter";
 import { NullNpcGenerationAdapter, generateNpcLine, type NpcGenerationAdapter } from "./npcGeneration";
-import { HttpSemanticInterpreterAdapter, HttpNpcGenerationAdapter } from "./httpAdapters";
+import {
+  NullConversationAdapter,
+  converseTurn,
+  type ConversationAdapter,
+  type RawDialogueLine,
+} from "./converse";
+import {
+  NullThoughtOrganizerAdapter,
+  organizeThought,
+  type ThoughtOrganizerAdapter,
+  type ThoughtOrganizerResult,
+} from "./thoughtOrganizer";
+import { HttpNpcGenerationAdapter, HttpConversationAdapter, HttpThoughtOrganizerAdapter } from "./httpAdapters";
 import { NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL } from "./config";
 import {
   getRefoundationAiDialogueConsent,
@@ -177,32 +194,42 @@ const RESOLUTION_ACTIONS: ActionButton[] = [
   },
 ];
 
-const nullSemanticAdapter = new NullSemanticInterpreterAdapter();
 const nullNpcAdapter = new NullNpcGenerationAdapter();
+const nullConversationAdapter = new NullConversationAdapter();
+const nullThoughtOrganizerAdapter = new NullThoughtOrganizerAdapter();
 // Constructed unconditionally (cheap: just stores a URL string) but only
 // ever invoked when LIVE_PROVIDER_CONFIGURED and consent is "accepted" —
 // see resolveAdapters() below. With the shipped-empty endpoint constant
-// these behave identically to the Null adapters (HttpSemanticInterpreterAdapter's
-// own empty-endpoint check returns "unavailable" without a network call).
-const httpSemanticAdapter = new HttpSemanticInterpreterAdapter(NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL);
+// these behave identically to the Null adapters (each Http*Adapter's own
+// empty-endpoint check returns "unavailable" without a network call).
 const httpNpcAdapter = new HttpNpcGenerationAdapter(NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL);
+const httpConversationAdapter = new HttpConversationAdapter(NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL);
+const httpThoughtOrganizerAdapter = new HttpThoughtOrganizerAdapter(NEWLIFE_REFOUNDATION_AI_ENDPOINT_URL);
 
 /**
  * No silent fallback masquerading as AI success: the live adapters are only
  * ever selected when both the endpoint is configured AND the player has
  * explicitly accepted this feature's own consent prompt. Any other state
  * (declined, not yet asked, or no endpoint at all) uses the same `Null*`
- * adapters this component always used, which `interpretTurn`/
- * `generateNpcLine` route through the identical conservative-fallback path.
+ * adapters this component always used, which `converseTurn`/
+ * `generateNpcLine`/`organizeThought` route through the identical
+ * conservative-fallback path.
  */
 function resolveAdapters(consent: RefoundationAiDialogueConsentStatus | null): {
-  semantic: SemanticInterpreterAdapter;
   npc: NpcGenerationAdapter;
+  conversation: ConversationAdapter;
+  thoughtOrganizer: ThoughtOrganizerAdapter;
 } {
   if (LIVE_PROVIDER_CONFIGURED && consent === "accepted") {
-    return { semantic: httpSemanticAdapter, npc: httpNpcAdapter };
+    return { npc: httpNpcAdapter, conversation: httpConversationAdapter, thoughtOrganizer: httpThoughtOrganizerAdapter };
   }
-  return { semantic: nullSemanticAdapter, npc: nullNpcAdapter };
+  return { npc: nullNpcAdapter, conversation: nullConversationAdapter, thoughtOrganizer: nullThoughtOrganizerAdapter };
+}
+
+/** V37 §1/§4: bounded, raw (not restructured) recent-dialogue window sent to `converseTurn`/`organizeThought`. `SpeakerId` and `RawDialogueLine`'s `DialogueSpeaker` share the exact same literal members, so no runtime mapping is needed. */
+const RECENT_DIALOGUE_WINDOW = 8;
+function toRecentDialogue(transcript: TranscriptLine[]): RawDialogueLine[] {
+  return transcript.slice(-RECENT_DIALOGUE_WINDOW).map((line) => ({ speaker: line.speaker, text: line.text }));
 }
 
 function speakerLabel(speaker: SpeakerId): string {
@@ -224,6 +251,8 @@ export function RefoundationApp({ onExit }: Props) {
   const [freeText, setFreeText] = useState("");
   const [freeTextTarget, setFreeTextTarget] = useState<TargetNpc | null>(null);
   const [pending, setPending] = useState(false);
+  const [thoughtPanel, setThoughtPanel] = useState<ThoughtOrganizerResult | null>(null);
+  const [thoughtPending, setThoughtPending] = useState(false);
   const [consent, setConsent] = useState<RefoundationAiDialogueConsentStatus | null>(() =>
     LIVE_PROVIDER_CONFIGURED ? getRefoundationAiDialogueConsent() : "declined",
   );
@@ -267,7 +296,14 @@ export function RefoundationApp({ onExit }: Props) {
     return null;
   }, [state.transcript]);
 
-  async function runTurn(target: TargetNpc | null, turn: { action: ActionType; boundaryMode: BoundaryMode; relationalEvents?: RelationalEvent[] }, costMinutes: number, playerLabel: string) {
+  async function runTurn(
+    target: TargetNpc | null,
+    turn: { action: ActionType; boundaryMode: BoundaryMode; relationalEvents?: RelationalEvent[] },
+    costMinutes: number,
+    playerLabel: string,
+    /** V37 §4: when supplied (from `converseTurn`), skip the separate `generateNpcLine` call — one richer call replaces the old two-call sequence. */
+    precomputedNpcLine?: string,
+  ) {
     if (ended || pending) return;
     setPending(true);
     const turnRef = `t${state.turnCounter + 1}`;
@@ -284,22 +320,20 @@ export function RefoundationApp({ onExit }: Props) {
     const nextRyo =
       target === "RYO" ? applyRelationalTurn(state.ryo, { turnRef, events: relationalEvents, boundaryMode: turn.boundaryMode }) : state.ryo;
 
-    const npcLine =
+    const npcLineText =
       target === null
         ? null
-        : await generateNpcLine(adapters.npc, {
-            npc: target,
-            relationshipState: target === "MIKA" ? nextMika.relationshipState : nextRyo.relationshipState,
-            boundaryStatus: nextEnding.boundaryEstablished
-              ? nextEnding.taskLedger.commitment
-                ? nextEnding.taskLedger.commitment.boundaryMode === "CROSS_WITHOUT_PERMISSION"
-                  ? "OVERRIDDEN"
-                  : "RESPECTED"
-                : "STATED"
-              : "UNKNOWN",
-            lastPlayerTurn: { action: turn.action, boundaryMode: turn.boundaryMode, relationalEvents },
-            sceneContext: "16:40, rehearsal stopped, the disputed scene",
-          });
+        : precomputedNpcLine !== undefined
+          ? precomputedNpcLine
+          : (
+              await generateNpcLine(adapters.npc, {
+                npc: target,
+                relationshipState: target === "MIKA" ? nextMika.relationshipState : nextRyo.relationshipState,
+                boundaryStatus: deriveEndingBoundary(nextEnding),
+                lastPlayerTurn: { action: turn.action, boundaryMode: turn.boundaryMode, relationalEvents },
+                sceneContext: "16:40, rehearsal stopped, the disputed scene",
+              })
+            ).text;
 
     setState((prev) => ({
       clock: nextClock,
@@ -310,7 +344,7 @@ export function RefoundationApp({ onExit }: Props) {
       transcript: [
         ...prev.transcript,
         { speaker: "PLAYER", text: playerLabel },
-        ...(npcLine ? [{ speaker: target as SpeakerId, text: npcLine.text }] : []),
+        ...(npcLineText !== null ? [{ speaker: target as SpeakerId, text: npcLineText }] : []),
       ],
     }));
     setPending(false);
@@ -325,25 +359,40 @@ export function RefoundationApp({ onExit }: Props) {
     await runTurn("MIKA", tool.turn, tool.costMinutes, "（道具）どこまでなら大丈夫か、構造化して尋ねる");
   }
 
+  /**
+   * V37 §4. ONE `converseTurn` call replaces the old
+   * `interpretTurn` → `generateNpcLine` two-call sequence: the raw
+   * utterance + bounded recent dialogue + dynamic state go straight to the
+   * model, which understands the player's actual meaning and answers as the
+   * character in the same call that proposes a `candidateTurn`. Only the
+   * validated (or safely-fallback) `candidateTurn` is applied to state, via
+   * the same deterministic reducers every other action already uses.
+   */
   async function handleFreeText() {
     if (!freeText.trim() || freeTextTarget === null || ended || pending) return;
     setPending(true);
-    const targetLabel = freeTextTarget === "MIKA" ? "美香" : "亮";
-    const result = await interpretTurn(adapters.semantic, {
-      utterance: freeText,
-      speaker: "PLAYER",
-      caseContext: `free-text turn, explicitly addressed to ${targetLabel}`,
-    });
     const text = freeText;
     const target = freeTextTarget;
     setFreeText("");
+
+    const targetRecord = target === "MIKA" ? state.mika : state.ryo;
+    const commitment = state.ending.taskLedger.commitment;
+    const result = await converseTurn(adapters.conversation, {
+      caseId: "COMMUNITY_THEATER_V1",
+      targetNpc: target,
+      rawPlayerUtterance: text,
+      recentDialogue: toRecentDialogue(state.transcript),
+      dynamicState: {
+        relationshipState: targetRecord.relationshipState,
+        boundaryStatus: deriveEndingBoundary(state.ending),
+        remainingMinutes: remainingMinutes(state.clock),
+        activeCommitment: commitment ? `${commitment.action} (${commitment.boundaryMode})` : null,
+      },
+    });
+
     setPending(false);
-    await runTurn(
-      target,
-      { action: result.classification.action, boundaryMode: result.classification.boundaryMode },
-      TIME_COSTS.CLARIFY,
-      text,
-    );
+    await runTurn(target, result.candidateTurn, TIME_COSTS.CLARIFY, text, result.npcLine);
+
     if (result.status === "fallback") {
       setState((prev) => ({
         ...prev,
@@ -352,12 +401,37 @@ export function RefoundationApp({ onExit }: Props) {
           {
             speaker: "SYSTEM",
             text: LIVE_PROVIDER_CONFIGURED
-              ? "（AIの意味解釈を取得できなかったため、安全な確認扱いで進めました。NPCの返答は現在の状態に基づく安全なフォールバックです。）"
+              ? "（AIとの会話を取得できなかったため、安全な確認扱いで進めました。NPCの返答は現在の状態に基づく安全なフォールバックです。）"
               : "（このビルドにはまだAIアダプタが接続されていません。自由入力は安全な確認扱いで進み、選んだ相手が状態に応じて応答します。）",
           },
         ],
       }));
     }
+  }
+
+  /**
+   * V37 §5. A separate operation from `converseTurn`: never speaks as Mika
+   * or Ryo, never applies anything to state. `worldFacts`/`currentProblem`
+   * are opaque summaries built from already-validated client state, not new
+   * facts — mirrors the static "思考ボード" section's own content so the two
+   * panels never contradict each other.
+   */
+  async function handleOrganizeThought() {
+    if (thoughtPending) return;
+    setThoughtPending(true);
+    const commitment = state.ending.taskLedger.commitment;
+    const worldFacts = [
+      "明日18:00が初回公演。チケットは販売済み。17:30までに今日の対応方針を決める必要がある。",
+      state.ending.boundaryEstablished ? "美香には譲れない一線があることがすでに明らかになっている。" : "美香の一線はまだ明らかになっていない。",
+      commitment ? `対応方針はすでに決まった（${commitment.action}）。` : "対応方針はまだ決まっていない。",
+    ].join(" ");
+    const result = await organizeThought(adapters.thoughtOrganizer, {
+      validatedWorldFacts: worldFacts,
+      recentDialogue: toRecentDialogue(state.transcript),
+      currentProblem: "この場面をどう扱うか、明日の公演を予定通り進めるかを17:30までに決める必要がある。",
+    });
+    setThoughtPanel(result);
+    setThoughtPending(false);
   }
 
   if (phase === "PURPOSE") {
@@ -385,7 +459,7 @@ export function RefoundationApp({ onExit }: Props) {
         <h1 style={{ fontSize: 20 }}>AIによる会話について</h1>
         <p style={{ fontSize: 14 }}>
           このビルドでは、NPCとの自由な会話とセリフ生成に外部のAIモデル（Vertex AI Gemini）を使うことができます。
-          あなたが自由入力欄に書いた内容は、そのターンの分類のためだけにサーバーへ送られます。ゲームの状態そのものはこの端末側の確定的な仕組みが管理し、
+          あなたが自由入力欄に書いた内容と直近の会話のやり取りは、その場面の登場人物として応答するためだけにサーバーへ送られます。ゲームの状態そのものはこの端末側の確定的な仕組みが管理し、
           AIの応答が直接ゲーム状態を書き換えることはありません。
         </p>
         <p style={{ fontSize: 13, color: "#555" }}>
@@ -511,8 +585,47 @@ export function RefoundationApp({ onExit }: Props) {
                 {btn.label}
               </button>
             ))}
+            {hasHadConsequence && (
+              <button onClick={handleOrganizeThought} disabled={thoughtPending} style={{ margin: "2px" }}>
+                考えを整理する
+              </button>
+            )}
           </div>
         </>
+      )}
+
+      {thoughtPanel && (
+        <div
+          aria-label="思考整理"
+          style={{ marginTop: 12, border: "1px dashed #4a7", borderRadius: 6, padding: 12, background: "#f3fbf3" }}
+        >
+          <h3 style={{ fontSize: 13, margin: "0 0 6px" }}>思考整理（キャラクターの発言ではありません）</h3>
+          {thoughtPanel.known.length > 0 && (
+            <p style={{ fontSize: 13 }}>
+              <strong>わかっている:</strong> {thoughtPanel.known.join(" / ")}
+            </p>
+          )}
+          {thoughtPanel.possible.length > 0 && (
+            <p style={{ fontSize: 13 }}>
+              <strong>そうかもしれない:</strong> {thoughtPanel.possible.join(" / ")}
+            </p>
+          )}
+          {thoughtPanel.unknown.length > 0 && (
+            <p style={{ fontSize: 13 }}>
+              <strong>まだわからない:</strong> {thoughtPanel.unknown.join(" / ")}
+            </p>
+          )}
+          {thoughtPanel.options.length > 0 && (
+            <p style={{ fontSize: 13 }}>
+              <strong>選択肢:</strong> {thoughtPanel.options.join(" / ")}
+            </p>
+          )}
+          {thoughtPanel.nextCheck && (
+            <p style={{ fontSize: 13 }}>
+              <strong>次に確かめること:</strong> {thoughtPanel.nextCheck}
+            </p>
+          )}
+        </div>
       )}
 
       {hasHadConsequence && (

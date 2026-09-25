@@ -2,11 +2,17 @@
 
 Stateless HTTP Cloud Function (Gen 2) providing the live model provider for
 the isolated NEW LIFE refoundation vertical slice
-(`docs/newlife/refoundation/`, `src/newlife/refoundation/`). Implements the
-two adapter contracts already validated in stages 4-5 of the V11 build order:
+(`docs/newlife/refoundation/`, `src/newlife/refoundation/`). Implements four
+adapter contracts:
 
+- `ConversationAdapter` (`src/newlife/refoundation/converse.ts`) — the V37
+  generative-character-reasoning primary free-conversation path.
+- `ThoughtOrganizerAdapter` (`src/newlife/refoundation/thoughtOrganizer.ts`)
+  — V37's separate, non-NPC problem-solving support layer.
 - `SemanticInterpreterAdapter` (`src/newlife/refoundation/semanticInterpreter.ts`)
-- `NpcGenerationAdapter` (`src/newlife/refoundation/npcGeneration.ts`)
+  — retained for compatibility/testing (V37 §7); no longer primary.
+- `NpcGenerationAdapter` (`src/newlife/refoundation/npcGeneration.ts`) —
+  retained for compatibility/testing (V37 §7); no longer primary.
 
 ## Why a separate function, not a shared endpoint
 
@@ -31,23 +37,42 @@ secret string.
 
 One function, one `operation` discriminator in the POST body:
 
-- `interpret_turn` — input: `{ operation, utterance, caseContext }`.
-  Output: only the closed `TurnClassification` shape
+- `converse_turn` (V37, primary free-conversation path) — input:
+  `{ operation, caseId, targetNpc, rawPlayerUtterance, recentDialogue,
+  dynamicState }`. The client sends only dynamic/conversational data; the
+  function builds the full `CharacterConversationContext` server-side from
+  the canonical `SCENE_CANON`/`CHARACTER_DOSSIERS` in `lib.js` (never sent
+  by the client — V37 §1's explicit prohibition). Output: `{ npc, npcLine,
+  understoodPlayerMeaning, candidateTurn, candidateFactRevealIds,
+  candidateCommitments, uncertainty, thoughtSupportSignal }`. Only `npcLine`
+  is meant for immediate display; `candidateTurn`/`candidateFactRevealIds`/
+  `candidateCommitments` are proposals only, validated and applied by the
+  deterministic client (`relationshipReducer.ts`/`ending.ts`), never by this
+  function or the model itself.
+- `organize_thought` (V37 §5, a separate non-NPC layer) — input:
+  `{ operation, validatedWorldFacts, recentDialogue, currentProblem }`.
+  Output: `{ known, possible, unknown, options, nextCheck }`. Never speaks
+  as a character, never invents facts, never a moral/diagnostic score.
+- `interpret_turn` (compatibility/testing, V37 §7) — input:
+  `{ operation, utterance, caseContext }`. Output: only the closed
+  `TurnClassification` shape
   (`action`/`boundaryMode`/`relationalEvents`/`needsClarification`) plus an
   optional `personalTrackSignal`. Never a state delta, never an NPC line,
   never a score.
-- `generate_npc_line` — input: `{ operation, projection }` where
-  `projection` matches `NpcVisibleStateProjection`
+- `generate_npc_line` (compatibility/testing, V37 §7) — input:
+  `{ operation, projection }` where `projection` matches
+  `NpcVisibleStateProjection`
   (`npc`/`relationshipState`/`boundaryStatus`/`lastPlayerTurn`/`sceneContext`).
   Output: only `{ npc, text }`. Never the full hidden world, never another
   NPC's record, never a state mutation.
 
-Both operations are validated field-by-field server-side
-(`lib.js`'s `validateInput`) before any model call, and the client-side
-adapters (`src/newlife/refoundation/httpAdapters.ts`) re-validate the
-response shape a second, independent time
-(`isValidRawTurnClassification` / `isValidRawNpcLine`) before trusting it —
-same two-layer discipline `functions/newlife-dialogue/` already uses.
+All four operations are validated field-by-field server-side (`lib.js`'s
+`validateInput`) before any model call, and the client-side adapters
+(`src/newlife/refoundation/httpAdapters.ts`) re-validate the response shape
+a second, independent time (`isValidRawConverseResult` /
+`isValidRawThoughtOrganizerResult` / `isValidRawTurnClassification` /
+`isValidRawNpcLine`) before trusting it — same two-layer discipline
+`functions/newlife-dialogue/` already uses.
 
 ## Prompt-injection / tone-bias defenses
 
@@ -65,7 +90,18 @@ same two-layer discipline `functions/newlife-dialogue/` already uses.
   (`relationshipState`/`boundaryMode`/etc.) into the generated line, and
   states that `WITHDRAWN` must stay non-cooperative rather than being
   silently reset.
-- Both operations are constrained to a strict output schema
+- The `converse_turn` system instruction carries the same untrusted-input,
+  tone-blindness, and no-invented-facts rules as the two above, plus its own
+  requirements specific to generative reasoning: forbidden knowledge
+  (`characterDossier.forbiddenKnowledge`) must stay unknown to the NPC unless
+  actually raised in `recentDialogue`, a `CLARIFY`-shaped `candidateTurn`
+  must be paired with `uncertainty: "HIGH"`, and the NPC must never become a
+  generic helpful assistant or counselor.
+- The `organize_thought` system instruction forbids speaking as any
+  character, forbids diagnostic/therapeutic language, forbids moral or
+  personality scoring, and requires `known` (fact) and `possible`
+  (inference) to stay visibly distinct.
+- All four operations are constrained to a strict output schema
   (`responseMimeType: "application/json"` + `responseSchema`).
 - None of the above is trusted as sufficient on its own: the client-side
   validators reject any response that doesn't match the closed enum values,

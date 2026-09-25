@@ -5,8 +5,14 @@ const {
   buildInterpretPrompt,
   buildNpcResponseSchema,
   buildNpcPrompt,
+  buildConverseResponseSchema,
+  buildConversePrompt,
+  buildOrganizeThoughtResponseSchema,
+  buildOrganizeThoughtPrompt,
   INTERPRET_SYSTEM_INSTRUCTION,
   NPC_SYSTEM_INSTRUCTION,
+  CONVERSE_SYSTEM_INSTRUCTION,
+  ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION,
   validateInput,
   applyCors,
   createFixedWindowLimiter,
@@ -30,6 +36,8 @@ const modelCallLimiter = createFixedWindowLimiter(MAX_MODEL_CALLS_PER_MINUTE, 60
 
 const INTERPRET_RESPONSE_SCHEMA = buildInterpretResponseSchema(Type);
 const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
+const CONVERSE_RESPONSE_SCHEMA = buildConverseResponseSchema(Type);
+const ORGANIZE_THOUGHT_RESPONSE_SCHEMA = buildOrganizeThoughtResponseSchema(Type);
 
 let genAiClient;
 function getClient() {
@@ -73,11 +81,12 @@ async function callModel(client, { systemInstruction, prompt, responseSchema }) 
 
 /**
  * HTTP Cloud Function (Gen 2). POST-only, stateless. One operation
- * discriminator (`interpret_turn` / `generate_npc_line`), each returning
- * only the closed shape its client-side contract validates
- * (`isValidRawTurnClassification` / `isValidRawNpcLine`) — never a state
- * delta, never a score. Never logs the request body or player free text
- * (only an error *type*), matching functions/newlife-dialogue/index.js's
+ * discriminator (`interpret_turn` / `generate_npc_line` / `converse_turn` /
+ * `organize_thought`), each returning only the closed shape its client-side
+ * contract validates (`isValidRawTurnClassification` / `isValidRawNpcLine` /
+ * `isValidRawConverseResult` / `isValidRawThoughtOrganizerResult`) — never a
+ * state delta, never a score. Never logs the request body or player free
+ * text (only an error *type*), matching functions/newlife-dialogue/index.js's
  * own discipline. Does not read or write any database.
  */
 exports.newlifeRefoundationAi = async (req, res) => {
@@ -108,7 +117,7 @@ exports.newlifeRefoundationAi = async (req, res) => {
         prompt: buildInterpretPrompt(req.body.utterance, req.body.caseContext),
         responseSchema: INTERPRET_RESPONSE_SCHEMA,
       });
-    } else {
+    } else if (req.body.operation === "generate_npc_line") {
       const projection = req.body.projection;
       if (!NPC_IDS.includes(projection.npc)) {
         // Defense in depth: validateInput already rejects an npc id outside
@@ -120,6 +129,24 @@ exports.newlifeRefoundationAi = async (req, res) => {
         systemInstruction: NPC_SYSTEM_INSTRUCTION,
         prompt: buildNpcPrompt(projection),
         responseSchema: NPC_RESPONSE_SCHEMA,
+      });
+    } else if (req.body.operation === "converse_turn") {
+      if (!NPC_IDS.includes(req.body.targetNpc)) {
+        // Defense in depth: validateInput already rejects a targetNpc id
+        // outside NPC_IDS, so this branch is unreachable in practice.
+        res.status(400).json({ error: "invalid_target_npc" });
+        return;
+      }
+      text = await callModel(client, {
+        systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
+        prompt: buildConversePrompt(req.body),
+        responseSchema: CONVERSE_RESPONSE_SCHEMA,
+      });
+    } else {
+      text = await callModel(client, {
+        systemInstruction: ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION,
+        prompt: buildOrganizeThoughtPrompt(req.body),
+        responseSchema: ORGANIZE_THOUGHT_RESPONSE_SCHEMA,
       });
     }
 

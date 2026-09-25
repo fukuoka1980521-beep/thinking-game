@@ -25,6 +25,14 @@
  * against the already-closed V13-V24 enum tokens (ontology-label leakage),
  * not a semantic classifier, and it never reads `NpcVisibleStateProjection`
  * itself, only the adapter's returned text.
+ *
+ * SUPERSEDED AS THE PRIMARY FREE-CONVERSATION PATH (V37 §7): `generateNpcLine`
+ * over a thin `NpcVisibleStateProjection` is retained for compatibility and
+ * for tests that want a narrow, single-purpose generation contract, but
+ * `RefoundationApp.tsx`'s normal free-text loop uses `converseTurn`
+ * (`converse.ts`) instead, which builds a richer `CharacterConversationContext`
+ * server-side and lets the model reason from the raw utterance and recent
+ * dialogue rather than only a structured last-turn classification.
  */
 import {
   ALL_ACTION_TYPES,
@@ -147,7 +155,8 @@ export class FixedResponseNpcAdapter implements NpcGenerationAdapter {
  * this module can guarantee it (the adapter-success path is only
  * documentation-constrained — V31 §2/§3's disclosed open limit).
  */
-const FALLBACK_LINES: Readonly<Record<NpcId, Readonly<Record<RelationshipState, string>>>> = {
+/** Exported so `converse.ts` reuses the same per-`(npc, relationshipState)` safe lines instead of a second, possibly-drifting copy. */
+export const FALLBACK_LINES: Readonly<Record<NpcId, Readonly<Record<RelationshipState, string>>>> = {
   MIKA: {
     OPEN: "（美香はこちらを見て、話す準備をしている。）",
     NEUTRAL: "（美香は台本を持ったまま、少し考えている。）",
@@ -166,7 +175,8 @@ function isNonEmptyBoundedString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0 && value.length <= MAX_LINE_LENGTH;
 }
 
-function containsForbiddenLabel(text: string): boolean {
+/** Exported so `converse.ts` can reuse the same ontology-label-leak check on `npcLine` instead of duplicating the token list. */
+export function containsForbiddenLabel(text: string): boolean {
   return FORBIDDEN_LABEL_TOKENS.some((token) => text.includes(token));
 }
 

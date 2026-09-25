@@ -1,6 +1,10 @@
 /**
  * NEW LIFE refoundation — live HTTP adapters for
- * `functions/newlife-refoundation-ai/`.
+ * `functions/newlife-refoundation-ai/`. Four adapters, one per backend
+ * operation: `HttpSemanticInterpreterAdapter`/`HttpNpcGenerationAdapter`
+ * (compatibility/testing, V37 §7) and `HttpConversationAdapter`/
+ * `HttpThoughtOrganizerAdapter` (the V37 primary free-conversation path and
+ * its separate thought-organization layer).
  *
  * Structurally mirrors `src/newlife/semantic/httpInterpreter.ts`'s
  * `HttpSemanticInterpreter` (client-side timeout with headroom past the
@@ -33,6 +37,16 @@ import type {
   NpcGenerationAdapter,
   NpcVisibleStateProjection,
 } from "./npcGeneration";
+import type {
+  AdapterCallResult as ConverseAdapterCallResult,
+  CharacterConversationRequest,
+  ConversationAdapter,
+} from "./converse";
+import type {
+  AdapterCallResult as ThoughtOrganizerAdapterCallResult,
+  ThoughtOrganizerAdapter,
+  ThoughtOrganizerRequest,
+} from "./thoughtOrganizer";
 
 // The server can retry once on an empty Gemini response
 // (`functions/newlife-refoundation-ai/index.js`). Same 25s client-side
@@ -116,6 +130,54 @@ export class HttpNpcGenerationAdapter implements NpcGenerationAdapter {
     const result = await postJson(this.endpointUrl, {
       operation: "generate_npc_line",
       projection,
+    });
+    if (result.status === "unavailable") return result;
+    return { status: "ok", raw: result.data };
+  }
+}
+
+/**
+ * Live `ConversationAdapter` (V37 §1/§4, the primary free-conversation
+ * path). Sends only the already-minimal `CharacterConversationRequest`
+ * fields — `caseId`/`targetNpc`/`rawPlayerUtterance`/`recentDialogue`/
+ * `dynamicState` — never a scene-fact or character-dossier field (V37 §1's
+ * explicit prohibition: the server owns canon, not the browser). Returns an
+ * *untrusted* `raw` payload; `converseTurn`'s own validator
+ * (`isValidRawConverseResult`) is what promotes it to a typed result, never
+ * this class.
+ */
+export class HttpConversationAdapter implements ConversationAdapter {
+  constructor(private readonly endpointUrl: string) {}
+
+  async converse(request: CharacterConversationRequest): Promise<ConverseAdapterCallResult> {
+    const result = await postJson(this.endpointUrl, {
+      operation: "converse_turn",
+      caseId: request.caseId,
+      targetNpc: request.targetNpc,
+      rawPlayerUtterance: request.rawPlayerUtterance,
+      recentDialogue: request.recentDialogue,
+      dynamicState: request.dynamicState,
+    });
+    if (result.status === "unavailable") return result;
+    return { status: "ok", raw: result.data };
+  }
+}
+
+/**
+ * Live `ThoughtOrganizerAdapter` (V37 §5, a separate layer from NPC
+ * dialogue). Sends only `{ validatedWorldFacts, recentDialogue,
+ * currentProblem }` — never any NPC-identifying field, since this
+ * operation must never speak as a character.
+ */
+export class HttpThoughtOrganizerAdapter implements ThoughtOrganizerAdapter {
+  constructor(private readonly endpointUrl: string) {}
+
+  async organize(request: ThoughtOrganizerRequest): Promise<ThoughtOrganizerAdapterCallResult> {
+    const result = await postJson(this.endpointUrl, {
+      operation: "organize_thought",
+      validatedWorldFacts: request.validatedWorldFacts,
+      recentDialogue: request.recentDialogue,
+      currentProblem: request.currentProblem,
     });
     if (result.status === "unavailable") return result;
     return { status: "ok", raw: result.data };

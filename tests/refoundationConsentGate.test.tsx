@@ -105,4 +105,75 @@ describe("NEW LIFE refoundation — AI consent gate (endpoint configured)", () =
     // contract) -- the turn still completes and time still advances.
     expect(await screen.findByText(/残り時間: 46 分/)).toBeInTheDocument();
   });
+
+  it("free text routes through converse_turn (V37 §4), not interpret_turn, and shows the model's npcLine directly", async () => {
+    const fetchSpy = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse((init as RequestInit).body as string);
+      if (body.operation === "converse_turn") {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            npc: "MIKA",
+            npcLine: "それなら、内容を変えるなら考えられます。",
+            understoodPlayerMeaning: "代替案の有無を尋ねている。",
+            candidateTurn: { action: "ASK_BOUNDARY", boundaryMode: "DISCOVER", relationalEvents: [], needsClarification: false },
+            candidateFactRevealIds: [],
+            candidateCommitments: [],
+            uncertainty: "LOW",
+            thoughtSupportSignal: false,
+          }),
+        };
+      }
+      throw new Error(`unexpected operation in this test: ${body.operation}`);
+    });
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const user = await openSlice();
+    await user.click(screen.getByRole("button", { name: "同意してAIを使う" }));
+    await user.click(screen.getByRole("button", { name: "美香に話す" }));
+    await user.type(screen.getByRole("textbox", { name: "自由入力" }), "台本じゃなく演出で隠せない？");
+    await user.click(screen.getByRole("button", { name: "送る" }));
+
+    expect(await screen.findByText("それなら、内容を変えるなら考えられます。")).toBeInTheDocument();
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const sentBody = JSON.parse((fetchSpy.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(sentBody.operation).toBe("converse_turn");
+    expect(sentBody.rawPlayerUtterance).toBe("台本じゃなく演出で隠せない？");
+    expect(sentBody.targetNpc).toBe("MIKA");
+    expect(Array.isArray(sentBody.recentDialogue)).toBe(true);
+  });
+
+  it("考えを整理する calls organize_thought and renders the result in a panel separate from character dialogue", async () => {
+    const organizeThoughtCalls: unknown[] = [];
+    const fetchSpy = vi.fn(async (_url: string, init?: RequestInit) => {
+      const body = JSON.parse((init as RequestInit).body as string);
+      if (body.operation === "generate_npc_line") {
+        return { ok: true, status: 200, json: async () => ({ npc: body.projection.npc, text: "……わかった。" }) };
+      }
+      organizeThoughtCalls.push(body);
+      expect("npc" in body).toBe(false);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          known: ["17:30までに決める必要がある。"],
+          possible: [],
+          unknown: [],
+          options: ["場面を短縮する"],
+          nextCheck: "実話を外せば出演できるか確認する",
+        }),
+      };
+    });
+    globalThis.fetch = fetchSpy as unknown as typeof fetch;
+
+    const user = await openSlice();
+    await user.click(screen.getByRole("button", { name: "同意してAIを使う" }));
+    await user.click(screen.getByRole("button", { name: "美香に何が変わったのか尋ねる" }));
+    await user.click(screen.getByRole("button", { name: "考えを整理する" }));
+
+    expect(await screen.findByText(/実話を外せば出演できるか確認する/)).toBeInTheDocument();
+    expect(screen.getByText(/場面を短縮する/)).toBeInTheDocument();
+    expect(organizeThoughtCalls).toHaveLength(1);
+  });
 });

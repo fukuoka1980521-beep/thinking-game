@@ -75,6 +75,41 @@ function validNpcBody(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+function validDynamicState(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    relationshipState: "NEUTRAL",
+    boundaryStatus: "UNKNOWN",
+    remainingMinutes: 50,
+    activeCommitment: null,
+    ...overrides,
+  };
+}
+
+function validConverseBody(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    operation: "converse_turn",
+    caseId: "COMMUNITY_THEATER_V1",
+    targetNpc: "MIKA",
+    rawPlayerUtterance: "なんで今まで言わなかったの？",
+    recentDialogue: [
+      { speaker: "SYSTEM", text: "16:40。通し稽古が止まっている。" },
+      { speaker: "MIKA", text: "この場面、明日はやりません。" },
+    ],
+    dynamicState: validDynamicState(),
+    ...overrides,
+  };
+}
+
+function validOrganizeThoughtBody(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    operation: "organize_thought",
+    validatedWorldFacts: "明日18:00が初回公演。チケットは販売済み。17:30までに決める必要がある。",
+    recentDialogue: [{ speaker: "MIKA", text: "この場面、明日はやりません。" }],
+    currentProblem: "この場面をどう扱うかを17:30までに決める必要がある。",
+    ...overrides,
+  };
+}
+
 describe("functions/newlife-refoundation-ai/lib.js — validateInput (envelope)", () => {
   it("rejects a body that isn't an object, or a missing/invalid operation", () => {
     expect(lib.validateInput(null)).toBe("invalid_body");
@@ -169,6 +204,193 @@ describe("functions/newlife-refoundation-ai/lib.js — validateInput (generate_n
     expect(lib.validateInput({ operation: "generate_npc_line", projection: "not-an-object" })).toBe(
       "missing_projection",
     );
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — validateInput (converse_turn, V37 §1)", () => {
+  it("accepts a well-formed request", () => {
+    expect(lib.validateInput(validConverseBody())).toBeNull();
+  });
+
+  it("accepts an empty recentDialogue (first turn of the case)", () => {
+    expect(lib.validateInput(validConverseBody({ recentDialogue: [] }))).toBeNull();
+  });
+
+  it("rejects a caseId outside the closed CASE_IDS set", () => {
+    expect(lib.validateInput(validConverseBody({ caseId: "SOME_OTHER_CASE" }))).toBe("invalid_case_id");
+  });
+
+  it("rejects a targetNpc outside MIKA/RYO", () => {
+    expect(lib.validateInput(validConverseBody({ targetNpc: "SOMEONE_ELSE" }))).toBe("invalid_target_npc");
+  });
+
+  it("rejects a missing/blank rawPlayerUtterance", () => {
+    expect(lib.validateInput(validConverseBody({ rawPlayerUtterance: "" }))).toBe("missing_or_invalid_utterance");
+    expect(lib.validateInput(validConverseBody({ rawPlayerUtterance: undefined }))).toBe("missing_or_invalid_utterance");
+  });
+
+  it("rejects an oversized rawPlayerUtterance (data minimization)", () => {
+    const tooLong = "あ".repeat(lib.MAX_UTTERANCE_LENGTH + 1);
+    expect(lib.validateInput(validConverseBody({ rawPlayerUtterance: tooLong }))).toBe("missing_or_invalid_utterance");
+  });
+
+  it("rejects a non-array recentDialogue, or one over the max entry count", () => {
+    expect(lib.validateInput(validConverseBody({ recentDialogue: "not-an-array" }))).toBe("invalid_recent_dialogue");
+    const tooMany = Array.from({ length: lib.MAX_RECENT_DIALOGUE_ENTRIES + 1 }, () => ({ speaker: "PLAYER", text: "x" }));
+    expect(lib.validateInput(validConverseBody({ recentDialogue: tooMany }))).toBe("invalid_recent_dialogue");
+  });
+
+  it("rejects a recentDialogue entry with a speaker outside the closed set, or an oversized/blank line", () => {
+    expect(
+      lib.validateInput(validConverseBody({ recentDialogue: [{ speaker: "NARRATOR", text: "x" }] })),
+    ).toBe("invalid_recent_dialogue");
+    expect(
+      lib.validateInput(validConverseBody({ recentDialogue: [{ speaker: "PLAYER", text: "" }] })),
+    ).toBe("invalid_recent_dialogue");
+    const tooLongLine = "a".repeat(lib.MAX_DIALOGUE_LINE_LENGTH + 1);
+    expect(
+      lib.validateInput(validConverseBody({ recentDialogue: [{ speaker: "PLAYER", text: tooLongLine }] })),
+    ).toBe("invalid_recent_dialogue");
+  });
+
+  it("rejects a missing dynamicState, or one with an out-of-enum relationshipState/boundaryStatus", () => {
+    expect(lib.validateInput(validConverseBody({ dynamicState: undefined }))).toBe("missing_dynamic_state");
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ relationshipState: "ANGRY" }) })),
+    ).toBe("invalid_relationship_state");
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ boundaryStatus: "BROKEN" }) })),
+    ).toBe("invalid_boundary_status");
+  });
+
+  it("rejects a non-numeric or out-of-range remainingMinutes", () => {
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ remainingMinutes: "50" }) })),
+    ).toBe("invalid_remaining_minutes");
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ remainingMinutes: -1 }) })),
+    ).toBe("invalid_remaining_minutes");
+  });
+
+  it("accepts a non-null activeCommitment string, and rejects an oversized one", () => {
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ activeCommitment: "COMMIT_PLAN (SEEK_PERMISSION)" }) })),
+    ).toBeNull();
+    const tooLong = "a".repeat(lib.MAX_ACTIVE_COMMITMENT_LENGTH + 1);
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ activeCommitment: tooLong }) })),
+    ).toBe("invalid_active_commitment");
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — validateInput (organize_thought, V37 §5)", () => {
+  it("accepts a well-formed request", () => {
+    expect(lib.validateInput(validOrganizeThoughtBody())).toBeNull();
+  });
+
+  it("rejects a non-string or oversized validatedWorldFacts", () => {
+    expect(lib.validateInput(validOrganizeThoughtBody({ validatedWorldFacts: 5 }))).toBe("invalid_validated_world_facts");
+    const tooLong = "a".repeat(lib.MAX_WORLD_FACTS_LENGTH + 1);
+    expect(lib.validateInput(validOrganizeThoughtBody({ validatedWorldFacts: tooLong }))).toBe(
+      "invalid_validated_world_facts",
+    );
+  });
+
+  it("accepts an empty validatedWorldFacts (opaque, caller-optional free text)", () => {
+    expect(lib.validateInput(validOrganizeThoughtBody({ validatedWorldFacts: "" }))).toBeNull();
+  });
+
+  it("rejects an invalid recentDialogue, same rules as converse_turn", () => {
+    expect(lib.validateInput(validOrganizeThoughtBody({ recentDialogue: [{ speaker: "NARRATOR", text: "x" }] }))).toBe(
+      "invalid_recent_dialogue",
+    );
+  });
+
+  it("rejects a missing/blank currentProblem", () => {
+    expect(lib.validateInput(validOrganizeThoughtBody({ currentProblem: "" }))).toBe(
+      "missing_or_invalid_current_problem",
+    );
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — CANONICAL WORLD MODEL stays server-side (V37 §1)", () => {
+  it("SCENE_CANON and CHARACTER_DOSSIERS exist and are never accepted as client input fields", () => {
+    expect(lib.SCENE_CANON.caseId).toBe("COMMUNITY_THEATER_V1");
+    expect(lib.CHARACTER_DOSSIERS.MIKA).toBeDefined();
+    expect(lib.CHARACTER_DOSSIERS.RYO).toBeDefined();
+    // validateConverseTurnInput only ever reads caseId/targetNpc/rawPlayerUtterance/
+    // recentDialogue/dynamicState from the client body -- canon is looked up
+    // server-side from CHARACTER_DOSSIERS[targetNpc], never taken from the request.
+    const body = validConverseBody({ characterDossier: { fabricated: true }, sceneCanon: { fabricated: true } });
+    expect(lib.validateInput(body)).toBeNull();
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).not.toContain("fabricated");
+  });
+
+  it("each character dossier declares forbiddenKnowledge, and buildConversePrompt embeds it", () => {
+    expect(lib.CHARACTER_DOSSIERS.MIKA.forbiddenKnowledge.length).toBeGreaterThan(0);
+    expect(lib.CHARACTER_DOSSIERS.RYO.forbiddenKnowledge.length).toBeGreaterThan(0);
+    const prompt = lib.buildConversePrompt(validConverseBody());
+    expect(prompt).toContain(JSON.stringify(lib.CHARACTER_DOSSIERS.MIKA.forbiddenKnowledge));
+  });
+
+  it("buildConversePrompt cites only the requested NPC's dossier, never inventing a third character", () => {
+    const prompt = lib.buildConversePrompt(validConverseBody({ targetNpc: "MIKA" }));
+    expect(prompt).toContain("美香");
+    expect(prompt).not.toContain("JIN");
+  });
+
+  it("buildConversePrompt embeds the raw utterance and recent dialogue as untrusted/opaque data, never restructured", () => {
+    const body = validConverseBody({ rawPlayerUtterance: "台本じゃなく演出で隠せない？" });
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).toContain(JSON.stringify("台本じゃなく演出で隠せない？"));
+    expect(prompt).toContain(JSON.stringify(body.recentDialogue));
+  });
+
+  it("this module's own source contains no per-utterance answer table for converse_turn (no lookup keyed on rawPlayerUtterance content)", () => {
+    const fs = require("node:fs");
+    const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-refoundation-ai", "lib.js"), "utf-8");
+    expect(source).not.toMatch(/rawPlayerUtterance[^\n]*(===|includes|switch)/);
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — converse_turn / organize_thought schema construction", () => {
+  const FakeType = { OBJECT: "OBJECT", STRING: "STRING", ARRAY: "ARRAY", BOOLEAN: "BOOLEAN" };
+
+  it("the converse_turn schema's candidateTurn sub-schema reuses the same closed enums as interpret_turn", () => {
+    const schema = lib.buildConverseResponseSchema(FakeType);
+    const candidateTurn = schema.properties.candidateTurn;
+    expect(candidateTurn.properties.action.enum).toEqual(lib.ACTION_TYPES);
+    expect(candidateTurn.properties.boundaryMode.enum).toEqual(lib.BOUNDARY_MODES);
+    expect(candidateTurn.properties.relationalEvents.items.enum).toEqual(lib.RELATIONAL_EVENTS);
+    expect(schema.properties.uncertainty.enum).toEqual(lib.UNCERTAINTY_LEVELS);
+    expect(schema.required).toContain("npcLine");
+    expect(schema.required).toContain("candidateTurn");
+  });
+
+  it("the organize_thought schema has no npc field at all (V37 §5 separation)", () => {
+    const schema = lib.buildOrganizeThoughtResponseSchema(FakeType);
+    expect(Object.keys(schema.properties)).not.toContain("npc");
+    expect(Object.keys(schema.properties).sort()).toEqual(["known", "nextCheck", "options", "possible", "unknown"]);
+  });
+
+  it("both new system instructions forbid following player-embedded instructions", () => {
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toMatch(/信頼できないデータ/);
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toMatch(/品質シグナルとして一切使わないこと/);
+    expect(lib.ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION).toMatch(/信頼できないデータ/);
+  });
+
+  it("the thought-organizer instruction forbids speaking as a character and forbids diagnosis/moral scoring", () => {
+    expect(lib.ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION).toMatch(/登場人物\(NPC\)として話してはならず/);
+    expect(lib.ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION).toMatch(/道徳的評価・性格評価・点数化を一切行わないこと/);
+    expect(lib.ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION).toMatch(/カウンセリング・治療的な言葉づかいを一切使わないこと/);
+  });
+
+  it("buildOrganizeThoughtPrompt embeds validatedWorldFacts/recentDialogue/currentProblem as opaque data", () => {
+    const body = validOrganizeThoughtBody();
+    const prompt = lib.buildOrganizeThoughtPrompt(body);
+    expect(prompt).toContain(JSON.stringify(body.validatedWorldFacts));
+    expect(prompt).toContain(JSON.stringify(body.currentProblem));
   });
 });
 
