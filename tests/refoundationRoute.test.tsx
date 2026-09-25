@@ -46,11 +46,13 @@ describe("NEW LIFE refoundation UI smoke test (V11 stage 7)", () => {
     return user;
   }
 
-  it("shows the opening scene and both NPCs' opening lines after starting", async () => {
+  it("shows the opening scene, both NPCs, and the latest speaker presence after starting", async () => {
     await openSlice();
     expect(screen.getByText(/この場面、明日はやりません/)).toBeInTheDocument();
     expect(screen.getByText(/昨日まではやってただろ/)).toBeInTheDocument();
     expect(screen.getByText(/残り時間: 50 分/)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "会話中の人物" })).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "亮の立ち位置" })).toHaveAttribute("aria-current", "true");
   });
 
   it("does not show the Thought Board before any consequence has occurred", async () => {
@@ -91,6 +93,7 @@ describe("NEW LIFE refoundation UI smoke test (V11 stage 7)", () => {
 
     expect(await screen.findByText("何が引っかかっている？")).toBeInTheDocument();
     expect(await screen.findByText(/美香はこちらを見て、話す準備をしている/)).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "美香の立ち位置" })).toHaveAttribute("aria-current", "true");
   });
 
   it("routes free text to Ryo when Ryo is explicitly selected", async () => {
@@ -101,6 +104,7 @@ describe("NEW LIFE refoundation UI smoke test (V11 stage 7)", () => {
 
     expect(await screen.findByText("変えたら何が困る？")).toBeInTheDocument();
     expect(await screen.findByText(/亮は客席からこちらに向き直る/)).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "亮の立ち位置" })).toHaveAttribute("aria-current", "true");
   });
 
   it("reaches a non-ranked ending after a resolution action, without surfacing raw ontology labels", async () => {
