@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEW LIFE — キャラクター発話型UI試作</title>
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#090b10;
+      --panel:#111722;
+      --panel2:#171e2a;
+      --line:#2d3748;
+      --text:#f4f6fb;
+      --muted:#aeb8c8;
+      --accent:#efbd72;
+      --blue:#8fc6ff;
+      --green:#8fd5aa;
+      --rose:#e8a0b2;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Yu Gothic UI","Hiragino Kaku Gothic ProN",sans-serif}
+    body{
+      background:
+        radial-gradient(circle at 50% 0%,rgba(239,189,114,.10),transparent 35%),
+        linear-gradient(180deg,#10131a 0%,#090b10 65%);
+    }
+    button{font:inherit}
+    .shell{max-width:1020px;margin:0 auto;padding:14px 14px 34px}
+    .hud{
+      display:flex;justify-content:space-between;gap:10px;align-items:center;
+      margin-bottom:10px;font-size:12px;color:var(--muted)
+    }
+    .hud .tag{border:1px solid var(--line);padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.025)}
+    .hud strong{color:var(--accent);font-size:14px}
+    .stage{
+      position:relative;min-height:680px;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.03),transparent 40%),
+        linear-gradient(180deg,#1b1a20 0 43%,#141116 43% 100%);
+      box-shadow:0 30px 90px rgba(0,0,0,.38);
+    }
+    .curtain{
+      position:absolute;inset:0 0 auto 0;height:155px;pointer-events:none;
+      background:
+        linear-gradient(90deg,rgba(82,21,28,.92),rgba(114,32,42,.82) 14%,rgba(55,16,22,.76) 28%,rgba(114,32,42,.82) 42%,rgba(55,16,22,.76) 58%,rgba(114,32,42,.82) 74%,rgba(82,21,28,.92));
+      clip-path:polygon(0 0,100% 0,100% 56%,88% 45%,76% 60%,63% 45%,50% 61%,37% 45%,24% 60%,12% 45%,0 56%);
+      opacity:.55;
+    }
+    .scene-label{
+      position:absolute;left:18px;top:18px;z-index:3;
+      background:rgba(7,9,13,.72);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.10);
+      border-radius:10px;padding:8px 10px;font-size:12px;color:#d6dce6
+    }
+    .characters{
+      position:absolute;left:0;right:0;top:92px;height:370px;display:flex;align-items:flex-end;justify-content:center;gap:22px;padding:0 24px;
+    }
+    .char{
+      width:25%;min-width:150px;max-width:220px;transition:.22s ease;filter:saturate(.55) brightness(.55);transform:translateY(14px) scale(.94);opacity:.62
+    }
+    .char.active{
+      filter:none;transform:translateY(0) scale(1.05);opacity:1;z-index:2
+    }
+    .portrait{
+      position:relative;height:250px;border-radius:120px 120px 24px 24px;border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02));
+      overflow:hidden;box-shadow:0 20px 45px rgba(0,0,0,.30)
+    }
+    .char.active .portrait{box-shadow:0 0 0 2px rgba(239,189,114,.35),0 22px 55px rgba(0,0,0,.45)}
+    .head{
+      position:absolute;width:94px;height:112px;border-radius:48% 48% 44% 44%;left:50%;top:28px;transform:translateX(-50%);
+      background:#d8b8a6;border:1px solid rgba(255,255,255,.22)
+    }
+    .hair{
+      position:absolute;width:102px;height:62px;border-radius:52px 52px 28px 28px;left:50%;top:21px;transform:translateX(-50%);
+      background:#2b2930;clip-path:polygon(0 0,100% 0,100% 72%,87% 55%,76% 78%,66% 54%,54% 78%,42% 56%,28% 76%,15% 55%,0 72%)
+    }
+    .eye{position:absolute;width:8px;height:5px;border-radius:50%;background:#30292a;top:76px}
+    .eye.left{left:calc(50% - 25px)} .eye.right{left:calc(50% + 17px)}
+    .mouth{
+      position:absolute;width:22px;height:5px;border-radius:0 0 12px 12px;background:#8e5b5b;left:50%;top:105px;transform:translateX(-50%);
+      transition:.12s ease
+    }
+    .char.active.speaking .mouth{animation:talk .35s infinite alternate}
+    @keyframes talk{from{height:4px;width:20px}to{height:11px;width:18px;border-radius:9px}}
+    .body{
+      position:absolute;width:146px;height:130px;border-radius:72px 72px 20px 20px;left:50%;bottom:-4px;transform:translateX(-50%);
+      background:#344154
+    }
+    .mika .body{background:#5a3f52}.ryo .body{background:#344154}.nao .body{background:#355046}
+    .namecard{
+      display:flex;justify-content:center;margin-top:9px
+    }
+    .namecard span{
+      display:inline-block;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:#0c1118;color:#dfe5ee;font-size:12px
+    }
+    .char.active .namecard span{border-color:rgba(239,189,114,.55);color:#fff}
+    .dialogue-zone{
+      position:absolute;left:18px;right:18px;bottom:18px;z-index:5
+    }
+    .speaker-name{
+      display:inline-block;margin-left:14px;margin-bottom:-1px;padding:6px 12px;border-radius:9px 9px 0 0;
+      background:#222b39;border:1px solid var(--line);border-bottom:0;color:#fff;font-weight:700;font-size:13px
+    }
+    .bubble{
+      position:relative;min-height:120px;border:1px solid var(--line);border-radius:14px;background:rgba(12,16,23,.94);
+      padding:20px 52px 20px 20px;font-size:18px;line-height:1.75;box-shadow:0 18px 48px rgba(0,0,0,.35)
+    }
+    .bubble.system{color:#d1d7e1;font-style:italic;background:rgba(15,18,24,.94)}
+    .next{
+      position:absolute;right:16px;bottom:13px;border:0;background:transparent;color:var(--accent);font-size:20px;cursor:pointer;padding:10px
+    }
+    .next::after{content:"▼"}
+    .decision{
+      display:none;margin-top:10px;border:1px solid #45546c;border-radius:14px;background:rgba(20,27,38,.97);padding:12px
+    }
+    .decision.show{display:block}
+    .decision-title{font-size:12px;color:var(--muted);margin:0 0 8px}
+    .choice{
+      width:100%;border:1px solid #5a6b87;background:#202b3b;color:#fff;border-radius:11px;padding:13px 14px;text-align:left;
+      line-height:1.55;cursor:pointer
+    }
+    .choice:hover{border-color:var(--blue);background:#243247}
+    .objective{
+      position:absolute;right:18px;top:18px;z-index:3;width:min(330px,46%);
+      border:1px solid rgba(255,255,255,.10);border-radius:10px;background:rgba(7,9,13,.72);backdrop-filter:blur(6px);
+      padding:9px 11px;color:#cfd6e1;font-size:12px;line-height:1.6
+    }
+    .ending{
+      min-height:680px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#161b24,#0e1117);padding:28px;display:none
+    }
+    .ending.show{display:block}
+    .ending h2{font-size:24px;margin:0 0 12px}
+    .ending p{line-height:1.85;color:#d7dde7}
+    .quote{border-left:3px solid var(--accent);padding:13px 16px;margin:16px 0;background:rgba(239,189,114,.06);border-radius:0 10px 10px 0}
+    .survey{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+    .survey h3{font-size:17px}
+    .q{margin:16px 0}
+    label{display:block;margin:8px 0;color:#e0e5ed}
+    textarea{
+      width:100%;min-height:86px;background:#0d1219;border:1px solid var(--line);border-radius:10px;color:#fff;padding:10px;font:inherit
+    }
+    .result-btn{border:1px solid var(--line);background:#1a2230;color:#fff;border-radius:10px;padding:10px 12px;cursor:pointer}
+    .result{display:none;margin-top:12px;border:1px solid var(--line);border-radius:10px;background:#0e141d;padding:12px;color:#d3d9e3}
+    .note{font-size:12px;color:var(--muted);margin-top:10px}
+    @media(max-width:700px){
+      .stage{min-height:720px}
+      .objective{left:18px;right:auto;top:62px;width:auto}
+      .characters{top:145px;height:310px;gap:8px;padding:0 8px}
+      .char{width:31%;min-width:0}
+      .portrait{height:205px}
+      .head{width:72px;height:90px;top:24px}
+      .hair{width:80px;height:51px;top:17px}
+      .eye{top:62px}.eye.left{left:calc(50% - 21px)}.eye.right{left:calc(50% + 13px)}
+      .mouth{top:87px}
+      .body{width:110px;height:106px}
+      .bubble{font-size:16px;min-height:130px;padding-right:46px}
+    }
+  </style>
+</head>
+<body>
+<main class="shell">
+  <div class="hud">
+    <span class="tag">NEW LIFE / PDE-005</span>
+    <span>決定期限まで <strong id="remain">50分</strong></span>
+  </div>
+
+  <section class="stage" id="stage">
+    <div class="curtain"></div>
+    <div class="scene-label" id="sceneLabel">16:40　市民ホール・小劇場</div>
+    <div class="objective">目的：人物の問題を理解しながら、明日の公演を成立させる。正解を当てるゲームではありません。</div>
+
+    <div class="characters">
+      <div class="char mika" id="char-mika">
+        <div class="portrait">
+          <div class="body"></div><div class="head"></div><div class="hair"></div>
+          <div class="eye left"></div><div class="eye right"></div><div class="mouth"></div>
+        </div>
+        <div class="namecard"><span>美香</span></div>
+      </div>
+      <div class="char ryo" id="char-ryo">
+        <div class="portrait">
+          <div class="body"></div><div class="head"></div><div class="hair"></div>
+          <div class="eye left"></div><div class="eye right"></div><div class="mouth"></div>
+        </div>
+        <div class="namecard"><span>亮</span></div>
+      </div>
+      <div class="char nao" id="char-nao">
+        <div class="portrait">
+          <div class="body"></div><div class="head"></div><div class="hair"></div>
+          <div class="eye left"></div><div class="eye right"></div><div class="mouth"></div>
+        </div>
+        <div class="namecard"><span>奈緒</span></div>
+      </div>
+    </div>
+
+    <div class="dialogue-zone">
+      <div class="speaker-name" id="speakerName">状況</div>
+      <div class="bubble" id="bubble">
+        <span id="text"></span>
+        <button class="next" id="next" aria-label="次へ"></button>
+      </div>
+      <div class="decision" id="decision">
+        <p class="decision-title">あなたはどうする？</p>
+        <button class="choice" id="choice"></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="ending" id="ending">
+    <h2>翌日、公演は始まった。</h2>
+    <p>細かな言い回しには少し粗さが残った。それでも例の場面で、美香は新しい台詞を言い切った。客席は静かに聞いている。</p>
+    <div class="quote">亮「100点じゃなかった。でも昨日のままやるより、こっちでよかった。」</div>
+    <p>今回は、美香の境界を守ることと、公演を成立させることを二者択一にせず、手段を変えることで両方を残した。</p>
+
+    <div class="survey">
+      <h3>PDE-004の会話ログ型と比べて</h3>
+      <div class="q">
+        <strong>1. 「キャラクターが話している」感じは？</strong>
+        <label><input type="radio" name="presence" value="better"> 今回の方が強い</label>
+        <label><input type="radio" name="presence" value="same"> 変わらない</label>
+        <label><input type="radio" name="presence" value="worse"> 前の方が良い</label>
+      </div>
+      <div class="q">
+        <strong>2. 会話の流れ・テンポは？</strong>
+        <label><input type="radio" name="flow" value="better"> 今回の方が良い</label>
+        <label><input type="radio" name="flow" value="same"> 変わらない</label>
+        <label><input type="radio" name="flow" value="worse"> 前の方が良い</label>
+      </div>
+      <div class="q">
+        <strong>3. まだ気になる点があれば一言</strong>
+        <textarea id="feedback" placeholder="なければ空欄で構いません"></textarea>
+      </div>
+      <button class="result-btn" id="resultBtn">回答を表示</button>
+      <div class="result" id="result"></div>
+      <div class="note">このページでは見せ方だけを比較しています。人物絵は本番アートではなく、発話者を画面上に固定する効果を見るための仮表示です。</div>
+    </div>
+  </section>
+</main>
+
+<script>
+const script = [
+  {t:"system",n:"状況",s:"16:40",r:"50分",x:"明日の公演に向けた通し稽古が止まっている。"},
+  {t:"mika",n:"美香",x:"この場面、明日はやりません。ここを変えないなら、私は出ません。"},
+  {t:"ryo",n:"亮",x:"昨日まではやってただろ。今ここで変えたら、全員の段取りが崩れる。"},
+  {t:"system",n:"状況",x:"明日の初回公演は18時。チケットは販売済み。17:30までに方針を決める必要がある。",c:"何がひっかかっている？"},
+
+  {t:"player",n:"あなた",s:"16:43",r:"47分",x:"何がひっかかっている？"},
+  {t:"mika",n:"美香",x:"この場面、私が前に話したことがそのまま入ってるんです。似た話を使うこと自体はいい。でも、知ってる人が見たら私の話だって分かると思う。"},
+  {t:"ryo",n:"亮",x:"え、それ……実話だったの？",c:"どこをどうしたら続けられる？"},
+
+  {t:"player",n:"あなた",s:"16:47",r:"43分",x:"どこをどうしたら続けられる？"},
+  {t:"mika",n:"美香",x:"場所、家を出た理由、最後の台詞。この三つを私だと分からない形まで離してくれるなら続けられます。"},
+  {t:"ryo",n:"亮",x:"筋そのものまで変えなくてもいいってこと？"},
+  {t:"mika",n:"美香",x:"うん。でも、私の人生を再現するのはやめてほしい。",c:"設定と状況を変えよう。10分で仕上げる。芝居の形は変えないから、みんなセリフ合わせをお願いします。"},
+
+  {t:"player",n:"あなた",s:"16:50",r:"40分",x:"設定と状況を変えよう。10分で仕上げる。芝居の形は変えないから、みんなセリフ合わせをお願いします。"},
+  {t:"nao",n:"奈緒",x:"謝るのは後でいいって。10分なら直そう。どこ変える？"},
+  {t:"ryo",n:"亮",x:"骨格は残す。主人公が家族と距離を置いていて、戻るか迷っている。それ以外は変える。"},
+  {t:"mika",n:"美香",x:"病院の待合室なら全然違う。家を出た話も別の理由にしたい。",c:"戻らなかったのは、意地と申し訳なさとか、ごちゃまぜの感情。一番大切な人だからこそ、逆に背いてしまうような。"},
+
+  {t:"player",n:"あなた",s:"16:54",r:"36分",x:"戻らなかったのは、意地と申し訳なさとか、ごちゃまぜの感情。一番大切な人だからこそ、逆に背いてしまうような。"},
+  {t:"mika",n:"美香",x:"帰れなかった。意地になってたし、今さらどんな顔して帰ればいいか分からなかった。……大事だったから、余計に背を向けた。"},
+  {t:"nao",n:"奈緒",x:"それなら意味は残ってるけど、全然別の人物になるね。"},
+  {t:"system",n:"状況",x:"設定変更の影響で、別の台詞にも小さな矛盾が出始める。",c:"違和感は仕方がない。そこは芝居の力で見せきろう。大事なのは観客にこの芝居を見てもらうこと。"},
+
+  {t:"player",n:"あなた",s:"17:18",r:"12分",x:"違和感は仕方がない。そこは芝居の力で見せきろう。大事なのは観客にこの芝居を見てもらうこと。"},
+  {t:"system",n:"状況",x:"通し稽古は最後まで止まらずに終わった。"},
+  {t:"mika",n:"美香",x:"今日はありがとうございました。舞台には出ます。でも……『多少の問題は気にしなくていい』って、今回みたいなこともその“多少”に入るのかなって少し思いました。",c:"大事なのは、美香が今どう思っていて、今後どうしたいのか。何か思っていることはある？"},
+
+  {t:"player",n:"あなた",s:"17:23",r:"7分",x:"大事なのは、美香が今どう思っていて、今後どうしたいのか。何か思っていることはある？"},
+  {t:"mika",n:"美香",x:"これからは、誰かが実際に話したことを芝居に使うとき、使う前に本人に確認してほしいです。"},
+  {t:"mika",n:"美香",x:"観客に見てもらうことは大事。でも、舞台を成立させるためなら多少は我慢する、って線には戻りたくない。",c:"今回の『多少は気にしない』と、誰かの思いを成功のためにないがしろにするのは全く違う。美香の気持ちと観客の期待を大事にしたから、芝居の完成度には少し目をつぶろうということ。100％は無理でも、近づける努力は怠らない。"},
+
+  {t:"player",n:"あなた",s:"17:26",r:"4分",x:"今回の『多少は気にしない』と、誰かの思いを成功のためにないがしろにするのは全く違う。美香の気持ちと観客の期待を大事にしたから、芝居の完成度には少し目をつぶろうということ。100％は無理でも、近づける努力は怠らない。"},
+  {t:"mika",n:"美香",x:"……ああ。そういう意味だったんですね。私の気持ちは削らない。その代わり、今日直したことで芝居の完成度が少し落ちる部分は、みんなで引き受ける。ってことですよね。"},
+  {t:"nao",n:"奈緒",x:"守るものを守ったうえで、残った粗さを明日の30分でできるだけ詰めるってことね。"},
+  {t:"ryo",n:"亮",x:"それなら俺も納得する。",c:"あとはそれぞれでいいよ。今回のことは明日以降にまた活かせるようにしよう。"},
+
+  {t:"player",n:"あなた",s:"17:29",r:"1分",x:"あとはそれぞれでいいよ。今回のことは明日以降にまた活かせるようにしよう。"}
+];
+
+let i=0;
+const ids=["mika","ryo","nao"];
+const speakerName=document.getElementById("speakerName");
+const bubble=document.getElementById("bubble");
+const textEl=document.getElementById("text");
+const next=document.getElementById("next");
+const decision=document.getElementById("decision");
+const choice=document.getElementById("choice");
+const remain=document.getElementById("remain");
+const sceneLabel=document.getElementById("sceneLabel");
+const stage=document.getElementById("stage");
+const ending=document.getElementById("ending");
+
+function clearActive(){
+  ids.forEach(id=>{
+    const el=document.getElementById("char-"+id);
+    el.classList.remove("active","speaking");
+  });
+}
+
+function render(){
+  const item=script[i];
+  clearActive();
+  if(ids.includes(item.t)){
+    const c=document.getElementById("char-"+item.t);
+    c.classList.add("active","speaking");
+  }
+  speakerName.textContent=item.n;
+  textEl.textContent=item.x;
+  bubble.classList.toggle("system",item.t==="system");
+  if(item.s) sceneLabel.textContent=item.s+"　市民ホール・小劇場";
+  if(item.r) remain.textContent=item.r;
+
+  if(item.c){
+    decision.classList.add("show");
+    choice.textContent=item.c;
+    next.style.display="none";
+  }else{
+    decision.classList.remove("show");
+    next.style.display="";
+  }
+}
+
+function advance(){
+  if(i<script.length-1){i++;render();}
+  else{
+    stage.style.display="none";
+    ending.classList.add("show");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+}
+next.addEventListener("click",advance);
+bubble.addEventListener("click",(e)=>{ if(e.target===next) return; if(next.style.display!=="none") advance(); });
+choice.addEventListener("click",()=>{decision.classList.remove("show");advance();});
+
+document.getElementById("resultBtn").addEventListener("click",()=>{
+  const p=document.querySelector('input[name="presence"]:checked')?.value||"未回答";
+  const f=document.querySelector('input[name="flow"]:checked')?.value||"未回答";
+  const note=document.getElementById("feedback").value.trim()||"なし";
+  const map={better:"今回の方が良い",same:"変わらない",worse:"前の方が良い"};
+  const out=document.getElementById("result");
+  out.style.display="block";
+  out.textContent="キャラクター感: "+(map[p]||p)+" ／ 流れ: "+(map[f]||f)+" ／ コメント: "+note;
+  localStorage.setItem("newlife_pde005_result",JSON.stringify({presence:p,flow:f,note,at:new Date().toISOString()}));
+});
+
+render();
+</script>
+</body>
+</html>
