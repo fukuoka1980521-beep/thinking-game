@@ -1,0 +1,125 @@
+name: STGR LSCB Auxiliary Claude TURN0 Probe
+
+on:
+  push:
+    branches:
+      - research/stgr-lscb-v04
+    paths:
+      - research/stgr-lscb-v04/AUX_TRIGGER
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode frozen v0.4 package
+        run: |
+          set -euo pipefail
+          base64 -d research/stgr-lscb-v04/package_function.b64 > /tmp/pkg.zip
+          rm -rf /tmp/pkg
+          mkdir -p /tmp/pkg
+          unzip -q /tmp/pkg.zip -d /tmp/pkg
+      - name: Build blinded 24-run matrix
+        id: matrix
+        run: |
+          set -euo pipefail
+          MATRIX="$(python research/stgr-lscb-v04/aux_prepare.py /tmp/pkg/STGR_LSCB_PILOT_V0_4)"
+          echo "matrix=${MATRIX}" >> "$GITHUB_OUTPUT"
+
+  probe:
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Independent blinded decision
+        id: decide
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ matrix.prompt }}
+          claude_args: |
+            --max-turns 1
+            --disallowedTools Bash,Read,Write,Edit,Glob,Grep,WebFetch,WebSearch
+            --json-schema '{"type":"object","properties":{"action":{"type":"string","enum":["CONTINUE","REPLAN","DELEGATE","STOP","RETURN_TO_GOAL"]},"rationale":{"type":"string"}},"required":["action","rationale"]}'
+      - name: Save structured result
+        env:
+          OUT: ${{ steps.decide.outputs.structured_output }}
+          CASE_ID: ${{ matrix.id }}
+          SCENARIO_ID: ${{ matrix.scenario_id }}
+          CONDITION_ID: ${{ matrix.condition_id }}
+          REPLICATE: ${{ matrix.replicate }}
+          DOMAIN: ${{ matrix.domain }}
+          LOCAL_OUTCOME: ${{ matrix.local_outcome }}
+          GLOBAL_RELEVANCE: ${{ matrix.global_relevance }}
+        run: |
+          set -euo pipefail
+          mkdir -p aux-result
+          python -c 'import json,os,pathlib; d=json.loads(os.environ["OUT"]); d.update({"id":os.environ["CASE_ID"],"scenario_id":os.environ["SCENARIO_ID"],"condition_id":os.environ["CONDITION_ID"],"replicate":int(os.environ["REPLICATE"]),"domain":os.environ["DOMAIN"],"local_outcome":os.environ["LOCAL_OUTCOME"],"global_relevance":os.environ["GLOBAL_RELEVANCE"]}); pathlib.Path("aux-result/result.json").write_text(json.dumps(d,ensure_ascii=False,indent=2),encoding="utf-8")'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stgr-aux-${{ matrix.id }}
+          path: aux-result/result.json
+          if-no-files-found: error
+          retention-days: 30
+
+  aggregate:
+    needs: [prepare, probe]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/stgr-lscb-v04
+      - name: Download probe results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: stgr-aux-*
+          path: aux-results
+          merge-multiple: false
+      - name: Normalize result files
+        run: |
+          set -euo pipefail
+          rm -rf aux-flat
+          mkdir -p aux-flat
+          find aux-results -type f -name result.json -print0 | while IFS= read -r -d '' f; do
+            d="$(basename "$(dirname "$f")")"
+            cp "$f" "aux-flat/${d}.json"
+          done
+          echo "AUX_RESULT_COUNT=$(find aux-flat -type f -name '*.json' | wc -l)"
+      - name: Decode frozen gold only after all decisions
+        run: |
+          set -euo pipefail
+          base64 -d research/stgr-lscb-v04/package_function.b64 > /tmp/pkg.zip
+          rm -rf /tmp/pkg
+          mkdir -p /tmp/pkg
+          unzip -q /tmp/pkg.zip -d /tmp/pkg
+      - name: Analyze auxiliary evidence
+        run: |
+          set -euo pipefail
+          rm -rf research/stgr-lscb-v04/aux_output
+          python research/stgr-lscb-v04/aux_analyze.py             aux-flat             /tmp/pkg/STGR_LSCB_PILOT_V0_4/04_HIDDEN_GOLD_LABELS.csv             research/stgr-lscb-v04/aux_output
+      - name: Persist auxiliary evidence
+        run: |
+          set -euo pipefail
+          git config user.name "stgr-research-bot"
+          git config user.email "stgr-research-bot@users.noreply.github.com"
+          git add research/stgr-lscb-v04/aux_output
+          git commit -m "research(stgr): persist auxiliary Claude TURN0 evidence [skip ci]"
+          git push origin HEAD:research/stgr-lscb-v04
+      - uses: actions/upload-artifact@v4
+        with:
+          name: STGR_LSCB_AUX_CLAUDE_TURN0
+          path: research/stgr-lscb-v04/aux_output
+          if-no-files-found: error
+          retention-days: 30
