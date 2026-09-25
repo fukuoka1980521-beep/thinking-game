@@ -16,6 +16,15 @@
  * `docs/newlife/refoundation/github-actions/`. These tests exist so that
  * copy cannot silently drift from the safety properties it's supposed to
  * have while it waits to be activated.
+ *
+ * The `.ps1` bootstrap script below (V35) is the Windows-native equivalent
+ * of the Bash bootstrap. It is checked here the same static/text way, plus
+ * a real parse check via `newlife-deploy-readiness-ci.yml`'s existing
+ * `Get-ChildItem scripts/newlife-deploy/*.ps1 | [scriptblock]::Create(...)`
+ * step, which picks this file up automatically (no workflow edit needed).
+ * This sandbox has no `pwsh` available (same tool-permission gap disclosed
+ * throughout this PR's history), so that real parse check has not been run
+ * locally -- CI's run on this PR is the first actual verification.
  */
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
@@ -31,9 +40,14 @@ const BOOTSTRAP_SCRIPT_PATH = path.join(
   REPO_ROOT,
   "scripts/newlife-deploy/bootstrap-refoundation-wif.sh",
 );
+const BOOTSTRAP_PS1_PATH = path.join(
+  REPO_ROOT,
+  "scripts/newlife-deploy/bootstrap-refoundation-wif.ps1",
+);
 
 const workflow = readFileSync(WORKFLOW_PATH, "utf8");
 const bootstrapScript = readFileSync(BOOTSTRAP_SCRIPT_PATH, "utf8");
+const bootstrapPs1 = readFileSync(BOOTSTRAP_PS1_PATH, "utf8");
 
 describe("newlife-refoundation-live.yml (canonical, pre-activation copy)", () => {
   it("triggers only on workflow_dispatch, never push or pull_request", () => {
@@ -189,5 +203,126 @@ describe("bootstrap-refoundation-wif.sh (one-time Owner-run GCP setup)", () => {
     expect(bootstrapScript).toContain("GCP_PROJECT_ID=");
     expect(bootstrapScript).toContain("GCP_WIF_PROVIDER=");
     expect(bootstrapScript).toContain("GCP_DEPLOY_SERVICE_ACCOUNT=");
+  });
+});
+
+describe("bootstrap-refoundation-wif.ps1 (Windows-native one-time Owner-run GCP + GitHub setup)", () => {
+  it("is never invoked automatically by any workflow or npm script", () => {
+    const workflowFiles = ["deploy.yml", "newlife-ai-direct-dev.yml", "newlife-pr-ci.yml", "newlife-deploy-readiness-ci.yml", "newlife-phase33-auto-pr.yml", "claude.yml", "claude-code-review.yml"];
+    for (const file of workflowFiles) {
+      const content = readFileSync(path.join(REPO_ROOT, ".github/workflows", file), "utf8");
+      expect(content).not.toContain("bootstrap-refoundation-wif.ps1");
+    }
+    const packageJson = readFileSync(path.join(REPO_ROOT, "package.json"), "utf8");
+    expect(packageJson).not.toContain("bootstrap-refoundation-wif.ps1");
+  });
+
+  it("is covered by the existing PowerShell syntax-check CI step (glob picks it up automatically)", () => {
+    const readinessWorkflow = readFileSync(
+      path.join(REPO_ROOT, ".github/workflows/newlife-deploy-readiness-ci.yml"),
+      "utf8",
+    );
+    expect(readinessWorkflow).toContain("scripts/newlife-deploy/*.ps1");
+  });
+
+  it("never creates or downloads a service-account JSON key, and never prints a credential/token", () => {
+    expect(bootstrapPs1).not.toMatch(/service-accounts keys create/);
+    expect(bootstrapPs1).not.toMatch(/BEGIN (RSA )?PRIVATE KEY/);
+    expect(bootstrapPs1).not.toMatch(/access[_-]?token/i);
+    expect(bootstrapPs1).toMatch(/No token or credential value is ever printed/);
+  });
+
+  it("restricts the WIF provider to this exact repository, matching the Bash bootstrap", () => {
+    expect(bootstrapPs1).toContain('$Repo = "fukuoka1980521-beep/thinking-game"');
+    expect(bootstrapPs1).toContain(`--attribute-condition="assertion.repository == '$Repo'"`);
+  });
+
+  it("defaults to the repository's known GCP project while allowing -ProjectId override", () => {
+    expect(bootstrapPs1).toMatch(/\[string\]\$ProjectId\s*=\s*"gas-test-runner-20260620-wjxf"/);
+  });
+
+  it("checks for existing resources before creating them (idempotent create steps)", () => {
+    const createSteps: Array<[string, string]> = [
+      ["workload-identity-pools create", "workload-identity-pools describe"],
+      ["providers create-oidc", "providers describe"],
+      ["service-accounts create", "service-accounts describe"],
+    ];
+    for (const [createPattern, describePattern] of createSteps) {
+      expect(bootstrapPs1).toContain(createPattern);
+      expect(bootstrapPs1).toContain(describePattern);
+    }
+  });
+
+  it("grants the deploy service account deploy-scoped roles, never owner/editor, matching the Bash bootstrap", () => {
+    expect(bootstrapPs1).toMatch(/roles\/cloudfunctions\.developer/);
+    expect(bootstrapPs1).toMatch(/roles\/run\.admin/);
+    expect(bootstrapPs1).toMatch(/roles\/iam\.serviceAccountUser/);
+    expect(bootstrapPs1).toMatch(/roles\/artifactregistry\.writer/);
+    expect(bootstrapPs1).toMatch(/roles\/cloudbuild\.builds\.editor/);
+    expect(bootstrapPs1).toMatch(/roles\/storage\.objectViewer/);
+    expect(bootstrapPs1).toMatch(/roles\/aiplatform\.user/);
+    expect(bootstrapPs1).toMatch(/roles\/iam\.workloadIdentityUser/);
+    // Inspect actual --role assignments only; comments intentionally name
+    // forbidden broad roles to explain the least-privilege boundary.
+    expect(bootstrapPs1).not.toMatch(/--role=["']?roles\/owner\b/);
+    expect(bootstrapPs1).not.toMatch(/--role=["']?roles\/editor\b/);
+    expect(bootstrapPs1).toMatch(/gcloud services enable/);
+    expect(bootstrapPs1).not.toMatch(/--role=["']?roles\/serviceusage\./);
+    expect(bootstrapPs1).not.toMatch(/\$Roles = @\([\s\S]{0,500}roles\/serviceusage\./);
+  });
+
+  it("verifies billing and stops safely (no API-enable attempt) when billing is not linked", () => {
+    const billingCheckIndex = bootstrapPs1.indexOf("billingEnabled");
+    const apiEnableIndex = bootstrapPs1.indexOf("gcloud services enable");
+    expect(billingCheckIndex).toBeGreaterThan(-1);
+    expect(apiEnableIndex).toBeGreaterThan(-1);
+    expect(billingCheckIndex).toBeLessThan(apiEnableIndex);
+    expect(bootstrapPs1).toMatch(/billing\/linkedaccount\?project=/);
+    expect(bootstrapPs1).toMatch(/exit 1/);
+  });
+
+  it("only invokes 'gcloud auth login' when no account is already active", () => {
+    const loginIndex = bootstrapPs1.indexOf("gcloud auth login");
+    expect(loginIndex).toBeGreaterThan(-1);
+    const guard = bootstrapPs1.slice(0, loginIndex);
+    expect(guard).toMatch(/IsNullOrWhiteSpace\(\$account\)/);
+  });
+
+  it("prints the exact repository variable names the workflow reads", () => {
+    expect(bootstrapPs1).toContain('"GCP_PROJECT_ID"');
+    expect(bootstrapPs1).toContain('"GCP_WIF_PROVIDER"');
+    expect(bootstrapPs1).toContain('"GCP_DEPLOY_SERVICE_ACCOUNT"');
+  });
+
+  it("automates GitHub repository-variable setup via gh only when gh is installed AND authenticated", () => {
+    const ghAuthIndex = bootstrapPs1.indexOf("gh auth status");
+    const ghVariableSetIndex = bootstrapPs1.indexOf("gh variable set");
+    expect(ghAuthIndex).toBeGreaterThan(-1);
+    expect(ghVariableSetIndex).toBeGreaterThan(ghAuthIndex);
+    expect(bootstrapPs1).toMatch(/Test-CommandExists "gh"/);
+    expect(bootstrapPs1).toContain("gh variable set $key --repo $Repo --body $varMap[$key]");
+  });
+
+  it("never forces an interactive gh login or install; falls back to opening the settings page", () => {
+    expect(bootstrapPs1).not.toMatch(/gh auth login/);
+    expect(bootstrapPs1).toContain("https://github.com/$Repo/settings/variables/actions");
+  });
+
+  it("triggers the live-deploy workflow on master only after variables are confirmed set", () => {
+    const setVarsIndex = bootstrapPs1.indexOf("gh variable set $key");
+    const triggerIndex = bootstrapPs1.indexOf("gh workflow run $WorkflowFile");
+    expect(setVarsIndex).toBeGreaterThan(-1);
+    expect(triggerIndex).toBeGreaterThan(setVarsIndex);
+    expect(bootstrapPs1).toContain('gh workflow run $WorkflowFile --repo $Repo --ref master');
+  });
+
+  it("opens the exact Actions workflow page whenever automatic trigger is unavailable", () => {
+    expect(bootstrapPs1).toContain("https://github.com/$Repo/actions/workflows/$WorkflowFile");
+    expect(bootstrapPs1.match(/Open-Url \$WorkflowRunsUrl/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("supports -SkipGhAutomation to force the manual-paste path", () => {
+    expect(bootstrapPs1).toMatch(/\[switch\]\$SkipGhAutomation/);
+    expect(bootstrapPs1).toMatch(/if \(\$SkipGhAutomation\)/);
   });
 });
