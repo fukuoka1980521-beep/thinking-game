@@ -41,6 +41,31 @@ describe("NEW LIFE Gemini migration harness", () => {
     expect(harness).toContain("DO NOT GIVE TO BLIND EVALUATOR");
   });
 
+  it("keeps operational fingerprints out of the blinded quality artifact", () => {
+    const start = harness.indexOf("const blinded = results.map");
+    const end = harness.indexOf("return {\n    map:", start);
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const blindBuilder = harness.slice(start, end);
+    expect(blindBuilder).not.toContain("latencyMs");
+    expect(blindBuilder).not.toContain("usage:");
+    expect(blindBuilder).not.toContain("attempts:");
+  });
+
+  it("mirrors current day gates and deterministic truth-gate checks", () => {
+    expect(harness).toContain("item.day < 12");
+    expect(harness).toContain("item.day < 20");
+    expect(harness).toContain("runTruthGateMirror");
+    expect(harness).toContain('code: "unsupported_numeric_claim"');
+    expect(harness).toContain("const NUMERIC_TOKEN = /\\d[\\d,]*/g;");
+  });
+
+  it("counterbalances model call order and defaults to two repeats", () => {
+    expect(harness).toContain("rotatedModels");
+    expect(harness).toContain("runs: 2");
+    expect(cloudShell).toContain('RUNS="${RUNS:-2}"');
+  });
+
   it("records latency, retries, empty responses, parse errors and token metadata", () => {
     expect(harness).toContain("latencyMs");
     expect(harness).toContain("attempts");
