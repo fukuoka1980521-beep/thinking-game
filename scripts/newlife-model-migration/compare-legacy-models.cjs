@@ -67,7 +67,7 @@ function parseArgs(argv) {
 }
 
 const FACT_CATEGORIES = ["menu", "reservation_count", "seats", "workshop", "yesterday", "profit"];
-const NUMERIC_TOKEN = /\\d[\\d,]*/g;
+const NUMERIC_TOKEN = /\d[\d,]*/g;
 
 function buildMigrationSnapshot(item, buildSyntheticSnapshot) {
   const snapshot = buildSyntheticSnapshot(item.npc, item.day);
@@ -231,13 +231,10 @@ function buildBlindArtifacts(models, results) {
     utterance: r.utterance,
     note: r.note,
     run: r.run,
-    attempts: r.attempts,
-    latencyMs: r.latencyMs,
     text: r.text,
     parsed: r.parsed,
     parseError: r.parseError,
     emptyResponse: r.emptyResponse,
-    usage: r.usage,
     truthGate: r.truthGate,
   }));
 
@@ -372,7 +369,7 @@ async function main() {
     audit: "NEW_LIFE_GEMINI_MIGRATION_BLIND_SET_V1",
     generatedAt: new Date().toISOString(),
     note:
-      "MODEL IDENTITIES REMOVED. Give this file to evaluators. Keep blind-map separate until scores are frozen.",
+      "MODEL IDENTITIES AND OPERATIONAL METADATA REMOVED. Give this file to evaluators. Keep raw results and blind-map separate until scores are frozen.",
     results: blinded,
   }, null, 2));
 
