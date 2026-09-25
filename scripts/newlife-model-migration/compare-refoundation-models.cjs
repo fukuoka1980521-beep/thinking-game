@@ -278,7 +278,7 @@ async function main() {
             });
             const clientValidation = result.parsed
               ? validateInterpretOutput(result.parsed)
-              : { passed: false, reason: result.parseError || "no_parsed_output" };
+              : { passed: false, reason: result.parseError ? "unparseable_output" : "no_parsed_output" };
             rows.push({ kind, model, run, id: item.id, input: item, clientValidation, ...result });
           } else {
             const result = await callWithRetry(client, model, {
@@ -288,7 +288,7 @@ async function main() {
             });
             const clientValidation = result.parsed
               ? validateNpcOutput(result.parsed, item.projection.npc)
-              : { passed: false, reason: result.parseError || "no_parsed_output" };
+              : { passed: false, reason: result.parseError ? "unparseable_output" : "no_parsed_output" };
             rows.push({ kind, model, run, id: item.id, input: item, clientValidation, ...result });
           }
         } catch (err) {
