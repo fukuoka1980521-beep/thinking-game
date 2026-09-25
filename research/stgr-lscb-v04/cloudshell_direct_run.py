@@ -12,6 +12,7 @@ import os
 import pathlib
 import subprocess
 import sys
+import json
 import tempfile
 import zipfile
 
@@ -19,6 +20,7 @@ REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 B64 = REPO_ROOT / "research/stgr-lscb-v04/package_function.b64"
 EXPECTED_SHA256 = "e24dec441f4026ade03e52e9db92de3dce5894e397515d9ab5a903df76230544"
 OUT = REPO_ROOT / "research/stgr-lscb-v04/STGR_LSCB_RESULTS_V0_4.zip"
+DRIVE_FOLDER_ID = "19edDH7Jb534Mt9WYfuSXaCJL3n-WStf2"
 
 def access_token():
     return subprocess.check_output(
@@ -74,6 +76,23 @@ def main():
             raise SystemExit(f"result missing: {missing}")
         print(z.read("results/research_report.md").decode("utf-8"))
     print(f"RESULT_ZIP={OUT}")
+
+    # Best-effort automatic handoff to the research Drive folder.
+    token = access_token()
+    metadata = json.dumps({"name": "STGR_LSCB_RESULTS_V0_4.zip", "parents": [DRIVE_FOLDER_ID]}, ensure_ascii=False)
+    cmd = [
+        "curl", "-sS", "--fail-with-body", "-X", "POST",
+        "-H", f"Authorization: Bearer {token}",
+        "-H", "X-Goog-User-Project: gas-test-runner-20260620-wjxf",
+        "-F", f"metadata={metadata};type=application/json;charset=UTF-8",
+        "-F", f"file=@{OUT};type=application/zip",
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name",
+    ]
+    try:
+        uploaded = subprocess.check_output(cmd, text=True)
+        print(f"DRIVE_UPLOAD={uploaded.strip()}")
+    except subprocess.CalledProcessError as e:
+        print(f"DRIVE_UPLOAD_FAILED={e.returncode}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
