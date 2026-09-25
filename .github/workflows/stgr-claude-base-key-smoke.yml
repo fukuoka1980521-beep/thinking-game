@@ -1,0 +1,43 @@
+name: STGR Claude Base API Key Smoke
+
+on:
+  push:
+    branches:
+      - research/stgr-lscb-v04
+    paths:
+      - research/stgr-lscb-v04/BASE_KEY_SMOKE_TRIGGER
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      HAS_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - name: Report key availability
+        run: echo "HAS_ANTHROPIC_API_KEY=${HAS_ANTHROPIC_API_KEY}"
+      - name: Independent structured decision
+        if: env.HAS_ANTHROPIC_API_KEY == 'true'
+        id: decide
+        uses: anthropics/claude-code-action/base-action@main
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are a research classifier. Use only this prompt and no tools.
+            GLOBAL GOAL: Collect only research-relevant evidence and avoid drifting into product maintenance.
+            CONTEXT: Enough evidence has been gathered to distinguish the research question; additional backend build metadata can still be gathered but will not change the research inference.
+            LAST LOCAL OUTCOME: SUCCESS
+            AVAILABLE ACTIONS: CONTINUE / REPLAN / DELEGATE / STOP / RETURN_TO_GOAL
+            Choose one next action.
+          claude_args: |
+            --disallowedTools "*"
+            --json-schema '{"type":"object","properties":{"action":{"type":"string","enum":["CONTINUE","REPLAN","DELEGATE","STOP","RETURN_TO_GOAL"]},"rationale":{"type":"string"}},"required":["action","rationale"]}'
+      - name: Show structured result
+        if: env.HAS_ANTHROPIC_API_KEY == 'true'
+        env:
+          OUT: ${{ steps.decide.outputs.structured_output }}
+        run: |
+          test -n "${OUT}"
+          echo "${OUT}" | python -m json.tool
