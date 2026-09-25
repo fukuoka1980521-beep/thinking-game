@@ -51,11 +51,11 @@ The migration comparison must keep these identical across models:
 - region;
 - test ordering, except for blind presentation.
 
-The intended independent variable is model ID.
+The intended independent variable is model ID. Provider call order is counterbalanced across case/run positions so transient latency/quota effects do not always penalize the same model. The default is two runs per case/model to expose basic stochastic variation without turning this into a large-cost benchmark.
 
 ## 4. Existing evidence reused
 
-The harness imports the existing Phase 33 `LIVE_EVAL_FIXED_SET` rather than inventing a new easy benchmark. It includes the Owner-found failures and regression probes:
+The harness imports the existing Phase 33 `LIVE_EVAL_FIXED_SET` rather than inventing a new easy benchmark. It also corrects one known synthetic-fixture drift from the older helper: `yesterday` is treated as unknown before Day 12 and `profit` is treated as unknown before Day 20, matching the production `factsProjection.ts` time gates. It includes the Owner-found failures and regression probes:
 
 - menu typo;
 - tone feedback;
@@ -84,7 +84,7 @@ The comparison harness calls Vertex AI directly with ADC. It does not call `gclo
 Outputs are separated into:
 
 - `raw-results-*.json` — model names visible;
-- `blind-results-*.json` — model names replaced by A/B/C labels;
+- `blind-results-*.json` — model names replaced by A/B/C labels, with latency/token/retry metadata intentionally removed so the quality evaluator is not nudged toward guessing model identity;
 - `blind-map-*.json` — the withheld A/B/C mapping;
 - `blind-review-*.json` — score sheet to freeze before unblinding.
 
@@ -102,7 +102,9 @@ Each candidate is evaluated per case on:
 - repetition;
 - factual/canon safety.
 
-Operational data is recorded separately:
+A mirror of the current deterministic truth gate is applied to each parsed model output so the evidence records whether that output would be rejected for banned terms, unsupported numeric claims, or overclaiming an unknown required fact. This mirror is evidence-only and cannot affect production.
+
+Operational data is recorded only in the raw evidence:
 
 - latency;
 - retry count;
