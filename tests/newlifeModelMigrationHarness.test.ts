@@ -81,6 +81,11 @@ describe("NEW LIFE Gemini migration harness", () => {
       expect(text).not.toContain("gcloud run deploy");
       expect(text).not.toContain("gcloud services enable");
       expect(text).not.toContain("gcloud services disable");
+      expect(text).not.toContain("gcloud projects add-iam-policy-binding");
+      expect(text).not.toContain("gcloud projects remove-iam-policy-binding");
+      expect(text).not.toContain("gcloud iam");
+      expect(text).not.toContain("gcloud billing");
+      expect(text).not.toContain("gcloud alpha billing");
       expect(text).not.toContain("NEWLIFE_DIALOGUE_ENDPOINT_URL =");
     }
   });
