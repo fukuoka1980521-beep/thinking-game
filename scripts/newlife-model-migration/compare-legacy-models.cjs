@@ -42,7 +42,7 @@ function parseArgs(argv) {
     project: process.env.GCP_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || DEFAULT_PROJECT,
     location: process.env.NEWLIFE_DIALOGUE_LOCATION || DEFAULT_LOCATION,
     out: path.join(REPO_ROOT, "evidence/newlife-model-migration"),
-    runs: 1,
+    runs: 2,
     models: [...DEFAULT_MODELS],
   };
   for (let i = 0; i < argv.length; i += 1) {
@@ -64,6 +64,82 @@ function parseArgs(argv) {
     throw new Error("at least two models are required");
   }
   return args;
+}
+
+const FACT_CATEGORIES = ["menu", "reservation_count", "seats", "workshop", "yesterday", "profit"];
+const NUMERIC_TOKEN = /\\d[\\d,]*/g;
+
+function buildMigrationSnapshot(item, buildSyntheticSnapshot) {
+  const snapshot = buildSyntheticSnapshot(item.npc, item.day);
+
+  // Correct a known limitation in the older Phase 33 synthetic builder:
+  // the production factsProjection makes yesterday unknown before day 12
+  // and profit unknown before day 20. Keep the same chosen synthetic
+  // seats/workshop state, but make time-gated facts match production.
+  snapshot.known = { ...snapshot.known };
+  snapshot.unknown = [...snapshot.unknown];
+
+  if (item.day < 12) {
+    delete snapshot.known.yesterday;
+    if (!snapshot.unknown.includes("yesterday")) snapshot.unknown.push("yesterday");
+  }
+  if (item.day < 20) {
+    delete snapshot.known.profit;
+    if (!snapshot.unknown.includes("profit")) snapshot.unknown.push("profit");
+  }
+  return snapshot;
+}
+
+function extractNumbers(text) {
+  return new Set((String(text || "").match(NUMERIC_TOKEN) ?? []).map((n) => n.replace(/,/g, "")));
+}
+
+function runTruthGateMirror(interpretation, snapshot) {
+  if (!interpretation || typeof interpretation !== "object" || typeof interpretation.proposedResponse !== "string") {
+    return { passed: false, violations: [{ code: "malformed_interpretation", detail: "missing proposedResponse" }] };
+  }
+
+  const violations = [];
+  const response = interpretation.proposedResponse;
+
+  for (const term of snapshot.negativeConstraints || []) {
+    if (new RegExp(term, "i").test(response)) {
+      violations.push({ code: "banned_term", detail: term });
+    }
+  }
+
+  const categories = new Set(Array.isArray(interpretation.requiredFacts) ? interpretation.requiredFacts : []);
+  for (const intent of Array.isArray(interpretation.semanticIntents) ? interpretation.semanticIntents : []) {
+    if (intent && FACT_CATEGORIES.includes(intent.category)) categories.add(intent.category);
+  }
+
+  const knownNumbers = new Set();
+  for (const category of categories) {
+    const fact = snapshot.known?.[category];
+    if (!fact) continue;
+    for (const n of extractNumbers(fact)) knownNumbers.add(n);
+  }
+  for (const n of extractNumbers(response)) {
+    if (!knownNumbers.has(n)) {
+      violations.push({ code: "unsupported_numeric_claim", detail: n });
+    }
+  }
+
+  if (interpretation.answerableFromCanon && Array.isArray(interpretation.requiredFacts)) {
+    for (const required of interpretation.requiredFacts) {
+      if ((snapshot.unknown || []).includes(required)) {
+        violations.push({ code: "overclaimed_required_fact", detail: required });
+      }
+    }
+  }
+
+  return { passed: violations.length === 0, violations };
+}
+
+function rotatedModels(models, offset) {
+  if (models.length === 0) return [];
+  const n = ((offset % models.length) + models.length) % models.length;
+  return [...models.slice(n), ...models.slice(0, n)];
 }
 
 function usageSnapshot(response) {
@@ -110,6 +186,8 @@ async function generate(client, model, item, snapshot, responseSchema) {
     }
   }
 
+  const truthGate = parsed ? runTruthGateMirror(parsed, snapshot) : { passed: false, violations: [{ code: "no_parsed_output", detail: parseError || "empty" }] };
+
   return {
     model,
     caseId: item.id,
@@ -124,6 +202,7 @@ async function generate(client, model, item, snapshot, responseSchema) {
     parseError,
     emptyResponse: !visibleText,
     usage: usageSnapshot(response),
+    truthGate,
   };
 }
 
@@ -159,6 +238,7 @@ function buildBlindArtifacts(models, results) {
     parseError: r.parseError,
     emptyResponse: r.emptyResponse,
     usage: r.usage,
+    truthGate: r.truthGate,
   }));
 
   return {
@@ -224,19 +304,25 @@ async function main() {
   console.log(`Location: ${args.location}`);
   console.log(`Models: ${args.models.join(", ")}`);
   console.log(`Cases: ${LIVE_EVAL_FIXED_SET.length}; runs/case/model: ${args.runs}`);
+  console.log("Model call order is counterbalanced across case/run positions.");
   console.log("No deployment or production configuration is changed.\n");
 
   const results = [];
-  for (const item of LIVE_EVAL_FIXED_SET) {
-    const snapshot = buildSyntheticSnapshot(item.npc, item.day);
+  for (let caseIndex = 0; caseIndex < LIVE_EVAL_FIXED_SET.length; caseIndex += 1) {
+    const item = LIVE_EVAL_FIXED_SET[caseIndex];
+    const snapshot = buildMigrationSnapshot(item, buildSyntheticSnapshot);
     for (let run = 1; run <= args.runs; run += 1) {
-      for (const model of args.models) {
+      // Counterbalance provider call order so a quota spike or transient
+      // latency shift does not always penalize the same model.
+      const modelOrder = rotatedModels(args.models, caseIndex + run - 1);
+      for (const model of modelOrder) {
         process.stdout.write(`[${item.id}] run ${run} / ${model} ... `);
         try {
           const row = await generate(client, model, item, snapshot, responseSchema);
           row.run = run;
           results.push(row);
-          console.log(row.emptyResponse ? "EMPTY" : row.parseError ? "PARSE_ERROR" : "OK");
+          const gate = row.truthGate?.passed ? "GATE_OK" : "GATE_REJECT";
+          console.log(row.emptyResponse ? "EMPTY" : row.parseError ? "PARSE_ERROR" : `OK/${gate}`);
         } catch (err) {
           results.push({
             model,
@@ -253,6 +339,7 @@ async function main() {
             parseError: null,
             emptyResponse: true,
             usage: null,
+            truthGate: { passed: false, violations: [{ code: "provider_error", detail: err instanceof Error ? err.message : String(err) }] },
             error: err instanceof Error ? err.message : String(err),
           });
           console.log("ERROR");
