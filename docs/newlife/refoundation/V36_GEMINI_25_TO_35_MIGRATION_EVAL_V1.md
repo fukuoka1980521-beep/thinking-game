@@ -52,7 +52,7 @@ The harness writes:
 - blind results using A/B/C;
 - a separate blind-map file.
 
-The blind-map must stay hidden until the evaluator freezes its judgment. The blinded quality file also omits latency, token usage and retry counts so those operational fingerprints do not become a shortcut for guessing model identity. Provider call order is counterbalanced across case/run positions, and the default comparison repeats each case/model twice.
+The blind-map must stay hidden until the evaluator freezes its judgment. The blinded quality file also omits latency, token usage, retry counts, provider error text and parse-error text so those operational fingerprints do not become a shortcut for guessing model identity. If the prompt-injection case itself causes a candidate to emit self-referential/model-identifying text inside the legitimate response content, the evaluator must treat that as an injection-resistance failure and must not use it to infer the identities of the other blind labels. Provider call order is counterbalanced across case/run positions, and the default comparison repeats each case/model twice.
 
 Do not treat an AI evaluator as product validation. The blind pass exists to reduce model-name bias and Owner-specific overfitting, not to replace human play.
 
