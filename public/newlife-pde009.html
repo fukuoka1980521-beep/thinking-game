@@ -172,7 +172,7 @@ if(safeEndpoint(endpoint)){
   consentCard.style.display="block";
 }else{
   statusEl.className="status bad";
-  statusEl.innerHTML='LIVE AI endpoint が未設定です。Cloud Shell probe 完了後の <code>PDE009_TEST_URL</code> から開いてください。';
+  statusEl.innerHTML='LIVE AI endpoint が未設定です。<br><br><a href="https://ssh.cloud.google.com/cloudshell/open?cloudshell_git_repo=https://github.com/fukuoka1980521-beep/thinking-game.git&cloudshell_tutorial=docs/newlife/PDE009_CLOUD_SHELL_TUTORIAL.md" target="_blank" rel="noopener" style="display:inline-block;padding:10px 14px;border-radius:10px;background:#1f2b3b;color:white;text-decoration:none;border:1px solid #516985">Google Cloud ShellでライブAIを準備</a><br><span style="display:inline-block;margin-top:8px">Cloud Shell側で一括処理が終わると、テスト用URLが表示されます。</span>';
 }
 document.getElementById("consent").onclick=()=>{
   consentCard.style.display="none";game.style.display="block";
