@@ -43,8 +43,7 @@ happened as part of this plan.
    If the approved candidate requires `global` Standard PayGo, the request
    location must also be changed explicitly and reviewed as a separate
    operational/data-location dimension; never hide that change behind the
-   model-id override alone.
-   for the backend(s) approved in step 4:
+   model-id override alone. For the backend(s) approved in step 4:
    - Legacy: set `NEWLIFE_DIALOGUE_MODEL` at deploy time (Cloud Functions
      environment variable). Do **not** edit the `"gemini-2.5-flash"` literal
      in `functions/newlife-dialogue/index.js`.
@@ -81,9 +80,13 @@ happened as part of this plan.
 - Any change to consent copy, consent keys, CORS allowlists, or rate limits.
 - Migrating `functions/dialogue/` (CASE1) — out of scope for this request.
 
-## 3. Ownership
+## 3. Execution boundary
 
-- Running the live comparison and interpreting its evidence is an Owner
-  action (requires an authenticated GCP session this sandbox does not have).
-- Everything else in this plan (harness code, rubric, docs, tests) is
-  already implemented and CI-verifiable without further Owner input.
+- Running the live comparison requires a Google-authenticated environment;
+  this ChatGPT/GitHub connector does not have GCP execution credentials.
+- The comparison is therefore reduced to one browser-based Cloud Shell
+  execution in `scripts/newlife-deploy/pde008-cloud-shell-model-migration-compare.sh`.
+- Blind AI review may evaluate the generated A/B/C packet without Owner
+  involvement. The blind map stays withheld until that review is frozen.
+- A model switch still requires the separately defined human live-conversation
+  quality gate; AI blind evaluation is evidence, not human validation.
