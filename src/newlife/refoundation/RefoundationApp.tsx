@@ -221,6 +221,7 @@ export function RefoundationApp({ onExit }: Props) {
   const [phase, setPhase] = useState<Phase>("PURPOSE");
   const [state, setState] = useState<GameState>(createInitialGameState);
   const [freeText, setFreeText] = useState("");
+  const [freeTextTarget, setFreeTextTarget] = useState<TargetNpc | null>(null);
   const [pending, setPending] = useState(false);
   const [consent, setConsent] = useState<RefoundationAiDialogueConsentStatus | null>(() =>
     LIVE_PROVIDER_CONFIGURED ? getRefoundationAiDialogueConsent() : "declined",
@@ -314,17 +315,24 @@ export function RefoundationApp({ onExit }: Props) {
   }
 
   async function handleFreeText() {
-    if (!freeText.trim() || ended || pending) return;
+    if (!freeText.trim() || freeTextTarget === null || ended || pending) return;
     setPending(true);
+    const targetLabel = freeTextTarget === "MIKA" ? "美香" : "亮";
     const result = await interpretTurn(adapters.semantic, {
       utterance: freeText,
       speaker: "PLAYER",
-      caseContext: "free-text turn, addressed to the scene generally",
+      caseContext: `free-text turn, explicitly addressed to ${targetLabel}`,
     });
     const text = freeText;
+    const target = freeTextTarget;
     setFreeText("");
     setPending(false);
-    await runTurn(null, { action: result.classification.action, boundaryMode: result.classification.boundaryMode }, TIME_COSTS.CLARIFY, text);
+    await runTurn(
+      target,
+      { action: result.classification.action, boundaryMode: result.classification.boundaryMode },
+      TIME_COSTS.CLARIFY,
+      text,
+    );
     if (result.status === "fallback") {
       setState((prev) => ({
         ...prev,
@@ -333,8 +341,8 @@ export function RefoundationApp({ onExit }: Props) {
           {
             speaker: "SYSTEM",
             text: LIVE_PROVIDER_CONFIGURED
-              ? "（AIの応答を取得できませんでした。自由入力は確認待ちとして扱われます — 下の選択肢から行動を選べます。）"
-              : "（このビルドにはまだAIアダプタが接続されていません。自由入力は確認待ちとして扱われます — 下の選択肢から行動を選べます。）",
+              ? "（AIの意味解釈を取得できなかったため、安全な確認扱いで進めました。NPCの返答は現在の状態に基づく安全なフォールバックです。）"
+              : "（このビルドにはまだAIアダプタが接続されていません。自由入力は安全な確認扱いで進み、選んだ相手が状態に応じて応答します。）",
           },
         ],
       }));
@@ -400,21 +408,67 @@ export function RefoundationApp({ onExit }: Props) {
 
       {!ended && (
         <>
-          <div style={{ marginBottom: 8 }}>
-            <input
-              value={freeText}
-              onChange={(e) => setFreeText(e.target.value)}
-              placeholder={
-                LIVE_PROVIDER_CONFIGURED && consent === "accepted"
-                  ? "自由に話す"
-                  : "自由に話す（このビルドではAI応答は未接続です）"
-              }
-              style={{ width: "70%" }}
-              disabled={pending}
-            />{" "}
-            <button onClick={handleFreeText} disabled={pending || !freeText.trim()}>
-              送る
-            </button>
+          <div
+            aria-label="自由会話"
+            style={{
+              marginBottom: 12,
+              padding: 10,
+              border: "1px solid #bbb",
+              borderRadius: 8,
+              background: "#fafafa",
+            }}
+          >
+            <div style={{ fontSize: 13, marginBottom: 6 }}>
+              <strong>誰に話す？</strong>{" "}
+              <button
+                type="button"
+                aria-pressed={freeTextTarget === "MIKA"}
+                onClick={() => setFreeTextTarget("MIKA")}
+                disabled={pending}
+                style={{
+                  margin: "2px",
+                  fontWeight: freeTextTarget === "MIKA" ? 700 : 400,
+                  border: freeTextTarget === "MIKA" ? "2px solid #444" : "1px solid #aaa",
+                }}
+              >
+                美香に話す
+              </button>
+              <button
+                type="button"
+                aria-pressed={freeTextTarget === "RYO"}
+                onClick={() => setFreeTextTarget("RYO")}
+                disabled={pending}
+                style={{
+                  margin: "2px",
+                  fontWeight: freeTextTarget === "RYO" ? 700 : 400,
+                  border: freeTextTarget === "RYO" ? "2px solid #444" : "1px solid #aaa",
+                }}
+              >
+                亮に話す
+              </button>
+            </div>
+            <div>
+              <input
+                value={freeText}
+                onChange={(e) => setFreeText(e.target.value)}
+                placeholder={
+                  freeTextTarget === null
+                    ? "先に話す相手を選んでください"
+                    : LIVE_PROVIDER_CONFIGURED && consent === "accepted"
+                      ? `${freeTextTarget === "MIKA" ? "美香" : "亮"}に自由に話す`
+                      : `${freeTextTarget === "MIKA" ? "美香" : "亮"}に自由に話す（AI未接続時は安全な応答）`
+                }
+                aria-label="自由入力"
+                style={{ width: "70%" }}
+                disabled={pending}
+              />{" "}
+              <button
+                onClick={handleFreeText}
+                disabled={pending || freeTextTarget === null || !freeText.trim()}
+              >
+                送る
+              </button>
+            </div>
           </div>
 
           <div style={{ marginBottom: 8 }}>
