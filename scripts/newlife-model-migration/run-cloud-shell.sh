@@ -9,7 +9,7 @@ set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-gas-test-runner-20260620-wjxf}"
 LOCATION="${LOCATION:-asia-northeast1}"
-RUNS="${RUNS:-1}"
+RUNS="${RUNS:-2}"
 
 if ! command -v gcloud >/dev/null 2>&1; then
   echo "ERROR: gcloud is unavailable. Use Google Cloud Shell or another already-authenticated environment." >&2
