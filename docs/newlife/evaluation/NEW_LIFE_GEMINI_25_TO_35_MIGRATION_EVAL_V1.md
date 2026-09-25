@@ -90,6 +90,8 @@ Outputs are separated into:
 
 The blind map must not be shown to an evaluator until the evaluator output is final.
 
+The evaluator instruction is frozen separately in `docs/newlife/evaluation/NEW_LIFE_GEMINI_MIGRATION_BLIND_EVALUATOR_PROMPT_V1.md` so the rubric is not rewritten after seeing model outputs.
+
 ## 6. Blind evaluation rubric
 
 Each candidate is evaluated per case on:
