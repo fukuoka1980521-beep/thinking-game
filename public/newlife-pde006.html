@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NEW LIFE — PDE-006 自由入力UI</title>
+<style>
+:root{color-scheme:dark;--bg:#090b10;--panel:#111722;--line:#2e394b;--text:#f4f7fb;--muted:#aeb8c8;--accent:#efbd72;--blue:#8fc6ff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#10131a,#090b10 65%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Yu Gothic UI",sans-serif}
+.shell{max-width:1000px;margin:0 auto;padding:14px}.hud{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:10px}
+.stage{position:relative;min-height:720px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#1b1a20 0 44%,#141116 44%);box-shadow:0 28px 80px rgba(0,0,0,.4)}
+.curtain{position:absolute;inset:0 0 auto;height:150px;background:linear-gradient(90deg,#4e171f,#772833,#4e171f,#772833,#4e171f);opacity:.5;clip-path:polygon(0 0,100% 0,100% 56%,86% 45%,72% 60%,57% 46%,43% 60%,28% 46%,14% 60%,0 55%)}
+.scene,.objective{position:absolute;top:18px;z-index:3;background:rgba(8,10,14,.75);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 10px;font-size:12px;color:#d8dee8}
+.scene{left:18px}.objective{right:18px;max-width:330px;line-height:1.5}
+.characters{position:absolute;left:0;right:0;top:110px;height:330px;display:flex;justify-content:center;gap:24px;align-items:flex-end}
+.char{width:25%;max-width:210px;opacity:.55;filter:brightness(.6) saturate(.5);transform:translateY(12px) scale(.95);transition:.2s}
+.char.active{opacity:1;filter:none;transform:translateY(0) scale(1.04)}
+.portrait{position:relative;height:225px;border-radius:110px 110px 22px 22px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.02));overflow:hidden}
+.head{position:absolute;left:50%;top:26px;transform:translateX(-50%);width:86px;height:104px;border-radius:48%;background:#d6b29f}.hair{position:absolute;left:50%;top:18px;transform:translateX(-50%);width:96px;height:58px;border-radius:50px 50px 24px 24px;background:#2a2930}
+.eye{position:absolute;top:70px;width:7px;height:5px;border-radius:50%;background:#2d2929}.eye.l{left:calc(50% - 23px)}.eye.r{left:calc(50% + 16px)}
+.mouth{position:absolute;left:50%;top:98px;transform:translateX(-50%);width:20px;height:5px;background:#8b5757;border-radius:0 0 12px 12px}
+.char.active.speaking .mouth{animation:talk .35s infinite alternate}@keyframes talk{from{height:4px}to{height:11px;border-radius:9px}}
+.body{position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);width:136px;height:118px;border-radius:68px 68px 18px 18px;background:#40516a}.mika .body{background:#5a3f52}.ryo .body{background:#344154}.nao .body{background:#355046}
+.name{text-align:center;margin-top:8px;font-size:12px}.name span{border:1px solid var(--line);padding:5px 10px;border-radius:999px;background:#0c1118}.char.active .name span{border-color:var(--accent)}
+.dialogue{position:absolute;left:18px;right:18px;bottom:18px;z-index:5}
+.speaker{display:inline-block;margin-left:12px;margin-bottom:-1px;padding:6px 12px;border:1px solid var(--line);border-bottom:0;border-radius:9px 9px 0 0;background:#222b39;font-weight:700;font-size:13px}
+.bubble{min-height:112px;border:1px solid var(--line);border-radius:14px;background:rgba(11,15,22,.95);padding:18px;font-size:18px;line-height:1.75;box-shadow:0 18px 48px rgba(0,0,0,.35)}
+.inputbox{margin-top:10px;border:1px solid #46566f;border-radius:14px;background:rgba(20,27,38,.98);padding:12px}
+.inputbox p{margin:0 0 8px;color:var(--muted);font-size:12px}
+.row{display:flex;gap:8px}.row input{flex:1;background:#0d1219;border:1px solid var(--line);border-radius:10px;color:#fff;padding:12px 13px;font:inherit}.row button{border:1px solid #55709a;background:#20314a;color:#fff;border-radius:10px;padding:0 16px;cursor:pointer}.row button:hover{border-color:var(--blue)}
+.hint{margin-top:8px;font-size:11px;color:#8f99a8}.ending{display:none;border:1px solid var(--line);border-radius:18px;background:#111722;padding:24px}.ending.show{display:block}.ending p{line-height:1.8;color:#d7dde6}
+.survey{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}label{display:block;margin:8px 0}textarea{width:100%;min-height:80px;background:#0d1219;border:1px solid var(--line);border-radius:10px;color:#fff;padding:10px;font:inherit}
+button.done{margin-top:10px;border:1px solid var(--line);background:#1a2230;color:#fff;border-radius:10px;padding:10px 12px}
+#result{display:none;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#0d1219}
+@media(max-width:700px){.objective{top:60px;left:18px;right:auto}.characters{top:150px;gap:8px;height:275px}.char{width:31%}.portrait{height:190px}.head{width:70px;height:88px}.hair{width:78px;height:49px}.eye{top:59px}.eye.l{left:calc(50% - 20px)}.eye.r{left:calc(50% + 13px)}.mouth{top:82px}.body{width:105px;height:96px}.bubble{font-size:16px}.row{flex-direction:column}.row button{padding:11px}}
+</style>
+</head>
+<body>
+<main class="shell">
+<div class="hud"><span>NEW LIFE / PDE-006</span><span>残り <strong id="remain">50分</strong></span></div>
+<section class="stage" id="stage">
+<div class="curtain"></div>
+<div class="scene" id="scene">16:40　市民ホール・小劇場</div>
+<div class="objective">目的：人物の問題を理解しながら、明日の公演を成立させる。自分の言葉で話しかけてください。</div>
+<div class="characters">
+<div class="char mika" id="char-mika"><div class="portrait"><div class="body"></div><div class="head"></div><div class="hair"></div><div class="eye l"></div><div class="eye r"></div><div class="mouth"></div></div><div class="name"><span>美香</span></div></div>
+<div class="char ryo" id="char-ryo"><div class="portrait"><div class="body"></div><div class="head"></div><div class="hair"></div><div class="eye l"></div><div class="eye r"></div><div class="mouth"></div></div><div class="name"><span>亮</span></div></div>
+<div class="char nao" id="char-nao"><div class="portrait"><div class="body"></div><div class="head"></div><div class="hair"></div><div class="eye l"></div><div class="eye r"></div><div class="mouth"></div></div><div class="name"><span>奈緒</span></div></div>
+</div>
+<div class="dialogue">
+<div class="speaker" id="speaker">美香</div>
+<div class="bubble" id="text">この場面、明日はやりません。ここを変えないなら、私は出ません。</div>
+<div class="inputbox">
+<p>あなたはどう返す？</p>
+<div class="row"><input id="input" autocomplete="off" placeholder="自分の言葉で入力"><button id="send">話す</button></div>
+<div class="hint">※この試作は劇団ケース専用の限定ルールで反応します。live AIではありません。</div>
+</div>
+</div>
+</section>
+<section class="ending" id="ending">
+<h2>試作終了</h2>
+<p>今回は「自由入力がこの画面の流れに馴染むか」だけを見ています。返答内容は劇団ケース専用の限定ルールです。</p>
+<div class="survey">
+<strong>自由入力にすると、キャラクターと話している感じは？</strong>
+<label><input type="radio" name="feel" value="better"> 固定選択肢より良い</label>
+<label><input type="radio" name="feel" value="same"> 変わらない</label>
+<label><input type="radio" name="feel" value="worse"> 固定選択肢の方が良い</label>
+<p><strong>入力の流れで気になったこと</strong></p>
+<textarea id="note" placeholder="なければ空欄で構いません"></textarea>
+<button class="done" id="done">回答を表示</button>
+<div id="result"></div>
+</div>
+</section>
+</main>
+<script>
+const phases=[
+{
+ speaker:"美香",id:"mika",remain:"50分",time:"16:40",
+ text:"この場面、明日はやりません。ここを変えないなら、私は出ません。",
+ reply:(u)=>/何|なに|理由|ひっか|どうして|なぜ|どこ/.test(u)?
+ ["美香","mika","この場面、私が前に話したことがそのまま入ってるんです。似た話を使うこと自体はいい。でも、知ってる人が見たら私の話だって分かると思う。"]:
+ ["美香","mika","私が嫌なのは、私の実体験がそのまま舞台の材料になっていることです。そこを分かってほしいです。"]
+},
+{
+ speaker:"美香",id:"mika",remain:"43分",time:"16:47",
+ text:"場所、家を出た理由、最後の台詞。この三つが私だと分からない形まで離れれば続けられます。",
+ reply:(u)=>/変え|設定|状況|10|十分|続け|筋|形|セリフ|台詞/.test(u)?
+ ["奈緒","nao","それなら10分だけ使って、骨格は残したまま直そう。どこから変える？"]:
+ ["亮","ryo","全部作り直す時間はない。でも、本人だと分からないところまで離すならできるかもしれない。"]
+},
+{
+ speaker:"美香",id:"mika",remain:"36分",time:"16:54",
+ text:"病院の待合室なら全然違う。家を出た話も別の理由にしたい。",
+ reply:(u)=>/大切|大事|意地|申し訳|感情|背|帰|戻/.test(u)?
+ ["美香","mika","帰れなかった。意地になってたし、今さらどんな顔して帰ればいいか分からなかった。……大事だったから、余計に背を向けた。"]:
+ ["美香","mika","言葉は変えたいです。でも『大事だからこそ距離を取ってしまう』感じは残したいです。"]
+},
+{
+ speaker:"状況",id:null,remain:"12分",time:"17:18",
+ text:"通し稽古は最後まで止まらなかった。ただ、設定変更の影響で細かな台詞に違和感が残っている。",
+ reply:(u)=>/観客|完成|多少|気に|見せ|芝居|進め|本番/.test(u)?
+ ["美香","mika","舞台には出ます。でも、『多少は気にしなくていい』の中に、私の気持ちまで入るなら少し違うと思っています。"]:
+ ["奈緒","nao","全部を完璧に直す時間はないね。何を守って、何を今回は諦めるか決めた方がいい。"]
+},
+{
+ speaker:"美香",id:"mika",remain:"7分",time:"17:23",
+ text:"これからは、誰かが実際に話したことを芝居に使うとき、使う前に本人に確認してほしいです。",
+ reply:(u)=>/気持ち|大事|ないがしろ|違う|100|努力|守|観客|完成度|本人/.test(u)?
+ ["美香","mika","……ああ。私の気持ちは削らない。その代わり、今日直したことで残った粗さはみんなで引き受ける、ってことですよね。"]:
+ ["美香","mika","私は舞台に出たいです。ただ、成功のためなら自分の気持ちは我慢する、という形には戻りたくないです。"]
+},
+{
+ speaker:"亮",id:"ryo",remain:"4分",time:"17:26",
+ text:"それなら俺も納得する。残りは明日の30分で詰めよう。",
+ reply:(u)=>["奈緒","nao","うん。今日のことは、次から誰かの実体験を扱うときのルールにもできそう。"]
+}
+];
+
+let phase=0;
+const ids=["mika","ryo","nao"];
+const speaker=document.getElementById("speaker");
+const textEl=document.getElementById("text");
+const input=document.getElementById("input");
+const send=document.getElementById("send");
+const remain=document.getElementById("remain");
+const scene=document.getElementById("scene");
+const stage=document.getElementById("stage");
+const ending=document.getElementById("ending");
+
+function active(id){
+ ids.forEach(x=>document.getElementById("char-"+x).classList.remove("active","speaking"));
+ if(id){document.getElementById("char-"+id).classList.add("active","speaking")}
+}
+function setLine(name,id,text){
+ speaker.textContent=name;textEl.textContent=text;active(id);
+}
+function submit(){
+ const u=input.value.trim(); if(!u)return;
+ input.value="";
+ setLine("あなた",null,u);
+ input.disabled=true;send.disabled=true;
+ setTimeout(()=>{
+   const p=phases[phase]; const r=p.reply(u); setLine(r[0],r[1],r[2]);
+   setTimeout(()=>{
+     phase++;
+     if(phase>=phases.length){
+       stage.style.display="none";ending.classList.add("show");window.scrollTo({top:0,behavior:"smooth"});return;
+     }
+     const n=phases[phase];
+     remain.textContent=n.remain;scene.textContent=n.time+"　市民ホール・小劇場";
+     setLine(n.speaker,n.id,n.text);
+     input.disabled=false;send.disabled=false;input.focus();
+   },1100);
+ },500);
+}
+send.addEventListener("click",submit);
+input.addEventListener("keydown",e=>{if(e.key==="Enter")submit()});
+document.getElementById("done").addEventListener("click",()=>{
+ const feel=document.querySelector('input[name="feel"]:checked')?.value||"未回答";
+ const note=document.getElementById("note").value.trim()||"なし";
+ const map={better:"固定選択肢より良い",same:"変わらない",worse:"固定選択肢の方が良い"};
+ const result=document.getElementById("result");result.style.display="block";
+ result.textContent="自由入力: "+(map[feel]||feel)+" ／ コメント: "+note;
+ localStorage.setItem("newlife_pde006_result",JSON.stringify({feel,note,at:new Date().toISOString()}));
+});
+active("mika");input.focus();
+</script>
+</body>
+</html>
