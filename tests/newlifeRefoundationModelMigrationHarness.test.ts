@@ -39,6 +39,30 @@ describe("NEW LIFE refoundation model migration harness", () => {
     expect(harness).toContain("WITHHOLD FROM EVALUATOR");
   });
 
+  it("mirrors client validation boundaries for both operations", () => {
+    expect(harness).toContain("validateInterpretOutput");
+    expect(harness).toContain("clarify_pairing");
+    expect(harness).toContain("validateNpcOutput");
+    expect(harness).toContain("ontology_label_leak");
+  });
+
+  it("counterbalances model order and repeats cases twice by default", () => {
+    expect(harness).toContain("rotatedModels");
+    expect(harness).toContain("runs: 2");
+  });
+
+  it("removes operational fingerprints from blinded quality rows", () => {
+    const start = harness.indexOf("const blinded = rows.map");
+    const end = harness.indexOf("fs.writeFileSync", start);
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const block = harness.slice(start, end);
+    expect(block).toContain("latencyMs");
+    expect(block).toContain("tokenUsage");
+    expect(block).toContain("attempts");
+    expect(block).toContain("modelLabel");
+  });
+
   it("contains no deployment or endpoint mutation", () => {
     expect(harness).not.toContain("gcloud functions deploy");
     expect(harness).not.toContain("gcloud services enable");
