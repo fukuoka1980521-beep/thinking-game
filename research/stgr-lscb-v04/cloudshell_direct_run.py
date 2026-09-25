@@ -15,17 +15,28 @@ import sys
 import json
 import tempfile
 import zipfile
+import time
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 B64 = REPO_ROOT / "research/stgr-lscb-v04/package_function.b64"
 EXPECTED_SHA256 = "e24dec441f4026ade03e52e9db92de3dce5894e397515d9ab5a903df76230544"
 OUT = REPO_ROOT / "research/stgr-lscb-v04/STGR_LSCB_RESULTS_V0_4.zip"
 DRIVE_FOLDER_ID = "19edDH7Jb534Mt9WYfuSXaCJL3n-WStf2"
+_TOKEN = {"value": None, "at": 0.0}
 
 def access_token():
-    return subprocess.check_output(
+    # gcloud user access tokens are short-lived. Cache for 45 minutes so the
+    # experiment does not spawn a gcloud process for every model call, then
+    # transparently refresh during longer runs.
+    now = time.time()
+    if _TOKEN["value"] and now - _TOKEN["at"] < 2700:
+        return _TOKEN["value"]
+    token = subprocess.check_output(
         ["gcloud", "auth", "print-access-token"], text=True
     ).strip()
+    _TOKEN["value"] = token
+    _TOKEN["at"] = now
+    return token
 
 def main():
     raw = base64.b64decode(B64.read_text(encoding="ascii"))
