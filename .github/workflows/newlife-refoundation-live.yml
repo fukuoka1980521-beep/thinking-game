@@ -1,22 +1,10 @@
 name: NEW LIFE Refoundation — Live Backend Deploy (manual)
 
-# Canonical source of this workflow. Because the GitHub App running Claude
-# Code on this repository does not hold the "workflows" permission, this
-# file could not be committed directly to `.github/workflows/` (GitHub
-# rejects any push that touches that directory without that scope — see
-# docs/newlife/refoundation/V34_LIVE_DEPLOY_GITHUB_ACTIONS_BOOTSTRAP_V1.md
-# for the exact rejection message). Until that permission exists, THIS file
-# is the source of truth. One-time Owner action to activate it:
-#
-#   cp docs/newlife/refoundation/github-actions/newlife-refoundation-live.yml \
-#      .github/workflows/newlife-refoundation-live.yml
-#   git add .github/workflows/newlife-refoundation-live.yml
-#   git commit -m "ci(newlife-refoundation): add manual live-deploy workflow"
-#   git push
-#
-# Everything else this workflow depends on (the one-time GCP bootstrap, the
-# three repository variables) is independent of this step and can be done
-# first or in any order — see the bootstrap doc referenced above.
+# Manual deploy/smoke workflow for the isolated refoundation backend.
+# This workflow lives on the default branch so workflow_dispatch is available,
+# but it deliberately checks out chatgpt/newlife-refoundation-v1. Therefore
+# PR #22 does not need to be merged in order to validate the isolated backend.
+# GCP authentication remains OIDC/WIF only; no long-lived service-account key.
 #
 # Manually triggered only. Never runs on push/PR. Deploys ONLY the isolated
 # `functions/newlife-refoundation-ai/` Cloud Function — it never touches
@@ -40,8 +28,10 @@ jobs:
   deploy-and-smoke:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout refoundation candidate
         uses: actions/checkout@v4
+        with:
+          ref: chatgpt/newlife-refoundation-v1
 
       - name: Verify required repository variables are set
         run: |
