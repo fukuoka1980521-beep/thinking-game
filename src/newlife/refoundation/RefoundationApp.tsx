@@ -73,6 +73,7 @@ import {
   type RefoundationAiDialogueConsentStatus,
 } from "./consent";
 import { useBoundaryCheckTool } from "./thoughtTools";
+import { SpeakerPresence } from "./SpeakerPresence";
 import type { ActionType, BoundaryMode, NpcRelationshipRecord, RelationalEvent, RelationshipState } from "./types";
 
 interface Props {
@@ -256,6 +257,14 @@ export function RefoundationApp({ onExit }: Props) {
     });
   }, [ended, state]);
 
+  const latestNpcLine = useMemo(
+    () =>
+      [...state.transcript]
+        .reverse()
+        .find((line) => line.speaker === "MIKA" || line.speaker === "RYO") ?? null,
+    [state.transcript],
+  );
+
   async function runTurn(target: TargetNpc | null, turn: { action: ActionType; boundaryMode: BoundaryMode; relationalEvents?: RelationalEvent[] }, costMinutes: number, playerLabel: string) {
     if (ended || pending) return;
     setPending(true);
@@ -392,6 +401,16 @@ export function RefoundationApp({ onExit }: Props) {
         <span>残り時間: {remainingMinutes(state.clock)} 分（17:30 決定期限）</span>
         <button onClick={onExit}>終了</button>
       </div>
+
+      <SpeakerPresence
+        activeSpeaker={
+          latestNpcLine?.speaker === "MIKA" || latestNpcLine?.speaker === "RYO"
+            ? latestNpcLine.speaker
+            : null
+        }
+        activeText={latestNpcLine?.text ?? null}
+        pending={pending}
+      />
 
       <div style={{ border: "1px solid #ccc", borderRadius: 6, padding: 12, margin: "12px 0", maxHeight: 320, overflowY: "auto" }}>
         {state.transcript.map((line, i) => (
