@@ -21,7 +21,7 @@ The isolated refoundation backend on `chatgpt/newlife-refoundation-v1` has the s
 const MODEL = process.env.NEWLIFE_REFOUNDATION_AI_MODEL || "gemini-2.5-flash";
 ```
 
-A project-specific Google Cloud retirement notice identifies `gas-test-runner-20260620-wjxf` as using Gemini 2.5 Flash and requires migration before the final 2.5 shutdown window.
+A project-specific Google Cloud retirement notice identifies `gas-test-runner-20260620-wjxf` as using Gemini 2.5 Flash. The notice states public retirement begins **2026-10-20**; active existing workloads may continue after that date, but Gemini 2.5 Flash / Pro traffic in Japan's applicable residency zone is scheduled to stop on **2027-03-31**. This is therefore a planned migration, not an emergency same-day cutover.
 
 This task does **not** treat model replacement as an infrastructure-only edit. NEW LIFE's free-talk quality, character distinctiveness, forward motion, and truth discipline are product behavior.
 
