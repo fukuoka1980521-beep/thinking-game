@@ -173,7 +173,12 @@ describe("bootstrap-refoundation-wif.sh (one-time Owner-run GCP setup)", () => {
     // forbidden broad roles to explain the least-privilege boundary.
     expect(bootstrapScript).not.toMatch(/--role=["']?roles\/owner\b/);
     expect(bootstrapScript).not.toMatch(/--role=["']?roles\/editor\b/);
-    expect(bootstrapScript).not.toMatch(/serviceusage\.services\.enable/);
+    // The Owner-run bootstrap legitimately executes `gcloud services enable`.
+    // What must stay forbidden is granting the deploy service account a
+    // Service Usage IAM role that would let CI enable APIs on future runs.
+    expect(bootstrapScript).toMatch(/gcloud services enable/);
+    expect(bootstrapScript).not.toMatch(/--role=["']?roles\/serviceusage\./);
+    expect(bootstrapScript).not.toMatch(/ROLE in[\s\S]{0,500}roles\/serviceusage\./);
   });
 
   it("requires PROJECT_ID to be set explicitly rather than defaulting silently", () => {
