@@ -64,8 +64,8 @@ git fetch --quiet origin "$BRANCH"
 git checkout --quiet --detach "origin/$BRANCH"
 
 echo "Installing the two isolated function dependency sets used by the harnesses..."
-npm ci --silent --prefix functions/newlife-dialogue
-npm ci --silent --prefix functions/newlife-refoundation-ai
+npm install --silent --omit=dev --no-audit --no-fund --package-lock=false --prefix functions/newlife-dialogue
+npm install --silent --omit=dev --no-audit --no-fund --package-lock=false --prefix functions/newlife-refoundation-ai
 
 mkdir -p "$OUT_ROOT/location" "$OUT_ROOT/legacy-global" "$OUT_ROOT/refoundation-global"
 
