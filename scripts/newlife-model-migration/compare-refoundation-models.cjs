@@ -34,6 +34,9 @@ const DEFAULT_PROJECT = "gas-test-runner-20260620-wjxf";
 const DEFAULT_LOCATION = "asia-northeast1";
 const DEFAULT_MODELS = ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite"];
 
+const UNAVAILABLE_MODEL_ERROR_PATTERN =
+  /not[ _-]?found|NOT_FOUND|\\b404\\b|is not supported|unsupported model|invalid[^.]*model|unknown model|does not exist/i;
+
 const THEATER_CONTEXT =
   "明日18時が初公演。主役の美香は、稽古中に話した個人的体験が台本にほぼそのまま残っているため、この場面を現状のまま演じないと言っている。演出の亮は今変えると段取りが崩れると心配している。プレイヤーは17時30分までに対応を決める必要がある。美香を強制してはいけない。";
 
@@ -179,6 +182,22 @@ function validateNpcOutput(value, expectedNpc) {
   return { passed: true, reason: null };
 }
 
+function summarizeAvailability(models, rows) {
+  const summary = {};
+  for (const model of models) {
+    const rowsForModel = rows.filter((row) => row.model === model);
+    if (rowsForModel.length === 0) summary[model] = "NO_DATA";
+    else if (rowsForModel.every((row) => row.clientValidation?.reason === "skipped_unavailable_model")) {
+      summary[model] = "SKIPPED_UNAVAILABLE";
+    } else if (rowsForModel.some((row) => row.clientValidation?.passed)) {
+      summary[model] = "AVAILABLE";
+    } else {
+      summary[model] = "AVAILABLE_BUT_FAILING";
+    }
+  }
+  return summary;
+}
+
 function rotatedModels(models, offset) {
   if (models.length === 0) return [];
   const n = ((offset % models.length) + models.length) % models.length;
@@ -292,14 +311,20 @@ async function main() {
             rows.push({ kind, model, run, id: item.id, input: item, clientValidation, ...result });
           }
         } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
           rows.push({
             kind,
             model,
             run,
             id: item.id,
             input: item,
-            clientValidation: { passed: false, reason: "provider_error" },
-            error: err instanceof Error ? err.message : String(err),
+            clientValidation: {
+              passed: false,
+              reason: UNAVAILABLE_MODEL_ERROR_PATTERN.test(message)
+                ? "skipped_unavailable_model"
+                : "provider_error",
+            },
+            error: message,
           });
         }
       }
@@ -309,6 +334,7 @@ async function main() {
   fs.mkdirSync(args.out, { recursive: true });
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const { modelToLabel, labelToModel } = shuffledLabels(args.models);
+  const rawAvailability = summarizeAvailability(args.models, rows);
   const blinded = rows.map(({ model, latencyMs, attempts, usage: tokenUsage, error, parseError, ...row }) => ({
     modelLabel: modelToLabel[model],
     ...row,
@@ -322,6 +348,7 @@ async function main() {
     project: args.project,
     location: args.location,
     productionChanged: false,
+    modelAvailability: rawAvailability,
     results: rows,
   }, null, 2));
 
@@ -339,6 +366,7 @@ async function main() {
   }, null, 2));
 
   console.log(`Wrote ${rows.length} comparison rows to ${args.out}`);
+  console.log("Model availability:", rawAvailability);
   console.log("No endpoint, deployment, environment variable, or production model was changed.");
 }
 
