@@ -112,7 +112,7 @@ async function post(body){
   let lastError=null;
   for(let attempt=1;attempt<=2;attempt++){
     const ctrl=new AbortController();
-    const timer=setTimeout(()=>ctrl.abort(),30000);
+    const timer=setTimeout(()=>ctrl.abort(),45000);
     try{
       const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:ctrl.signal});
       const text=await res.text();
@@ -159,9 +159,16 @@ async function talk(){
   input.value="";
   try{
     const caseContext=recentContext()+"\n今回の発言は"+targetName+"に向けられている。";
-    const cls=await post({operation:"interpret_turn",utterance,caseContext});
+    let cls;
+    try{
+      cls=await post({operation:"interpret_turn",utterance,caseContext});
+    }catch(err){
+      throw new Error("意味解釈で失敗: "+(err?.message||String(err)));
+    }
     classificationEl.textContent=JSON.stringify(cls,null,2);
-    const npc=await post({
+    let npc;
+    try{
+      npc=await post({
       operation:"generate_npc_line",
       projection:{
         npc:target,
@@ -175,6 +182,9 @@ async function talk(){
         sceneContext:recentContext()+"\n直前にプレイヤーが"+targetName+"へ「"+utterance+"」と話しかけた。"
       }
     });
+    }catch(err){
+      throw new Error("NPC返答生成で失敗: "+(err?.message||String(err)));
+    }
     addLine(targetName,npc.text,target==="MIKA"?"mika":"ryo");
   }catch(err){
     addLine("システム","AI接続エラー: "+(err?.message||String(err)),"system");
