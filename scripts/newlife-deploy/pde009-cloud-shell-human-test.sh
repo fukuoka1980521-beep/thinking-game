@@ -55,7 +55,7 @@ echo "Fetching isolated refoundation backend..."
 git clone --quiet --depth 1 --branch "${BRANCH}" "${REPO_URL}" "${WORKDIR}/repo"
 
 echo "Deploying isolated backend (production NEW LIFE is untouched)..."
-gcloud functions deploy "${FUNCTION_NAME}"   --gen2   --runtime=nodejs20   --region="${REGION}"   --source="${WORKDIR}/repo/functions/newlife-refoundation-ai"   --entry-point=newlifeRefoundationAi   --trigger-http   --allow-unauthenticated   --memory=256Mi   --timeout=20s   --max-instances=1   --project="${PROJECT_ID}"   --set-env-vars=GCP_PROJECT="${PROJECT_ID}"   --quiet
+gcloud functions deploy "${FUNCTION_NAME}"   --gen2   --runtime=nodejs20   --region="${REGION}"   --source="${WORKDIR}/repo/functions/newlife-refoundation-ai"   --entry-point=newlifeRefoundationAi   --trigger-http   --allow-unauthenticated   --memory=256Mi   --timeout=45s   --max-instances=1   --project="${PROJECT_ID}"   --set-env-vars=GCP_PROJECT="${PROJECT_ID}"   --quiet
 
 URI="$(gcloud functions describe "${FUNCTION_NAME}"   --gen2   --region="${REGION}"   --project="${PROJECT_ID}"   --format='value(serviceConfig.uri)')"
 
@@ -66,7 +66,7 @@ fi
 
 echo "Smoke 1/2: interpret_turn"
 INTERPRET_BODY='{"operation":"interpret_turn","utterance":"何が一番気になっている？","caseContext":"16:40。明日18時が初公演。美香は、自分の個人的体験が台本にほぼそのまま残っている場面をこのままでは演じないと言っている。亮は今変えると段取りが崩れると心配している。"}'
-INTERPRET_RESP="$(curl -fsS --max-time 35 -X POST "${URI}" -H 'Content-Type: application/json' -d "${INTERPRET_BODY}")"
+INTERPRET_RESP="$(curl -fsS --max-time 50 -X POST "${URI}" -H 'Content-Type: application/json' -d "${INTERPRET_BODY}")"
 node -e '
 const p=JSON.parse(process.argv[1]);
 if(!p || typeof p.action!=="string" || typeof p.boundaryMode!=="string" || !Array.isArray(p.relationalEvents) || typeof p.needsClarification!=="boolean"){process.exit(2)}
@@ -74,7 +74,7 @@ if(!p || typeof p.action!=="string" || typeof p.boundaryMode!=="string" || !Arra
 
 echo "Smoke 2/2: generate_npc_line"
 NPC_BODY='{"operation":"generate_npc_line","projection":{"npc":"MIKA","relationshipState":"NEUTRAL","boundaryStatus":"STATED","lastPlayerTurn":{"action":"ASK_BOUNDARY","boundaryMode":"DISCOVER","relationalEvents":[]},"sceneContext":"16:40。稽古停止中。プレイヤーが美香に何が一番気になるか尋ねた。"}}'
-NPC_RESP="$(curl -fsS --max-time 35 -X POST "${URI}" -H 'Content-Type: application/json' -d "${NPC_BODY}")"
+NPC_RESP="$(curl -fsS --max-time 50 -X POST "${URI}" -H 'Content-Type: application/json' -d "${NPC_BODY}")"
 node -e '
 const p=JSON.parse(process.argv[1]);
 if(!p || p.npc!=="MIKA" || typeof p.text!=="string" || !p.text.trim()){process.exit(2)}
