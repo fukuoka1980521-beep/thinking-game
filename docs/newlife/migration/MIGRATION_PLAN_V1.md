@@ -5,19 +5,25 @@ happened as part of this plan.
 
 ## 1. Sequence
 
-1. **Availability check** (automatic, per-run): the harness itself marks a
-   candidate `SKIPPED_UNAVAILABLE` in `modelAvailability` if every call to
-   that model id fails with a not-found/unsupported-style provider error.
-   Confirm current official Vertex AI Gemini model-garden availability for
-   the target project/region independently before relying on a candidate
-   that comes back `AVAILABLE_BUT_FAILING` for a different reason (e.g. an
-   IAM/quota issue, not an availability issue).
+1. **Availability / location check.** Follow
+   `MODEL_LOCATION_COMPATIBILITY_V1.md`. The migration experiment has two
+   lanes: (A) `asia-northeast1` operational compatibility and (B) `global`
+   common-location quality comparison. A candidate that cannot run in Tokyo
+   is not automatically a quality failure. The harness marks a candidate
+   `SKIPPED_UNAVAILABLE` when every call fails with a not-found/unsupported
+   provider error, but official region/consumption-mode support must also be
+   checked before interpreting failures.
 2. **Run the comparison harnesses** (requires an authenticated
    `gcloud`/Vertex-AI-ADC session against the target project — see
    `TEST_PLAN_V1.md` §3 for why this sandbox cannot do so itself):
    ```
-   node scripts/newlife-model-migration/compare-legacy-models.mjs
-   node scripts/newlife-model-migration/compare-refoundation-models.cjs
+   # Lane A — current-location compatibility
+   node scripts/newlife-model-migration/compare-legacy-models.mjs --location asia-northeast1 --runs 1
+   node scripts/newlife-model-migration/compare-refoundation-models.cjs --location asia-northeast1 --runs 1
+
+   # Lane B — common-location quality comparison
+   node scripts/newlife-model-migration/compare-legacy-models.mjs --location global --runs 2
+   node scripts/newlife-model-migration/compare-refoundation-models.cjs --location global --runs 2
    ```
 3. **Blind review** using `EVALUATION_RUBRIC_V1.md` against each
    `blind-results-*.json`, independently per dimension, frozen before
@@ -33,7 +39,11 @@ happened as part of this plan.
      schema/enum contract.
    This decision is made by a human/independent reviewer reading the scored
    rubric table — never automatically by the harness or by this plan.
-5. **Apply the change via environment override, not a code default change**,
+5. **Apply the change via environment override, not a code default change.**
+   If the approved candidate requires `global` Standard PayGo, the request
+   location must also be changed explicitly and reviewed as a separate
+   operational/data-location dimension; never hide that change behind the
+   model-id override alone.
    for the backend(s) approved in step 4:
    - Legacy: set `NEWLIFE_DIALOGUE_MODEL` at deploy time (Cloud Functions
      environment variable). Do **not** edit the `"gemini-2.5-flash"` literal
