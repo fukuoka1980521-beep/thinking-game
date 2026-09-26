@@ -7,10 +7,10 @@ Stopping a Successful Agent: Prospective Global Reassessment Gates for Local Tas
 Shinobu Fukuoka
 
 ## Version
-1.0 (publication candidate after manuscript review)
+1.0
 
-## Upload type
-Publication / Preprint or Technical Report
+## Resource type
+Publication / Preprint
 
 ## Description
 This work reports a prospective field study of Local Task Momentum / Global Reassessment Omission in AI-assisted software development. A trigger-based global reassessment gate was evaluated across six naturally occurring mandatory-trigger episodes in four independent trigger-positive task families, with two additional trigger-negative ordinary task families.
@@ -63,7 +63,7 @@ Not allowed:
 - claim that Episode 005 prevented the publish that had already occurred
 
 ## License
-Recommended for manuscript: CC BY 4.0, subject to final Owner publication choice.
+Creative Commons Attribution 4.0 International (CC BY 4.0)
 
 ## Notes
 Do not upload an evolving dataset after publication. The confirmatory dataset is frozen at v2.0; any later study must be versioned as a separate phase.

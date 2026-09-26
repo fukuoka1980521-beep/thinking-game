@@ -27,8 +27,8 @@
 - [x] Keywords drafted
 - [x] Evidence commit chain listed
 - [x] Claim boundary listed
-- [ ] Final license selection
-- [ ] Final publication type selection (preprint / technical report)
+- [x] Final license selection — CC BY 4.0
+- [x] Final publication type selection — Publication / Preprint
 - [ ] DOI publication action
 
 ## Recommended release sequence

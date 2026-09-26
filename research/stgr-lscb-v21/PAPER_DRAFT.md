@@ -1,7 +1,10 @@
 # Stopping a Successful Agent: Prospective Global Reassessment Gates for Local Task Momentum in AI-Assisted Development
 
-**Draft status:** publication manuscript v0.1  
+**Author:** Shinobu Fukuoka
+**Version:** 1.0
+**Publication status:** Preprint
 **Date:** 2026-09-27  
+**License:** CC BY 4.0
 **Evidence boundary:** frozen six-episode confirmatory field dataset from STGR / LSCB v2.0
 
 ## Abstract
@@ -301,19 +304,28 @@ The result should not be read as a universal effect estimate. It is evidence for
 
 > when local momentum becomes structurally suspicious, require evidence-based global reassessment before the next consequential operation.
 
+## Data and Materials Availability
+
+The frozen confirmatory evidence chain and manuscript sources are preserved in the public GitHub repository fukuoka1980521-beep/thinking-game, including the v2.0 synthesis and the v2.1 publication package. The Zenodo record for version 1.0 is the archival publication copy. No post-publication episode is added to the frozen six-episode confirmatory dataset.
+
+## Researcher and AI Roles
+
+Shinobu Fukuoka defined the research goals, owner-level boundaries, stopping criteria, and publication decision, and retains responsibility for the interpretation and claims in this manuscript. AI systems were used as development agents and research-assistance tools during implementation, evidence inspection, counterfactual shadow generation, analysis support, and manuscript editing. The shadow baseline used Gemini 3.5 Flash as specified in the protocol; other development work involved multiple AI systems. AI outputs did not determine the publication boundary or authorize consequential operations independently of the documented workflow.
+
 ## References
 
 1. Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models*. ICLR 2023. arXiv:2210.03629.
-2. Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K., & Yao, S. (2023). *Reflexion: Language Agents with Verbal Reinforcement Learning*. arXiv:2303.11366.
-3. Madaan, A., Tandon, N., Gupta, P., et al. (2023). *Self-Refine: Iterative Refinement with Self-Feedback*. arXiv:2303.17651.
-4. Huang, J., Chen, X., Mishra, S., Zheng, H. S., Yu, A. W., Song, X., & Zhou, D. (2023). *Large Language Models Cannot Self-Correct Reasoning Yet*. arXiv:2310.01798.
+2. Shinn, N., Cassano, F., Gopinath, A., Narasimhan, K., & Yao, S. (2023). *Reflexion: Language Agents with Verbal Reinforcement Learning*. Advances in Neural Information Processing Systems 36 (NeurIPS 2023).
+3. Madaan, A., Tandon, N., Gupta, P., et al. (2023). *Self-Refine: Iterative Refinement with Self-Feedback*. Advances in Neural Information Processing Systems 36 (NeurIPS 2023).
+4. Huang, J., Chen, X., Mishra, S., Zheng, H. S., Yu, A. W., Song, X., & Zhou, D. (2024). *Large Language Models Cannot Self-Correct Reasoning Yet*. International Conference on Learning Representations (ICLR 2024).
 5. Liu, X., Yu, H., Zhang, H., et al. (2024). *AgentBench: Evaluating LLMs as Agents*. ICLR 2024. arXiv:2308.03688.
 6. Zhou, S., Xu, F. F., Zhu, H., et al. (2024). *WebArena: A Realistic Web Environment for Building Autonomous Agents*. ICLR 2024. arXiv:2307.13854.
 7. Yang, J., Jimenez, C. E., Wettig, A., Lieret, K., Yao, S., Narasimhan, K., & Press, O. (2024). *SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering*. NeurIPS 2024. arXiv:2405.15793.
 8. Wang, C., & Shu, Y. (2026). *MetaCogAgent: A Metacognitive Multi-Agent LLM Framework with Self-Aware Task Delegation*. arXiv:2605.17292.
 9. Shen, X., Zhang, Q., Wang, S., et al. (2025). *Metacognitive Self-Correction for Multi-Agent System via Prototype-Guided Next-Execution Reconstruction*. arXiv:2510.14319.
 10. Rahman, M., & Qian, L. (2026). *Metacognitive Arbitration as Uncertainty Compression in Multi-Agent Language Models*. Proceedings of the 42nd Conference on Uncertainty in Artificial Intelligence, PMLR 337, 5623–5642.
-11. Kumaran, D., Daw, N., Osindero, S., Veličković, P., et al. (2026). *Causal evidence that language models use confidence to drive behaviour*. Nature Machine Intelligence.\n12. Valiente, R., & Pilly, P. K. (2026). *Metacognition for Unknown Situations and Environments (MUSE)*. Neural Networks, 194, 108131. https://doi.org/10.1016/j.neunet.2025.108131.
+11. Kumaran, D., Daw, N., Osindero, S., Veličković, P., et al. (2026). *Causal evidence that language models use confidence to drive behaviour*. Nature Machine Intelligence. https://doi.org/10.1038/s42256-026-01293-x.
+12. Valiente, R., & Pilly, P. K. (2026). *Metacognition for Unknown Situations and Environments (MUSE)*. Neural Networks, 194, 108131. https://doi.org/10.1016/j.neunet.2025.108131.
 
 ## Evidence provenance
 
