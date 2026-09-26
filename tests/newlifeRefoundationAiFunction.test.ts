@@ -801,6 +801,22 @@ describe("functions/newlife-refoundation-ai/lib.js — V39 conversation progress
     expect(instruction).toMatch(/どの具体的な言い回し・設定・行動が残っているのか/);
   });
 
+  it("keeps V42 artifact-response aliases exactly equal to the V43 generic fields", () => {
+    expect(lib.MAX_SCENE_REVISION_LENGTH).toBe(lib.MAX_ARTIFACT_REVISION_LENGTH);
+    expect(lib.MAX_SCENE_REVISION_SUMMARY_LENGTH).toBe(lib.MAX_ARTIFACT_REVISION_SUMMARY_LENGTH);
+    expect(lib.normalizeSceneRevisionProposal).toBe(lib.normalizeArtifactRevisionProposal);
+
+    const parsed = validParsed({
+      artifactRevisionProposal: {
+        hasProposal: true,
+        revisedText: "会社で上司と退職の話をする場面。",
+        changeSummary: "人物・場所・状況を変更",
+      },
+    });
+    const normalized = lib.normalizeConverseResponse(parsed, "MIKA", ["MIKA", "RYO"]);
+    expect(normalized.artifactRevisionProposal).toEqual(normalized.sceneRevisionProposal);
+  });
+
   it("normalizes valid artifact revision proposals and suppresses malformed/empty ones (V43, renamed from normalizeSceneRevisionProposal)", () => {
     expect(lib.normalizeArtifactRevisionProposal({ hasProposal: true, revisedText: "会社を辞める場面。", changeSummary: "舞台を会社に変更" })).toEqual({
       hasProposal: true, revisedText: "会社を辞める場面。", changeSummary: "舞台を会社に変更"
