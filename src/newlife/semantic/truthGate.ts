@@ -30,7 +30,7 @@
  */
 import type { FactCategory, FactsSnapshot, SemanticInterpretation } from "./contract";
 
-export type TruthGateViolationCode = "banned_term" | "unsupported_numeric_claim" | "overclaimed_required_fact";
+export type TruthGateViolationCode = "banned_term" | "unsupported_numeric_claim" | "overclaimed_required_fact" | "ownership_misattribution";
 
 export interface TruthGateViolation {
   code: TruthGateViolationCode;
@@ -81,6 +81,20 @@ export function runTruthGate(interpretation: SemanticInterpretation, snapshot: F
   for (const n of extractNumbers(response)) {
     if (!knownNumbers.has(n)) {
       violations.push({ code: "unsupported_numeric_claim", detail: n });
+    }
+  }
+
+  // High-confidence lexical guard for the failure observed in the Owner human
+  // test: the model moved the player's offer ("何か手伝えることがあれば") to
+  // Miyoko and made her say "私が言った". We keep this deliberately narrow:
+  // the prompt carries the general ownership ledger; the deterministic gate
+  // blocks only direct first-person theft of another owner's recorded words.
+  for (const fact of snapshot.ownershipFacts) {
+    if (fact.owner === snapshot.npc || fact.owner === "world") continue;
+    const anchors = fact.statement.match(/[一-龠ぁ-んァ-ヶA-Za-z]{4,}/g) ?? [];
+    const echoesOtherOwner = anchors.some((a) => response.includes(a));
+    if (echoesOtherOwner && /私が(?:言|頼|約束|申し出|許可|決め)/.test(response)) {
+      violations.push({ code: "ownership_misattribution", detail: `${fact.owner}:${fact.statement}` });
     }
   }
 
