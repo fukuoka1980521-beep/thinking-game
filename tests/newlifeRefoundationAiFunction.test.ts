@@ -537,6 +537,64 @@ describe("functions/newlife-refoundation-ai/lib.js — applyCors", () => {
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — V39 conversation progression / loop-prevention policy", () => {
+  it("CONVERSE_SYSTEM_INSTRUCTION states the general progression policy: don't re-ask a materially-answered question, don't demand impossible certainty, move to one concrete next step", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toMatch(/既に実質的な回答がある場合/);
+    expect(instruction).toMatch(/同じ形でもう一度尋ね直さないこと/);
+    expect(instruction).toMatch(/不可能な保証/);
+    expect(instruction).toMatch(/次に必要な具体的な一手.*1つだけ示し/);
+    expect(instruction).toMatch(/新たに確認すべき具体的な問いを最大1つだけ尋ね/);
+  });
+
+  it("CONVERSE_SYSTEM_INSTRUCTION instructs the NPC to state its own minimum requirement from resolutionPolicy/boundary instead of bouncing the question back", () => {
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toMatch(/resolutionPolicy\.minimumRequirementIfAsked/);
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toMatch(/質問をそのままプレイヤーに投げ返すのではなく/);
+  });
+
+  it("this progression policy is general (present once in the shared instruction), not a per-utterance/per-phrase rule -- no Owner transcript literal appears anywhere in lib.js", () => {
+    const fs = require("node:fs");
+    const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-refoundation-ai", "lib.js"), "utf-8");
+    const ownerTranscriptLiterals = [
+      "それほどしつこく言うなら",
+      "具体的にどういう内容",
+      "なんで今まで言わなかったの",
+    ];
+    for (const literal of ownerTranscriptLiterals) {
+      expect(source).not.toContain(literal);
+    }
+    // Still no per-utterance answer table keyed on the raw player text (V37 §7 invariant, unchanged by V39).
+    expect(source).not.toMatch(/rawPlayerUtterance[^\n]*(===|includes|switch)/);
+  });
+
+  it("Mika's dossier declares resolutionPolicy distinguishing practical non-identifiability + review/approval from an impossible absolute guarantee", () => {
+    const policy = lib.CHARACTER_DOSSIERS.MIKA.resolutionPolicy;
+    expect(policy).toBeDefined();
+    expect(policy.practicalAcceptanceCriteria).toMatch(/絶対に誰にも分からない/);
+    expect(policy.practicalAcceptanceCriteria).toMatch(/実務的に見て自分だと特定されない程度/);
+    expect(policy.practicalAcceptanceCriteria).toMatch(/確認できること/);
+    expect(typeof policy.minimumRequirementIfAsked).toBe("string");
+    expect(policy.minimumRequirementIfAsked.length).toBeGreaterThan(0);
+  });
+
+  it("buildConversePrompt embeds Mika's resolutionPolicy as part of her dossier (server-owned canon, not client-supplied)", () => {
+    const prompt = lib.buildConversePrompt(validConverseBody({ targetNpc: "MIKA" }));
+    expect(prompt).toContain(JSON.stringify(lib.CHARACTER_DOSSIERS.MIKA.resolutionPolicy));
+  });
+
+  it("Ryo gets the same general progression rule (present once in the shared instruction) plus his own logistics-based minimum requirement, but no Mika-specific privacy/identifiability criteria", () => {
+    const ryo = lib.CHARACTER_DOSSIERS.RYO;
+    expect(ryo.resolutionPolicy).toBeDefined();
+    expect(typeof ryo.resolutionPolicy.minimumRequirementIfAsked).toBe("string");
+    // Ryo's own resolutionPolicy is logistics/feasibility, never privacy/identifiability language.
+    expect(ryo.resolutionPolicy.practicalAcceptanceCriteria).toBeUndefined();
+    expect(JSON.stringify(ryo.resolutionPolicy)).not.toMatch(/自分だと特定|自分だと分かる|実話/);
+    // The shared progression policy in CONVERSE_SYSTEM_INSTRUCTION is a single
+    // NPC-agnostic block (not duplicated/branched per character).
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION.match(/新たに確認すべき具体的な問いを最大1つだけ尋ね/g)?.length).toBe(1);
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — schema/prompt construction never invents ontology", () => {
   it("the interpret_turn schema's enums exactly match the closed ACTION_TYPES/BOUNDARY_MODES/RELATIONAL_EVENTS lists", () => {
     const FakeType = { OBJECT: "OBJECT", STRING: "STRING", ARRAY: "ARRAY", BOOLEAN: "BOOLEAN" };

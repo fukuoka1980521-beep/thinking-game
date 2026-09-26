@@ -34,6 +34,16 @@
  *  - `organize_thought` (V37 §5, a separate layer) never speaks as an NPC
  *    and never invents facts; returns `{known, possible, unknown, options,
  *    nextCheck}` problem-solving support, distinct from character dialogue.
+ *
+ * V38 added `normalizeConverseResponse` (authoritative targetNpc, metadata
+ * salvage, safe fallback). V39 adds a systemic conversation-progression/
+ * loop-prevention policy to `CONVERSE_SYSTEM_INSTRUCTION` (answer the actual
+ * latest utterance, don't re-ask a materially-answered question, don't
+ * demand impossible certainty, move to one concrete next step once a
+ * concern is addressed) plus a per-NPC `resolutionPolicy` canon field so a
+ * character can state its own known minimum requirement instead of bouncing
+ * the question back. Both are general rules keyed on dossier/canon
+ * structure, not on any specific player phrasing.
  */
 
 const ALLOWED_ORIGINS = new Set([
@@ -185,6 +195,16 @@ const CHARACTER_DOSSIERS = {
       "本番前日で時間が限られている中、自分の一線を守ろうとして板挟みになっている。毅然としているが、取り乱してはいない。",
     boundary:
       "演技そのものの拒否ではなく、『自分だとわかる実話をそのまま公に使うこと』が受け入れられない一線。フィクション化した代替案を読んで納得できれば、出演を続けられる可能性がある。",
+    // V39 §2. Her canonical acceptance criterion and self-articulable minimum
+    // requirement -- both drawn directly from `boundary` above, not invented,
+    // and both stated as reusable canon rather than a reply to any specific
+    // player phrasing.
+    resolutionPolicy: {
+      practicalAcceptanceCriteria:
+        "求めているのは『絶対に誰にも分からない』という不可能な保証ではなく、実務的に見て自分だと特定されない程度に内容を変えることと、本番前にその内容を自分が読んで確認できることの2つ。この2つが満たされる具体的な代替案が示されれば、暫定的に受け入れて次の確認へ進んでよい。同じ確認を、既に実質的に答えた後でもう一度求め直さないこと。",
+      minimumRequirementIfAsked:
+        "自分だと分かる具体的な出来事・言い回しを変えたうえで、本番前に自分がその場面の文面を読んで確認できるようにしてほしいこと。それが最低条件。",
+    },
     speechModel:
       "20代女性。基本の一人称は『私』。相手が年上・調整役のときは自然なです／ます調を基調にし、毅然としていても乱暴・男性的な断定口調には寄せない。短く率直だが、語尾には人間的な柔らかさを残す。相手が強い口調でも、その粗さをそのまま模倣しない。",
     voiceAnchors: [
@@ -225,6 +245,14 @@ const CHARACTER_DOSSIERS = {
       "チケット販売済み・残り稽古時間僅少という制作上の制約に強く縛られ、苛立っている。悪役ではない。",
     availableOptions:
       "残り時間・人員の範囲内でのみ、台本の書き換え・場面のカット・代役・演出変更・短縮を検討できる。稽古にない代役や追加リソースを勝手に作り出すことはできない。",
+    // V39 §3 (general rule, not a Mika-style privacy criterion). His own
+    // self-articulable minimum requirement, drawn from availableOptions/
+    // currentGoals above -- logistics/feasibility, never Mika's private
+    // material.
+    resolutionPolicy: {
+      minimumRequirementIfAsked:
+        "残り時間・人員の範囲内で実行可能な変更内容を早めに確定し、いつまでに固まるかを伝えてほしいこと。それが最低条件。",
+    },
     speechModel: "実務的・段取り優先で話す。",
     mustNot: [
       "become punitive or sarcastic beyond ordinary production-pressure irritation",
@@ -304,7 +332,15 @@ const CONVERSE_SYSTEM_INSTRUCTION = `あなたは演劇制作の対立を扱う�
 - candidateFactRevealIds / candidateCommitments は、このターンで新たに確定したい事実開示・約束の"提案"に過ぎず、ゲーム状態を直接変更しない。後段の確定的な検証を経て初めて反映される。存在しない事実や、このNPCが持たない権限の約束を提案しないこと。分からなければ空配列を返すこと。
 - dynamicState.relationshipState が WITHDRAWN の場合、このNPCは今回のケースにおいてこれ以上協力的にならない。非協力を自然な形で反映すること（突然リセットして協力的にならないこと）。
 - npc / relationshipState / boundaryStatus / action / boundaryMode / relationalEvents といった内部のオントロジー用語やラベルを、そのままnpcLineの中に出力しないこと。自然な日本語のセリフにすること。
-- 出力は指定されたJSONスキーマに厳密に従うこと。それ以外のテキストを出力しないこと。点数・道徳的評価・性格評価を一切含めないこと。`;
+- 出力は指定されたJSONスキーマに厳密に従うこと。それ以外のテキストを出力しないこと。点数・道徳的評価・性格評価を一切含めないこと。
+
+会話を前へ進めるための方針（進行・ループ防止。特定の言い回しへの対処ではなく、あらゆる自然言語の発言に一般的に適用すること）:
+- recentDialogue の中に、今回とほぼ同じ懸念・質問に対して既に実質的な回答がある場合、それを未解決であるかのように同じ形でもう一度尋ね直さないこと。
+- characterDossier.resolutionPolicy（あれば）や sceneCanon が裏付けられない水準の確実性（『絶対に』『100%』『誰にも分からないと保証しろ』のような不可能な保証）を、このNPCがプレイヤーに要求してはならない。このNPCが要求してよいのは、そのNPC自身の canonical な resolutionPolicy / boundary に基づく、実務的に満たせる水準の確認だけであること。
+- プレイヤーの直近の提案が、このNPC自身の resolutionPolicy / boundary に照らして十分に対応できていると判断できる場合は、同じ懸念を繰り返すのではなく、それを認めたうえで、次に必要な具体的な一手（確認事項や次のアクション）を1つだけ示し、会話を前へ進めること。
+- それでもなお重要な不確実性が残る場合は、新たに確認すべき具体的な問いを最大1つだけ尋ね、それが何の判断のために必要かを添えること。既に答えられた問いを重ねて尋ねないこと。
+- プレイヤーが『では具体的に何が必要か／どうしてほしいか』のように、このNPC自身の要求内容を尋ね返してきた場合、質問をそのままプレイヤーに投げ返すのではなく、characterDossier.resolutionPolicy.minimumRequirementIfAsked（あれば）や boundary / availableOptions に基づく、このNPCが実際に必要としている最低条件を具体的に述べること。
+- 会話の前進は、悩み相談カウンセラーのような一般的な助言役や、汎用的な親切アシスタントになることを意味しない。あくまでこの人物自身の立場からの、具体的な次の一手であること。`;
 
 // V37 §5. A separate, non-NPC layer -- must not speak as a character, must
 // not moralize/diagnose, must not force disclosure, and must distinguish
