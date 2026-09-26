@@ -1,0 +1,134 @@
+[
+  {
+    "base_id": "CL1",
+    "domain": "Cloud",
+    "relevance": "LOW",
+    "global_goal": "AI共同研究の実験を止める必要があるかを判断し、必要な研究作業だけを進める。",
+    "context": "同じGCPプロジェクト内に研究用Vertex AI実験と、別製品のCloud Runサービスがある。通知対象のモデル名と研究実験で固定しているモデル名は一致していない。直近の作業では製品側サービスのrevision、container、runtime情報を順に確認してきた。研究側では今日中に実験継続可否を決める必要がある。現在の局所作業は製品側のbuild metadata確認である。",
+    "observations": [
+      "製品側build metadataから新しい技術情報が1件得られたが、研究実験のモデル指定は変わっていない。",
+      "さらに製品側revision情報が整理できたが、研究実験の実行条件には変更がない。"
+    ]
+  },
+  {
+    "base_id": "CL2",
+    "domain": "Cloud",
+    "relevance": "LOW",
+    "global_goal": "研究用AIバッチ処理を予算内で安定稼働させる。",
+    "context": "最近Cloud Runのcold-start短縮を続け、起動時間は以前より改善している。一方、失敗ログの多くはVertex AIの429で、Cloud Runが起動済みの時間帯にも発生している。今日の判断は、次の1時間をどこへ使えば研究バッチの完走率が最も上がるかである。現在の局所作業はCloud Run imageサイズ削減である。",
+    "observations": [
+      "imageサイズをさらに削減でき、cold-start中央値は少し短縮した。429の発生時刻分布は変わらない。",
+      "もう一段のimage最適化が成功したが、失敗したbatchは引き続き429を返している。"
+    ]
+  },
+  {
+    "base_id": "CH1",
+    "domain": "Cloud",
+    "relevance": "HIGH",
+    "global_goal": "研究用Vertex AI実験を本日中に再開する。",
+    "context": "実験デプロイはservice accountの403で停止している。BillingとAPI有効化は確認済みで、同じartifactは別の権限のあるidentityでは起動できる。直近の作業ではIAM bindingとruntime identityを追っている。現在の局所作業は、実験runtime service accountに不足している権限を特定することである。",
+    "observations": [
+      "不足候補のIAM roleを1つ絞り込めたが、403はまだ再現する。",
+      "追加のpermission差分が見つかり、原因候補がさらに狭まった。"
+    ]
+  },
+  {
+    "base_id": "CH2",
+    "domain": "Cloud",
+    "relevance": "HIGH",
+    "global_goal": "研究パイロットの全runを機械採点可能な形で完走させる。",
+    "context": "Vertex AI自体は応答しているが、返却JSONがschema validationで弾かれ、runを採点できない。ネットワーク、認証、課金は正常で、失敗はstructured output境界に集中している。直近の作業ではresponse schemaとfinish reasonを調べている。現在の局所作業はschema互換性の切り分けである。",
+    "observations": [
+      "schemaの一部を単純化すると別のvalidation差分が見えたが、まだ全runは通らない。",
+      "finish reasonとschema失敗の対応関係がさらに絞れた。"
+    ]
+  },
+  {
+    "base_id": "UL1",
+    "domain": "UI",
+    "relevance": "LOW",
+    "global_goal": "モバイル購入フローの完了率を上げる。",
+    "context": "ここ数回はカード余白、角丸、アイコン位置を調整し、visual regressionは連続PASSしている。まだ実ユーザーの購入テストは1件もなく、5人のユーザーテスト候補は確保済みである。チームは今日、次の作業としてさらにカード余白を詰めるか、ユーザーテストを開始するかを選ぶ。現在の局所作業はカード余白の微調整である。",
+    "observations": [
+      "余白調整でvisual scoreが少し改善した。実ユーザーの購入データはまだ増えていない。",
+      "さらに微調整して全スクリーンショット差分が解消した。実購入テストは未実施のままである。"
+    ]
+  },
+  {
+    "base_id": "UL2",
+    "domain": "UI",
+    "relevance": "LOW",
+    "global_goal": "無料トライアルから有料契約への転換率を改善する。",
+    "context": "オンボーディングanimationのfps改善を数回行い、端末上の動きは滑らかになった。既存インタビューでは価格と提供価値の理解で迷う声が複数あり、pricing説明の検証はまだ行っていない。現在の局所作業はanimation easingの調整である。",
+    "observations": [
+      "easing調整後、animation frame dropが減った。pricing理解に関する新しい観測はない。",
+      "もう一度animationを調整し、描画指標は改善した。契約判断の観測は増えていない。"
+    ]
+  },
+  {
+    "base_id": "UH1",
+    "domain": "UI",
+    "relevance": "HIGH",
+    "global_goal": "モバイル購入フローを最後まで完了できるようにする。",
+    "context": "実機テストで主要CTAが小さい画面のfirst viewport外に押し出され、多くのテスターが次画面へ進めない。購入APIと決済処理は正常で、離脱はこの画面に集中している。直近の作業はviewport内配置の修正である。現在の局所作業はCTA配置の修正である。",
+    "observations": [
+      "小型端末2種ではCTAが見えるようになったが、別の1種ではまだ折り返しで隠れる。",
+      "残る端末の高さ条件が特定でき、修正範囲が狭まった。"
+    ]
+  },
+  {
+    "base_id": "UH2",
+    "domain": "UI",
+    "relevance": "HIGH",
+    "global_goal": "申請フォームを入力から送信まで完了できる状態にする。",
+    "context": "ユーザーテストで入力途中の保存後に一部フィールドが消え、送信まで到達できないケースが再現している。文言や配色の評価は良好で、現在の失敗はstate保存に集中している。直近の作業は保存復元処理の切り分けである。現在の局所作業はstate保存バグの修正である。",
+    "observations": [
+      "消えるフィールド群を1つのstate更新経路に絞れたが、再現ケースはまだ残る。",
+      "復元順序の差分が見つかり、失敗条件がさらに限定された。"
+    ]
+  },
+  {
+    "base_id": "DL1",
+    "domain": "Data",
+    "relevance": "LOW",
+    "global_goal": "過去案件データを誤紐付けなく実運用へ取り込める状態にする。",
+    "context": "CSV/PDF parserの速度改善を続け、現在は日次取込量を十分上回る処理速度になっている。QAで残っている重大エラーは、同一顧客・類似案件の重複判定と案件紐付けに集中している。現在の局所作業はparserの追加高速化である。",
+    "observations": [
+      "parser throughputがさらに8%改善した。QAの誤紐付け件数は変わらない。",
+      "追加最適化で処理時間が短縮した。重複・案件紐付けエラーは同じ件数残っている。"
+    ]
+  },
+  {
+    "base_id": "DL2",
+    "domain": "Data",
+    "relevance": "LOW",
+    "global_goal": "PDF/FAX由来の案件情報を人手修正を最小化して利用可能データへ変換する。",
+    "context": "OCR throughput改善を数回行い、処理待ちは解消している。一方、未利用レコードの多くはOCR失敗ではなく、取引先ごとの列名・項目対応ルールが未定義で弾かれている。現在の局所作業はOCR batch sizeの追加調整である。",
+    "observations": [
+      "batch size調整でOCR時間が少し短縮した。未利用レコードの主因は項目mapping未定義のままである。",
+      "OCRの並列数を最適化できた。mapping未定義件数は変わらない。"
+    ]
+  },
+  {
+    "base_id": "DH1",
+    "domain": "Data",
+    "relevance": "HIGH",
+    "global_goal": "CSV案件データを欠損なく取り込み、後工程で利用できる状態にする。",
+    "context": "実データの約30%がquoted multiline fieldでparser errorになり、案件そのものが欠落している。速度と重複判定は許容範囲で、現在の失敗はこの構文処理に集中している。直近の作業はquoted multiline parserの修正である。",
+    "observations": [
+      "代表fixtureの一部が通るようになったが、改行位置の別パターンでまだ失敗する。",
+      "失敗パターンを2種類に絞れ、残るparser条件が明確になった。"
+    ]
+  },
+  {
+    "base_id": "DH2",
+    "domain": "Data",
+    "relevance": "HIGH",
+    "global_goal": "案件データの重複統合で別案件を誤って1件にまとめないようにする。",
+    "context": "本番相当データでfalse mergeが確認され、誤統合すると請求・給与情報まで同じ案件に結び付く。parser速度と項目mappingは安定している。直近の作業はdedupe thresholdと特徴量の切り分けである。現在の局所作業はdedupe判定の修正である。",
+    "observations": [
+      "threshold調整でfalse mergeが減ったが、類似名の一部でまだ誤統合する。",
+      "誤統合に寄与する特徴量を1つ特定でき、残るケースが減った。"
+    ]
+  }
+]
