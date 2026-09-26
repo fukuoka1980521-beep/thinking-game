@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>NEW LIFE V37 — 会話・思考整理テスト</title>
+<title>NEW LIFE — 会話・思考整理テスト</title>
 <style>
 :root{color-scheme:dark;--bg:#0a0d12;--panel:#121823;--line:#2d394d;--text:#f3f6fa;--muted:#aab5c6;--ok:#9ee0a4;--bad:#ff9c9c;--accent:#efbd72}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#10141c,#090b10 70%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Yu Gothic UI",sans-serif}
@@ -23,8 +23,8 @@ details{border:1px dashed #3d4c63;border-radius:10px;padding:9px;margin-top:10px
 <body>
 <main>
   <div class="card">
-    <h1>NEW LIFE V37 — 会話・思考整理テスト</h1>
-    <p class="muted">V37の新設計を直接確認します。自由入力は一度の <code>converse_turn</code> で、サーバー側にあるストーリー正本とキャラクター背景を使って返答します。必要なときだけ別レイヤーの「思考整理」を呼び出せます。</p>
+    <h1>NEW LIFE — 会話・思考整理テスト</h1>
+    <p class="muted">最新版の隔離AIバックエンドを直接確認します。自由入力は一度の <code>converse_turn</code> で、サーバー側にあるストーリー正本とキャラクター背景を使って返答します。必要なときだけ別レイヤーの「思考整理」を呼び出せます。</p>
     <div id="status" class="status bad">LIVE AI endpoint を確認中…</div>
   </div>
 
@@ -80,7 +80,8 @@ details{border:1px dashed #3d4c63;border-radius:10px;padding:9px;margin-top:10px
 
 <script>
 const params=new URLSearchParams(location.search);
-const endpoint=params.get("endpoint")||localStorage.getItem("newlife_v37_endpoint")||"";
+const DEFAULT_ENDPOINT="https://newlife-refoundation-ai-zqtk74q2ra-an.a.run.app";
+const endpoint=params.get("endpoint")||DEFAULT_ENDPOINT;
 const statusEl=document.getElementById("status");
 const consentCard=document.getElementById("consentCard");
 const game=document.getElementById("game");
@@ -191,14 +192,32 @@ document.getElementById("organize").onclick=async()=>{
   }finally{btn.disabled=false}
 };
 
-if(safeEndpoint(endpoint)){
-  localStorage.setItem("newlife_v37_endpoint",endpoint);
-  statusEl.className="status ok";statusEl.textContent="V37 LIVE AI endpoint 設定済み。";
-  consentCard.style.display="block";
-}else{
-  statusEl.className="status bad";
-  statusEl.innerHTML='V37 LIVE AI endpoint が未設定です。<br><br><a href="https://ssh.cloud.google.com/cloudshell/open?cloudshell_git_repo=https://github.com/fukuoka1980521-beep/thinking-game.git&cloudshell_tutorial=docs/newlife/PDE010_CLOUD_SHELL_TUTORIAL.md" target="_blank" rel="noopener" style="display:inline-block;padding:10px 14px;border-radius:10px;background:#1f2b3b;color:white;text-decoration:none;border:1px solid #516985">Google Cloud ShellでV37 LIVE AIを準備</a><br><span style="display:inline-block;margin-top:8px">Cloud Shellで一括処理が終わると、V37のテストURLが表示されます。</span>';
+async function verifyBackend(){
+  if(!safeEndpoint(endpoint)){
+    statusEl.className="status bad";
+    statusEl.textContent="隔離AI endpoint が不正です。テストは開始できません。";
+    return;
+  }
+  try{
+    const ctrl=new AbortController();
+    const timer=setTimeout(()=>ctrl.abort(),10000);
+    const res=await fetch(endpoint,{method:"GET",signal:ctrl.signal});
+    clearTimeout(timer);
+    if(!res.ok)throw new Error("health HTTP "+res.status);
+    const data=await res.json();
+    if(!data||data.service!=="newlife-refoundation-ai"||typeof data.buildSha!=="string"||!data.buildSha.trim()){
+      throw new Error("health response mismatch");
+    }
+    const shortSha=data.buildSha==="unknown"?"unknown":data.buildSha.slice(0,8);
+    statusEl.className="status ok";
+    statusEl.textContent="隔離AI接続確認済み / "+(data.contractVersion||"version unknown")+" / build "+shortSha;
+    consentCard.style.display="block";
+  }catch(err){
+    statusEl.className="status bad";
+    statusEl.textContent="最新版の隔離AIを確認できません。旧endpointや未配置版で誤テストしないため、テスト開始を停止しています。";
+  }
 }
+verifyBackend();
 document.getElementById("consent").onclick=()=>{
   consentCard.style.display="none";game.style.display="block";
   addLine("MIKA","この場面、明日はやりません。ここを変えないなら、私は出ません。","mika");
