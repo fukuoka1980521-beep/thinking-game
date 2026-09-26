@@ -1,20 +1,21 @@
-name: NEW LIFE Refoundation — Live Backend Deploy (manual)
+name: NEW LIFE Refoundation — Isolated Backend Deploy
 
-# Manual deploy/smoke workflow for the isolated refoundation backend.
-# This workflow lives on the default branch so workflow_dispatch is available,
-# but it deliberately checks out chatgpt/newlife-refoundation-v1. Therefore
-# PR #22 does not need to be merged in order to validate the isolated backend.
-# GCP authentication remains OIDC/WIF only; no long-lived service-account key.
+# Permanent deploy route for the isolated NEW LIFE refoundation backend.
+# After the one-time GCP WIF trust bootstrap is complete, pushes to
+# chatgpt/newlife-refoundation-v1 deploy automatically. Until then the
+# readiness job succeeds and the deploy job is cleanly skipped.
 #
-# Manually triggered only. Never runs on push/PR. Deploys ONLY the isolated
-# `functions/newlife-refoundation-ai/` Cloud Function — it never touches
-# `functions/newlife-dialogue/` (legacy public NEW LIFE) or
-# `functions/dialogue/` (CASE1), and it never edits
-# `src/newlife/refoundation/config.ts` (product activation stays a
-# separate, deliberate step per the trigger's own instruction 6).
+# This workflow deploys ONLY functions/newlife-refoundation-ai/. It never
+# touches legacy public NEW LIFE functions or production route wiring.
 
 on:
   workflow_dispatch: {}
+  push:
+    branches:
+      - chatgpt/newlife-refoundation-v1
+    paths:
+      - "functions/newlife-refoundation-ai/**"
+      - ".github/workflows/newlife-refoundation-live.yml"
 
 permissions:
   contents: read
@@ -25,26 +26,51 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-and-smoke:
+  readiness:
     runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
     steps:
-      - name: Checkout refoundation candidate
-        uses: actions/checkout@v4
-        with:
-          ref: chatgpt/newlife-refoundation-v1
-
-      - name: Verify required repository variables are set
+      - name: Check permanent GCP trust configuration
+        id: check
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          GCP_WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+          GCP_DEPLOY_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
         run: |
           set -euo pipefail
           missing=()
-          [ -z "${{ vars.GCP_PROJECT_ID }}" ] && missing+=("GCP_PROJECT_ID")
-          [ -z "${{ vars.GCP_WIF_PROVIDER }}" ] && missing+=("GCP_WIF_PROVIDER")
-          [ -z "${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}" ] && missing+=("GCP_DEPLOY_SERVICE_ACCOUNT")
+          [ -z "$GCP_PROJECT_ID" ] && missing+=("GCP_PROJECT_ID")
+          [ -z "$GCP_WIF_PROVIDER" ] && missing+=("GCP_WIF_PROVIDER")
+          [ -z "$GCP_DEPLOY_SERVICE_ACCOUNT" ] && missing+=("GCP_DEPLOY_SERVICE_ACCOUNT")
           if [ ${#missing[@]} -ne 0 ]; then
-            echo "::error::Missing required repository variable(s): ${missing[*]}. Run the one-time bootstrap in docs/newlife/refoundation/V34_LIVE_DEPLOY_GITHUB_ACTIONS_BOOTSTRAP_V1.md, then set these under Settings > Secrets and variables > Actions > Variables."
-            exit 1
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "GCP_WIF_READY=NO"
+            echo "Missing repository variables: ${missing[*]}"
+            echo "The permanent deploy route is prepared but the one-time Google-side trust bootstrap is still pending."
+            exit 0
           fi
-          echo "Required repository variables are present."
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+          echo "GCP_WIF_READY=YES"
+
+  deploy-and-smoke:
+    needs: readiness
+    if: needs.readiness.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current refoundation candidate
+        uses: actions/checkout@v4
+        with:
+          ref: chatgpt/newlife-refoundation-v1
+          fetch-depth: 1
+
+      - name: Capture exact source commit
+        id: source
+        run: |
+          set -euo pipefail
+          sha="$(git rev-parse HEAD)"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "SOURCE_SHA=$sha"
 
       - name: Authenticate to Google Cloud via Workload Identity Federation
         uses: google-github-actions/auth@v2
@@ -52,11 +78,6 @@ jobs:
           project_id: ${{ vars.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
           service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
-          # No service-account JSON key anywhere: this exchanges the job's
-          # own short-lived GitHub OIDC token for a short-lived Google
-          # access token, scoped to exactly this repository (see the
-          # attribute-condition set on the WIF provider in the bootstrap
-          # script). Nothing here is a long-lived credential.
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
@@ -73,12 +94,11 @@ jobs:
             fi
           done
           if [ ${#missing[@]} -ne 0 ]; then
-            echo "::error::Required API(s) not enabled on project ${{ vars.GCP_PROJECT_ID }}: ${missing[*]}. This deploy service account intentionally does not have serviceusage.services.enable — run the one-time bootstrap script (docs/newlife/refoundation/V34_LIVE_DEPLOY_GITHUB_ACTIONS_BOOTSTRAP_V1.md, Step 1) with an Owner-authenticated gcloud session, then re-run this workflow."
+            echo "::error::Required API(s) are disabled: ${missing[*]}"
             exit 1
           fi
-          echo "All required APIs already enabled on ${{ vars.GCP_PROJECT_ID }}."
 
-      - name: Deploy newlife-refoundation-ai (Gen2 Cloud Function)
+      - name: Deploy isolated newlife-refoundation-ai
         id: deploy
         run: |
           set -euo pipefail
@@ -87,103 +107,66 @@ jobs:
             RUNTIME_SA_FLAG=(--service-account="${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}")
           fi
 
-          gcloud functions deploy newlife-refoundation-ai \
-            --gen2 \
-            --runtime=nodejs20 \
-            --region=asia-northeast1 \
-            --source=functions/newlife-refoundation-ai \
-            --entry-point=newlifeRefoundationAi \
-            --trigger-http \
-            --allow-unauthenticated \
-            --memory=256Mi \
-            --timeout=20s \
-            --max-instances=1 \
-            --project="${{ vars.GCP_PROJECT_ID }}" \
-            --set-env-vars=GCP_PROJECT="${{ vars.GCP_PROJECT_ID }}" \
-            "${RUNTIME_SA_FLAG[@]}" \
-            --quiet
+          gcloud functions deploy newlife-refoundation-ai             --gen2             --runtime=nodejs20             --region=asia-northeast1             --source=functions/newlife-refoundation-ai             --entry-point=newlifeRefoundationAi             --trigger-http             --allow-unauthenticated             --memory=256Mi             --timeout=45s             --max-instances=1             --project="${{ vars.GCP_PROJECT_ID }}"             --set-env-vars=GCP_PROJECT="${{ vars.GCP_PROJECT_ID }}",NEWLIFE_REFOUNDATION_BUILD_SHA="${{ steps.source.outputs.sha }}"             "${RUNTIME_SA_FLAG[@]}"             --quiet
 
-          uri="$(gcloud functions describe newlife-refoundation-ai \
-            --gen2 \
-            --region=asia-northeast1 \
-            --project="${{ vars.GCP_PROJECT_ID }}" \
-            --format='value(serviceConfig.uri)')"
+          uri="$(gcloud functions describe newlife-refoundation-ai             --gen2             --region=asia-northeast1             --project="${{ vars.GCP_PROJECT_ID }}"             --format='value(serviceConfig.uri)')"
 
           if [ -z "$uri" ]; then
-            echo "::error::Deploy appeared to succeed but no service URI was returned by 'gcloud functions describe'."
+            echo "::error::Deployment produced no service URI."
             exit 1
           fi
-
-          echo "Deployed URI: $uri"
           echo "uri=$uri" >> "$GITHUB_OUTPUT"
 
-      - name: Smoke test — interpret_turn
+      - name: Smoke 0/2 — deployment identity
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
-          body='{"operation":"interpret_turn","utterance":"どこまでなら大丈夫か教えてもらえますか？","caseContext":"Smoke test fixture from newlife-refoundation-live.yml (workflow_dispatch). Non-production, safe, fixed input — not real player data."}'
-
-          resp="$(curl -sS --max-time 30 -w '\n%{http_code}' -X POST "$uri" -H 'Content-Type: application/json' -d "$body")"
-          status="$(tail -n1 <<< "$resp")"
-          payload="$(sed '$d' <<< "$resp")"
-          echo "HTTP status: $status"
-
-          if [ "$status" != "200" ]; then
-            echo "::error::interpret_turn smoke test returned HTTP $status"
-            exit 1
-          fi
-
+          payload="$(curl -fsS --max-time 20 "$uri")"
           node -e '
-            const p = JSON.parse(process.argv[1]);
-            if (typeof p !== "object" || p === null) throw new Error("response is not an object");
-            if (typeof p.action !== "string" || p.action.length === 0) throw new Error("action missing/not a string");
-            if (typeof p.boundaryMode !== "string" || p.boundaryMode.length === 0) throw new Error("boundaryMode missing/not a string");
-            if (!Array.isArray(p.relationalEvents)) throw new Error("relationalEvents is not an array");
-            if (typeof p.needsClarification !== "boolean") throw new Error("needsClarification is not a boolean");
-            console.log("interpret_turn shape OK:", JSON.stringify(p));
-          ' "$payload"
-          # NOTE: this is a lightweight shape check (right fields, right
-          # types), not a full closed-enum validation. The authoritative,
-          # exhaustive check already exists client-side
-          # (isValidRawTurnClassification in
-          # src/newlife/refoundation/semanticInterpreter.ts) and is exercised
-          # by tests/newlifeRefoundationAiFunction.test.ts. Duplicating that
-          # enum list here would be a second copy to keep in sync for no
-          # safety benefit.
+            const p=JSON.parse(process.argv[1]);
+            const expected=process.argv[2];
+            if(!p || p.service!=="newlife-refoundation-ai") throw new Error("wrong service");
+            if(typeof p.buildSha!=="string" || p.buildSha!==expected) throw new Error("build SHA mismatch");
+            if(!Array.isArray(p.operations) || !p.operations.includes("converse_turn") || !p.operations.includes("organize_thought")) throw new Error("operation set mismatch");
+            console.log("health/build identity OK:", p.buildSha);
+          ' "$payload" "${{ steps.source.outputs.sha }}"
 
-      - name: Smoke test — generate_npc_line
+      - name: Smoke 1/2 — converse_turn
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
-          body='{"operation":"generate_npc_line","projection":{"npc":"MIKA","relationshipState":"NEUTRAL","boundaryStatus":"UNKNOWN","lastPlayerTurn":null,"sceneContext":"Smoke test fixture from newlife-refoundation-live.yml (workflow_dispatch). Non-production, safe, fixed input — not real player data."}}'
-
-          resp="$(curl -sS --max-time 30 -w '\n%{http_code}' -X POST "$uri" -H 'Content-Type: application/json' -d "$body")"
-          status="$(tail -n1 <<< "$resp")"
-          payload="$(sed '$d' <<< "$resp")"
-          echo "HTTP status: $status"
-
-          if [ "$status" != "200" ]; then
-            echo "::error::generate_npc_line smoke test returned HTTP $status"
-            exit 1
-          fi
-
+          body='{"operation":"converse_turn","caseId":"COMMUNITY_THEATER_V1","targetNpc":"MIKA","rawPlayerUtterance":"変更案を出すなら、あなたに必要な最低条件は何ですか？","recentDialogue":[{"speaker":"MIKA","text":"この場面、明日はやりません。ここを変えないなら、私は出ません。"},{"speaker":"RYO","text":"昨日まではやってただろ。今ここで変えたら、全員の段取りが崩れる。"}],"dynamicState":{"relationshipState":"NEUTRAL","boundaryStatus":"UNKNOWN","remainingMinutes":50,"activeCommitment":null}}'
+          payload="$(curl -fsS --max-time 55 -X POST "$uri" -H 'Content-Type: application/json' -d "$body")"
           node -e '
-            const p = JSON.parse(process.argv[1]);
-            if (typeof p !== "object" || p === null) throw new Error("response is not an object");
-            if (p.npc !== "MIKA") throw new Error("npc field missing or does not echo the requested character: " + p.npc);
-            if (typeof p.text !== "string" || p.text.length === 0) throw new Error("text missing/not a non-empty string");
-            console.log("generate_npc_line shape OK:", JSON.stringify(p));
+            const p=JSON.parse(process.argv[1]);
+            if(!p || p.npc!=="MIKA" || typeof p.npcLine!=="string" || !p.npcLine.trim()) throw new Error("invalid converse response");
+            if(!p.candidateTurn || typeof p.candidateTurn.action!=="string") throw new Error("candidate turn missing");
+            console.log("converse_turn shape OK");
           ' "$payload"
 
-      - name: Emit endpoint URI in job summary
+      - name: Smoke 2/2 — organize_thought
+        run: |
+          set -euo pipefail
+          uri="${{ steps.deploy.outputs.uri }}"
+          body='{"operation":"organize_thought","validatedWorldFacts":"明日18:00が初回公演。チケットは販売済み。17:30までに対応方針を決める必要がある。","recentDialogue":[{"speaker":"MIKA","text":"この場面、明日はやりません。ここを変えないなら、私は出ません。"}],"currentProblem":"美香と亮の対立を理解し、明日の公演をどう進めるか決める。"}'
+          payload="$(curl -fsS --max-time 55 -X POST "$uri" -H 'Content-Type: application/json' -d "$body")"
+          node -e '
+            const p=JSON.parse(process.argv[1]);
+            if(!p || !Array.isArray(p.known) || !Array.isArray(p.possible) || !Array.isArray(p.unknown) || !Array.isArray(p.options)) throw new Error("invalid thought response");
+            console.log("organize_thought shape OK");
+          ' "$payload"
+
+      - name: Emit permanent test route
         run: |
           {
-            echo "### NEW LIFE refoundation live backend — deploy + smoke test complete"
+            echo "### NEW LIFE isolated backend — deploy verified"
             echo ""
-            echo "- Function: \`newlife-refoundation-ai\` (Gen2, \`asia-northeast1\`)"
-            echo "- Endpoint: \`${{ steps.deploy.outputs.uri }}\`"
-            echo "- Smoke tests: \`interpret_turn\` OK, \`generate_npc_line\` OK"
+            echo "- Source SHA: `${{ steps.source.outputs.sha }}`"
+            echo "- Endpoint: `${{ steps.deploy.outputs.uri }}`"
+            echo "- Health/build identity: PASS"
+            echo "- converse_turn: PASS"
+            echo "- organize_thought: PASS"
+            echo "- Human test page: https://fukuoka1980521-beep.github.io/thinking-game/newlife-v37.html"
             echo ""
-            echo "**This endpoint has NOT been written to \`src/newlife/refoundation/config.ts\`.**"
-            echo "Product activation (pasting the URL into that file, and clearing it for rollback) is a separate, deliberate step — this workflow only deploys and smoke-tests the backend."
+            echo "Legacy public NEW LIFE was not modified."
           } >> "$GITHUB_STEP_SUMMARY"
