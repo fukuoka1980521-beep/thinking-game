@@ -24,7 +24,7 @@ details{border:1px dashed #3d4c63;border-radius:10px;padding:9px;margin-top:10px
 <main>
   <div class="card">
     <h1>NEW LIFE — 会話・思考整理テスト</h1>
-    <p class="muted">最新版の隔離AIバックエンドを直接確認します。自由入力は <code>converse_turn</code> で処理し、必要な場面ではNPC同士が最大3ターンだけ自律的に会話を続けます。サーバー側のストーリー正本とキャラクター背景を使い、必要なときだけ別レイヤーの「思考整理」を呼び出せます。</p>
+    <p class="muted">最新版の隔離AIバックエンドを直接確認します。自由入力は <code>converse_turn</code> で処理し、必要な場面ではNPC同士が最大3ターンだけ自律的に会話を続けます。台本の書き換えが必要になった場合は、会話だけで済ませず、実際の修正案本文を画面上の「台本」に反映して確認できます。</p>
     <div id="status" class="status bad">LIVE AI endpoint を確認中…</div>
   </div>
 
@@ -39,6 +39,16 @@ details{border:1px dashed #3d4c63;border-radius:10px;padding:9px;margin-top:10px
       <h2>今回の依頼</h2>
       <p class="muted">16:40。明日18:00が初公演。主役の美香が、ある場面をこのままでは演じないと言い、演出の亮は今から変えると全体の段取りが崩れると困っています。17:30までに、明日の公演をどうするか決める必要があります。</p>
       <div id="transcript" class="transcript"></div>
+    </div>
+    <div class="card">
+      <h2>問題になっている台本</h2>
+      <p class="muted">調整役として、問題の場面の本文そのものは確認できます。どの部分が美香の実体験と結びつくかは、本人が話さない限り分かりません。</p>
+      <div class="result" id="originalScene">高校を卒業する前の冬、駅前の古い喫茶店で、父に『ここを出たら、もう戻るな』と言われた。私は青いマフラーを椅子に置いて店を出た。振り返らなかった。</div>
+      <div id="revisionPanel" class="panel" style="display:none;margin-top:10px">
+        <h3>現在の修正案</h3>
+        <div id="revisionText" class="result"></div>
+        <p id="revisionSummary" class="muted"></p>
+      </div>
     </div>
 
     <div class="card">
