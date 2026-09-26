@@ -46,6 +46,9 @@ export function NewLife30App({ onExit }: Props) {
   const [transcript, setTranscript] = useState<TranscriptLine[]>([]);
   const [addressee, setAddressee] = useState<NpcId>("hina");
   const [freeText, setFreeText] = useState("");
+  const [thinkingOpen, setThinkingOpen] = useState(false);
+  const [thinking, setThinking] = useState({ important: "", unknown: "", next: "" });
+  const [thinkingNote, setThinkingNote] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   // Phase 25.2: compact who-said/did/offered/permitted/owns ledger carried across turns
   // (short attributed facts, never a transcript). Re-synced with canonical state each turn.
@@ -154,13 +157,21 @@ export function NewLife30App({ onExit }: Props) {
         {scene.lowEngagementHook ? <p className="newlife30-hook">{scene.lowEngagementHook}</p> : null}
       </div>
 
-      <div className="newlife30-options">
-        {scene.options.map((o) => (
-          <button key={o.id} onClick={() => handleOption(o.id)}>
-            {o.label}
-          </button>
-        ))}
+      <div className="newlife30-primary-guide">
+        <strong>あなたなら、どうする？</strong>
+        <span>下の入力欄から自由に話してください。決めにくい時だけ候補や「思考を整理する」を使えます。</span>
       </div>
+
+      <details className="newlife30-options">
+        <summary>迷ったときの行動候補</summary>
+        <div className="newlife30-option-list">
+          {scene.options.map((o) => (
+            <button key={o.id} onClick={() => handleOption(o.id)}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </details>
 
       <div className="newlife30-transcript">
         {transcript.map((line, i) => (
@@ -197,6 +208,31 @@ export function NewLife30App({ onExit }: Props) {
         </div>
         {pending ? <p className="newlife30-pending">考え中…</p> : null}
       </form>
+
+      <section className="newlife30-thinking">
+        <button type="button" className="newlife30-thinking-toggle" onClick={() => setThinkingOpen((v) => !v)}>
+          {thinkingOpen ? "思考整理を閉じる" : "思考を整理する"}
+        </button>
+        {thinkingOpen ? (
+          <div className="newlife30-thinking-body">
+            <p>正解を出す場所ではありません。いま考えていることを、次の行動まで小さくします。</p>
+            <label>いま大事にしたいこと
+              <textarea value={thinking.important} onChange={(e) => setThinking((v) => ({ ...v, important: e.target.value }))} />
+            </label>
+            <label>まだ分からないこと
+              <textarea value={thinking.unknown} onChange={(e) => setThinking((v) => ({ ...v, unknown: e.target.value }))} />
+            </label>
+            <label>次に一つだけやること
+              <textarea value={thinking.next} onChange={(e) => setThinking((v) => ({ ...v, next: e.target.value }))} />
+            </label>
+            <button type="button" onClick={() => {
+              const next = thinking.next.trim();
+              setThinkingNote(next ? "次の一歩：" + next : "次の一歩を一つ書くと、ここに残せます。");
+            }}>次の一歩を決める</button>
+            {thinkingNote ? <p className="newlife30-thinking-note" aria-live="polite">{thinkingNote}</p> : null}
+          </div>
+        ) : null}
+      </section>
 
       <button className="newlife30-advance" onClick={handleAdvance}>
         {day11NeedsSecondMove ? "この日を終える" : "次の日へ"}
