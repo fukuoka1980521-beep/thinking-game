@@ -7,6 +7,7 @@ const {
   buildNpcPrompt,
   buildConverseResponseSchema,
   buildConversePrompt,
+  normalizeConverseResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
   INTERPRET_SYSTEM_INSTRUCTION,
@@ -80,6 +81,36 @@ async function callModel(client, { systemInstruction, prompt, responseSchema }) 
 }
 
 /**
+ * V38. Dialogue is the user-facing primary product output; a malformed
+ * `candidateTurn`/effect-metadata payload must never make an otherwise
+ * usable character reply disappear -- `normalizeConverseResponse` (lib.js)
+ * already salvages the line and collapses effects to the conservative
+ * CLARIFY/UNKNOWN/no-events shape, treating `body.targetNpc` as
+ * authoritative rather than whatever npc id the model happened to echo.
+ * Only a genuinely *unusable* npcLine (empty model response, unparseable
+ * JSON, or missing/oversized npcLine) is a real failure here, and gets
+ * exactly one retry against the same canonical prompt/schema before the
+ * caller fails closed.
+ */
+async function attemptConverseTurn(client, body) {
+  const text = await callModel(client, {
+    systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
+    prompt: buildConversePrompt(body),
+    responseSchema: CONVERSE_RESPONSE_SCHEMA,
+  });
+  if (!text) return null;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+
+  return normalizeConverseResponse(parsed, body.targetNpc);
+}
+
+/**
  * HTTP Cloud Function (Gen 2). POST-only, stateless. One operation
  * discriminator (`interpret_turn` / `generate_npc_line` / `converse_turn` /
  * `organize_thought`), each returning only the closed shape its client-side
@@ -137,11 +168,20 @@ exports.newlifeRefoundationAi = async (req, res) => {
         res.status(400).json({ error: "invalid_target_npc" });
         return;
       }
-      text = await callModel(client, {
-        systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
-        prompt: buildConversePrompt(req.body),
-        responseSchema: CONVERSE_RESPONSE_SCHEMA,
-      });
+
+      // V38: converse_turn has its own response path (normalize + one retry
+      // on a genuinely unusable line) rather than the shared parse/respond
+      // code below, which the other three operations still use unchanged.
+      let normalized = await attemptConverseTurn(client, req.body);
+      if (!normalized) {
+        normalized = await attemptConverseTurn(client, req.body);
+      }
+      if (!normalized) {
+        res.status(502).json({ error: "unusable_model_response" });
+        return;
+      }
+      res.status(200).json(normalized);
+      return;
     } else {
       text = await callModel(client, {
         systemInstruction: ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION,

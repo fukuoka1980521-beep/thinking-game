@@ -354,6 +354,128 @@ describe("functions/newlife-refoundation-ai/lib.js — CANONICAL WORLD MODEL sta
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — normalizeConverseResponse (V38)", () => {
+  function validParsed(overrides: Partial<Record<string, unknown>> = {}) {
+    return {
+      npc: "MIKA",
+      npcLine: "昨日、最終版を読んで気づいたんです。",
+      understoodPlayerMeaning: "なぜ今まで黙っていたのかを尋ねている。",
+      candidateTurn: {
+        action: "ASK_FACT",
+        boundaryMode: "DISCOVER",
+        relationalEvents: [],
+        needsClarification: false,
+      },
+      candidateFactRevealIds: ["mika_read_final_script_yesterday"],
+      candidateCommitments: [],
+      uncertainty: "LOW",
+      thoughtSupportSignal: false,
+      ...overrides,
+    };
+  }
+
+  it("overwrites a wrong echoed npc with the request's authoritative targetNpc, without discarding the line", () => {
+    const parsed = validParsed({ npc: "RYO" });
+    const result = lib.normalizeConverseResponse(parsed, "MIKA");
+    expect(result).not.toBeNull();
+    expect(result.npc).toBe("MIKA");
+    expect(result.npcLine).toBe(parsed.npcLine);
+  });
+
+  it("preserves a valid candidateTurn/metadata unchanged when everything is well-formed", () => {
+    const parsed = validParsed();
+    const result = lib.normalizeConverseResponse(parsed, "MIKA");
+    expect(result.candidateTurn).toEqual(parsed.candidateTurn);
+    expect(result.candidateFactRevealIds).toEqual(parsed.candidateFactRevealIds);
+    expect(result.uncertainty).toBe("LOW");
+  });
+
+  it("salvages a usable npcLine and collapses ALL effect metadata to CLARIFY/UNKNOWN/[]/HIGH when candidateTurn is malformed", () => {
+    const parsed = validParsed({
+      candidateTurn: { action: "NOT_A_REAL_ACTION", boundaryMode: "DISCOVER", relationalEvents: [], needsClarification: false },
+      candidateFactRevealIds: ["should_be_dropped"],
+      candidateCommitments: ["should_be_dropped"],
+      thoughtSupportSignal: true,
+    });
+    const result = lib.normalizeConverseResponse(parsed, "MIKA");
+    expect(result).not.toBeNull();
+    expect(result.npcLine).toBe(parsed.npcLine);
+    expect(result.candidateTurn).toEqual({
+      action: "CLARIFY",
+      boundaryMode: "UNKNOWN",
+      relationalEvents: [],
+      needsClarification: true,
+    });
+    expect(result.candidateFactRevealIds).toEqual([]);
+    expect(result.candidateCommitments).toEqual([]);
+    expect(result.uncertainty).toBe("HIGH");
+    expect(result.thoughtSupportSignal).toBe(false);
+  });
+
+  it("also collapses metadata when candidateTurn's own CLARIFY invariant is inconsistent (e.g. needsClarification mismatched)", () => {
+    const parsed = validParsed({
+      candidateTurn: { action: "CLARIFY", boundaryMode: "UNKNOWN", relationalEvents: [], needsClarification: false },
+    });
+    const result = lib.normalizeConverseResponse(parsed, "MIKA");
+    expect(result.candidateTurn.needsClarification).toBe(true);
+  });
+
+  it("returns null (missing/unusable npcLine is not accepted) when npcLine is absent, blank, or oversized", () => {
+    expect(lib.normalizeConverseResponse(validParsed({ npcLine: undefined }), "MIKA")).toBeNull();
+    expect(lib.normalizeConverseResponse(validParsed({ npcLine: "" }), "MIKA")).toBeNull();
+    expect(lib.normalizeConverseResponse(validParsed({ npcLine: "   " }), "MIKA")).toBeNull();
+    expect(lib.normalizeConverseResponse(validParsed({ npcLine: "あ".repeat(lib.MAX_NPC_LINE_LENGTH + 1) }), "MIKA")).toBeNull();
+  });
+
+  it("returns null for a non-object or null parsed payload", () => {
+    expect(lib.normalizeConverseResponse(null, "MIKA")).toBeNull();
+    expect(lib.normalizeConverseResponse("not an object", "MIKA")).toBeNull();
+    expect(lib.normalizeConverseResponse(undefined, "MIKA")).toBeNull();
+  });
+
+  it("falls back to a placeholder understoodPlayerMeaning when that field is missing/oversized, without discarding the line", () => {
+    const result = lib.normalizeConverseResponse(validParsed({ understoodPlayerMeaning: undefined }), "MIKA");
+    expect(result).not.toBeNull();
+    expect(typeof result.understoodPlayerMeaning).toBe("string");
+    expect(result.understoodPlayerMeaning.length).toBeGreaterThan(0);
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — Mika character voice register constraints (V38)", () => {
+  it("Mika's dossier declares an explicit pronoun/politeness/register model, not just a generic personality label", () => {
+    const mika = lib.CHARACTER_DOSSIERS.MIKA;
+    expect(mika.speechModel).toContain("私");
+    expect(mika.speechModel).toMatch(/です|ます/);
+    // The register model states her firmness must not slide into a rough/masculine
+    // register (a constraint, not a description of how she normally sounds).
+    expect(mika.speechModel).toMatch(/男性的な断定口調には寄せない/);
+  });
+
+  it("Mika's voiceAvoid explicitly rejects rough masculine-sounding declaratives and forced feminine-caricature endings", () => {
+    const mika = lib.CHARACTER_DOSSIERS.MIKA;
+    expect(mika.voiceAvoid.some((line: string) => /男性的/.test(line))).toBe(true);
+    expect(mika.voiceAvoid.some((line: string) => /わ|かしら/.test(line))).toBe(true);
+  });
+
+  it("Mika's voiceAvoid and mustNot both forbid mirroring the player's rough register", () => {
+    const mika = lib.CHARACTER_DOSSIERS.MIKA;
+    expect(mika.voiceAvoid.some((line: string) => /ミラーリング/.test(line))).toBe(true);
+    expect(mika.mustNot.some((line: string) => /masculine-coded|caricatured-feminine/.test(line))).toBe(true);
+  });
+
+  it("CONVERSE_SYSTEM_INSTRUCTION instructs the model to preserve each NPC's own idiolect rather than copy the player's tone", () => {
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toMatch(/その口調をコピーせず/);
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toMatch(/speechModel/);
+  });
+
+  it("Ryo's dossier is unchanged: practical/logistics-first register, no gendered-register rules added", () => {
+    const ryo = lib.CHARACTER_DOSSIERS.RYO;
+    expect(ryo.speechModel).toContain("実務的");
+    expect(ryo.voiceAnchors).toBeUndefined();
+    expect(ryo.voiceAvoid).toBeUndefined();
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — converse_turn / organize_thought schema construction", () => {
   const FakeType = { OBJECT: "OBJECT", STRING: "STRING", ARRAY: "ARRAY", BOOLEAN: "BOOLEAN" };
 
@@ -479,6 +601,32 @@ describe("functions/newlife-refoundation-ai/index.js — prior real Vertex AI le
     const fs = require("node:fs");
     const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-refoundation-ai", "index.js"), "utf-8");
     expect(source).not.toMatch(/console\.(log|error)\([^)]*req\.body/);
+  });
+});
+
+describe("functions/newlife-refoundation-ai/index.js — converse_turn envelope (V38)", () => {
+  const fs = require("node:fs");
+  const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-refoundation-ai", "index.js"), "utf-8");
+
+  it("imports and calls normalizeConverseResponse instead of returning the raw parsed model output directly", () => {
+    expect(source).toMatch(/normalizeConverseResponse/);
+    expect(source).toContain("normalizeConverseResponse(parsed, body.targetNpc)");
+  });
+
+  it("retries converse_turn exactly once when no usable line comes back, before failing closed", () => {
+    expect(source).toMatch(/attemptConverseTurn\(client, req\.body\)[\s\S]*if \(!normalized\)[\s\S]*attemptConverseTurn\(client, req\.body\)/);
+    expect(source).toMatch(/if \(!normalized\)[\s\S]*res\.status\(502\)/);
+  });
+
+  it("does not add any per-utterance answer table for converse_turn (no lookup keyed on rawPlayerUtterance/targetNpc content)", () => {
+    expect(source).not.toMatch(/rawPlayerUtterance[^\n]*(===|includes|switch)/);
+    expect(source).not.toMatch(/targetNpc\s*===\s*"MIKA"[\s\S]{0,80}targetNpc\s*===\s*"RYO"/);
+  });
+
+  it("does not change the shared interpret_turn/generate_npc_line/organize_thought response path (still falls through to the shared parse-and-respond block)", () => {
+    expect(source).toContain('res.status(502).json({ error: "empty_model_response" });');
+    expect(source).toContain('res.status(502).json({ error: "malformed_model_response" });');
+    expect(source).toContain("res.status(200).json(parsed);");
   });
 });
 
