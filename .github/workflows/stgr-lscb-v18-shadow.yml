@@ -1,0 +1,37 @@
+name: STGR v1.8 Shadow Baseline
+on:
+  push:
+    branches: [research/stgr-lscb-v18]
+    paths: [research/stgr-lscb-v18/RUN_SHADOW_V18]
+permissions:
+  contents: write
+  id-token: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.STGR_GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.STGR_GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.STGR_GCP_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run inherited leakage-free shadow runner
+        run: |
+          cp research/stgr-lscb-v18/SHADOW_PACKET_V1_8.json research/stgr-lscb-v17/SHADOW_PACKET_V1_7.json
+          python research/stgr-lscb-v17/run_shadow_v17.py
+          mv research/stgr-lscb-v17/GEMINI_SHADOW_RESULT_V1_7.json research/stgr-lscb-v18/GEMINI_SHADOW_RESULT_V1_8.json
+          git checkout -- research/stgr-lscb-v17/SHADOW_PACKET_V1_7.json
+      - name: Persist
+        run: |
+          git config user.name "stgr-research-bot"
+          git config user.email "stgr-research-bot@users.noreply.github.com"
+          git add research/stgr-lscb-v18/GEMINI_SHADOW_RESULT_V1_8.json
+          git commit -m "research(stgr): persist v1.8 shadow baseline [skip ci]"
+          git pull --rebase origin research/stgr-lscb-v18
+          git push origin HEAD:research/stgr-lscb-v18
