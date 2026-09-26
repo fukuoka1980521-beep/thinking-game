@@ -59,6 +59,12 @@ AgentBench and WebArena emphasize interactive, multi-step agent behavior under r
 
 The current study complements these benchmarks with a small prospective field design focused on a specific control mechanism inside real development workflows rather than aggregate task-success rates.
 
+### 2.5 Recent metacognitive control
+
+Recent work makes the conceptual neighborhood more explicit. MUSE adds self-assessment and self-regulation above a conventional perception-action loop for unknown situations. MetaCogAgent uses metacognitive self-assessment to decide whether an agent should execute or delegate a task. MASC uses step-level anomaly detection to trigger targeted correction in multi-agent systems. Rahman and Qian separate ordinary problem solving from metacognitive arbitration and report that structured arbitration can reduce uncertainty and overconfidence even when it contributes little new reasoning content.
+
+These systems are important comparators because they show that selective metacognitive control is not unique to the present work. The present field study differs in emphasis: its triggers are observable workflow conditions rather than self-reported confidence or learned anomaly scores; the state is frozen before a consequential operation; reassessment preferentially gathers external evidence; and the live decision is paired with a leakage-free shadow next-operation in naturally occurring software-development work.
+
 ## 3. Research Question
 
 The confirmatory question was:
@@ -304,6 +310,10 @@ The result should not be read as a universal effect estimate. It is evidence for
 5. Liu, X., Yu, H., Zhang, H., et al. (2024). *AgentBench: Evaluating LLMs as Agents*. ICLR 2024. arXiv:2308.03688.
 6. Zhou, S., Xu, F. F., Zhu, H., et al. (2024). *WebArena: A Realistic Web Environment for Building Autonomous Agents*. ICLR 2024. arXiv:2307.13854.
 7. Yang, J., Jimenez, C. E., Wettig, A., Lieret, K., Yao, S., Narasimhan, K., & Press, O. (2024). *SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering*. NeurIPS 2024. arXiv:2405.15793.
+8. Wang, C., & Shu, Y. (2026). *MetaCogAgent: A Metacognitive Multi-Agent LLM Framework with Self-Aware Task Delegation*. arXiv:2605.17292.
+9. Shen, X., Zhang, Q., Wang, S., et al. (2025). *Metacognitive Self-Correction for Multi-Agent System via Prototype-Guided Next-Execution Reconstruction*. arXiv:2510.14319.
+10. Rahman, M., & Qian, L. (2026). *Metacognitive Arbitration as Uncertainty Compression in Multi-Agent Language Models*. Proceedings of the 42nd Conference on Uncertainty in Artificial Intelligence, PMLR 337, 5623–5642.
+11. Kumaran, D., Daw, N., Osindero, S., Veličković, P., et al. (2026). *Causal evidence that language models use confidence to drive behaviour*. Nature Machine Intelligence.
 
 ## Evidence provenance
 
