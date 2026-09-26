@@ -21,6 +21,10 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  GCP_PROJECT_ID: gas-test-runner-20260620-wjxf
+  GCP_DEPLOY_SERVICE_ACCOUNT: newlife-refoundation-deployer@gas-test-runner-20260620-wjxf.iam.gserviceaccount.com
+
 concurrency:
   group: newlife-refoundation-live-deploy
   cancel-in-progress: false
@@ -34,19 +38,13 @@ jobs:
       - name: Check permanent GCP trust configuration
         id: check
         env:
-          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           GCP_WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
-          GCP_DEPLOY_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
         run: |
           set -euo pipefail
-          missing=()
-          [ -z "$GCP_PROJECT_ID" ] && missing+=("GCP_PROJECT_ID")
-          [ -z "$GCP_WIF_PROVIDER" ] && missing+=("GCP_WIF_PROVIDER")
-          [ -z "$GCP_DEPLOY_SERVICE_ACCOUNT" ] && missing+=("GCP_DEPLOY_SERVICE_ACCOUNT")
-          if [ ${#missing[@]} -ne 0 ]; then
+          if [ -z "$GCP_WIF_PROVIDER" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
             echo "GCP_WIF_READY=NO"
-            echo "Missing repository variables: ${missing[*]}"
+            echo "Missing repository variable: GCP_WIF_PROVIDER"
             echo "The permanent deploy route is prepared but the one-time Google-side trust bootstrap is still pending."
             exit 0
           fi
@@ -75,9 +73,9 @@ jobs:
       - name: Authenticate to Google Cloud via Workload Identity Federation
         uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
-          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          service_account: ${{ env.GCP_DEPLOY_SERVICE_ACCOUNT }}
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
@@ -86,7 +84,7 @@ jobs:
         run: |
           set -euo pipefail
           required=(aiplatform.googleapis.com cloudfunctions.googleapis.com cloudbuild.googleapis.com run.googleapis.com artifactregistry.googleapis.com)
-          enabled="$(gcloud services list --enabled --project "${{ vars.GCP_PROJECT_ID }}" --format='value(config.name)')"
+          enabled="$(gcloud services list --enabled --project "${{ env.GCP_PROJECT_ID }}" --format='value(config.name)')"
           missing=()
           for api in "${required[@]}"; do
             if ! grep -qx "$api" <<< "$enabled"; then
@@ -107,9 +105,9 @@ jobs:
             RUNTIME_SA_FLAG=(--service-account="${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}")
           fi
 
-          gcloud functions deploy newlife-refoundation-ai             --gen2             --runtime=nodejs20             --region=asia-northeast1             --source=functions/newlife-refoundation-ai             --entry-point=newlifeRefoundationAi             --trigger-http             --allow-unauthenticated             --memory=256Mi             --timeout=45s             --max-instances=1             --project="${{ vars.GCP_PROJECT_ID }}"             --set-env-vars=GCP_PROJECT="${{ vars.GCP_PROJECT_ID }}",NEWLIFE_REFOUNDATION_BUILD_SHA="${{ steps.source.outputs.sha }}"             "${RUNTIME_SA_FLAG[@]}"             --quiet
+          gcloud functions deploy newlife-refoundation-ai             --gen2             --runtime=nodejs20             --region=asia-northeast1             --source=functions/newlife-refoundation-ai             --entry-point=newlifeRefoundationAi             --trigger-http             --allow-unauthenticated             --memory=256Mi             --timeout=45s             --max-instances=1             --project="${{ env.GCP_PROJECT_ID }}"             --set-env-vars=GCP_PROJECT="${{ env.GCP_PROJECT_ID }}",NEWLIFE_REFOUNDATION_BUILD_SHA="${{ steps.source.outputs.sha }}"             "${RUNTIME_SA_FLAG[@]}"             --quiet
 
-          uri="$(gcloud functions describe newlife-refoundation-ai             --gen2             --region=asia-northeast1             --project="${{ vars.GCP_PROJECT_ID }}"             --format='value(serviceConfig.uri)')"
+          uri="$(gcloud functions describe newlife-refoundation-ai             --gen2             --region=asia-northeast1             --project="${{ env.GCP_PROJECT_ID }}"             --format='value(serviceConfig.uri)')"
 
           if [ -z "$uri" ]; then
             echo "::error::Deployment produced no service URI."
