@@ -313,7 +313,7 @@ The result should not be read as a universal effect estimate. It is evidence for
 8. Wang, C., & Shu, Y. (2026). *MetaCogAgent: A Metacognitive Multi-Agent LLM Framework with Self-Aware Task Delegation*. arXiv:2605.17292.
 9. Shen, X., Zhang, Q., Wang, S., et al. (2025). *Metacognitive Self-Correction for Multi-Agent System via Prototype-Guided Next-Execution Reconstruction*. arXiv:2510.14319.
 10. Rahman, M., & Qian, L. (2026). *Metacognitive Arbitration as Uncertainty Compression in Multi-Agent Language Models*. Proceedings of the 42nd Conference on Uncertainty in Artificial Intelligence, PMLR 337, 5623–5642.
-11. Kumaran, D., Daw, N., Osindero, S., Veličković, P., et al. (2026). *Causal evidence that language models use confidence to drive behaviour*. Nature Machine Intelligence.
+11. Kumaran, D., Daw, N., Osindero, S., Veličković, P., et al. (2026). *Causal evidence that language models use confidence to drive behaviour*. Nature Machine Intelligence.\n12. Valiente, R., & Pilly, P. K. (2026). *Metacognition for Unknown Situations and Environments (MUSE)*. Neural Networks, 194, 108131. https://doi.org/10.1016/j.neunet.2025.108131.
 
 ## Evidence provenance
 
