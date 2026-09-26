@@ -125,6 +125,24 @@ describe("resolveFreeText (Phase 30 hybrid coordinator)", () => {
     expect(result.source).toBe("deterministic");
   });
 
+  it("rejects an NPC stealing the player's recorded offer as her own statement", async () => {
+    const text = "昨日の話、どういう意味だったの？";
+    const interpreter = stubInterpreter(
+      okInterpretation({ proposedResponse: "私が何か手伝えることがあればと申し出たのよ。" }),
+    );
+    const result = await resolveFreeText("miyoko", text, state, { interpreter, consentAccepted: true });
+    expect(result.source).toBe("deterministic");
+  });
+
+  it("allows the NPC to attribute the same offer to the player", async () => {
+    const text = "昨日の話、どういう意味だったの？";
+    const interpreter = stubInterpreter(
+      okInterpretation({ proposedResponse: "あなたが手伝えることがあればと言ってくれたのよ。" }),
+    );
+    const result = await resolveFreeText("miyoko", text, state, { interpreter, consentAccepted: true });
+    expect(result.source).toBe("semantic");
+  });
+
   it("falls back to deterministic when proposedResponse is blank", async () => {
     const text = "休みの日は何をしていますか";
     const interpreter = stubInterpreter(okInterpretation({ proposedResponse: "   " }));
