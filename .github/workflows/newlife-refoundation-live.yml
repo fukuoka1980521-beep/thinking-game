@@ -83,7 +83,7 @@ jobs:
       - name: Verify required GCP APIs are enabled
         run: |
           set -euo pipefail
-          required=(aiplatform.googleapis.com cloudfunctions.googleapis.com cloudbuild.googleapis.com run.googleapis.com artifactregistry.googleapis.com)
+          required=(aiplatform.googleapis.com cloudfunctions.googleapis.com cloudbuild.googleapis.com run.googleapis.com artifactregistry.googleapis.com cloudresourcemanager.googleapis.com)
           enabled="$(gcloud services list --enabled --project "${{ env.GCP_PROJECT_ID }}" --format='value(config.name)')"
           missing=()
           for api in "${required[@]}"; do
