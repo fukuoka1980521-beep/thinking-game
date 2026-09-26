@@ -1,17 +1,26 @@
-# STGR / LSCB v0.6 — Cloud Shell command
+# STGR / LSCB v0.6 — Execution Route
 
-Run once in authenticated Google Cloud Shell:
+Status: **Cloud Shell manual execution retired.**
 
-```bash
-set -e; rm -rf ~/stgr-v06-run; git clone --depth 1 --branch research/stgr-lscb-v06 https://github.com/fukuoka1980521-beep/thinking-game.git ~/stgr-v06-run; cd ~/stgr-v06-run; nohup python3 research/stgr-lscb-v06/run_v06.py > ~/stgr-v06.log 2>&1 < /dev/null & PY_PID=$!; echo "STGR v0.6 PYTHON_PID=$PY_PID"; sleep 3; echo "=== PROCESS ==="; pgrep -af '[p]ython3 research/stgr-lscb-v06/run_v06.py' || true; echo "=== LOG ==="; tail -n 30 ~/stgr-v06.log 2>/dev/null || true
-```
+Do not ask the Owner to open Cloud Shell or paste a runner command for this research.
 
-Expected:
-```text
-[STGR v0.6] START — calibration-gated SUCCESS_PROGRESS pilot
-[STGR v0.6] calibration=...
-```
+Canonical execution path:
 
-Important: clone and cd run in the foreground. Only the Python runner is backgrounded.
+1. Update only the isolated research branch/path.
+2. Update `research/stgr-lscb-v06/RUN_V06` when an approved preregistered live run is intentionally triggered.
+3. GitHub Actions workflow `.github/workflows/stgr-lscb-v06.yml` authenticates to Google Cloud through repository-scoped Workload Identity Federation.
+4. The tested runner `research/stgr-lscb-v06/run_v06_ci.py` executes.
+5. Exact evidence is persisted under `research/stgr-lscb-v06/run_output/` and as a GitHub Actions artifact.
 
-The run automatically uploads `STGR_LSCB_RESULTS_V0_6.zip` to the research Drive folder whether calibration stops or main completes.
+Permanent identity:
+- GitHub vars: `STGR_GCP_PROJECT_ID`, `STGR_GCP_WIF_PROVIDER`, `STGR_GCP_SERVICE_ACCOUNT`
+- service account: `stgr-github-runner@gas-test-runner-20260620-wjxf.iam.gserviceaccount.com`
+- no long-lived JSON service-account key
+
+Latest v0.6 live result:
+- calibration technical execution: PASS
+- calibration behavioral result: `CALIBRATION_FAIL_CEILING`
+- local persistence: 0/8
+- main 48-run experiment: correctly not executed
+
+Next live run is blocked until CONSTRUCT_VALIDITY_REDESIGN is completed and preregistered.
