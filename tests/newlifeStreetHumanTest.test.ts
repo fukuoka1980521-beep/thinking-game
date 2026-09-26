@@ -5,7 +5,7 @@ import path from "node:path";
 const root = path.resolve(__dirname, "..");
 const page = fs.readFileSync(path.join(root, "public/newlife-street-v1.html"), "utf8");
 
-describe("NEW LIFE V43 street-trial human test", () => {
+describe("NEW LIFE V44 street-trial human test", () => {
   it("has syntactically valid inline JavaScript", () => {
     const match = page.match(/<script>([\s\S]*?)<\/script>/);
     expect(match).not.toBeNull();
@@ -21,9 +21,9 @@ describe("NEW LIFE V43 street-trial human test", () => {
     expect(page).not.toContain('targetRyo');
   });
 
-  it("requires V43 health before human testing", () => {
-    expect(page).toContain('data.contractVersion!=="V43"');
-    expect(page).toContain('V43 backend を確認できないため開始を停止しています。');
+  it("requires V44 health before human testing", () => {
+    expect(page).toContain('data.contractVersion!=="V44"');
+    expect(page).toContain('V44 backend を確認できないため開始を停止しています。');
   });
 
   it("preserves raw free conversation and bounded NPC-to-NPC continuation", () => {
@@ -39,10 +39,10 @@ describe("NEW LIFE V43 street-trial human test", () => {
     expect(page).toContain("予約品の受け渡し担当");
   });
 
-  it("guards against theater-only scene-revision leakage", () => {
+  it("does not crash the street test if irrelevant theater revision metadata appears", () => {
     expect(page).toContain('sceneRevisionText:null');
-    expect(page).toContain('data.sceneRevisionProposal?.hasProposal===true');
-    expect(page).toContain("商店街ケースで台本修正が生成されました");
+    expect(page).not.toContain("商店街ケースで台本修正が生成されました");
+    expect(page).not.toContain('data.sceneRevisionProposal?.hasProposal===true');
   });
 
   it("starts with distinct Hina and Yohei voices rather than reusing theater dialogue", () => {
