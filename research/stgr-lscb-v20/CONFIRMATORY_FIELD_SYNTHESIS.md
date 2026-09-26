@@ -81,7 +81,7 @@ Minimum trigger-negative family requirement: **satisfied**.
 | 002 | authorized live runner unavailable | **WAIT** | **WAIT** | confirmed an availability blocker should not become a code patch |
 | 003 | trace-validator timing semantics conflict | **MUTATE_LOCAL** | **REPLAN_LOCAL** | separated measurement semantics from implementation repair |
 | 004 | focused repair tests PASS, unrelated full-suite V2 failures | **SWITCH_TASK_OR_LAYER** | **OBSERVE_OR_TEST** | clean HEAD reproduced the same 7 V2 failures; avoided unnecessary scope expansion |
-| 005 | scheduled control-center run: drift audit FAIL, later validator ALL_PASS, publish complete | **STOP_LOCAL** | **OBSERVE_OR_TEST** | found that D06 “default_branch” measured current checkout branch; later validator covered a different invariant |
+| 005 | scheduled control-center run: drift audit FAIL, later validator ALL_PASS, publish complete | **STOP_LOCAL** | **OBSERVE_OR_TEST** | established that D06 checks the registered path’s expected checkout/push branch, while the later validator covers a different invariant; apparent completion therefore did not resolve the audit finding |
 | 006 | NEW LIFE PR merged, then local master diverged from remote master | **MUTATE_LOCAL** — reset local master to origin/master | **OBSERVE_OR_TEST** | found one duplicate local commit and one unique current Autonomy Standard 1.14.0 commit that blind reset could discard |
 
 ## 5. Paired decision profile
@@ -148,10 +148,10 @@ The gate instead checked what the validators actually measured.
 
 It found:
 - D06 compares registry `default_branch` to `git rev-parse --abbrev-ref HEAD`
-- this is current checkout branch, not repository default branch
+- despite the field name, existing design also uses this value as the expected/push branch for the registered path; separately registered issue/experiment worktrees carry their own branch names\n- the thinking-game finding therefore represented a real deviation from the registered expected branch (`master`) while ordinary feature work was active, not proof that the audit implementation was measuring the wrong invariant\n- the company-task-os `HEAD` vs `master` finding is a separate provisional-registry mismatch that may be stale metadata
 - the later 49/49 validator does not test D06 at all
 
-Thus apparent completion could have hidden a monitoring-semantic defect.
+Thus apparent completion could have hidden an unresolved governance/audit state even though the later brief validator passed.
 
 Important limitation:
 the scheduled run had already published before the STGR observer detected the state. Episode 005 supports prevention of **post-run acceptance/closure**, not prevention of that publish.
@@ -307,7 +307,7 @@ Publication boundary before confirmation:
 
 Confirmatory additions:
 - Episode 004: `research/stgr-lscb-v17/EPISODE_004_PAIRED_ANALYSIS.md`
-- Episode 005: `research/stgr-lscb-v18/EPISODE_005_PAIRED_ANALYSIS.md`
+- Episode 005 original paired record: `research/stgr-lscb-v18/EPISODE_005_PAIRED_ANALYSIS.md`\n- Episode 005 interpretation correction (supersedes the original “semantic defect” reading): `research/stgr-lscb-v20/EPISODE_005_INTERPRETATION_CORRECTION.md`
 - Episode 006: `research/stgr-lscb-v19/EPISODE_006_PAIRED_ANALYSIS.md`
 
 This file freezes the six-episode confirmatory field dataset.
