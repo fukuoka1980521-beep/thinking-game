@@ -1,0 +1,120 @@
+{
+  "version": "1.3b",
+  "reason": "Preregistered expansion because initial blind agreement yielded fewer than 3 eligible shift episodes.",
+  "traces": [
+    {
+      "id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT",
+      "global_goal": "STGR/LSCB研究で、Ownerの反復操作に依存せず有効な実験証拠を安定取得する。",
+      "local_task": "現在の実験実行経路を局所修正し、同じ経路で次のrunを開始できるようにする。",
+      "source_refs": [
+        "thinking-game research/stgr-lscb-v06/META_CASE_INFRASTRUCTURE_DRIFT.md"
+      ],
+      "events": [
+        {
+          "n": 1,
+          "visible": "pilotは出力budget不足でdecision tokenが切れ、runnerをpatchしてrerunした。"
+        },
+        {
+          "n": 2,
+          "visible": "GitHub Actions認証が失敗したため、interactive Cloud Shellをfallback実行経路にした。"
+        },
+        {
+          "n": 3,
+          "visible": "Cloud Shell経路で実験を進められたため、後続の実験でも同じinteractive-session routeを再利用した。"
+        },
+        {
+          "n": 4,
+          "visible": "session terminationが起き、OwnerがCloud Shellを開き直してcommandを貼り直す必要が生じた。"
+        },
+        {
+          "n": 5,
+          "visible": "同じsession terminationとOwner再操作が後続runでも繰り返された。"
+        },
+        {
+          "n": 6,
+          "visible": "v0.6ではcompressed runner payloadのgzip CRC failureも独立確認され、さらに局所実行修正が必要になった。"
+        },
+        {
+          "n": 7,
+          "visible": "interactive Cloud Shellをcritical pathから外し、GitHub Actions + Google WIFのpersistent execution routeへ切り替えた。"
+        }
+      ],
+      "outcome": "Naturalistic delayed architecture reassessment; local execution repairs continued despite repeated Owner intervention.",
+      "hidden_trigger_candidates": [
+        "REPEATED_REPAIR",
+        "OWNER_MANUAL_REPEAT",
+        "EVIDENCE_STALL"
+      ]
+    },
+    {
+      "id": "R13T08_OLM_RETRY_TRIGGER_GAP",
+      "global_goal": "OLM V2でOwner操作なしに8h retryが動き、real model replyへ到達することを証明する。",
+      "local_task": "既存messageを変更せず待ち続け、自然retryが起こるか観測する。",
+      "source_refs": [
+        "thinking-os issue: OLM V2: 8h自動retryトリガー欠損とMODEL_LIVE_REPLYをOwner操作なしで検証する"
+      ],
+      "events": [
+        {
+          "n": 1,
+          "visible": "V2 release activationはLIVE PASSし、releaseReady=true / blockingReasons=[]になった。"
+        },
+        {
+          "n": 2,
+          "visible": "activation前のmessageはretry_count=0、assistant replyなしで残っており、Ownerは以後手動操作なしを明示した。"
+        },
+        {
+          "n": 3,
+          "visible": "message/evaluationを変更せず待ったが、最初の観測時点ではretryは起きていない。"
+        },
+        {
+          "n": 4,
+          "visible": "legacy setupは8h trigger installerを呼ぶ一方、V2専用setupは同じinstallerを呼ばない構造差分が見つかった。"
+        },
+        {
+          "n": 5,
+          "visible": "trigger実在をmachine-readable evidenceで確認し、欠損ならV2 bootstrapで一度だけ安全に保証する方針へ切り替えた。"
+        }
+      ],
+      "outcome": "Waiting-only strategy was replaced by trigger-existence diagnosis/bootstrap after structural evidence emerged.",
+      "hidden_trigger_candidates": [
+        "LIVE_EVIDENCE_GAP",
+        "EVIDENCE_STALL"
+      ]
+    },
+    {
+      "id": "R13T09_REAL_PDF_INPUT_SHIFT",
+      "global_goal": "Customer Zeroの実際の月次入力を、顧客自身が安全に請求給与V2へ取り込めるようにする。",
+      "local_task": "既存CSV取込の説明・validation・例外ルールUXをさらに磨く。",
+      "source_refs": [
+        "billing-payroll-v2 issue: Real-World Input Completion — PDF Timesheet Self-Service + CSV Direct + Paid Leave"
+      ],
+      "events": [
+        {
+          "n": 1,
+          "visible": "既存CSV ingest/staging/Preview/Commit pathは稼働していた。"
+        },
+        {
+          "n": 2,
+          "visible": "CSV取込ルールの説明やvalidationを改善し、CSV利用時の分かりやすさを高めた。"
+        },
+        {
+          "n": 3,
+          "visible": "実際のCustomer Zero sourceは複数ページscan PDFで、手書き時刻・休暇記載を含み、信頼できるsource CSVがないことが確認された。"
+        },
+        {
+          "n": 4,
+          "visible": "PDF Route AとCSV Route Bをproduction write前にcanonical CSV representationへ収束させるoperational modelが承認された。"
+        },
+        {
+          "n": 5,
+          "visible": "customer-side PDF upload→extract→review→canonical CSV→既存staging/Preview/Commitを必須とする実装方針へ切り替えた。"
+        }
+      ],
+      "outcome": "Input-product bottleneck shifted from CSV UX polish to PDF self-service intake after real-source evidence.",
+      "hidden_trigger_candidates": [
+        "LOCAL_GLOBAL_DIVERGENCE",
+        "LIVE_EVIDENCE_GAP"
+      ]
+    }
+  ]
+}
