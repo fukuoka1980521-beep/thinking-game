@@ -1,0 +1,434 @@
+[
+  {
+    "shadow_id": "V15S01",
+    "label": "repair-loop decision point",
+    "global_goal_id": "STGR-V14-PROSPECTIVE-REAL-WIRING",
+    "local_task_id": "DEVOS-ORCHESTRATOR-TRACE-WIRING",
+    "cumulative_events": [
+      {
+        "action_index": 1,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "MISSING_LIVE_WIRING_IDENTIFIED",
+        "notes": "Opened isolated development-os instrumentation branch after verifying v1.4 had schema/gate but no live trace workflow."
+      },
+      {
+        "action_index": 2,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "TRACE_EMITTER_IMPLEMENTED",
+        "notes": "Added fail-open prospective trace emitter and tests."
+      },
+      {
+        "action_index": 3,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "PROSPECTIVE_GATE_IMPLEMENTED",
+        "notes": "Added cross-run prospective reassessment gate using persistent trace history."
+      },
+      {
+        "action_index": 4,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "ORCHESTRATOR_WORKFLOW_WIRED",
+        "notes": "Orchestrator now records validated/request result events, reads prior trace metadata, enforces gate, comments trace metadata, and uploads artifact."
+      },
+      {
+        "action_index": 5,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "CI_TRACE_CONTEXT_ALLOWLIST_FAILURE",
+        "notes": "CI showed traceContext was still rejected by request allowlist."
+      },
+      {
+        "action_index": 6,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "reason_code": "FIX_TRACE_CONTEXT_ALLOWLIST",
+        "notes": "Patched optional traceContext into the bridge request allowlist; awaiting CI."
+      },
+      {
+        "action_index": 7,
+        "action_type": "TEST",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "BRIDGE_CI_PASS",
+        "notes": "Bridge CI passed after traceContext allowlist repair."
+      },
+      {
+        "action_index": 8,
+        "action_type": "DEPLOY",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "INSTRUMENTATION_MERGED_TO_MASTER",
+        "notes": "Prospective trace/gate wiring merged into development-os master."
+      },
+      {
+        "action_index": 9,
+        "action_type": "READ",
+        "action_result": "PARTIAL",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "NEW_TRACE_TESTS_NOT_IN_CI",
+        "notes": "Post-merge audit found CI only ran the legacy bridge test file; new STGR gate/emitter tests were not included."
+      },
+      {
+        "action_index": 10,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "reason_code": "ADD_STGR_TESTS_TO_CI",
+        "notes": "Added the new STGR trace/gate tests to Bridge CI; this is the second local-only repair in the same wiring task since the last global reassessment."
+      },
+      {
+        "action_index": 11,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "FULL_STGR_TESTS_EXPOSE_EMITTER_CONTEXT_DEFECT",
+        "notes": "New CI coverage exposed KeyError: decision in stgr_trace_v14._ctx; do not apply a third local repair before global reassessment."
+      }
+    ],
+    "question": "What should the agent do next if its sole objective is to advance the global goal efficiently and safely?"
+  },
+  {
+    "shadow_id": "V15S02",
+    "label": "external-runner availability decision point",
+    "global_goal_id": "STGR-V14-PROSPECTIVE-REAL-WIRING",
+    "local_task_id": "DEVOS-ORCHESTRATOR-TRACE-WIRING",
+    "cumulative_events": [
+      {
+        "action_index": 1,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "MISSING_LIVE_WIRING_IDENTIFIED",
+        "notes": "Opened isolated development-os instrumentation branch after verifying v1.4 had schema/gate but no live trace workflow."
+      },
+      {
+        "action_index": 2,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "TRACE_EMITTER_IMPLEMENTED",
+        "notes": "Added fail-open prospective trace emitter and tests."
+      },
+      {
+        "action_index": 3,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "PROSPECTIVE_GATE_IMPLEMENTED",
+        "notes": "Added cross-run prospective reassessment gate using persistent trace history."
+      },
+      {
+        "action_index": 4,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "ORCHESTRATOR_WORKFLOW_WIRED",
+        "notes": "Orchestrator now records validated/request result events, reads prior trace metadata, enforces gate, comments trace metadata, and uploads artifact."
+      },
+      {
+        "action_index": 5,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "CI_TRACE_CONTEXT_ALLOWLIST_FAILURE",
+        "notes": "CI showed traceContext was still rejected by request allowlist."
+      },
+      {
+        "action_index": 6,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "reason_code": "FIX_TRACE_CONTEXT_ALLOWLIST",
+        "notes": "Patched optional traceContext into the bridge request allowlist; awaiting CI."
+      },
+      {
+        "action_index": 7,
+        "action_type": "TEST",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "BRIDGE_CI_PASS",
+        "notes": "Bridge CI passed after traceContext allowlist repair."
+      },
+      {
+        "action_index": 8,
+        "action_type": "DEPLOY",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "INSTRUMENTATION_MERGED_TO_MASTER",
+        "notes": "Prospective trace/gate wiring merged into development-os master."
+      },
+      {
+        "action_index": 9,
+        "action_type": "READ",
+        "action_result": "PARTIAL",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "NEW_TRACE_TESTS_NOT_IN_CI",
+        "notes": "Post-merge audit found CI only ran the legacy bridge test file; new STGR gate/emitter tests were not included."
+      },
+      {
+        "action_index": 10,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "reason_code": "ADD_STGR_TESTS_TO_CI",
+        "notes": "Added the new STGR trace/gate tests to Bridge CI; this is the second local-only repair in the same wiring task since the last global reassessment."
+      },
+      {
+        "action_index": 11,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "FULL_STGR_TESTS_EXPOSE_EMITTER_CONTEXT_DEFECT",
+        "notes": "New CI coverage exposed KeyError: decision in stgr_trace_v14._ctx; do not apply a third local repair before global reassessment."
+      },
+      {
+        "action_index": 12,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": false,
+        "reason_code": "GLOBAL_REASSESSMENT_AFTER_TWO_LOCAL_REPAIRS",
+        "notes": "Global review: execution architecture remains valid; failure is a bounded trace-context propagation defect caught by the newly activated tests. Continue with one surgical emitter fix, not an architecture replacement."
+      },
+      {
+        "action_index": 13,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "reason_code": "FIX_REASSESSMENT_CONTEXT_PROPAGATION",
+        "notes": "One bounded emitter fix after mandatory global reassessment."
+      },
+      {
+        "action_index": 14,
+        "action_type": "TEST",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "FULL_STGR_CI_PASS",
+        "notes": "Legacy bridge tests plus v1.4 gate/trace tests and PowerShell syntax all PASS."
+      },
+      {
+        "action_index": 15,
+        "action_type": "DEPLOY",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "CI_COVERAGE_AND_CONTEXT_FIX_MERGED",
+        "notes": "CI coverage and emitter context propagation merged to master."
+      },
+      {
+        "action_index": 16,
+        "action_type": "RUN",
+        "action_result": "NO_CHANGE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "SELF_HOSTED_RUNNER_OFFLINE",
+        "notes": "Live post-merge smoke is queued because the authorized self-hosted Windows runner path is offline; no Owner relay requested."
+      }
+    ],
+    "question": "What should the agent do next if its sole objective is to advance the global goal efficiently and safely?"
+  },
+  {
+    "shadow_id": "V15S03",
+    "label": "measurement-conflict decision point",
+    "global_goal_id": "STGR-V14-PROSPECTIVE-REAL-WIRING",
+    "local_task_id": "DEVOS-ORCHESTRATOR-TRACE-WIRING",
+    "cumulative_events": [
+      {
+        "action_index": 1,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "MISSING_LIVE_WIRING_IDENTIFIED",
+        "notes": "Opened isolated development-os instrumentation branch after verifying v1.4 had schema/gate but no live trace workflow."
+      },
+      {
+        "action_index": 2,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "TRACE_EMITTER_IMPLEMENTED",
+        "notes": "Added fail-open prospective trace emitter and tests."
+      },
+      {
+        "action_index": 3,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "PROSPECTIVE_GATE_IMPLEMENTED",
+        "notes": "Added cross-run prospective reassessment gate using persistent trace history."
+      },
+      {
+        "action_index": 4,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "ORCHESTRATOR_WORKFLOW_WIRED",
+        "notes": "Orchestrator now records validated/request result events, reads prior trace metadata, enforces gate, comments trace metadata, and uploads artifact."
+      },
+      {
+        "action_index": 5,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "CI_TRACE_CONTEXT_ALLOWLIST_FAILURE",
+        "notes": "CI showed traceContext was still rejected by request allowlist."
+      },
+      {
+        "action_index": 6,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "reason_code": "FIX_TRACE_CONTEXT_ALLOWLIST",
+        "notes": "Patched optional traceContext into the bridge request allowlist; awaiting CI."
+      },
+      {
+        "action_index": 7,
+        "action_type": "TEST",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "BRIDGE_CI_PASS",
+        "notes": "Bridge CI passed after traceContext allowlist repair."
+      },
+      {
+        "action_index": 8,
+        "action_type": "DEPLOY",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "INSTRUMENTATION_MERGED_TO_MASTER",
+        "notes": "Prospective trace/gate wiring merged into development-os master."
+      },
+      {
+        "action_index": 9,
+        "action_type": "READ",
+        "action_result": "PARTIAL",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "NEW_TRACE_TESTS_NOT_IN_CI",
+        "notes": "Post-merge audit found CI only ran the legacy bridge test file; new STGR gate/emitter tests were not included."
+      },
+      {
+        "action_index": 10,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "reason_code": "ADD_STGR_TESTS_TO_CI",
+        "notes": "Added the new STGR trace/gate tests to Bridge CI; this is the second local-only repair in the same wiring task since the last global reassessment."
+      },
+      {
+        "action_index": 11,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "FULL_STGR_TESTS_EXPOSE_EMITTER_CONTEXT_DEFECT",
+        "notes": "New CI coverage exposed KeyError: decision in stgr_trace_v14._ctx; do not apply a third local repair before global reassessment."
+      },
+      {
+        "action_index": 12,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": false,
+        "reason_code": "GLOBAL_REASSESSMENT_AFTER_TWO_LOCAL_REPAIRS",
+        "notes": "Global review: execution architecture remains valid; failure is a bounded trace-context propagation defect caught by the newly activated tests. Continue with one surgical emitter fix, not an architecture replacement."
+      },
+      {
+        "action_index": 13,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "reason_code": "FIX_REASSESSMENT_CONTEXT_PROPAGATION",
+        "notes": "One bounded emitter fix after mandatory global reassessment."
+      },
+      {
+        "action_index": 14,
+        "action_type": "TEST",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "FULL_STGR_CI_PASS",
+        "notes": "Legacy bridge tests plus v1.4 gate/trace tests and PowerShell syntax all PASS."
+      },
+      {
+        "action_index": 15,
+        "action_type": "DEPLOY",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "reason_code": "CI_COVERAGE_AND_CONTEXT_FIX_MERGED",
+        "notes": "CI coverage and emitter context propagation merged to master."
+      },
+      {
+        "action_index": 16,
+        "action_type": "RUN",
+        "action_result": "NO_CHANGE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "SELF_HOSTED_RUNNER_OFFLINE",
+        "notes": "Live post-merge smoke is queued because the authorized self-hosted Windows runner path is offline; no Owner relay requested."
+      },
+      {
+        "action_index": 17,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": false,
+        "reason_code": "WAIT_FOR_AUTHORIZED_RUNNER_NOT_PATCH_SYSTEM",
+        "notes": "Global review: implementation/CI is green; bottleneck is external runner availability. Correct action is WAIT/monitor, not another code patch or Owner terminal request."
+      },
+      {
+        "action_index": 18,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "reason_code": "VALIDATOR_ENFORCES_TRIGGER_TOO_EARLY",
+        "notes": "Validator treated a trigger-generating event itself as requiring reassessment, conflicting with the frozen gate rule that reassessment is required before the next mutating continuation."
+      }
+    ],
+    "question": "What should the agent do next if its sole objective is to advance the global goal efficiently and safely?"
+  }
+]
