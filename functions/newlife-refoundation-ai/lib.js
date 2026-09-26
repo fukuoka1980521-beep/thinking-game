@@ -185,7 +185,17 @@ const CHARACTER_DOSSIERS = {
       "本番前日で時間が限られている中、自分の一線を守ろうとして板挟みになっている。毅然としているが、取り乱してはいない。",
     boundary:
       "演技そのものの拒否ではなく、『自分だとわかる実話をそのまま公に使うこと』が受け入れられない一線。フィクション化した代替案を読んで納得できれば、出演を続けられる可能性がある。",
-    speechModel: "短く、はっきりと話す。感情的な訴えより事実の確認を好む。",
+    speechModel:
+      "20代女性。基本の一人称は『私』。相手が年上・調整役のときは自然なです／ます調を基調にし、毅然としていても乱暴・男性的な断定口調には寄せない。短く率直だが、語尾には人間的な柔らかさを残す。相手が強い口調でも、その粗さをそのまま模倣しない。",
+    voiceAnchors: [
+      "『昨日、最終版を読んで気づいたんです』のように、事情説明では自然なです／ます調を使う。",
+      "『実話の部分を外してもらえるなら、私は出られます』のように、境界と代替案を同時に言える。",
+    ],
+    voiceAvoid: [
+      "『〜だ』『〜じゃない』『冗談じゃない』などの荒い断定を連続させること。",
+      "男性的・威圧的に聞こえる語尾へ寄ること。",
+      "プレイヤーの粗い口調をそのままミラーリングすること。",
+    ],
     mustNot: [
       "moralize at the player",
       "offer counseling-style advice",
@@ -287,6 +297,7 @@ const CONVERSE_SYSTEM_INSTRUCTION = `あなたは演劇制作の対立を扱う�
 - characterDossier.forbiddenKnowledge に列挙された内容は、直近の会話ログの中で実際に話題に出ていない限り、このNPCは知らない・話さないこと。
 - 丁寧さ・共感的な言葉遣い・方言・簡潔さ・語彙の豊富さを、npcLineの温かさやcandidateTurnの分類結果を左右する品質シグナルとして一切使わないこと。同じ意思決定であれば、口調に関わらず同じcandidateTurnを返すこと。
 - まずプレイヤーの発言の実際の意味（understoodPlayerMeaning）を理解し、npcLineはその意味に直接答えること。この人物ならではの立場・感情・価値観を反映しつつ、疑問・反論・軽い冗談・不確かさの表明・態度の変化・妥協案の提示なども自然に行ってよい。ただし、悩み相談カウンセラーのような一般的な助言役や、汎用的な親切アシスタントになってはならない。
+- characterDossier.speechModel / voiceAnchors / voiceAvoid は、その人物固有の話し方として強く守ること。プレイヤーが乱暴・ぶっきらぼう・方言・誤字交じりでも、その口調をコピーせず、NPC自身の一人称・敬語度・語尾・温度を維持すること。
 - candidateTurn.action は指定された ACTION_TYPES から1つだけ選ぶこと。candidateTurn.boundaryMode は指定された BOUNDARY_MODES から1つだけ選ぶこと。candidateTurn.relationalEvents は指定された RELATIONAL_EVENTS のうち、発言中に具体的・観測可能な根拠がある値だけを含めること（トーンだけを根拠にしないこと）。発言の意図が不確か・曖昧な場合は、必ず candidateTurn.action="CLARIFY", candidateTurn.boundaryMode="UNKNOWN", candidateTurn.relationalEvents=[], candidateTurn.needsClarification=true とし、uncertainty="HIGH" とすること。確信のない推測で具体的な action や boundaryMode を埋めないこと。
 - candidateFactRevealIds / candidateCommitments は、このターンで新たに確定したい事実開示・約束の"提案"に過ぎず、ゲーム状態を直接変更しない。後段の確定的な検証を経て初めて反映される。存在しない事実や、このNPCが持たない権限の約束を提案しないこと。分からなければ空配列を返すこと。
 - dynamicState.relationshipState が WITHDRAWN の場合、このNPCは今回のケースにおいてこれ以上協力的にならない。非協力を自然な形で反映すること（突然リセットして協力的にならないこと）。
@@ -424,6 +435,76 @@ function buildConversePrompt(request) {
     "",
     "上記を踏まえ、指定されたJSONスキーマで、このNPCとしての応答を1つ返してください。",
   ].join("\n");
+}
+
+
+function isValidCandidateTurnForConverse(value) {
+  if (!value || typeof value !== "object") return false;
+  if (!ACTION_TYPES.includes(value.action)) return false;
+  if (!BOUNDARY_MODES.includes(value.boundaryMode)) return false;
+  if (!Array.isArray(value.relationalEvents) || !value.relationalEvents.every((e) => RELATIONAL_EVENTS.includes(e))) {
+    return false;
+  }
+  if (typeof value.needsClarification !== "boolean") return false;
+  const clarify = value.action === "CLARIFY";
+  if (clarify !== value.needsClarification) return false;
+  if (clarify && (value.boundaryMode !== "UNKNOWN" || value.relationalEvents.length !== 0)) return false;
+  return true;
+}
+
+function boundedStringArrayOrEmpty(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item) => typeof item === "string" && item.length <= MAX_CANDIDATE_ITEM_LENGTH)
+    .slice(0, MAX_CANDIDATE_LIST_ITEMS);
+}
+
+/**
+ * V38: dialogue is the user-facing primary product output; structured effect
+ * metadata is secondary and must never make an otherwise usable character
+ * reply disappear. The target NPC is authoritative request state, so the
+ * model is not allowed to switch speakers by echoing the wrong npc id.
+ *
+ * If metadata is malformed, preserve a usable npcLine but collapse ALL
+ * effects to the conservative CLARIFY/UNKNOWN/no-events shape. This keeps the
+ * deterministic arbiter safe without turning a schema wobble into a broken
+ * conversation.
+ */
+function normalizeConverseResponse(parsed, expectedNpc) {
+  if (!parsed || typeof parsed !== "object") return null;
+  if (!isNonEmptyBoundedString(parsed.npcLine, MAX_NPC_LINE_LENGTH)) return null;
+
+  const candidateTurn = isValidCandidateTurnForConverse(parsed.candidateTurn)
+    ? parsed.candidateTurn
+    : {
+        action: "CLARIFY",
+        boundaryMode: "UNKNOWN",
+        relationalEvents: [],
+        needsClarification: true,
+      };
+
+  const metadataFallback = candidateTurn !== parsed.candidateTurn;
+  const understoodPlayerMeaning = isNonEmptyBoundedString(
+    parsed.understoodPlayerMeaning,
+    MAX_UNDERSTOOD_MEANING_LENGTH,
+  )
+    ? parsed.understoodPlayerMeaning
+    : "構造化された意味メタデータは未確定。";
+
+  return {
+    npc: expectedNpc,
+    npcLine: parsed.npcLine,
+    understoodPlayerMeaning,
+    candidateTurn,
+    candidateFactRevealIds: metadataFallback ? [] : boundedStringArrayOrEmpty(parsed.candidateFactRevealIds),
+    candidateCommitments: metadataFallback ? [] : boundedStringArrayOrEmpty(parsed.candidateCommitments),
+    uncertainty: metadataFallback
+      ? "HIGH"
+      : UNCERTAINTY_LEVELS.includes(parsed.uncertainty)
+        ? parsed.uncertainty
+        : "HIGH",
+    thoughtSupportSignal: metadataFallback ? false : parsed.thoughtSupportSignal === true,
+  };
 }
 
 function buildOrganizeThoughtResponseSchema(Type) {
@@ -627,6 +708,7 @@ module.exports = {
   buildNpcPrompt,
   buildConverseResponseSchema,
   buildConversePrompt,
+  normalizeConverseResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
   validateInput,
