@@ -100,6 +100,21 @@ function validConverseBody(overrides: Partial<Record<string, unknown>> = {}) {
   };
 }
 
+
+function validNpcExchangeBody(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    operation: "continue_npc_exchange",
+    caseId: "COMMUNITY_THEATER_V1",
+    targetNpc: "MIKA",
+    recentDialogue: [
+      { speaker: "PLAYER", text: "二人で決めてください。" },
+      { speaker: "RYO", text: "美香、この変更案なら進められるか？" },
+    ],
+    continuationDepth: 1,
+    dynamicState: validDynamicState(),
+    ...overrides,
+  };
+}
 function validOrganizeThoughtBody(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     operation: "organize_thought",
@@ -283,6 +298,22 @@ describe("functions/newlife-refoundation-ai/lib.js — validateInput (converse_t
   });
 });
 
+
+describe("functions/newlife-refoundation-ai/lib.js — validateInput (continue_npc_exchange, V41)", () => {
+  it("accepts a bounded NPC-to-NPC continuation request", () => {
+    expect(lib.validateInput(validNpcExchangeBody())).toBeNull();
+  });
+
+  it("requires recent dialogue to end with the other NPC, never a synthetic player turn or the same NPC", () => {
+    expect(lib.validateInput(validNpcExchangeBody({ recentDialogue: [{ speaker: "PLAYER", text: "続けて" }] }))).toBe("invalid_exchange_source");
+    expect(lib.validateInput(validNpcExchangeBody({ recentDialogue: [{ speaker: "MIKA", text: "私が返します" }] }))).toBe("invalid_exchange_source");
+  });
+
+  it("hard-bounds continuationDepth to the server maximum", () => {
+    expect(lib.validateInput(validNpcExchangeBody({ continuationDepth: 0 }))).toBe("invalid_continuation_depth");
+    expect(lib.validateInput(validNpcExchangeBody({ continuationDepth: lib.MAX_NPC_EXCHANGE_DEPTH + 1 }))).toBe("invalid_continuation_depth");
+  });
+});
 describe("functions/newlife-refoundation-ai/lib.js — validateInput (organize_thought, V37 §5)", () => {
   it("accepts a well-formed request", () => {
     expect(lib.validateInput(validOrganizeThoughtBody())).toBeNull();
@@ -488,6 +519,10 @@ describe("functions/newlife-refoundation-ai/lib.js — converse_turn / organize_
     expect(schema.properties.uncertainty.enum).toEqual(lib.UNCERTAINTY_LEVELS);
     expect(schema.required).toContain("npcLine");
     expect(schema.required).toContain("candidateTurn");
+    expect(schema.properties.sceneStatus.enum).toEqual(lib.SCENE_STATUSES);
+    expect(schema.properties.nextNpc.enum).toEqual(lib.NPC_IDS);
+    expect(schema.required).toContain("sceneStatus");
+    expect(schema.required).toContain("nextNpc");
   });
 
   it("the organize_thought schema has no npc field at all (V37 §5 separation)", () => {
@@ -582,6 +617,16 @@ describe("functions/newlife-refoundation-ai/lib.js — V39 conversation progress
     expect(prompt).toContain(JSON.stringify(lib.CHARACTER_DOSSIERS.MIKA.resolutionPolicy));
   });
 
+  it("V41 NPC handoff policy is general, bounded, and does not fabricate a new player utterance", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toMatch(/NPC_EXCHANGE/);
+    expect(instruction).toMatch(/プレイヤーの追加権限なしに/);
+    expect(instruction).toMatch(/sceneStatus/);
+    const prompt = lib.buildNpcExchangePrompt(validNpcExchangeBody());
+    expect(prompt).toContain("今はプレイヤーから新しい発言はありません");
+    expect(prompt).toContain("continuationDepth");
+    expect(prompt).not.toContain("rawPlayerUtterance");
+  });
   it("Ryo gets the same general progression rule (present once in the shared instruction) plus his own logistics-based minimum requirement, but no Mika-specific privacy/identifiability criteria", () => {
     const ryo = lib.CHARACTER_DOSSIERS.RYO;
     expect(ryo.resolutionPolicy).toBeDefined();
@@ -635,20 +680,20 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   });
 });
 
-describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V40)", () => {
+describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V41)", () => {
   it("returns the exact safe shape with buildSha defaulted to \"unknown\" when no build SHA is supplied", () => {
     expect(lib.buildHealthResponse(undefined)).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V40",
-      operations: ["converse_turn", "organize_thought"],
+      contractVersion: "V41",
+      operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
     // No-arg call (matches how index.js calls it when the env var is unset).
     expect(lib.buildHealthResponse()).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V40",
-      operations: ["converse_turn", "organize_thought"],
+      contractVersion: "V41",
+      operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
 
@@ -656,8 +701,8 @@ describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V40)
     expect(lib.buildHealthResponse("abc1234")).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "abc1234",
-      contractVersion: "V40",
-      operations: ["converse_turn", "organize_thought"],
+      contractVersion: "V41",
+      operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
 
@@ -761,6 +806,17 @@ describe("functions/newlife-refoundation-ai/index.js — converse_turn envelope 
   });
 });
 
+describe("functions/newlife-refoundation-ai/index.js — NPC-to-NPC continuation route (V41)", () => {
+  const fs = require("node:fs");
+  const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-refoundation-ai", "index.js"), "utf-8");
+
+  it("routes continue_npc_exchange through a dedicated prompt without pretending the player spoke again", () => {
+    expect(source).toContain('req.body.operation === "continue_npc_exchange"');
+    expect(source).toContain("attemptNpcExchangeTurn");
+    expect(source).toContain("buildNpcExchangePrompt(body)");
+    expect(source).not.toMatch(/continue_npc_exchange[\s\S]{0,600}rawPlayerUtterance/);
+  });
+});
 describe("functions/newlife-refoundation-ai/lib.js — fixed-window limiter", () => {
   it("allows only the configured number of model calls inside one window and resets after expiry", () => {
     let now = 1_000;
