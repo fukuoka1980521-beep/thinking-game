@@ -55,8 +55,13 @@ def main():
         missing=expected-flags
         if missing: violations.append(f"{eid}: missing derived flags {sorted(missing)}")
 
-        if flags & MANDATORY and not r.get("global_reassessment_performed"):
-            violations.append(f"{eid}: mandatory reassessment not performed for {sorted(flags & MANDATORY)}")
+        # Newly observed mandatory triggers become pending for the next
+        # mutating continuation. Explicit reassessment clears the pending set.
+        new_mandatory=flags & MANDATORY
+        if r.get("global_reassessment_performed"):
+            pending_by_task[task]=set()
+        else:
+            pending.update(new_mandatory)
 
         hist.append(r)
 
