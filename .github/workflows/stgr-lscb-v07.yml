@@ -1,0 +1,83 @@
+name: STGR LSCB v0.7 Naturalistic Pilot
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/stgr-lscb-v07
+    paths:
+      - research/stgr-lscb-v07/RUN_V07
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: stgr-lscb-v07-live
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.STGR_GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.STGR_GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.STGR_GCP_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Static preflight
+        run: |
+          set -euo pipefail
+          python -m py_compile research/stgr-lscb-v07/run_v07.py
+          python - <<'PY'
+          import importlib.util, pathlib
+          p=pathlib.Path("research/stgr-lscb-v07/run_v07.py")
+          s=importlib.util.spec_from_file_location("v07",p)
+          m=importlib.util.module_from_spec(s); s.loader.exec_module(m)
+          m.assert_pair_integrity()
+          assert len(m.SELECTED["yes"]) >= 3
+          assert len(m.SELECTED["no"]) >= 3
+          print("V07_STATIC_PREFLIGHT=PASS")
+          PY
+          test -n "$(gcloud auth print-access-token)"
+      - name: Run live v0.7
+        id: live
+        run: |
+          rm -rf research/stgr-lscb-v07/run_output
+          set +e
+          python research/stgr-lscb-v07/run_v07.py 2>&1 | tee /tmp/v07.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=${code}" >> "${GITHUB_OUTPUT}"
+          mkdir -p research/stgr-lscb-v07/run_output
+          cp /tmp/v07.log research/stgr-lscb-v07/run_output/LIVE_RUN_LOG.txt
+          exit 0
+      - name: Persist evidence
+        if: always()
+        run: |
+          set -euo pipefail
+          git config user.name "stgr-research-bot"
+          git config user.email "stgr-research-bot@users.noreply.github.com"
+          git add research/stgr-lscb-v07/run_output
+          if ! git diff --cached --quiet; then
+            git commit -m "research(stgr): persist v0.7 live result [skip ci]"
+            git pull --rebase origin research/stgr-lscb-v07
+            git push origin HEAD:research/stgr-lscb-v07
+          fi
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: STGR_LSCB_RESULTS_V0_7
+          path: research/stgr-lscb-v07/run_output/STGR_LSCB_RESULTS_V0_7.zip
+          if-no-files-found: error
+          retention-days: 30
+      - name: Enforce technical validity
+        if: steps.live.outputs.exit_code != '0'
+        run: exit 2
