@@ -1,0 +1,29 @@
+name: STGR v1.4 Prospective Trace Validation
+
+on:
+  push:
+    branches:
+      - research/stgr-lscb-v14
+    paths:
+      - research/stgr-lscb-v14/TRACE_LOG_V1_4.jsonl
+      - research/stgr-lscb-v14/TRACE_EVENT_SCHEMA_V1_4.json
+      - research/stgr-lscb-v14/validate_trace_v14.py
+      - .github/workflows/stgr-lscb-v14-trace.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile validator
+        run: python -m py_compile research/stgr-lscb-v14/validate_trace_v14.py
+      - name: Validate prospective trace
+        run: python research/stgr-lscb-v14/validate_trace_v14.py
