@@ -115,7 +115,7 @@ jobs:
           fi
           echo "uri=$uri" >> "$GITHUB_OUTPUT"
 
-      - name: Smoke 0/5 — deployment identity
+      - name: Smoke 0/6 — deployment identity
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -125,12 +125,12 @@ jobs:
             const expected=process.argv[2];
             if(!p || p.service!=="newlife-refoundation-ai") throw new Error("wrong service");
             if(typeof p.buildSha!=="string" || p.buildSha!==expected) throw new Error("build SHA mismatch");
-            if(p.contractVersion!=="V44") throw new Error("contract version mismatch");
+            if(p.contractVersion!=="V45") throw new Error("contract version mismatch");
             if(!Array.isArray(p.operations) || !p.operations.includes("converse_turn") || !p.operations.includes("continue_npc_exchange") || !p.operations.includes("organize_thought")) throw new Error("operation set mismatch");
             console.log("health/build identity OK:", p.buildSha);
           ' "$payload" "${{ steps.source.outputs.sha }}"
 
-      - name: Smoke 1/5 — converse_turn
+      - name: Smoke 1/6 — converse_turn
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -144,7 +144,7 @@ jobs:
             console.log("converse_turn shape OK");
           ' "$payload"
 
-      - name: Smoke 2/5 — second-case converse_turn
+      - name: Smoke 2/6 — second-case converse_turn
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -156,7 +156,7 @@ jobs:
             if(!p.sceneRevisionProposal || p.sceneRevisionProposal.hasProposal!==false) throw new Error("street case must not invent script revision");
             console.log("street_trial converse_turn shape OK");
           ' "$payload"
-      - name: Smoke 3/5 — street disagreement regression
+      - name: Smoke 3/6 — street disagreement regression
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -168,7 +168,19 @@ jobs:
             if(!p.sceneRevisionProposal || p.sceneRevisionProposal.hasProposal!==false) throw new Error("street disagreement leaked script metadata");
             console.log("street disagreement regression OK");
           ' "$payload"
-      - name: Smoke 4/5 — continue_npc_exchange
+      - name: Smoke 4/6 — ambiguous relationship converse_turn
+        run: |
+          set -euo pipefail
+          uri="${{ steps.deploy.outputs.uri }}"
+          body='{"operation":"converse_turn","caseId":"CAFE_BOUNDARY_V1","targetNpc":"MIYOKO","rawPlayerUtterance":"昨日の「手伝う」って、席を貸す意味まで含んでいたの？","recentDialogue":[{"speaker":"MIYOKO","text":"私は待合にするとは言ってないのよ。"},{"speaker":"FUMIKO","text":"でも、手伝えることがあればって言ってくれたでしょう。"}],"dynamicState":{"relationshipState":"NEUTRAL","boundaryStatus":"UNKNOWN","remainingMinutes":25,"activeCommitment":null,"sceneRevisionText":null}}'
+          payload="$(curl -fsS --max-time 55 -X POST "$uri" -H 'Content-Type: application/json' -d "$body")"
+          node -e '
+            const p=JSON.parse(process.argv[1]);
+            if(!p || p.npc!=="MIYOKO" || typeof p.npcLine!=="string" || !p.npcLine.trim()) throw new Error("invalid cafe-boundary response");
+            if(!p.sceneRevisionProposal || p.sceneRevisionProposal.hasProposal!==false) throw new Error("cafe case leaked script metadata");
+            console.log("cafe_boundary converse_turn shape OK");
+          ' "$payload"
+      - name: Smoke 5/6 — continue_npc_exchange
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -180,7 +192,7 @@ jobs:
             if(!["AWAIT_PLAYER","NPC_EXCHANGE","RESOLVED","STALLED"].includes(p.sceneStatus)) throw new Error("scene status missing");
             console.log("continue_npc_exchange shape OK");
           ' "$payload"
-      - name: Smoke 5/5 — organize_thought
+      - name: Smoke 6/6 — organize_thought
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -203,6 +215,7 @@ jobs:
             echo "- converse_turn (theater): PASS"
             echo "- converse_turn (street trial): PASS"
             echo "- street disagreement regression: PASS"
+            echo "- converse_turn (ambiguous relationship): PASS"
             echo "- continue_npc_exchange: PASS"
             echo "- organize_thought: PASS"
             echo "- Human test page: https://fukuoka1980521-beep.github.io/thinking-game/newlife-v37.html"
