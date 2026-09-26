@@ -27,7 +27,7 @@ details{border:1px dashed #3d4c63;border-radius:10px;padding:9px;margin-top:10px
   <div class="card">
     <h1>NEW LIFE — 別事件・別人物テスト</h1>
     <p class="muted">演劇ケースで通った会話構造が、別の人物・別の問題でも機能するかを確認します。今回は商店街の小さな試売です。</p>
-    <div id="status" class="status bad">V43 backend を確認中…</div>
+    <div id="status" class="status bad">V44 backend を確認中…</div>
   </div>
 
   <div id="consentCard" class="card" style="display:none">
@@ -151,7 +151,6 @@ async function talk(){
     const data=await post({operation:"converse_turn",caseId:"STREET_TRIAL_V1",targetNpc:requestTarget,rawPlayerUtterance:utterance,recentDialogue:recentDialogue().slice(0,-1),dynamicState:dynamicState(requestTarget)});
     debug.textContent=JSON.stringify(data,null,2);
     if(!data||data.npc!==requestTarget||typeof data.npcLine!=="string"||!data.npcLine.trim())throw new Error("会話応答の形式が不正です");
-    if(data.sceneRevisionProposal?.hasProposal===true)throw new Error("商店街ケースで台本修正が生成されました");
     addLine(requestTarget,data.npcLine);remainingMinutes=Math.max(0,remainingMinutes-2);await continueNpcExchange(data);
   }catch(err){addLine("SYSTEM","AI接続エラー: "+(err?.message||String(err)))}finally{setBusy(false)}
 }
@@ -170,9 +169,9 @@ async function verifyBackend(){
   if(!safeEndpoint(endpoint)){statusEl.textContent="endpoint が不正です";return}
   try{
     const res=await fetch(endpoint,{method:"GET"});if(!res.ok)throw new Error("health "+res.status);const data=await res.json();
-    if(!data||data.service!=="newlife-refoundation-ai"||data.contractVersion!=="V43"||!Array.isArray(data.operations)||!data.operations.includes("converse_turn"))throw new Error("health mismatch");
-    statusEl.className="status ok";statusEl.textContent="V43 接続確認済み / build "+String(data.buildSha).slice(0,8);consentCard.style.display="block";
-  }catch{statusEl.className="status bad";statusEl.textContent="V43 backend を確認できないため開始を停止しています。"}
+    if(!data||data.service!=="newlife-refoundation-ai"||data.contractVersion!=="V44"||!Array.isArray(data.operations)||!data.operations.includes("converse_turn"))throw new Error("health mismatch");
+    statusEl.className="status ok";statusEl.textContent="V44 接続確認済み / build "+String(data.buildSha).slice(0,8);consentCard.style.display="block";
+  }catch{statusEl.className="status bad";statusEl.textContent="V44 backend を確認できないため開始を停止しています。"}
 }
 verifyBackend();
 document.getElementById("consent").onclick=()=>{
