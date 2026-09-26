@@ -60,5 +60,12 @@ export function projectFacts(npc: NpcId, state: NewLife30State): FactsSnapshot {
     known,
     unknown,
     negativeConstraints: NEGATIVE_CONSTRAINTS,
+    ownershipFacts: [
+      { kind: "offered", owner: "player", statement: "何か手伝えることがあれば手伝うと申し出た" },
+      { kind: "did", owner: "fumiko", statement: "喫茶みよこを待合場所として案内する掲示を出した" },
+      { kind: "permission", owner: "miyoko", counterparty: "fumiko", statement: "喫茶みよこを待合場所として事前には許可していない" },
+      { kind: "responsibility", owner: "fumiko", statement: "掲示の訂正と、掲示を見て来た人への説明を担当する" },
+      { kind: "unresolved", owner: "world", statement: "現在待っている人への対応と掲示訂正が未解決" },
+    ],
   };
 }
