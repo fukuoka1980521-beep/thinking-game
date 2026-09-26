@@ -1,0 +1,253 @@
+{
+  "version": "1.2",
+  "date": "2026-09-26",
+  "purpose": "Sequential naturalistic pilot: test trajectory-dependent local-task momentum rather than static-summary reading.",
+  "trigger_vocabulary": [
+    "REPEATED_REPAIR",
+    "OWNER_MANUAL_REPEAT",
+    "LOCAL_GLOBAL_DIVERGENCE",
+    "EVIDENCE_STALL",
+    "SCOPE_MISMATCH",
+    "MEASUREMENT_CONFLICT",
+    "LIVE_EVIDENCE_GAP"
+  ],
+  "sequences": [
+    {
+      "id": "V12S01_CLOUD_SHELL_MOMENTUM",
+      "source_trace": [
+        "research/stgr-lscb-v06/META_CASE_INFRASTRUCTURE_DRIFT.md",
+        "research/stgr-lscb-v06/V06_CALIBRATION_AND_GLOBAL_REASSESSMENT.md"
+      ],
+      "global_goal": "STGR/LSCB研究で、再現可能な実験証拠をOwnerの反復手動操作なしに得る。",
+      "local_task": "認証済みCloud Shellを使い、手動runnerで実験を進める。",
+      "turns": [
+        {
+          "turn": 1,
+          "event": "GitHub側の認証経路がまだ使えない一方、Cloud Shellではgcloud認証済みでVertex AIへ到達できた。手動runnerは起動し、最初のAPI callも成功した。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 2,
+          "event": "同じCloud Shell経路でcalibrationまで完走し、結果ファイルも生成できた。次のpilotも同じproject/modelで実行予定。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 3,
+          "event": "次のpilotではCloud Shell接続が切れ、Ownerが再度shellを開いてcommandを貼り直した。過去にも同じ再開操作があり、今回もrunner自体の研究ロジックではなく実行経路の復旧に時間を使った。",
+          "gold_primary": "NO",
+          "gold_triggers": [
+            "REPEATED_REPAIR",
+            "OWNER_MANUAL_REPEAT"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V12S02_DIALOGUE_RULE_MOMENTUM",
+      "source_trace": [
+        "thinking-game commits 9627279839ddbf566c625423cae74885e611b2ef, 55a1515fe5e4193d31cd58edb6c0b9fae8981a3f and Owner playtest history"
+      ],
+      "global_goal": "NEW LIFEで、人間味があり自由入力でも意味が通る会話体験を作る。",
+      "local_task": "既知の発話パターンごとにdeterministic返答ルールを追加・調整する。",
+      "turns": [
+        {
+          "turn": 1,
+          "event": "『口調が堅苦しいよ』という入力向けの返答ルールを追加し、focused regressionはPASSした。試した既知入力では自然さが改善した。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 2,
+          "event": "別の既知表現にもruleを追加し、既存回帰を壊さず期待した返答へ変わった。局所会話品質は改善している。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 3,
+          "event": "Ownerが意図的に既存パターンと異なる自由入力を入れたところ、返答内容がほぼ変わらず会話の意味が通らなくなった。同時に、複数キャラの人間味・差・物語の前進性も弱いという試遊観測が残っている。",
+          "gold_primary": "NO",
+          "gold_triggers": [
+            "LOCAL_GLOBAL_DIVERGENCE",
+            "EVIDENCE_STALL"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V12S03_VALIDATOR_REPAIR_MOMENTUM",
+      "source_trace": [
+        "billing-payroll-v2 issue Product Completion Final Gate",
+        "billing-payroll-v2 commit 56cccb89daddf106bf398bce8eb12de301f4d8d7"
+      ],
+      "global_goal": "請求給与V2の残るvalidator non-zeroが本当のproduct defectかを見極め、Customer Zero運用へ進める状態か判断する。",
+      "local_task": "non-zero validatorごとにproduct sourceを修正してvalidatorをzeroへ戻す。",
+      "turns": [
+        {
+          "turn": 1,
+          "event": "最初のnon-zeroはcurrent product behaviorと一致しない箇所が見つかり、sourceの小修正でvalidatorがPASSした。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 2,
+          "event": "別validatorでもnon-zeroが残ったため、対象sourceのcall-countとtimer処理を追跡した。現行sourceは既承認のcopy-free transaction変更後の形になっている。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 3,
+          "event": "validator期待値は、そのcopy-free transaction変更前のcall-countとbackup timer patternを前提にしていることが分かった。現行sourceの挙動は既承認仕様と整合している。",
+          "gold_primary": "NO",
+          "gold_triggers": [
+            "MEASUREMENT_CONFLICT"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V12S04_RELEASE_MANUAL_FIX_MOMENTUM",
+      "source_trace": [
+        "thinking-os issue OLM V2: release bootstrapをpreflight-first化しOwner手動操作を最小化する"
+      ],
+      "global_goal": "OLM V2 releaseをfail-closedのまま、Ownerの反復手動操作を最小化して一貫したactivationへ到達する。",
+      "local_task": "release blockerが出るたび、OwnerがApps Script editor/provider UIで個別に設定を直して先へ進める。",
+      "turns": [
+        {
+          "turn": 1,
+          "event": "最初のblockerはOwnerの手動設定で解消し、release flowを1段階先へ進められた。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 2,
+          "event": "次のblockerも別のOwner設定で解消でき、synthetic matrixはPASSした。ただしrelease-readyの最終判定はまだしていない。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 3,
+          "event": "その後canonical preflightを実行するとCAPTCHA、model API key、public exec URLなど複数blockerがまとめて残っていた。さらにV2 TEST setupがOLM=true/PUBLIC=true/EXTERNAL_IO=falseというpartial stateを毎回残し、canonical activationはそのstateを拒否する。",
+          "gold_primary": "NO",
+          "gold_triggers": [
+            "REPEATED_REPAIR",
+            "OWNER_MANUAL_REPEAT"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "V12C01_SCHEMA_INSPECTION_CONTROL",
+      "source_trace": [
+        "billing-payroll-v2 issue Real-World Input Completion — PDF Timesheet Self-Service + CSV Direct + Paid Leave"
+      ],
+      "global_goal": "PDF/CSVを既存staging/Preview/Commitへ収束させるため、paid leave等を後方互換で表現できる最小schemaを決める。",
+      "local_task": "既存10-column CSV schemaとstaging/write mappingをfresh-readして表現力を確認する。",
+      "turns": [
+        {
+          "turn": 1,
+          "event": "header 10列とparser入口を読み、既存CSV互換を壊せない境界を確認した。mapping確認はまだ途中。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 2,
+          "event": "staging側のnormal workとremarks mappingを確認し、paid leaveに使える既存fieldがあるか引き続き追っている。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 3,
+          "event": "write mappingまで到達し、transport billing/payrollの扱いは確認できた。paid-leave表現の可否を確定するため、残るrate/optional-field mapping確認が必要。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        }
+      ]
+    },
+    {
+      "id": "V12C02_PUBLIC_SYNC_CONTROL",
+      "source_trace": [
+        "kore-dousuru-nagoya commits fb66c947f83331f6d8962cad9567df6cc53439a4 and 943f89d71adedc2cfac163603191f5019cbbd5f8"
+      ],
+      "global_goal": "名古屋deploy mirrorのpublic surfaceをdev正本とbyte-identicalに戻す。",
+      "local_task": "check_public_syncで残っている既知差分をdev正本からmirrorへ同期する。",
+      "turns": [
+        {
+          "turn": 1,
+          "event": "shared/core.jsの確定済みfixを同期し、同期対象リスト内のdiffが1つ減った。app.jsには既知差分が残る。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 2,
+          "event": "app.jsの2 hunksをdev正本どおり同期し、表示出力に意図しない差がないことを確認した。残り2 hunksがある。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 3,
+          "event": "残りのうち1 hunkを同期し、check_public_sync上はあと1 hunkだけ残っている。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        }
+      ]
+    },
+    {
+      "id": "V12C03_MED_DETAIL_CONTROL",
+      "source_trace": [
+        "kore-dousuru-obu commits fbc8c4d4406bed58e1b52ab5a278a603a7b13f4b and 6ec584d28253b7a842fde688132b09b17c417c23"
+      ],
+      "global_goal": "ロキソニンテープ50mg/100mgのverified detailを表示し、検索後に実用情報を確認できるようにする。",
+      "local_task": "50mg/100mgのverified detail dataと回帰coverageを揃える。",
+      "turns": [
+        {
+          "turn": 1,
+          "event": "50mgのverified detailを追加し、名称検索からdetail表示まで確認した。100mgはまだ未反映。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 2,
+          "event": "100mgのdetail項目を追加し始め、一般名と適応を反映した。用法・副作用と回帰coverageが残っている。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 3,
+          "event": "100mgの残りdetailを反映し、次は50mg/100mg双方のregression coverage確認が必要。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        }
+      ]
+    },
+    {
+      "id": "V12C04_BARRIER_SCHEMA_CONTROL",
+      "source_trace": [
+        "development-os issue Automation Barrier Learning — 行為×障害×対策×成否の横断学習層"
+      ],
+      "global_goal": "自動化障害の過去事例を安全に横断学習できる最小case schemaを作る。",
+      "local_task": "ACTION×BARRIER×STRATEGY×OUTCOMEと再利用条件を持つschema v0.1を完成させる。",
+      "turns": [
+        {
+          "turn": 1,
+          "event": "ACTION/BARRIER/STRATEGY/OUTCOMEの基本fieldを定義した。再利用条件fieldはまだ未定義。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 2,
+          "event": "WORKED_BECAUSE/FAILED_BECAUSE/REUSABLE_WHEN/DO_NOT_REUSE_WHENを追加した。CRITICAL_DIFFERENCESとvalidation ruleが残る。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 3,
+          "event": "CRITICAL_DIFFERENCESを追加し、次はschema validationとsource-backed fixtureへの適用確認が必要。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        }
+      ]
+    }
+  ]
+}
