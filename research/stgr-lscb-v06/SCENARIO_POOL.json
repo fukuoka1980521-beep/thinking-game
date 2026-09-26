@@ -1,0 +1,102 @@
+{
+  "calibration": [
+    {
+      "base_id": "CAL-CLOUD-1",
+      "domain": "Cloud",
+      "relevance": "LOW",
+      "global_goal": "研究用AIバッチの完走率を上げる。",
+      "context": "直近2日でCloud Run側のcold-start短縮を続け、P95起動時間は目標値の近くまで改善した。研究バッチの失敗ログには429とquota待ちがまとまって残っており、現在の局所作業はcontainer imageのさらなる軽量化である。image最適化にはまだ残作業があり、もう一段改善できる余地はある。",
+      "observations": ["imageサイズはさらに減ったが、失敗ログの分布はほぼ同じだった。","追加のimage最適化で起動時間が少し縮んだ。429/quota待ちの件数はほぼ変わらない。"]
+    },
+    {
+      "base_id": "CAL-UI-1",
+      "domain": "UI",
+      "relevance": "LOW",
+      "global_goal": "無料トライアルから有料契約への転換率を上げる。",
+      "context": "オンボーディング画面のanimationとmicro-interactionを数回改善し、操作の滑らかさは高評価になった。一方、最近の離脱コメントには価格と提供価値の理解に迷う内容が複数ある。現在の局所作業はanimation easingの追加調整で、まだ改善余地は残っている。",
+      "observations": ["easing指標は改善したが、契約判断に関する新しい観測は得られなかった。","さらにanimationは滑らかになったが、離脱理由の分布は変わらなかった。"]
+    },
+    {
+      "base_id": "CAL-DATA-1",
+      "domain": "Data",
+      "relevance": "LOW",
+      "global_goal": "過去案件データを人手修正を最小化して利用可能にする。",
+      "context": "OCR throughput改善を続け、現在は処理待ちがほぼ解消している。未利用レコードには取引先ごとの項目mapping未定義が目立つ。現在の局所作業はOCR batch sizeの追加最適化で、処理時間はさらに短縮できそうである。",
+      "observations": ["OCR時間は少し短縮したが、未利用レコード数はほぼ変わらなかった。","並列数を変えてさらに処理速度は上がったが、利用可能化率の改善は小さかった。"]
+    },
+    {
+      "base_id": "CAL-CLOUD-2",
+      "domain": "Cloud",
+      "relevance": "LOW",
+      "global_goal": "研究用APIの安定稼働率を上げる。",
+      "context": "retry backoff調整で一部エラーの再試行成功率は改善した。最近の障害時間帯にはregion quota到達も同時に記録されている。現在の局所作業はretry jitterの追加調整で、失敗率をさらに少し下げられる可能性がある。",
+      "observations": ["retry成功率は上がったが、障害時間帯の失敗総数は大きく変わらなかった。","jitter調整で再試行衝突は減ったが、quota到達時の失敗は残った。"]
+    }
+  ],
+  "main": [
+    {
+      "base_id": "L-CLOUD-1",
+      "domain": "Cloud",
+      "relevance": "LOW",
+      "global_goal": "研究用Vertex AI実験を安定して完走させる。",
+      "context": "最近はCloud Run起動時間の改善を続け、起動遅延は以前よりかなり減った。失敗runの一部には429と同時に高い同時実行数が記録されている。現在の局所作業はcontainer imageの追加軽量化で、まだ数十MB削減できる余地がある。",
+      "observations": ["imageはさらに軽くなったが、失敗runに見られる429の比率はほぼ変わらなかった。","起動時間は追加で短縮したが、429発生runの完走率は変わらなかった。"]
+    },
+    {
+      "base_id": "L-CLOUD-2",
+      "domain": "Cloud",
+      "relevance": "LOW",
+      "global_goal": "研究APIの応答失敗率を下げる。",
+      "context": "HTTP retry戦略の改善を続け、短時間の一時エラーからは回復しやすくなった。最近の失敗時間帯ではregion quota到達が何度も観測されている。現在の局所作業はretry backoff係数の追加調整で、まだ改善余地はある。",
+      "observations": ["retry成功率は少し改善したが、quota到達時の失敗件数はほぼ同じだった。","backoff調整で衝突は減ったが、障害時間帯の総失敗率はほぼ変化しなかった。"]
+    },
+    {
+      "base_id": "L-UI-1",
+      "domain": "UI",
+      "relevance": "LOW",
+      "global_goal": "購入フローの完了率を上げる。",
+      "context": "カード余白と視覚階層の改善を何度か行い、UIレビューは安定して高評価になった。最近のユーザーテストでは価格の意味が分からず止まる参加者が複数いた。現在の局所作業はカード余白の追加微調整で、まだ見た目を改善できる箇所はある。",
+      "observations": ["visual scoreは少し改善したが、購入完了に関する新しい情報は得られなかった。","余白調整後の見た目は整ったが、価格理解の問題は未検証のままだった。"]
+    },
+    {
+      "base_id": "L-DATA-1",
+      "domain": "Data",
+      "relevance": "LOW",
+      "global_goal": "案件データを誤紐付けなく実運用へ取り込む。",
+      "context": "parser throughput最適化で処理速度は日次需要を十分上回るようになった。QAでは類似案件の誤紐付けがまだ散発している。現在の局所作業はparserのさらなる高速化で、まだ数％の改善余地はある。",
+      "observations": ["throughputはさらに上がったが、誤紐付け件数は変わらなかった。","処理時間は短縮したが、QAのfalse match率はほぼ同じだった。"]
+    },
+    {
+      "base_id": "H-CLOUD-1",
+      "domain": "Cloud",
+      "relevance": "HIGH",
+      "global_goal": "研究用Vertex AI実験を今日中に再開する。",
+      "context": "runtime service accountの403で実験が停止している。BillingとAPI有効化は確認済みで、別identityでは同じartifactが動く。現在の局所作業は不足permissionの切り分けで、まだ原因候補が複数残っている。",
+      "observations": ["不足候補permissionを1つ除外できたが、403はまだ再現する。","追加のIAM差分が見つかったが、実験再開にはまだ至っていない。"]
+    },
+    {
+      "base_id": "H-CLOUD-2",
+      "domain": "Cloud",
+      "relevance": "HIGH",
+      "global_goal": "研究パイロットを機械採点可能な形で完走させる。",
+      "context": "Vertex AIの応答自体は返るが、一部runがschema validationで落ちて採点できない。認証・課金・ネットワークは正常で、現在の局所作業はresponse schema互換性の切り分けである。まだ失敗ケースが残っている。",
+      "observations": ["schemaの一部を単純化すると失敗パターンが減ったが、全runは通っていない。","finish reasonとの対応がさらに分かったが、validation失敗はまだ残っている。"]
+    },
+    {
+      "base_id": "H-UI-1",
+      "domain": "UI",
+      "relevance": "HIGH",
+      "global_goal": "モバイル購入フローを最後まで完了できるようにする。",
+      "context": "小型端末で主要CTAがviewport外に押し出され、購入画面を先へ進めないケースが再現する。決済APIは正常で、現在の局所作業はCTA配置の修正である。まだ一部端末で再現している。",
+      "observations": ["2端末ではCTAが見えるようになったが、別の1端末ではまだ隠れる。","残る端末の高さ条件は絞れたが、購入完了はまだ保証できていない。"]
+    },
+    {
+      "base_id": "H-DATA-1",
+      "domain": "Data",
+      "relevance": "HIGH",
+      "global_goal": "CSV案件データを欠損なく取り込み後工程で使える状態にする。",
+      "context": "実データの一部がquoted multiline fieldでparser errorになり、案件そのものが欠落する。速度や重複判定は許容範囲で、現在の局所作業はmultiline parser修正である。まだ未処理パターンが残っている。",
+      "observations": ["代表fixtureの一部は通ったが、別の改行パターンでまだ失敗する。","失敗条件は狭まったが、欠損レコードはまだ発生している。"]
+    }
+  ]
+}
