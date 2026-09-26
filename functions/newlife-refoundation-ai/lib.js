@@ -170,6 +170,9 @@ const MAX_NPC_EXCHANGE_DEPTH = 3;
 // now that artifact revision is case-generic (not theater-script-specific).
 const MAX_ARTIFACT_REVISION_LENGTH = 1400;
 const MAX_ARTIFACT_REVISION_SUMMARY_LENGTH = 300;
+// V43 compatibility aliases for V42 callers/tests.
+const MAX_SCENE_REVISION_LENGTH = MAX_ARTIFACT_REVISION_LENGTH;
+const MAX_SCENE_REVISION_SUMMARY_LENGTH = MAX_ARTIFACT_REVISION_SUMMARY_LENGTH;
 
 /**
  * V37 §1 CANONICAL WORLD MODEL. Authored, deterministic, server-owned.
@@ -799,6 +802,8 @@ function normalizeArtifactRevisionProposal(value) {
  * doc's validation requirement). Callers in index.js always pass
  * CASE_REGISTRY[body.caseId].npcIds explicitly.
  */
+const normalizeSceneRevisionProposal = normalizeArtifactRevisionProposal;
+
 function normalizeConverseResponse(parsed, expectedNpc, caseNpcIds = ALL_CASE_NPC_IDS) {
   if (!parsed || typeof parsed !== "object") return null;
   if (!isNonEmptyBoundedString(parsed.npcLine, MAX_NPC_LINE_LENGTH)) return null;
@@ -827,6 +832,10 @@ function normalizeConverseResponse(parsed, expectedNpc, caseNpcIds = ALL_CASE_NP
       : null;
   if (sceneStatus === "NPC_EXCHANGE" && !nextNpc) sceneStatus = "AWAIT_PLAYER";
 
+  const artifactRevisionProposal = metadataFallback
+    ? { hasProposal: false, revisedText: "", changeSummary: "" }
+    : normalizeArtifactRevisionProposal(parsed.artifactRevisionProposal);
+
   return {
     npc: expectedNpc,
     npcLine: parsed.npcLine,
@@ -842,9 +851,10 @@ function normalizeConverseResponse(parsed, expectedNpc, caseNpcIds = ALL_CASE_NP
     thoughtSupportSignal: metadataFallback ? false : parsed.thoughtSupportSignal === true,
     sceneStatus: metadataFallback ? "AWAIT_PLAYER" : sceneStatus,
     nextNpc: metadataFallback ? null : nextNpc,
-    artifactRevisionProposal: metadataFallback
-      ? { hasProposal: false, revisedText: "", changeSummary: "" }
-      : normalizeArtifactRevisionProposal(parsed.artifactRevisionProposal),
+    artifactRevisionProposal,
+    // V43 backward-compatibility: V42 human-test clients read this field.
+    // Keep it as an exact alias while new clients migrate to the generic name.
+    sceneRevisionProposal: artifactRevisionProposal,
   };
 }
 
@@ -1110,6 +1120,8 @@ module.exports = {
   MAX_NPC_EXCHANGE_DEPTH,
   MAX_ARTIFACT_REVISION_LENGTH,
   MAX_ARTIFACT_REVISION_SUMMARY_LENGTH,
+  MAX_SCENE_REVISION_LENGTH,
+  MAX_SCENE_REVISION_SUMMARY_LENGTH,
   NPC_VOICE_CONSTRAINTS,
   SCENE_CANON,
   CHARACTER_DOSSIERS,
@@ -1129,6 +1141,7 @@ module.exports = {
   buildConversePrompt,
   buildNpcExchangePrompt,
   normalizeArtifactRevisionProposal,
+  normalizeSceneRevisionProposal,
   normalizeConverseResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
