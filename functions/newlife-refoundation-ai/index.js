@@ -109,7 +109,7 @@ async function attemptConverseTurn(client, body) {
     return null;
   }
 
-  return normalizeConverseResponse(parsed, body.targetNpc);
+  return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
 }
 
 
@@ -128,7 +128,7 @@ async function attemptNpcExchangeTurn(client, body) {
     return null;
   }
 
-  return normalizeConverseResponse(parsed, body.targetNpc);
+  return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
 }
 
 /**
@@ -148,7 +148,7 @@ exports.newlifeRefoundationAi = async (req, res) => {
     res.status(204).send("");
     return;
   }
-  // V41: no-model-call health/version path. Returns before any validation,
+  // V43: no-model-call health/version path. Returns before any validation,
   // rate-limit consumption, or Vertex AI client construction -- a caller can
   // confirm which build a deployed instance is running without spending a
   // model call, a rate-limit slot, or sending any player data.

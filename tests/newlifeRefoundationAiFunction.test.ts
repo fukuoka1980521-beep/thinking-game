@@ -115,6 +115,22 @@ function validNpcExchangeBody(overrides: Partial<Record<string, unknown>> = {}) 
     ...overrides,
   };
 }
+
+function validStreetConverseBody(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    operation: "converse_turn",
+    caseId: "STREET_TRIAL_V1",
+    targetNpc: "HINA",
+    rawPlayerUtterance: "何が起きているの？",
+    recentDialogue: [
+      { speaker: "HINA", text: "合計は30点なんです。" },
+      { speaker: "YOHEI", text: "予約12、店頭18だろ。" },
+    ],
+    dynamicState: validDynamicState(),
+    ...overrides,
+  };
+}
+
 function validOrganizeThoughtBody(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     operation: "organize_thought",
@@ -324,6 +340,48 @@ describe("functions/newlife-refoundation-ai/lib.js — validateInput (continue_n
     expect(lib.validateInput(validNpcExchangeBody({ continuationDepth: lib.MAX_NPC_EXCHANGE_DEPTH + 1 }))).toBe("invalid_continuation_depth");
   });
 });
+
+describe("functions/newlife-refoundation-ai/lib.js — V43 second-case generalization", () => {
+  it("accepts the street-trial case and rejects cross-case NPCs", () => {
+    expect(lib.validateInput(validStreetConverseBody())).toBeNull();
+    expect(lib.validateInput(validStreetConverseBody({ targetNpc: "MIKA" }))).toBe("invalid_target_npc");
+    expect(lib.validateInput(validConverseBody({ targetNpc: "HINA" }))).toBe("invalid_target_npc");
+  });
+
+  it("selects street canon and distinct Hina/Yohei dossiers server-side", () => {
+    expect(lib.getCaseCanon("STREET_TRIAL_V1").observableArtifacts.signText).toBe("本日30点");
+    expect(lib.getCaseNpcIds("STREET_TRIAL_V1")).toEqual(["HINA", "YOHEI"]);
+    expect(lib.STREET_TRIAL_CHARACTER_DOSSIERS.HINA.knowledge.join(" ")).toContain("予約");
+    expect(lib.STREET_TRIAL_CHARACTER_DOSSIERS.YOHEI.speechModel).toContain("短く具体的");
+  });
+
+  it("buildConversePrompt uses the requested case rather than theater canon", () => {
+    const prompt = lib.buildConversePrompt(validStreetConverseBody());
+    expect(prompt).toContain("本日30点");
+    expect(prompt).toContain("予約12点");
+    expect(prompt).toContain("陽菜");
+    expect(prompt).not.toContain("青いマフラー");
+  });
+
+  it("normalizeConverseResponse never hands a street case to theater NPCs", () => {
+    const parsed = {
+      npcLine: "分かりました。",
+      understoodPlayerMeaning: "進めたい",
+      candidateTurn: { action: "OTHER", boundaryMode: "NOT_RELEVANT", relationalEvents: [], needsClarification: false },
+      candidateFactRevealIds: [],
+      candidateCommitments: [],
+      uncertainty: "LOW",
+      thoughtSupportSignal: false,
+      sceneStatus: "NPC_EXCHANGE",
+      nextNpc: "MIKA",
+      sceneRevisionProposal: { hasProposal: false, revisedText: "", changeSummary: "" },
+    };
+    const normalized = lib.normalizeConverseResponse(parsed, "HINA", "STREET_TRIAL_V1");
+    expect(normalized.sceneStatus).toBe("AWAIT_PLAYER");
+    expect(normalized.nextNpc).toBeNull();
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — validateInput (organize_thought, V37 §5)", () => {
   it("accepts a well-formed request", () => {
     expect(lib.validateInput(validOrganizeThoughtBody())).toBeNull();
@@ -715,19 +773,19 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   });
 });
 
-describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V42)", () => {
+describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V43)", () => {
   it("returns the exact safe shape with buildSha defaulted to \"unknown\" when no build SHA is supplied", () => {
     expect(lib.buildHealthResponse(undefined)).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V42",
+      contractVersion: "V43",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
     // No-arg call (matches how index.js calls it when the env var is unset).
     expect(lib.buildHealthResponse()).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V42",
+      contractVersion: "V43",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
@@ -736,7 +794,7 @@ describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V42)
     expect(lib.buildHealthResponse("abc1234")).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "abc1234",
-      contractVersion: "V42",
+      contractVersion: "V43",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });

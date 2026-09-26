@@ -115,7 +115,7 @@ jobs:
           fi
           echo "uri=$uri" >> "$GITHUB_OUTPUT"
 
-      - name: Smoke 0/3 — deployment identity
+      - name: Smoke 0/4 — deployment identity
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -125,12 +125,12 @@ jobs:
             const expected=process.argv[2];
             if(!p || p.service!=="newlife-refoundation-ai") throw new Error("wrong service");
             if(typeof p.buildSha!=="string" || p.buildSha!==expected) throw new Error("build SHA mismatch");
-            if(p.contractVersion!=="V42") throw new Error("contract version mismatch");
+            if(p.contractVersion!=="V43") throw new Error("contract version mismatch");
             if(!Array.isArray(p.operations) || !p.operations.includes("converse_turn") || !p.operations.includes("continue_npc_exchange") || !p.operations.includes("organize_thought")) throw new Error("operation set mismatch");
             console.log("health/build identity OK:", p.buildSha);
           ' "$payload" "${{ steps.source.outputs.sha }}"
 
-      - name: Smoke 1/3 — converse_turn
+      - name: Smoke 1/4 — converse_turn
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -144,7 +144,19 @@ jobs:
             console.log("converse_turn shape OK");
           ' "$payload"
 
-      - name: Smoke 2/3 — continue_npc_exchange
+      - name: Smoke 2/4 — second-case converse_turn
+        run: |
+          set -euo pipefail
+          uri="${{ steps.deploy.outputs.uri }}"
+          body='{"operation":"converse_turn","caseId":"STREET_TRIAL_V1","targetNpc":"HINA","rawPlayerUtterance":"何が問題になっているの？","recentDialogue":[{"speaker":"HINA","text":"合計は30点なんです。予約分も含めて書いただけです。"},{"speaker":"YOHEI","text":"予約12、店頭18だろ。見た人への約束は別だ。"}],"dynamicState":{"relationshipState":"NEUTRAL","boundaryStatus":"UNKNOWN","remainingMinutes":35,"activeCommitment":null,"sceneRevisionText":null}}'
+          payload="$(curl -fsS --max-time 55 -X POST "$uri" -H 'Content-Type: application/json' -d "$body")"
+          node -e '
+            const p=JSON.parse(process.argv[1]);
+            if(!p || p.npc!=="HINA" || typeof p.npcLine!=="string" || !p.npcLine.trim()) throw new Error("invalid street-trial response");
+            if(!p.sceneRevisionProposal || p.sceneRevisionProposal.hasProposal!==false) throw new Error("street case must not invent script revision");
+            console.log("street_trial converse_turn shape OK");
+          ' "$payload"
+      - name: Smoke 2/4 — continue_npc_exchange
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -156,7 +168,7 @@ jobs:
             if(!["AWAIT_PLAYER","NPC_EXCHANGE","RESOLVED","STALLED"].includes(p.sceneStatus)) throw new Error("scene status missing");
             console.log("continue_npc_exchange shape OK");
           ' "$payload"
-      - name: Smoke 3/3 — organize_thought
+      - name: Smoke 4/4 — organize_thought
         run: |
           set -euo pipefail
           uri="${{ steps.deploy.outputs.uri }}"
@@ -176,7 +188,8 @@ jobs:
             echo "- Source SHA: `${{ steps.source.outputs.sha }}`"
             echo "- Endpoint: `${{ steps.deploy.outputs.uri }}`"
             echo "- Health/build identity: PASS"
-            echo "- converse_turn: PASS"
+            echo "- converse_turn (theater): PASS"
+            echo "- converse_turn (street trial): PASS"
             echo "- continue_npc_exchange: PASS"
             echo "- organize_thought: PASS"
             echo "- Human test page: https://fukuoka1980521-beep.github.io/thinking-game/newlife-v37.html"
