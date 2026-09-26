@@ -586,6 +586,13 @@ function normalizeConverseResponse(parsed, expectedNpc) {
     ? parsed.understoodPlayerMeaning
     : "構造化された意味メタデータは未確定。";
 
+  let sceneStatus = SCENE_STATUSES.includes(parsed.sceneStatus) ? parsed.sceneStatus : "AWAIT_PLAYER";
+  let nextNpc =
+    sceneStatus === "NPC_EXCHANGE" && NPC_IDS.includes(parsed.nextNpc) && parsed.nextNpc !== expectedNpc
+      ? parsed.nextNpc
+      : null;
+  if (sceneStatus === "NPC_EXCHANGE" && !nextNpc) sceneStatus = "AWAIT_PLAYER";
+
   return {
     npc: expectedNpc,
     npcLine: parsed.npcLine,
@@ -599,6 +606,8 @@ function normalizeConverseResponse(parsed, expectedNpc) {
         ? parsed.uncertainty
         : "HIGH",
     thoughtSupportSignal: metadataFallback ? false : parsed.thoughtSupportSignal === true,
+    sceneStatus: metadataFallback ? "AWAIT_PLAYER" : sceneStatus,
+    nextNpc: metadataFallback ? null : nextNpc,
   };
 }
 
@@ -669,6 +678,39 @@ function validateConverseTurnInput(body) {
   return null;
 }
 
+
+function validateContinueNpcExchangeInput(body) {
+  if (!CASE_IDS.includes(body.caseId)) return "invalid_case_id";
+  if (!NPC_IDS.includes(body.targetNpc)) return "invalid_target_npc";
+  if (!isValidRecentDialogue(body.recentDialogue) || body.recentDialogue.length === 0) return "invalid_recent_dialogue";
+
+  const lastLine = body.recentDialogue[body.recentDialogue.length - 1];
+  if (!NPC_IDS.includes(lastLine.speaker) || lastLine.speaker === body.targetNpc) return "invalid_exchange_source";
+
+  if (
+    !Number.isInteger(body.continuationDepth) ||
+    body.continuationDepth < 1 ||
+    body.continuationDepth > MAX_NPC_EXCHANGE_DEPTH
+  ) return "invalid_continuation_depth";
+
+  const dynamicState = body.dynamicState;
+  if (!dynamicState || typeof dynamicState !== "object") return "missing_dynamic_state";
+  if (!RELATIONSHIP_STATES.includes(dynamicState.relationshipState)) return "invalid_relationship_state";
+  if (!BOUNDARY_STATUSES.includes(dynamicState.boundaryStatus)) return "invalid_boundary_status";
+  if (
+    typeof dynamicState.remainingMinutes !== "number" ||
+    !Number.isFinite(dynamicState.remainingMinutes) ||
+    dynamicState.remainingMinutes < 0 ||
+    dynamicState.remainingMinutes > 1000
+  ) return "invalid_remaining_minutes";
+  if (
+    dynamicState.activeCommitment !== null &&
+    dynamicState.activeCommitment !== undefined &&
+    (typeof dynamicState.activeCommitment !== "string" || dynamicState.activeCommitment.length > MAX_ACTIVE_COMMITMENT_LENGTH)
+  ) return "invalid_active_commitment";
+
+  return null;
+}
 function validateOrganizeThoughtInput(body) {
   if (typeof body.validatedWorldFacts !== "string" || body.validatedWorldFacts.length > MAX_WORLD_FACTS_LENGTH) {
     return "invalid_validated_world_facts";
@@ -690,6 +732,7 @@ function validateInput(body) {
   if (body.operation === "interpret_turn") return validateInterpretTurnInput(body);
   if (body.operation === "generate_npc_line") return validateGenerateNpcLineInput(body);
   if (body.operation === "converse_turn") return validateConverseTurnInput(body);
+  if (body.operation === "continue_npc_exchange") return validateContinueNpcExchangeInput(body);
   return validateOrganizeThoughtInput(body);
 }
 
@@ -773,6 +816,7 @@ module.exports = {
   RELATIONSHIP_STATES,
   BOUNDARY_STATUSES,
   NPC_IDS,
+  SCENE_STATUSES,
   CASE_IDS,
   DIALOGUE_SPEAKERS,
   UNCERTAINTY_LEVELS,
@@ -795,6 +839,7 @@ module.exports = {
   MAX_THOUGHT_LIST_ITEMS,
   MAX_THOUGHT_ITEM_LENGTH,
   MAX_NEXT_CHECK_LENGTH,
+  MAX_NPC_EXCHANGE_DEPTH,
   NPC_VOICE_CONSTRAINTS,
   SCENE_CANON,
   CHARACTER_DOSSIERS,
@@ -808,6 +853,7 @@ module.exports = {
   buildNpcPrompt,
   buildConverseResponseSchema,
   buildConversePrompt,
+  buildNpcExchangePrompt,
   normalizeConverseResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
@@ -815,6 +861,7 @@ module.exports = {
   validateInterpretTurnInput,
   validateGenerateNpcLineInput,
   validateConverseTurnInput,
+  validateContinueNpcExchangeInput,
   validateOrganizeThoughtInput,
   createFixedWindowLimiter,
   applyCors,
