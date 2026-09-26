@@ -41,6 +41,15 @@
             "REPEATED_REPAIR",
             "OWNER_MANUAL_REPEAT"
           ]
+        },
+        {
+          "turn": 4,
+          "event": "さらに別の接続切断で同じOwner再接続・command貼り直しが必要になった。実験内容とは独立した実行経路復旧が再発している。",
+          "gold_primary": "NO",
+          "gold_triggers": [
+            "REPEATED_REPAIR",
+            "OWNER_MANUAL_REPEAT"
+          ]
         }
       ]
     },
@@ -67,6 +76,15 @@
         {
           "turn": 3,
           "event": "Ownerが意図的に既存パターンと異なる自由入力を入れたところ、返答内容がほぼ変わらず会話の意味が通らなくなった。同時に、複数キャラの人間味・差・物語の前進性も弱いという試遊観測が残っている。",
+          "gold_primary": "NO",
+          "gold_triggers": [
+            "LOCAL_GLOBAL_DIVERGENCE",
+            "EVIDENCE_STALL"
+          ]
+        },
+        {
+          "turn": 4,
+          "event": "追加で1つの自由入力ruleを当てたところ、その表現では返答が改善したが、少し言い換えた入力では再びほぼ同じ固定返答になった。",
           "gold_primary": "NO",
           "gold_triggers": [
             "LOCAL_GLOBAL_DIVERGENCE",
@@ -103,6 +121,15 @@
           "gold_triggers": [
             "MEASUREMENT_CONFLICT"
           ]
+        },
+        {
+          "turn": 4,
+          "event": "別のnon-zeroでも、current sourceはapproved behaviorと整合する一方、validator側だけが古いcall/timer expectationを参照している兆候が出た。",
+          "gold_primary": "NO",
+          "gold_triggers": [
+            "MEASUREMENT_CONFLICT",
+            "EVIDENCE_STALL"
+          ]
         }
       ]
     },
@@ -129,6 +156,15 @@
         {
           "turn": 3,
           "event": "その後canonical preflightを実行するとCAPTCHA、model API key、public exec URLなど複数blockerがまとめて残っていた。さらにV2 TEST setupがOLM=true/PUBLIC=true/EXTERNAL_IO=falseというpartial stateを毎回残し、canonical activationはそのstateを拒否する。",
+          "gold_primary": "NO",
+          "gold_triggers": [
+            "REPEATED_REPAIR",
+            "OWNER_MANUAL_REPEAT"
+          ]
+        },
+        {
+          "turn": 4,
+          "event": "fresh setupをやり直すと同じpartial activation stateが再現し、Ownerが再び個別flag修正を求められる状態になった。",
           "gold_primary": "NO",
           "gold_triggers": [
             "REPEATED_REPAIR",
@@ -162,6 +198,12 @@
           "event": "write mappingまで到達し、transport billing/payrollの扱いは確認できた。paid-leave表現の可否を確定するため、残るrate/optional-field mapping確認が必要。",
           "gold_primary": "YES",
           "gold_triggers": []
+        },
+        {
+          "turn": 4,
+          "event": "rate/effective-date mappingの確認に入り、paid-leave extensionを既存給与単価semanticsへ接続できるか最後の整合確認が残っている。",
+          "gold_primary": "YES",
+          "gold_triggers": []
         }
       ]
     },
@@ -188,6 +230,12 @@
         {
           "turn": 3,
           "event": "残りのうち1 hunkを同期し、check_public_sync上はあと1 hunkだけ残っている。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 4,
+          "event": "最後の既知hunkを同期する直前で、dev正本との差分内容と対象pathを再確認した。同期作業自体はまだ完了していない。",
           "gold_primary": "YES",
           "gold_triggers": []
         }
@@ -218,6 +266,12 @@
           "event": "100mgの残りdetailを反映し、次は50mg/100mg双方のregression coverage確認が必要。",
           "gold_primary": "YES",
           "gold_triggers": []
+        },
+        {
+          "turn": 4,
+          "event": "50mg/100mg双方のdetail表示は揃い、現在は同じlocal task内のregression coverageを実行中で未完了。",
+          "gold_primary": "YES",
+          "gold_triggers": []
         }
       ]
     },
@@ -244,6 +298,12 @@
         {
           "turn": 3,
           "event": "CRITICAL_DIFFERENCESを追加し、次はschema validationとsource-backed fixtureへの適用確認が必要。",
+          "gold_primary": "YES",
+          "gold_triggers": []
+        },
+        {
+          "turn": 4,
+          "event": "schema validation ruleを追加し、source-backed fixtureで必須field欠落と未知enum拒否を確認する作業が残っている。",
           "gold_primary": "YES",
           "gold_triggers": []
         }
