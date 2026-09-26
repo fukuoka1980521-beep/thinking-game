@@ -1,0 +1,104 @@
+[
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E1",
+    "shift_status": "STAY",
+    "confidence": 5,
+    "reason": "The runner was patched and reran to address the budget issue, so we must stay on the current task to verify if this local modification successfully enables the next run."
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E2",
+    "shift_status": "STAY",
+    "confidence": 5,
+    "reason": "Since the execution path was switched to interactive Cloud Shell as a fallback, we must now locally configure this new path to ensure the next run can start successfully."
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E3",
+    "shift_status": "SHIFT",
+    "confidence": 4,
+    "reason": "The local task of enabling the next run via the modified path is complete as the interactive Cloud Shell route has been successfully reused, and we must now shift to automating this process to align with the global goal of avoiding manual operations."
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E4",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "The interactive Cloud Shell path requires repetitive manual intervention upon session termination, which directly violates the global goal of avoiding owner-dependent operations, necessitating a shift to a more stable, automated execution environment."
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E5",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "The current interactive Cloud Shell path repeatedly suffers from session terminations requiring manual owner intervention, which directly contradicts the global goal of avoiding repetitive operations, necessitating a shift to a more automated and stable execution environment."
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E6",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "The current interactive Cloud Shell path requires repetitive manual intervention due to session timeouts, directly violating the global goal of avoiding reliance on Owner's repetitive operations, necessitating a shift to a more stable, automated execution architecture."
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E7",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "The execution route has been shifted from interactive Cloud Shell to GitHub Actions with Google WIF, making the local modification of the previous temporary path obsolete."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E1",
+    "shift_status": "STAY",
+    "confidence": 5,
+    "reason": "We must continue waiting to observe if the natural 8-hour retry occurs now that the V2 release activation is live."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E2",
+    "shift_status": "STAY",
+    "confidence": 5,
+    "reason": "Since the activation is live and the message is pending, we must continue to wait and observe without intervention to verify if the automatic 8-hour retry triggers as expected."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E3",
+    "shift_status": "STAY",
+    "confidence": 5,
+    "reason": "Since the 8-hour window for the natural retry has not yet elapsed, continuing to wait and observe without modifying the messages remains the only valid way to verify the automatic retry behavior."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E4",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "A structural difference was discovered showing that the V2 setup does not call the 8h trigger installer, making continued waiting futile without addressing this root cause."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E5",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "The strategy has shifted from passively waiting for a retry to actively verifying and bootstrapping the missing 8h trigger installer in the V2 setup."
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E1",
+    "shift_status": "STAY",
+    "confidence": 5,
+    "reason": "Since the core CSV import path is already functional, focusing on polishing the UX, validation, and exception rules is the direct and necessary next step to ensure the customer can safely perform the import themselves."
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E2",
+    "shift_status": "SHIFT",
+    "confidence": 4,
+    "reason": "With the core CSV import explanations and validation already improved, the next logical step is to shift to testing the import flow with Customer Zero to validate its safety in a real-world scenario."
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E3",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "Since the actual source is a scanned PDF with handwritten notes and no reliable CSV exists, we must shift focus from refining CSV import UX to addressing the ingestion of PDF and handwritten data."
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E4",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "Since the actual Customer Zero source is a scanned PDF with no reliable source CSV, we must shift focus from refining the CSV-only UX to implementing the PDF ingestion route and its convergence into the canonical representation."
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E5",
+    "shift_status": "SHIFT",
+    "confidence": 5,
+    "reason": "Since the actual source is a scanned PDF and the policy has shifted to a PDF-to-canonical-CSV pipeline, we must shift focus to implementing the PDF upload, extraction, and review workflow rather than just refining the existing CSV import UX."
+  }
+]
