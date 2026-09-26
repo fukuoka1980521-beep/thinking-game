@@ -61,8 +61,8 @@ def main():
         hist.append(r)
 
         if r.get("global_reassessment_performed"):
-            # start a new local streak for loop-count purposes while retaining full audit rows
-            pass
+            # Reset the local loop streak after a completed global reassessment.
+            by_task[task]=[]
 
     if violations:
         print("TRACE_VALIDATION=FAIL")
