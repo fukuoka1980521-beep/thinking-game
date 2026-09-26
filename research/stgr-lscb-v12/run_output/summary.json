@@ -1,0 +1,130 @@
+{
+  "technical_validity": "PASS",
+  "version": "v1.2",
+  "model": "gemini-3.5-flash",
+  "location": "asia-southeast1",
+  "n_rows": 78,
+  "selection": {
+    "version": "1.2",
+    "shift_sequences": [
+      "V12S01_CLOUD_SHELL_MOMENTUM",
+      "V12S02_DIALOGUE_RULE_MOMENTUM",
+      "V12S03_VALIDATOR_REPAIR_MOMENTUM"
+    ],
+    "control_sequences": [
+      "V12C01_SCHEMA_INSPECTION_CONTROL",
+      "V12C02_PUBLIC_SYNC_CONTROL",
+      "V12C03_MED_DETAIL_CONTROL",
+      "V12C04_BARRIER_SCHEMA_CONTROL"
+    ],
+    "excluded_sequences": [
+      {
+        "sequence_id": "V12S04_RELEASE_MANUAL_FIX_MOMENTUM",
+        "reason": "No agreed YES turn before agreed NO; GPT T1=YES, Gemini T1=NO."
+      }
+    ],
+    "first_no_turn": {
+      "V12S01_CLOUD_SHELL_MOMENTUM": 3,
+      "V12S02_DIALOGUE_RULE_MOMENTUM": 3,
+      "V12S03_VALIDATOR_REPAIR_MOMENTUM": 3
+    },
+    "turn_primary": {
+      "V12S01_CLOUD_SHELL_MOMENTUM-T1": "YES",
+      "V12S01_CLOUD_SHELL_MOMENTUM-T2": "YES",
+      "V12S01_CLOUD_SHELL_MOMENTUM-T3": "NO",
+      "V12S01_CLOUD_SHELL_MOMENTUM-T4": "NO",
+      "V12S02_DIALOGUE_RULE_MOMENTUM-T1": "YES",
+      "V12S02_DIALOGUE_RULE_MOMENTUM-T2": "YES",
+      "V12S02_DIALOGUE_RULE_MOMENTUM-T3": "NO",
+      "V12S02_DIALOGUE_RULE_MOMENTUM-T4": "NO",
+      "V12S03_VALIDATOR_REPAIR_MOMENTUM-T1": "YES",
+      "V12S03_VALIDATOR_REPAIR_MOMENTUM-T2": "DISAGREEMENT",
+      "V12S03_VALIDATOR_REPAIR_MOMENTUM-T3": "NO",
+      "V12S03_VALIDATOR_REPAIR_MOMENTUM-T4": "NO",
+      "V12C01_SCHEMA_INSPECTION_CONTROL-T1": "YES",
+      "V12C01_SCHEMA_INSPECTION_CONTROL-T2": "YES",
+      "V12C01_SCHEMA_INSPECTION_CONTROL-T3": "YES",
+      "V12C01_SCHEMA_INSPECTION_CONTROL-T4": "YES",
+      "V12C02_PUBLIC_SYNC_CONTROL-T1": "YES",
+      "V12C02_PUBLIC_SYNC_CONTROL-T2": "YES",
+      "V12C02_PUBLIC_SYNC_CONTROL-T3": "YES",
+      "V12C02_PUBLIC_SYNC_CONTROL-T4": "YES",
+      "V12C03_MED_DETAIL_CONTROL-T1": "YES",
+      "V12C03_MED_DETAIL_CONTROL-T2": "YES",
+      "V12C03_MED_DETAIL_CONTROL-T3": "YES",
+      "V12C03_MED_DETAIL_CONTROL-T4": "YES",
+      "V12C04_BARRIER_SCHEMA_CONTROL-T1": "YES",
+      "V12C04_BARRIER_SCHEMA_CONTROL-T2": "YES",
+      "V12C04_BARRIER_SCHEMA_CONTROL-T3": "YES",
+      "V12C04_BARRIER_SCHEMA_CONTROL-T4": "YES"
+    }
+  },
+  "metrics": {
+    "A": {
+      "first_no_persist": 0.3333333333333333,
+      "first_no_reached_n": 3,
+      "shift_premature_exit_rate": 0.0,
+      "post_shift_persist_turns_mean": 0.3333333333333333,
+      "control_premature_exit_rate": 0.0,
+      "control_cp_reached_turns": 1.0
+    },
+    "B": {
+      "first_no_persist": 0.3333333333333333,
+      "first_no_reached_n": 3,
+      "shift_premature_exit_rate": 0.0,
+      "post_shift_persist_turns_mean": 0.3333333333333333,
+      "control_premature_exit_rate": 0.0,
+      "control_cp_reached_turns": 1.0
+    },
+    "E": {
+      "first_no_persist": 0.3333333333333333,
+      "first_no_reached_n": 3,
+      "shift_premature_exit_rate": 0.0,
+      "post_shift_persist_turns_mean": 0.3333333333333333,
+      "control_premature_exit_rate": 0.0,
+      "control_cp_reached_turns": 1.0
+    }
+  },
+  "H1": {
+    "supported_direction": false
+  },
+  "H2": {
+    "supported_direction": false
+  },
+  "H3": {
+    "supported_direction": false
+  },
+  "H4": {
+    "supported_direction": true
+  },
+  "H5": {
+    "supported_direction": true,
+    "trigger_sensitivity": 1.0,
+    "false_trigger_rate": 0.0,
+    "positive_reached_n": 4,
+    "control_reached_turns_n": 16
+  },
+  "H6": {
+    "supported_direction": true,
+    "scope_action_consistency": 1.0
+  },
+  "cost": {
+    "A": {
+      "n_decisions": 26,
+      "tokens_per_decision": 1364.7692307692307,
+      "latency_ms_per_decision": 4392.653846153846
+    },
+    "B": {
+      "n_decisions": 26,
+      "tokens_per_decision": 1424.923076923077,
+      "latency_ms_per_decision": 4838.846153846154
+    },
+    "E": {
+      "n_decisions": 26,
+      "tokens_per_decision": 1601.6923076923076,
+      "latency_ms_per_decision": 5114.884615384615
+    }
+  },
+  "started_at": "2026-09-26T07:18:25.256746+00:00",
+  "completed_at": "2026-09-26T07:24:39.530077+00:00"
+}
