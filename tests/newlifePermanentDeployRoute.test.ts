@@ -31,7 +31,8 @@ describe("NEW LIFE permanent isolated deploy route", () => {
   it("keeps the request target immutable while the reply is in flight", () => {
     expect(page).toContain("const requestTarget=target");
     expect(page).toContain("targetNpc:requestTarget");
-    expect(page).toContain("relationship[requestTarget]");
+    expect(page).toContain("dynamicState:currentDynamicState(requestTarget)");
+    expect(page).toContain("relationship[npc]");
     expect(page).toContain('data.npc!==requestTarget');
     expect(page).toContain('document.getElementById("targetMika").disabled=value');
     expect(page).toContain('document.getElementById("targetRyo").disabled=value');
