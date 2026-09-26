@@ -1,0 +1,77 @@
+[
+  {
+    "shadow_id": "V15S01",
+    "next_operation": "SWITCH_TASK_OR_LAYER",
+    "task_scope": "DIFFERENT_TASK_OR_LAYER",
+    "rationale": "We must switch tasks to trigger a global reassessment because a third local repair is prohibited after the latest test failure.",
+    "usage": {
+      "promptTokenCount": 1033,
+      "candidatesTokenCount": 67,
+      "totalTokenCount": 1611,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 1033
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 67
+        }
+      ],
+      "thoughtsTokenCount": 511
+    }
+  },
+  {
+    "shadow_id": "V15S02",
+    "next_operation": "WAIT",
+    "task_scope": "SAME_LOCAL_TASK",
+    "rationale": "The live post-merge smoke test is queued because the self-hosted Windows runner is offline, so we must wait for external runner availability to verify the deployment.",
+    "usage": {
+      "promptTokenCount": 1323,
+      "candidatesTokenCount": 66,
+      "totalTokenCount": 1763,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 1323
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 66
+        }
+      ],
+      "thoughtsTokenCount": 374
+    }
+  },
+  {
+    "shadow_id": "V15S03",
+    "next_operation": "OBSERVE_OR_TEST",
+    "task_scope": "SAME_LOCAL_TASK",
+    "rationale": "We must observe and test the validator's state to resolve the early trigger enforcement conflict without performing any premature mutations.",
+    "usage": {
+      "promptTokenCount": 1464,
+      "candidatesTokenCount": 63,
+      "totalTokenCount": 2348,
+      "trafficType": "ON_DEMAND",
+      "promptTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 1464
+        }
+      ],
+      "candidatesTokensDetails": [
+        {
+          "modality": "TEXT",
+          "tokenCount": 63
+        }
+      ],
+      "thoughtsTokenCount": 821
+    }
+  }
+]
