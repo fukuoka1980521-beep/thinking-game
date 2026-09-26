@@ -123,7 +123,7 @@ const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "con
 // (converse_turn / organize_thought, per V37 §7) -- interpret_turn and
 // generate_npc_line remain callable for compatibility/testing but are not
 // part of the health surface's own version identity.
-const HEALTH_CONTRACT_VERSION = "V46";
+const HEALTH_CONTRACT_VERSION = "V45";
 const HEALTH_OPERATIONS = ["converse_turn", "continue_npc_exchange", "organize_thought"];
 
 function buildHealthResponse(buildSha) {
