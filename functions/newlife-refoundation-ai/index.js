@@ -132,6 +132,24 @@ async function attemptNpcExchangeTurn(client, body) {
   return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
 }
 
+async function attemptDialogueLineFallback(client, body, prompt) {
+  const text = await callModel(client, {
+    systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
+    prompt,
+    responseSchema: CONVERSE_LINE_ONLY_RESPONSE_SCHEMA,
+  });
+  if (!text) return null;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+
+  return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
+}
+
 /**
  * HTTP Cloud Function (Gen 2). POST-only, stateless. One operation
  * discriminator (`interpret_turn` / `generate_npc_line` / `converse_turn` /
