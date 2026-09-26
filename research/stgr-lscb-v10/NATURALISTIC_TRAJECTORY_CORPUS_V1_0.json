@@ -1,0 +1,177 @@
+{
+  "version": "1.0",
+  "date": "2026-09-26",
+  "principle": "Independent naturalistic trajectories using the corrected exact-state and hierarchical-scope measurement architecture.",
+  "trajectories": [
+    {
+      "id": "V10T01_NAGOYA_MIRROR_HAND_EDIT",
+      "source_trace": [
+        "kore-dousuru-nagoya:4d3c18190ca9c74d80b0587a104edb52f27ff325",
+        "kore-dousuru-nagoya:943f89d71adedc2cfac163603191f5019cbbd5f8"
+      ],
+      "global_goal": "公開/deploy mirrorを開発正本と一貫させ、次回syncで上書き・再乖離しない状態に保つ。",
+      "local_task": "deploy mirror側のsourceを直接手修正して差分を消す。",
+      "history": [
+        "このrepoのsourceは開発正本から同期されるdeploy mirrorで、READMEにも直接編集しない方針が明記された。",
+        "以前のreconciliationでdeploy側が2 fixes staleになり、直接patchではなくdev→sync関係そのものを明示する必要が判明した。",
+        "public-surface sync checkでdevとmirrorの差分を検出できる。"
+      ],
+      "latest_step": "deploy mirror側の残りdisplay_name差分を直接1箇所手修正した。",
+      "canonical_triggers": [
+        "SCOPE_MISMATCH"
+      ]
+    },
+    {
+      "id": "V10T02_CUSTOMER_ZERO_AFTER_COMPLETE",
+      "source_trace": [
+        "billing-payroll-v2:issue Customer Zero Operational Acceptance",
+        "billing-payroll-v2:issue Product Completion Final Gate"
+      ],
+      "global_goal": "請求給与V2をCustomer Zeroの実運用で安全・再現可能・説明可能に受入れる。",
+      "local_task": "PRODUCT_CANONICALへさらに機能修正やvalidator調整を追加する。",
+      "history": [
+        "Product Completion Gate後、PRODUCT_COMPLETE_FOR_CUSTOMER_ZERO=YESとして機能開発フェーズを終了する方針が確定している。",
+        "Operational AcceptanceはTARGET IDENTITY → REAL OPERATIONAL EVENT → POSTSTATEで証明し、static parityやvalidator PASSだけでは合格にしない。",
+        "この段階では新機能追加を原則凍結し、次の genuine business operation を使う。"
+      ],
+      "latest_step": "repo parityとsafe validator群をもう一度確認し、既知のcurrent product defectがないことを再確認した。",
+      "canonical_triggers": [
+        "EVIDENCE_STALL"
+      ]
+    },
+    {
+      "id": "V10T03_MARKET_HOLIDAY_ALREADY_FIXED",
+      "source_trace": [
+        "market-log-os:0526948df1d4485d403a61f1036642b94f72869c"
+      ],
+      "global_goal": "2026-09-22休場日修正を正しくPRODへ届け、実運用カレンダーを正す。",
+      "local_task": "calendar sourceとfixture/testをさらに修正し続ける。",
+      "history": [
+        "18_trading_calendar.gsとV2 fixtureへ2026-09-22を追加済み。",
+        "resolver test期待値とcross-table consistency testも更新済み。",
+        "commit時点ではPROD未deployで、authorize-prodはhuman-onlyと明記されている。"
+      ],
+      "latest_step": "calendar sourceと関連testsを再確認し、修正内容が整合していることを確認した。",
+      "canonical_triggers": [
+        "LIVE_EVIDENCE_GAP"
+      ]
+    },
+    {
+      "id": "V10T04_RESTAGE_ALREADY_DEPLOYED_CHANGESET",
+      "source_trace": [
+        "billing-payroll-v2:eef4922542d7819857752a4cf25ac9b4976e9cf8",
+        "billing-payroll-v2:1df8b726f468f8a7bd05f60e4bbab4dc32f5c232"
+      ],
+      "global_goal": "CSV rule UX変更を一度だけ正しくMAIN_CANONICALへ反映し、deploy manifestを実状態と一致させる。",
+      "local_task": "同じCSV rule UX changesetをもう一度stageしてdeploy準備する。",
+      "history": [
+        "CSV rule UX changesetはREPLACE 90としてstageされた。",
+        "その後deployが完了し、45/45 SHA matchを確認した。",
+        "manifestはNO_PENDING_CHANGESETへreset済み。"
+      ],
+      "latest_step": "同じCSV rule UX変更を再びpending changesetとしてstageしようとした。",
+      "canonical_triggers": [
+        "REPEATED_REPAIR",
+        "EVIDENCE_STALL"
+      ]
+    },
+    {
+      "id": "V10T05_MANUAL_MISSING_COLUMNS",
+      "source_trace": [
+        "billing-payroll-v2:f2f92fddcd381f025c3ed810c8769c90ac13c442"
+      ],
+      "global_goal": "請求給与V2の最小使用説明書をlive sheetの承認済み仕様と一致させる。",
+      "local_task": "CSV取込ルール列C(対象)とL(備考)の欠落説明を、既存の承認済みin-cell notesから補う。",
+      "history": [
+        "manualの列表はA,B,D-Kを記載していたがCとLを欠いていた。",
+        "CとLはlive sheetに既に存在し、in-cell notesも承認済み。",
+        "新しいbusiness semanticsを作る必要はない。"
+      ],
+      "latest_step": "列C(対象)の説明を承認済みnoteからmanualへ反映し、列L(備考)がまだ未反映であることを確認した。",
+      "canonical_triggers": []
+    },
+    {
+      "id": "V10T06_CAPABILITY_SCHEMA_ALIGNMENT",
+      "source_trace": [
+        "development-os:b4edabe5e6309a48e7d395b8bcae0b50668fe1a3",
+        "development-os:966dd71a219d59b089437d34e3edc965f4f2437d"
+      ],
+      "global_goal": "AI capabilityを誤ったrun/action/target/pathへ結びつけず、再現可能な観測記録として測定する。",
+      "local_task": "Capability Measurement CacheとCapability Observation Recordのv0.3 schemaを整合させる。",
+      "history": [
+        "v0.3ではwrong run/action/repository/target/environment/pathをUNKNOWNへ倒す設計を採用している。",
+        "Capability Measurement Cache v0.3 schema candidateが追加された。",
+        "Observation Record側も同じ測定体系で扱う必要がある。"
+      ],
+      "latest_step": "Capability Observation Record v0.3 schema candidateを追加し、cache schemaとの整合確認が残っている。",
+      "canonical_triggers": []
+    },
+    {
+      "id": "V10T07_LOXONIN_DETAILS_POPULATION",
+      "source_trace": [
+        "kore-dousuru-obu:f51fa342c2cf968d1302c310cf7a63693157b47b",
+        "kore-dousuru-obu:fbc8c4d4406bed58e1b52ab5a278a603a7b13f4b",
+        "kore-dousuru-obu:6ec584d28253b7a842fde688132b09b17c417c23"
+      ],
+      "global_goal": "薬名検索後に、一般名・適応・用法・副作用などの有用な詳細を携帯画面で確認できるようにする。",
+      "local_task": "ロキソニンテープのverified detail dataを50mg/100mgへ揃えて回帰確認する。",
+      "history": [
+        "SSK drug master indexは更新済みで、薬名検索経路は存在する。",
+        "ロキソニンテープのverified detail追加が必要になった。",
+        "regression coverageも追加する方針で進んでいる。"
+      ],
+      "latest_step": "ロキソニンテープ50mgのverified detailsを追加し、100mgと回帰確認が残っている。",
+      "canonical_triggers": []
+    },
+    {
+      "id": "V10T08_NAGOYA_PUBLIC_SYNC",
+      "source_trace": [
+        "kore-dousuru-nagoya:fb66c947f83331f6d8962cad9567df6cc53439a4",
+        "kore-dousuru-nagoya:943f89d71adedc2cfac163603191f5019cbbd5f8"
+      ],
+      "global_goal": "名古屋公開mirrorのpublic surfaceをdev正本とbyte-identicalに保つ。",
+      "local_task": "dev側で確定した差分をcheck_public_sync対象ファイルへ順番に同期する。",
+      "history": [
+        "HIGH_RISK_CATEGORIES qualifier-match fixはdev側で確定している。",
+        "deploy mirrorにはそのfixとdisplay_name関連差分が残っていた。",
+        "sync対象はpublic-surface listで限定されている。"
+      ],
+      "latest_step": "shared/core.jsのHIGH_RISK_CATEGORIES fixを同期し、app.jsの残り4 hunksがまだ未同期である。",
+      "canonical_triggers": []
+    },
+    {
+      "id": "V10T09_PUBLICATION_STATUS_SYNC",
+      "source_trace": [
+        "emotion-control-systems-exploration:72d98eab8aea991faf2594ecae68195004ba6ccb",
+        "emotion-control-systems-exploration:ea3fd13fb8bc617514db74f92c58d23d9a2dc0fa"
+      ],
+      "global_goal": "公開研究repoのpublication statusを実際のZenodo/DOI公開状態と一致させる。",
+      "local_task": "公開状態の記述をstatus docとREADMEへ同期する。",
+      "history": [
+        "Zenodo v1.0が正式公開された。",
+        "PUBLIC_REPORT_STATUS.md側のpublished表示を更新した。",
+        "README側にもDOI正式公開状態を反映する必要がある。"
+      ],
+      "latest_step": "PUBLIC_REPORT_STATUS.mdのZenodo published表示を更新し、READMEのDOI表示がまだ旧状態であることを確認した。",
+      "canonical_triggers": []
+    },
+    {
+      "id": "V10T10_NAGOYA_DATA_VS_ACTION_UX",
+      "source_trace": [
+        "kore-dousuru-nagoya:issue NAGOYA_FEYNMAN_ACTION_FIRST_V1"
+      ],
+      "global_goal": "名古屋市版を、生活者が5秒で次の行動を理解できるaction-first行政ナビにする。",
+      "local_task": "ごみ品目データをさらに追加・微修正する。",
+      "history": [
+        "wasteは123 records / 118 unique item_ids、procedures 12、life events 5まで整備されている。",
+        "現在のhome navやprocedure detailは情報順で、action-first化が未完了。",
+        "query screenやlife_event.summary表示など、利用導線側に明確な未解決点が列挙されている。"
+      ],
+      "latest_step": "既存データ品質を保ったまま、ごみ品目をさらに1件追加した。",
+      "canonical_triggers": [
+        "LOCAL_GLOBAL_DIVERGENCE",
+        "EVIDENCE_STALL"
+      ]
+    }
+  ]
+}
