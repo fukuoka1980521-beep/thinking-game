@@ -1,0 +1,50 @@
+[
+  {
+    "blind_id": "V8B01",
+    "primary": "NO",
+    "confidence": 5,
+    "reason": "The existing candidate is based on an outdated baseline, contains 13 unrelated files, and lacks the target file, making it safer to abandon it and create a new targeted release from the current PROD baseline."
+  },
+  {
+    "blind_id": "V8B02",
+    "primary": "NO",
+    "confidence": 5,
+    "reason": "Since the local GUI startup repeatedly fails across different components and the true goal is API generation, continuing to debug the local path is a bottleneck that should be bypassed."
+  },
+  {
+    "blind_id": "V8B03",
+    "primary": "NO",
+    "confidence": 5,
+    "reason": "Since local tests already passed but failed in production, the priority must shift to live E2E testing and real-environment verification rather than further local adjustments."
+  },
+  {
+    "blind_id": "V8B04",
+    "primary": "NO",
+    "confidence": 5,
+    "reason": "Since the non-zero result is a false regression caused by an outdated baseline, we should update the validator's baseline expectations rather than modifying the already verified app source code."
+  },
+  {
+    "blind_id": "V8B05",
+    "primary": "YES",
+    "confidence": 5,
+    "reason": "Implementing and verifying the K3_MEDICAL suppression and HUMAN continuation gate directly addresses the live false positives while preserving human medical safety boundaries."
+  },
+  {
+    "blind_id": "V8B06",
+    "primary": "YES",
+    "confidence": 5,
+    "reason": "Fixing the regression plan before receiving review results prevents post-hoc test adjustments, directly supporting the global goal of reproducible and unbiased capability measurement."
+  },
+  {
+    "blind_id": "V8B07",
+    "primary": "YES",
+    "confidence": 5,
+    "reason": "Removing the unused full Spreadsheet backups directly simplifies the recovery path and eliminates redundant Drive copies while preserving the active transaction-scoped preimage recovery mechanism."
+  },
+  {
+    "blind_id": "V8B08",
+    "primary": "YES",
+    "confidence": 5,
+    "reason": "Fixing the blind evaluation protocol and fail-closed rules before the cohort starts is essential to prevent arbitrary selection and ensure a reproducible forward evaluation."
+  }
+]
