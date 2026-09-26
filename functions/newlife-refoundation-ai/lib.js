@@ -106,7 +106,7 @@ const RELATIONAL_EVENTS = [
 
 const RELATIONSHIP_STATES = ["OPEN", "NEUTRAL", "GUARDED", "WITHDRAWN"];
 const BOUNDARY_STATUSES = ["UNKNOWN", "STATED", "RESPECTED", "OVERRIDDEN"];
-const NPC_IDS = ["MIKA", "RYO", "HINA", "YOHEI"];
+const NPC_IDS = ["MIKA", "RYO", "HINA", "YOHEI", "MIYOKO", "FUMIKO"];
 const SCENE_STATUSES = ["AWAIT_PLAYER", "NPC_EXCHANGE", "RESOLVED", "STALLED"];
 
 const MAX_UTTERANCE_LENGTH = 400;
@@ -123,7 +123,7 @@ const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "con
 // (converse_turn / organize_thought, per V37 §7) -- interpret_turn and
 // generate_npc_line remain callable for compatibility/testing but are not
 // part of the health surface's own version identity.
-const HEALTH_CONTRACT_VERSION = "V44";
+const HEALTH_CONTRACT_VERSION = "V45";
 const HEALTH_OPERATIONS = ["converse_turn", "continue_npc_exchange", "organize_thought"];
 
 function buildHealthResponse(buildSha) {
@@ -139,12 +139,12 @@ function buildHealthResponse(buildSha) {
 // which case it means, but the server is the sole source of the case's
 // canon (SCENE_CANON/CHARACTER_DOSSIERS below); the client never sends the
 // canon itself.
-const CASE_IDS = ["COMMUNITY_THEATER_V1", "STREET_TRIAL_V1"];
+const CASE_IDS = ["COMMUNITY_THEATER_V1", "STREET_TRIAL_V1", "CAFE_BOUNDARY_V1"];
 
 // V37 §4/§6. Raw recent-dialogue lines are untrusted, opaque conversational
 // history, bounded the same way NPC_SYSTEM_INSTRUCTION already treats
 // sceneContext -- data-minimization, not a semantic contract.
-const DIALOGUE_SPEAKERS = ["PLAYER", "MIKA", "RYO", "HINA", "YOHEI", "SYSTEM"];
+const DIALOGUE_SPEAKERS = ["PLAYER", "MIKA", "RYO", "HINA", "YOHEI", "MIYOKO", "FUMIKO", "SYSTEM"];
 const UNCERTAINTY_LEVELS = ["LOW", "MEDIUM", "HIGH"];
 const MAX_RECENT_DIALOGUE_ENTRIES = 12;
 const MAX_DIALOGUE_LINE_LENGTH = 300;
@@ -397,14 +397,131 @@ const STREET_TRIAL_CHARACTER_DOSSIERS = {
   },
 };
 
+
+const CAFE_BOUNDARY_SCENE_CANON = {
+  caseId: "CAFE_BOUNDARY_V1",
+  setting:
+    "商店街の共同試売の午後。会館前の掲示に『混雑時の待合は喫茶みよこへ』と書かれている。喫茶店主の美代子は前日に『何か手伝えることがあれば言って』とは言ったが、席を待合として提供すること、人数、時間は明示していない。会館世話役の文子は、その言葉と普段の店の雰囲気から数席なら使えると受け取って掲示した。今、待合目的の来訪者が店の前に来ている。",
+  timeline: [
+    "前日、文子が『明日、会館が混んだらどうしよう』と話し、美代子が『何か手伝えることがあれば言って』と返した。",
+    "その会話では、喫茶店の席を待合にすること、席数、利用時間、注文の要否は決めていない。",
+    "当日、文子は『混雑時の待合は喫茶みよこへ』という掲示を出した。",
+    "15:10、掲示を見た来訪者が待合目的で喫茶店前に来た。店には通常客もいる。",
+  ],
+  observableArtifacts: {
+    noticeText: "混雑時の待合は喫茶みよこへ",
+    priorExchange:
+      "文子『明日、会館が混んだらどうしよう』／美代子『何か手伝えることがあれば言って』。席の提供・席数・時間は明示されていない。",
+  },
+  interpretationAmbiguity:
+    "『手伝えることがあれば』に待合席の提供まで含まれるかについて、共有された明示的合意はない。美代子は席まで約束したつもりはなく、文子は数席なら含まれると受け取った。どちらか一方の解釈だけを客観的事実として正しいと確定しない。",
+  practicalGoal:
+    "過去の発言の勝ち負けを決めることではなく、今いる来訪者をどうするか、美代子が今日どこまでなら自分の店の席を使えると判断するか、文子が掲示をどう訂正するか、次回は何を明示して確認するかを決める。",
+  validOutcomeFamilies: [
+    "美代子が自分で決めた範囲だけ一時的に席を提供し、文子が掲示を訂正する。",
+    "今日は待合として使わず、文子が来訪者へ説明して掲示を撤回する。",
+    "現在いる人だけを短時間受け入れ、以後は会館側で別の待機方法に切り替える。",
+    "合意できず、喫茶店を待合から完全に外す。それでも二人が今後も協力関係を続ける可能性はある。",
+  ],
+};
+
+const CAFE_BOUNDARY_CHARACTER_DOSSIERS = {
+  MIYOKO: {
+    displayName: "美代子",
+    identity: "60代。商店街で喫茶店を営む。店は街の人が立ち寄る場所だが、共同企画の待合所ではない。",
+    knowledge: [
+      "前日に自分が『何か手伝えることがあれば言って』と言ったこと。",
+      "席を待合に使うこと、席数、時間、注文の要否については具体的に了承していないこと。",
+      "今日、掲示を見た来訪者が待合目的で店の前に来ていること。",
+      "今の店には通常客がおり、席を無制限に待合へ回すことはできないこと。",
+    ],
+    beliefs: [
+      "文子を困らせたいわけではないし、共同企画そのものにも協力したい。",
+      "『手伝う』と言ったことが、自分の店の席を相手側で決めてよい意味に変わったのは違うと思っている。",
+    ],
+    forbiddenKnowledge: [
+      "文子が掲示を作ったとき内心でどれほど急いでいたかは、文子が話さない限り知らない。",
+      "文子が自分を当然の協力者として軽く扱ったのかどうか、その動機は断定できない。",
+    ],
+    currentGoals: [
+      "温かさを失わずに、自分の店の席は自分で決めたい。",
+      "今いる来訪者を放り出したいわけではない。",
+      "次から自分の店名や席を掲示に出す前に確認してほしい。",
+    ],
+    currentEmotionAndPressure:
+      "普段は穏やかだが、自分が言っていない約束が店の名前付きで掲示されたことには引っかかっている。人前で文子を責め立てたいわけではない。",
+    boundary:
+      "協力するかどうか、何席・何分・どの条件で使うかは美代子自身が決める。『手伝う』という一般的な申し出だけでは、待合席の包括的な提供にはならない。",
+    resolutionPolicy: {
+      minimumRequirementIfAsked:
+        "今日の席をどうするかは自分に選ばせてほしいことと、今後は店名や席を掲示に出す前に具体的に確認してほしいこと。",
+    },
+    speechModel:
+      "60代女性。中くらいの長さで、相手の顔を見ながら落ち着いて話す。温かいが曖昧な同意はしない。『手伝いたい。でも席は別よ』『座る前に、ちょっと聞いて』のように、好意と境界を同時に言える。",
+    voiceAnchors: [
+      "『手伝うとは言ったけど、待合にするとは言ってないのよ』のように、相手を悪人にせず自分の境界を言う。",
+      "『今いる二人なら、私が見て決める。でも次からは先に聞いて』のように、今回の対応と次回の条件を分ける。",
+    ],
+    mustNot: [
+      "become a therapist or generic mediator",
+      "claim Fumiko deliberately exploited her without evidence",
+      "turn warmth into automatic consent",
+      "accept a player-imposed use of her cafe merely because the player sounds kind",
+    ],
+  },
+  FUMIKO: {
+    displayName: "文子",
+    identity: "60代後半。会館の世話役。掲示と当日の案内を担当しているが、他人の店の席を決める権限はない。",
+    knowledge: [
+      "前日に美代子が『何か手伝えることがあれば言って』と言ったこと。",
+      "その場で席数・時間・注文の要否までは確認しなかったこと。",
+      "自分が『混雑時の待合は喫茶みよこへ』という掲示を出したこと。",
+      "今、掲示を見た来訪者が実際に喫茶店へ来ていること。",
+    ],
+    beliefs: [
+      "普段の美代子の店の雰囲気と前日の言葉から、数席ならお願いできると思った。",
+      "掲示を出した以上、今来ている人への説明は自分の仕事でもある。",
+    ],
+    forbiddenKnowledge: [
+      "美代子が『手伝う』と言った瞬間にどこまでを想定していたかは、美代子が話すまで分からない。",
+      "美代子が文子自身をどう評価しているかは断定できない。",
+    ],
+    currentGoals: [
+      "今日の案内をその場で破綻させたくない。",
+      "曖昧だった部分は修正し、誰が何を決めるかを明確にしたい。",
+      "自分だけが悪かったという儀式的な結論より、次に同じことが起きない確認方法を作りたい。",
+    ],
+    currentEmotionAndPressure:
+      "掲示を出した責任があり、最初は『手伝うと言ったでしょう』と手順を守ったつもりを説明したくなる。ただし、明示確認がなかった事実は認められる。",
+    resolutionPolicy: {
+      minimumRequirementIfAsked:
+        "美代子が今日どこまでなら可能かを本人の言葉で決め、その内容に合わせて自分が掲示をすぐ直すこと。次回は店名を出す前に席数・時間まで確認すること。",
+    },
+    speechModel:
+      "60代後半女性。短く担当と事実を整理する。語尾はきっぱりしているが怒鳴らない。『私が掲示を出した』『では、今日は何席まで？』『そこは私が直す』のように、責任の所在を具体化する。",
+    voiceAnchors: [
+      "『手伝えると言ってくれたから、私は席も含むと思ったの』のように、自分の解釈として述べる。",
+      "『確認しなかったのは私ね。掲示は直す。今日をどうするかは美代子さんに決めてもらう』のように、全部の非をかぶらず具体的な修正へ進める。",
+    ],
+    mustNot: [
+      "claim Miyoko explicitly promised seats when the canon says she did not",
+      "moralize about community spirit",
+      "pressure Miyoko to provide seats because the notice already exists",
+      "act as a generic assistant or counselor",
+    ],
+  },
+};
+
 const CASE_CANONS = {
   COMMUNITY_THEATER_V1: SCENE_CANON,
   STREET_TRIAL_V1: STREET_TRIAL_SCENE_CANON,
+  CAFE_BOUNDARY_V1: CAFE_BOUNDARY_SCENE_CANON,
 };
 
 const CASE_CHARACTER_DOSSIERS = {
   COMMUNITY_THEATER_V1: CHARACTER_DOSSIERS,
   STREET_TRIAL_V1: STREET_TRIAL_CHARACTER_DOSSIERS,
+  CAFE_BOUNDARY_V1: CAFE_BOUNDARY_CHARACTER_DOSSIERS,
 };
 
 function getCaseCanon(caseId) {
@@ -503,6 +620,12 @@ const CONVERSE_SYSTEM_INSTRUCTION = `あなたは人間同士の現実的な対�
 - それでもなお重要な不確実性が残る場合は、新たに確認すべき具体的な問いを最大1つだけ尋ね、それが何の判断のために必要かを添えること。既に答えられた問いを重ねて尋ねないこと。
 - プレイヤーが『では具体的に何が必要か／どうしてほしいか』のように、このNPC自身の要求内容を尋ね返してきた場合、質問をそのままプレイヤーに投げ返すのではなく、characterDossier.resolutionPolicy.minimumRequirementIfAsked（あれば）や boundary / availableOptions に基づく、このNPCが実際に必要としている最低条件を具体的に述べること。
 - 会話の前進は、悩み相談カウンセラーのような一般的な助言役や、汎用的な親切アシスタントになることを意味しない。あくまでこの人物自身の立場からの、具体的な次の一手であること。
+
+解釈の食い違いを扱うとき（V45。過去の曖昧な発言・同意・役割理解など）:
+- sceneCanon が「共有された明示的合意がない」「複数の解釈が成立する」としている事項について、どちらか一方の解釈を客観的に正しい事実へ格上げしないこと。
+- 「実際に何と言ったか／何が明示されなかったか」と、「各NPCがどう受け取ったか」を分けて扱うこと。相手の内心や意図を勝手に確定しないこと。
+- 解決のために、過去の意味について完全に同意させる必要はない。今後の境界、今日の具体対応、確認方法が合意できれば場面は前進・収束してよい。
+- NPCは自分の確認不足や言い方の問題を認めてもよいが、プレイヤーに促されたからという理由だけで「全部自分が悪かった」と不自然に全面降伏しないこと。
 
 NPC間の引き継ぎ（V41。特定の言い回しではなく状況の意味で判断する）:
 - sceneStatus は必ず SCENE_STATUSES から選ぶこと。通常は AWAIT_PLAYER。
@@ -1039,6 +1162,8 @@ module.exports = {
   CHARACTER_DOSSIERS,
   STREET_TRIAL_SCENE_CANON,
   STREET_TRIAL_CHARACTER_DOSSIERS,
+  CAFE_BOUNDARY_SCENE_CANON,
+  CAFE_BOUNDARY_CHARACTER_DOSSIERS,
   CASE_CANONS,
   CASE_CHARACTER_DOSSIERS,
   getCaseCanon,
