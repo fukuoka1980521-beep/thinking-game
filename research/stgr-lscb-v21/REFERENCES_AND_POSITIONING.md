@@ -17,3 +17,21 @@ Do not claim priority such as “first” or “novel” until a broader systema
 The current defensible positioning is narrower:
 - prior work shows value from reasoning-action interleaving, reflection, iterative feedback, realistic agent benchmarks, and agent-computer interface design;
 - this study focuses on an event-triggered decision boundary in real AI-assisted development and pairs prospective live decisions with a leakage-free shadow next-operation baseline.
+
+
+## Recent closest conceptual neighbors checked in 2026
+
+8. Wang & Shu — MetaCogAgent: A Metacognitive Multi-Agent LLM Framework with Self-Aware Task Delegation. arXiv:2605.17292.
+9. Shen et al. — Metacognitive Self-Correction for Multi-Agent System via Prototype-Guided Next-Execution Reconstruction (MASC). arXiv:2510.14319.
+10. Rahman & Qian — Metacognitive Arbitration as Uncertainty Compression in Multi-Agent Language Models. UAI 2026 / PMLR 337.
+11. Kumaran et al. — Causal evidence that language models use confidence to drive behaviour. Nature Machine Intelligence, 2026.
+
+These papers narrow the positioning further. Selective metacognitive control, arbitration, self-assessment, and triggered correction already exist in the literature. Do not claim that event-triggered metacognition is itself novel.
+
+The manuscript's defensible differentiators are the combination of:
+- naturally occurring real software-development trigger states;
+- prospective state freeze before consequential mutation/closure;
+- observable process/evidence triggers rather than confidence alone;
+- bounded external-evidence reassessment;
+- leakage-free non-controlling shadow next-operation paired with the live decision;
+- strict frozen stopping threshold and explicit exclusion of post-hoc cases.
