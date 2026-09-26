@@ -2,8 +2,7 @@
 
 Stateless HTTP Cloud Function (Gen 2) providing the live model provider for
 the isolated NEW LIFE refoundation vertical slice
-(`docs/newlife/refoundation/`, `src/newlife/refoundation/`). Implements four
-adapter contracts:
+(`docs/newlife/refoundation/`, `src/newlife/refoundation/`). Implements five request paths (four existing adapters plus one bounded NPC-to-NPC continuation path):
 
 - `ConversationAdapter` (`src/newlife/refoundation/converse.ts`) — the V37
   generative-character-reasoning primary free-conversation path.
@@ -49,6 +48,7 @@ One function, one `operation` discriminator in the POST body:
   `candidateCommitments` are proposals only, validated and applied by the
   deterministic client (`relationshipReducer.ts`/`ending.ts`), never by this
   function or the model itself.
+- `continue_npc_exchange` (V41) — input: `{ operation, caseId, targetNpc, recentDialogue, continuationDepth, dynamicState }`. This is used only after a normal `converse_turn` has handed the scene to the other NPC. The final `recentDialogue` entry must be the other NPC; no synthetic player utterance is accepted. The browser and server cap the exchange at three continuation turns, and the final continuation must stop with `AWAIT_PLAYER`, `RESOLVED`, or `STALLED`.
 - `organize_thought` (V37 §5, a separate non-NPC layer) — input:
   `{ operation, validatedWorldFacts, recentDialogue, currentProblem }`.
   Output: `{ known, possible, unknown, options, nextCheck }`. Never speaks
@@ -66,7 +66,7 @@ One function, one `operation` discriminator in the POST body:
   Output: only `{ npc, text }`. Never the full hidden world, never another
   NPC's record, never a state mutation.
 
-All four operations are validated field-by-field server-side (`lib.js`'s
+All five operations are validated field-by-field server-side (`lib.js`'s
 `validateInput`) before any model call, and the client-side adapters
 (`src/newlife/refoundation/httpAdapters.ts`) re-validate the response shape
 a second, independent time (`isValidRawConverseResult` /
@@ -74,7 +74,7 @@ a second, independent time (`isValidRawConverseResult` /
 `isValidRawNpcLine`) before trusting it — same two-layer discipline
 `functions/newlife-dialogue/` already uses.
 
-## Health / deployment identity (V40)
+## Health / deployment identity (V41)
 
 `GET` on the same endpoint (no body, no `operation`) returns `200` with:
 
@@ -82,8 +82,8 @@ a second, independent time (`isValidRawConverseResult` /
 {
   "service": "newlife-refoundation-ai",
   "buildSha": "<NEWLIFE_REFOUNDATION_BUILD_SHA env var, or \"unknown\">",
-  "contractVersion": "V40",
-  "operations": ["converse_turn", "organize_thought"]
+  "contractVersion": "V41",
+  "operations": ["converse_turn", "continue_npc_exchange", "organize_thought"]
 }
 ```
 
@@ -121,7 +121,7 @@ deployed commit SHA.
   character, forbids diagnostic/therapeutic language, forbids moral or
   personality scoring, and requires `known` (fact) and `possible`
   (inference) to stay visibly distinct.
-- All four operations are constrained to a strict output schema
+- All model-backed operations are constrained to a strict output schema
   (`responseMimeType: "application/json"` + `responseSchema`).
 - None of the above is trusted as sufficient on its own: the client-side
   validators reject any response that doesn't match the closed enum values,
