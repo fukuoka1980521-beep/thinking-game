@@ -1,0 +1,143 @@
+{
+  "version": "0.8",
+  "date": "2026-09-26",
+  "principle": "New naturalistic trajectories from repositories outside the v0.7 corpus. Source traces are hidden from acting-model prompts.",
+  "trajectories": [
+    {
+      "id": "V8T01_MARKET_RELEASE_SCOPE",
+      "source_trace": [
+        "market-log-os:c90129bf588156a358dfd52a4fc61a5554c55799",
+        "market-log-os:c44914bb4f297cafad0cae0e60d8c1aa381800b3"
+      ],
+      "global_goal": "2026-09-22休場日修正だけをPRODへ届け、他のPRODファイルを変えない。",
+      "local_task": "既存の汎用リリース候補をそのまま調整して成立させる。",
+      "history_core": [
+        "汎用リリースツールの既定ベースラインは7/25時点で、その後PRODが先へ進んでいた。",
+        "既定のまま生成した候補は13ファイルのリリース単位になり、修正対象の18_trading_calendar.gs自体が含まれなかった。",
+        "この候補はPRODへは反映せず停止している。"
+      ],
+      "latest_step": "汎用リリース候補の構成をもう一度調整した。",
+      "process_triggers": [
+        "LOCAL_GLOBAL_MISMATCH",
+        "SCOPE_EXPANSION"
+      ]
+    },
+    {
+      "id": "V8T02_ITOS_LOCAL_PATH_LOOP",
+      "source_trace": [
+        "thinking-os:bcbd9735ced7b168edd640ef262ac61cb23c8614"
+      ],
+      "global_goal": "ITOS Prompt Objective Shaping Pilotで180件の独立API生成を成立させる。",
+      "local_task": "同じPC上のローカル起動経路を別の実装部品で修正する。",
+      "history_core": [
+        "v0.2ではPython/Tkinter/BAT、v0.3では診断強化、v0.4ではPowerShell/WinForms/VBSへ部品を変えた。",
+        "実行場所は同じPC上のローカル起動のままで、同じ『開かない』失敗が反復した。",
+        "研究ゴールはローカルGUI起動そのものではなく180件の独立API生成である。"
+      ],
+      "latest_step": "ローカル起動経路の別部品を使った修正版を作った。",
+      "process_triggers": [
+        "REPEATED_SAME_FAILURE"
+      ]
+    },
+    {
+      "id": "V8T03_RECAPTCHA_LIVE_GAP",
+      "source_trace": [
+        "thinking-os:a03da6d6c01df97dd38a356c437a22be730528c4"
+      ],
+      "global_goal": "公開入口から実参加者が安全に利用開始できる状態を成立させる。",
+      "local_task": "reCAPTCHAの設定値とローカル試験をさらに調整する。",
+      "history_core": [
+        "credential/configは存在し、ローカルテストも通っていた。",
+        "募集前に実ブラウザchallengeとserver verifyのLIVE E2Eは一度も証明されていなかった。",
+        "実環境では参加者がreCAPTCHA入口を通過できなかった。"
+      ],
+      "latest_step": "reCAPTCHA設定とローカル検証をさらに調整した。",
+      "process_triggers": [
+        "CONFIGURED_NOT_LIVE_VERIFIED",
+        "TECHNICAL_SUCCESS_NO_LIVE_EVIDENCE"
+      ]
+    },
+    {
+      "id": "V8T04_BILLING_STALE_VALIDATOR",
+      "source_trace": [
+        "billing-payroll-v2:56cccb89daddf106bf398bce8eb12de301f4d8d7"
+      ],
+      "global_goal": "請求給与V2のProduct Completion Gateで本当の退行だけを検出する。",
+      "local_task": "アプリ本体のソースをさらに修正してP89 validatorの非ゼロ結果を消す。",
+      "history_core": [
+        "copy-free transaction fixで母艦backup作成と早期return分岐を意図的に削除していた。",
+        "現在ソースは既に検証済みだが、P89 validatorの期待値は変更前のcall countとtimer-patternのままだった。",
+        "validatorの非ゼロ結果はこの古いbaselineによるfalse regressionだった。"
+      ],
+      "latest_step": "アプリ本体側をさらに1箇所修正してvalidatorを再実行した。",
+      "process_triggers": [
+        "MEASUREMENT_CONFLICT"
+      ]
+    },
+    {
+      "id": "V8T05_THINKINGOS_LIVE_SAFETY_FIX",
+      "source_trace": [
+        "thinking-os:967a81e8036b32746457aa5cfaa68548e4061cf2"
+      ],
+      "global_goal": "公開相談チャットで、ペット医療物流の誤検知を減らしつつ本人医療・診断・薬・EMERGENCYの安全境界を維持する。",
+      "local_task": "K3_MEDICAL誤検知の限定抑制と未解決HUMAN継続ゲートを実装・検証する。",
+      "history_core": [
+        "LIVEで、ペットの通院や飼い主が入院した場合の世話までK3_MEDICALへ落ちる誤検知を確認した。",
+        "一方で本人医療・診断・薬・EMERGENCYは従来どおりHUMAN/EMERGENCYへ倒す必要がある。",
+        "修正範囲はペット医療物流文脈の限定抑制と、canonical HR-AまでHUMANを維持する継続ゲートに絞っている。"
+      ],
+      "latest_step": "限定的なclassifier/gate修正とtargeted regressionを行った。",
+      "process_triggers": [
+        "LIVE_FAILURE_OBSERVED"
+      ]
+    },
+    {
+      "id": "V8T06_DEVOS_MEASUREMENT_PREREG",
+      "source_trace": [
+        "development-os:991a680aaeeb4a667122aff664ab8a2055459ebf",
+        "development-os:4a4f84d2b75a8cd4819c9187b63db2b911a6ed2a"
+      ],
+      "global_goal": "AI capabilityを誤ったrun/action/target/pathへ結びつけず、再現可能な観測記録として測定する。",
+      "local_task": "独立レビュー結果を見る前にv0.3 regression planを固定する。",
+      "history_core": [
+        "v0.3はwrong run/action/repository/target/environment/pathをUNKNOWNへ倒し、即実行やOwner fallbackをしない設計に更新した。",
+        "独立レビューをPASSした場合だけ実装する方針である。",
+        "後付けでテスト内容を変えないため、review結果前にregression planを固定する段階にある。"
+      ],
+      "latest_step": "regression planのケースとPASS条件を固定した。",
+      "process_triggers": []
+    },
+    {
+      "id": "V8T07_BILLING_DEAD_BACKUP",
+      "source_trace": [
+        "billing-payroll-v2:fbda6fe8a494c0fe2d82262081b1e1e54a06ea53"
+      ],
+      "global_goal": "CSV取込Commitを安全に保ちつつ、不要なDriveコピーと復旧経路の複雑性を減らす。",
+      "local_task": "通常Commitごとに作られるfull Spreadsheet backup依存を撤去し、既存transaction-scoped preimage/hash復旧へ一本化する。",
+      "history_core": [
+        "forensic reviewで通常CommitごとにSpreadsheet全体コピーが作られ、無期限保持されていた。",
+        "実際のauto-rollbackとmanual Recoveryはtransaction-scoped TX payload JSONのpreimageをhash検証して復旧していた。",
+        "full Spreadsheet backupの中身は復旧に使われず、存在/filename sanity checkだけだった。"
+      ],
+      "latest_step": "dead backup依存を1箇所撤去し、既存preimage/hash経路に寄せた。",
+      "process_triggers": [
+        "REPEATED_COST_WITHOUT_GLOBAL_VALUE"
+      ]
+    },
+    {
+      "id": "V8T08_MARKET_FORWARD_PREREG",
+      "source_trace": [
+        "market-log-os:4128cc5fbf21176909d9614a15d3e0330863b8fe"
+      ],
+      "global_goal": "年末の市場仮説評価をOwnerの恣意的選別なしに再現可能なforward評価として成立させる。",
+      "local_task": "forward cohort開始前にblind evaluation protocolとprovenance fail-closed規則を固定する。",
+      "history_core": [
+        "cohort boundary、fixed checkpoints、H-001〜H-010 rule-source SHA256 bindingsを事前固定する設計である。",
+        "forward開始後にOwnerが有利な観測や除外する損失を選ばないようにする。",
+        "RAW非上書き証跡が肯定的に確認できない場合はfail-openせずPARTIALへ倒す規則を置く。"
+      ],
+      "latest_step": "blind forward evaluation protocolの判定条件と固定hashを記録した。",
+      "process_triggers": []
+    }
+  ]
+}
