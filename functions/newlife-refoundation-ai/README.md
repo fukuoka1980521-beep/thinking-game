@@ -36,7 +36,7 @@ secret string.
 
 One function, one `operation` discriminator in the POST body:
 
-V43 validates that the same dialogue architecture is not theater-specific. `converse_turn` and `continue_npc_exchange` now select server-owned canon/dossiers by `caseId`. Supported human-test cases are `COMMUNITY_THEATER_V1` (Mika/Ryo) and `STREET_TRIAL_V1` (Hina/Yohei). Cross-case NPC ids are rejected server-side.
+V45 extends the same case-selected architecture to a third problem type: `COMMUNITY_THEATER_V1` (Mika/Ryo), `STREET_TRIAL_V1` (Hina/Yohei), and `CAFE_BOUNDARY_V1` (Miyoko/Fumiko). The third case is intentionally an ambiguous prior-statement / consent-boundary conflict rather than another task with one visible numeric answer. Cross-case NPC ids are rejected server-side. V44 also made the model response schema case-aware: theater-only scene-revision metadata is not requested from cases that have no `disputedSceneExcerpt`, while the normalized public API still returns a stable false/empty revision object.
 
 - `converse_turn` (V37, primary free-conversation path) — input:
   `{ operation, caseId, targetNpc, rawPlayerUtterance, recentDialogue,
@@ -74,7 +74,7 @@ a second, independent time (`isValidRawConverseResult` /
 `isValidRawNpcLine`) before trusting it — same two-layer discipline
 `functions/newlife-dialogue/` already uses.
 
-## Health / deployment identity (V43)
+## Health / deployment identity (V45)
 
 `GET` on the same endpoint (no body, no `operation`) returns `200` with:
 
@@ -82,7 +82,7 @@ a second, independent time (`isValidRawConverseResult` /
 {
   "service": "newlife-refoundation-ai",
   "buildSha": "<NEWLIFE_REFOUNDATION_BUILD_SHA env var, or \"unknown\">",
-  "contractVersion": "V43",
+  "contractVersion": "V45",
   "operations": ["converse_turn", "continue_npc_exchange", "organize_thought"]
 }
 ```
