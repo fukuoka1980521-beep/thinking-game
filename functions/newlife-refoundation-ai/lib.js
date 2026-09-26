@@ -13,7 +13,7 @@
  * response ontology or character set, and neither of those functions
  * imports anything from here.
  *
- * One function, four operations:
+ * One function, five operations:
  *  - `interpret_turn` returns only a `TurnClassification` (+ optional
  *    `personalTrackSignal`) — never a state delta, never an NPC line.
  *    Retained for compatibility/testing (V37 §7); no longer the primary
@@ -31,6 +31,9 @@
  *    immediately displayed dialogue) plus `candidateTurn`/
  *    `candidateFactRevealIds`/`candidateCommitments` — proposals only, never
  *    applied to state by this function or by the model itself.
+ *  - `continue_npc_exchange` (V41) continues a bounded NPC-to-NPC exchange
+ *    only when the characters can make concrete progress without inventing
+ *    player consent or authority.
  *  - `organize_thought` (V37 §5, a separate layer) never speaks as an NPC
  *    and never invents facts; returns `{known, possible, unknown, options,
  *    nextCheck}` problem-solving support, distinct from character dialogue.
@@ -104,12 +107,13 @@ const RELATIONAL_EVENTS = [
 const RELATIONSHIP_STATES = ["OPEN", "NEUTRAL", "GUARDED", "WITHDRAWN"];
 const BOUNDARY_STATUSES = ["UNKNOWN", "STATED", "RESPECTED", "OVERRIDDEN"];
 const NPC_IDS = ["MIKA", "RYO"];
+const SCENE_STATUSES = ["AWAIT_PLAYER", "NPC_EXCHANGE", "RESOLVED", "STALLED"];
 
 const MAX_UTTERANCE_LENGTH = 400;
 const MAX_CASE_CONTEXT_LENGTH = 2000;
 const MAX_SCENE_CONTEXT_LENGTH = 2000;
 
-const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "organize_thought"];
+const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "continue_npc_exchange", "organize_thought"];
 
 // V40. Deployment identity/health surface for the permanent GitHub Actions ->
 // isolated-backend route: lets a client (e.g. the human-test page) confirm
@@ -119,8 +123,8 @@ const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "org
 // (converse_turn / organize_thought, per V37 §7) -- interpret_turn and
 // generate_npc_line remain callable for compatibility/testing but are not
 // part of the health surface's own version identity.
-const HEALTH_CONTRACT_VERSION = "V40";
-const HEALTH_OPERATIONS = ["converse_turn", "organize_thought"];
+const HEALTH_CONTRACT_VERSION = "V41";
+const HEALTH_OPERATIONS = ["converse_turn", "continue_npc_exchange", "organize_thought"];
 
 function buildHealthResponse(buildSha) {
   return {
@@ -154,6 +158,7 @@ const MAX_CANDIDATE_ITEM_LENGTH = 200;
 const MAX_THOUGHT_LIST_ITEMS = 6;
 const MAX_THOUGHT_ITEM_LENGTH = 200;
 const MAX_NEXT_CHECK_LENGTH = 200;
+const MAX_NPC_EXCHANGE_DEPTH = 3;
 
 /**
  * V37 §1 CANONICAL WORLD MODEL. Authored, deterministic, server-owned.
@@ -459,6 +464,8 @@ function buildConverseResponseSchema(Type) {
       candidateCommitments: { type: Type.ARRAY, items: { type: Type.STRING } },
       uncertainty: { type: Type.STRING, enum: UNCERTAINTY_LEVELS },
       thoughtSupportSignal: { type: Type.BOOLEAN },
+      sceneStatus: { type: Type.STRING, enum: SCENE_STATUSES },
+      nextNpc: { type: Type.STRING, enum: NPC_IDS, nullable: true },
     },
     required: [
       "npc",
@@ -469,6 +476,8 @@ function buildConverseResponseSchema(Type) {
       "candidateCommitments",
       "uncertainty",
       "thoughtSupportSignal",
+      "sceneStatus",
+      "nextNpc",
     ],
   };
 }
