@@ -168,7 +168,7 @@ export function NewLife30App({ onExit }: Props) {
           <small>&#x305D;&#x306E;&#x884C;&#x52D5;&#x3092;&#x899A;&#x3048;&#x305F;&#x307E;&#x307E;&#x3001;&#x4ECA;&#x65E5;&#x304C;&#x59CB;&#x307E;&#x308A;&#x307E;&#x3059;&#x3002;</small>
         </div>
       ) : null}
-      {state.day >= 9 && state.day <= 17 ? (
+      {state.day >= 9 && state.day <= 24 ? (
         <div className="newlife30-world-state" aria-label="いま積み上がっていること">
           <strong>いま積み上がっていること</strong>
           <span>喫茶の席：{state.mSeats === "bounded" ? "使える範囲を確認した" : "まだ曖昧"}</span>
@@ -177,6 +177,10 @@ export function NewLife30App({ onExit }: Props) {
           {state.day >= 13 ? <span>伝え方：{state.playerReport === "reliable" ? "事実の範囲を保っている" : "話を盛った内容が残っている"}</span> : null}
           {state.day >= 14 ? <span>陽菜と洋平：{state.hyFactCheck === "direct" ? "二人で直接確かめた" : "まだ直接照合していない"}</span> : null}
           {state.day >= 16 ? <span>仁への追加依頼：{state.jWork === "extra_with_specific_consent" ? "内容と時間を決めて合意した" : state.jWork === "extra_declined" ? "追加は引き受けないことになった" : "最初の二時間だけ合意済み"}</span> : null}
+          {state.day >= 17 ? <span>&#x5927;&#x8F14;&#x306E;&#x5DE5;&#x623F;&#xFF1A;{state.dWorkshop === "one_hour_yes" ? "1\u6642\u9593\u306a\u3089\u4f7f\u3048\u308b" : "\u8fd4\u4e8b\u306f\u307e\u3060\u4fdd\u7559"}</span> : null}
+          {state.day >= 19 ? <span>&#x6587;&#x5B50;&#x306E;&#x7DE8;&#x96C6;&#xFF1A;{state.fEditor === "named" ? "\u6700\u7d42\u78ba\u8a8d\u306e\u62c5\u5f53\u304c\u6c7a\u307e\u3063\u305f" : "\u6700\u7d42\u78ba\u8a8d\u306e\u62c5\u5f53\u304c\u66d6\u6627"}</span> : null}
+          {state.day >= 21 ? <span>&#x967D;&#x83DC;&#x3078;&#x306E;&#x95A2;&#x308F;&#x308A;&#xFF1A;{state.encouragementOnly ? "1\u6642\u9593\u306a\u3089\u4f7f\u3048\u308b" : "\u672c\u4eba\u306e\u5224\u65ad\u3092\u5f85\u3063\u3066\u3044\u308b"}</span> : null}
+          {state.day >= 24 ? <span>&#x5171;&#x540C;&#x6848;&#x306E;&#x6E96;&#x5099;&#xFF1A;{state.pickupPlan === "time_split_owned_by_hina" && state.fEditor === "named" && state.jWork !== "extra_declined" && state.mSeats === "bounded" && state.hyFactCheck === "direct" && state.signVersion !== "vague_uncorrected" ? "\u5f79\u5272\u3068\u6761\u4ef6\u304c\u5177\u4f53\u5316\u3057\u3066\u3044\u308b" : "\u307e\u3060\u57cb\u307e\u3063\u3066\u3044\u306a\u3044\u5f79\u5272\u3084\u6761\u4ef6\u304c\u3042\u308b"}</span> : null}
         </div>
       ) : null}
       <div className="newlife30-scene">
