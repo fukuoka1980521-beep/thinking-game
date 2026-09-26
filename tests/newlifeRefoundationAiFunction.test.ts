@@ -899,19 +899,19 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   });
 });
 
-describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V46)", () => {
+describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V45)", () => {
   it("returns the exact safe shape with buildSha defaulted to \"unknown\" when no build SHA is supplied", () => {
     expect(lib.buildHealthResponse(undefined)).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V46",
+      contractVersion: "V45",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
     // No-arg call (matches how index.js calls it when the env var is unset).
     expect(lib.buildHealthResponse()).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V46",
+      contractVersion: "V45",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
@@ -920,7 +920,7 @@ describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V46)
     expect(lib.buildHealthResponse("abc1234")).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "abc1234",
-      contractVersion: "V46",
+      contractVersion: "V45",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
