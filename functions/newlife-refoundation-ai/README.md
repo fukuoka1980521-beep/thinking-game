@@ -36,6 +36,8 @@ secret string.
 
 One function, one `operation` discriminator in the POST body:
 
+V43 validates that the same dialogue architecture is not theater-specific. `converse_turn` and `continue_npc_exchange` now select server-owned canon/dossiers by `caseId`. Supported human-test cases are `COMMUNITY_THEATER_V1` (Mika/Ryo) and `STREET_TRIAL_V1` (Hina/Yohei). Cross-case NPC ids are rejected server-side.
+
 - `converse_turn` (V37, primary free-conversation path) — input:
   `{ operation, caseId, targetNpc, rawPlayerUtterance, recentDialogue,
   dynamicState }`. The client sends only dynamic/conversational data; the
@@ -72,7 +74,7 @@ a second, independent time (`isValidRawConverseResult` /
 `isValidRawNpcLine`) before trusting it — same two-layer discipline
 `functions/newlife-dialogue/` already uses.
 
-## Health / deployment identity (V42)
+## Health / deployment identity (V43)
 
 `GET` on the same endpoint (no body, no `operation`) returns `200` with:
 
@@ -80,7 +82,7 @@ a second, independent time (`isValidRawConverseResult` /
 {
   "service": "newlife-refoundation-ai",
   "buildSha": "<NEWLIFE_REFOUNDATION_BUILD_SHA env var, or \"unknown\">",
-  "contractVersion": "V42",
+  "contractVersion": "V43",
   "operations": ["converse_turn", "continue_npc_exchange", "organize_thought"]
 }
 ```
