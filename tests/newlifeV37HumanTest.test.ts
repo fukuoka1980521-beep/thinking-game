@@ -25,6 +25,15 @@ describe("NEW LIFE V37 isolated human test", () => {
     expect(page).toContain('data?.sceneStatus!=="NPC_EXCHANGE"');
     expect(page).toContain("await continueNpcExchange(data)");
   });
+  it("shows the concrete disputed script and persists generated revisions as real dynamic state", () => {
+    expect(page).toContain("問題になっている台本");
+    expect(page).toContain("ここを出たら、もう戻るな");
+    expect(page).toContain("sceneRevisionText");
+    expect(page).toContain("applySceneRevisionProposal(data)");
+    expect(page).toContain("dynamicState:currentDynamicState(requestTarget)");
+    expect(page).toContain("dynamicState:currentDynamicState(nextNpc)");
+    expect(page).toContain("revisionPanel");
+  });
   it("keeps thought organization as a separate operation and separate panel", () => {
     expect(page).toContain('operation:"organize_thought"');
     expect(page).toContain("思考整理（キャラクターの発言ではありません）");
