@@ -142,21 +142,22 @@ export function NewLife30App({ onExit }: Props) {
     return (
       <div className="newlife30">
         <span className="newlife30-badge">NEW LIFE</span>
-        <h1 className="newlife30-title">30日を終えて</h1>
+        <h1 className="newlife30-title">{"\u0033\u0030\u65e5\u3092\u7d42\u3048\u3066"}</h1>
         <div className="newlife30-scene">
-          <strong>{state.day24Outcome === "JOINT_RETRY" ? "?????????????????" : state.day24Outcome === "SOLO_TRIAL" ? "??????????????????????" : state.day24Outcome === "PAUSE" ? "????????????????????????" : "??????????????????????????????"}</strong>
-          <p>30??????????????????????????????????????????????????????????????????????</p>
-          <p>???????????????????????????????30?????</p>
+          <strong>{state.day24Outcome === "JOINT_RETRY" ? "\u5171\u540c\u3067\u3001\u3082\u3046\u4e00\u5ea6\u8a66\u305b\u308b\u5f62\u304c\u6b8b\u3063\u305f\u3002" : state.day24Outcome === "SOLO_TRIAL" ? "\u967d\u83dc\u306f\u3001\u81ea\u5206\u3067\u6c7a\u3081\u3089\u308c\u308b\u5c0f\u3055\u306a\u8a66\u884c\u3092\u9078\u3093\u3060\u3002" : state.day24Outcome === "PAUSE" ? "\u6025\u3044\u3067\u7b54\u3048\u3092\u4f5c\u3089\u305a\u3001\u3044\u3063\u305f\u3093\u6b62\u307e\u308b\u4f59\u5730\u3092\u6b8b\u3057\u305f\u3002" : "\u5171\u540c\u6848\u306f\u7d42\u308f\u3063\u305f\u3002\u305d\u308c\u3067\u3082\u753a\u3067\u306e\u95a2\u4fc2\u3068\u6b21\u306e\u884c\u52d5\u306f\u6b8b\u3063\u3066\u3044\u308b\u3002"}</strong>
+          <p>{"\u0033\u0030\u65e5\u524d\u3001\u3042\u306a\u305f\u306f\u3053\u306e\u753a\u3067\u4f55\u304c\u8d77\u304d\u308b\u304b\u77e5\u308a\u307e\u305b\u3093\u3067\u3057\u305f\u3002\u4eca\u306f\u3001\u8ab0\u306b\u78ba\u8a8d\u3059\u308b\u304b\u3001\u4f55\u3092\u4e8b\u5b9f\u3068\u3057\u3066\u6271\u3046\u304b\u3001\u3069\u3053\u307e\u3067\u5f15\u304d\u53d7\u3051\u308b\u304b\u3092\u81ea\u5206\u3067\u9078\u3093\u3067\u304d\u307e\u3057\u305f\u3002"}</p>
+          <p>{"\u7b54\u3048\u3092\u5f53\u3066\u305f\u306e\u3067\u306f\u306a\u304f\u3001\u8003\u3048\u3092\u6574\u7406\u3057\u3066\u884c\u52d5\u306b\u5909\u3048\u305f\u7d50\u679c\u304c\u3001\u3053\u306e\u0033\u0030\u65e5\u5f8c\u3067\u3059\u3002"}</p>
         </div>
-        <div className="newlife30-world-state" aria-label="30????????">
-          <strong>30????????</strong>
-          <span>?????{state.mSeats === "bounded" ? "??????????" : "???????"}</span>
-          <span>?????{state.hyFactCheck === "direct" ? "???????????" : "????????????"}</span>
-          <span>??????{state.jWork === "extra_with_specific_consent" ? "????????????" : state.jWork === "extra_declined" ? "????????????????" : "?????????????"}</span>
-          <span>?????{state.fEditor === "named" ? "???????" : "???????????"}</span>
+        <div className="newlife30-world-state" aria-label={"\u0033\u0030\u65e5\u5f8c\u306b\u6b8b\u3063\u305f\u3082\u306e"}>
+          <strong>{"\u0033\u0030\u65e5\u5f8c\u306b\u6b8b\u3063\u305f\u3082\u306e"}</strong>
+          <span>{"\u55ab\u8336\u306e\u5e2d\uff1a"}{state.mSeats === "bounded" ? "\u4f7f\u3048\u308b\u7bc4\u56f2\u3092\u78ba\u8a8d\u3057\u305f" : "\u66d6\u6627\u3055\u304c\u6b8b\u3063\u305f"}</span>
+          <span>{"\u4e8b\u5b9f\u78ba\u8a8d\uff1a"}{state.hyFactCheck === "direct" ? "\u672c\u4eba\u540c\u58eb\u3067\u76f4\u63a5\u78ba\u304b\u3081\u305f" : "\u76f4\u63a5\u7167\u5408\u3057\u306a\u3044\u307e\u307e\u9032\u3093\u3060"}</span>
+          <span>{"\u4ed5\u4e8b\u306e\u5883\u754c\uff1a"}{state.jWork === "extra_with_specific_consent" ? "\u8ffd\u52a0\u5185\u5bb9\u3068\u6642\u9593\u3092\u5408\u610f\u3057\u305f" : state.jWork === "extra_declined" ? "\u8ffd\u52a0\u3092\u5f15\u304d\u53d7\u3051\u306a\u3044\u5224\u65ad\u3092\u5c0a\u91cd\u3057\u305f" : "\u6700\u521d\u306e\u4e8c\u6642\u9593\u3060\u3051\u304c\u5408\u610f\u6e08\u307f"}</span>
+          <span>{"\u6700\u7d42\u78ba\u8a8d\uff1a"}{state.fEditor === "named" ? "\u62c5\u5f53\u8005\u3092\u6c7a\u3081\u305f" : "\u62c5\u5f53\u304c\u66d6\u6627\u306a\u307e\u307e\u6b8b\u3063\u305f"}</span>
         </div>
-        <p className="newlife30-footer">????????????????30???????????????????????????</p>        <button className="newlife30-exit" onClick={onExit}>
-          ホームへ戻る
+        <p className="newlife30-footer">{"\u3053\u3053\u307e\u3067\u306e\u9078\u629e\u3068\u4f1a\u8a71\u304c\u3001\u3042\u306a\u305f\u306e\u0033\u0030\u65e5\u3067\u3057\u305f\u3002\u6210\u529f\u30fb\u5931\u6557\u3067\u306f\u306a\u304f\u3001\u3042\u306a\u305f\u304c\u4f5c\u3063\u305f\u7d4c\u8def\u3067\u3059\u3002"}</p>
+        <button className="newlife30-exit" onClick={onExit}>
+          {"\u30db\u30fc\u30e0\u3078\u623b\u308b"}
         </button>
       </div>
     );
@@ -187,7 +188,7 @@ export function NewLife30App({ onExit }: Props) {
           {state.day >= 16 ? <span>仁への追加依頼：{state.jWork === "extra_with_specific_consent" ? "内容と時間を決めて合意した" : state.jWork === "extra_declined" ? "追加は引き受けないことになった" : "最初の二時間だけ合意済み"}</span> : null}
           {state.day >= 17 ? <span>&#x5927;&#x8F14;&#x306E;&#x5DE5;&#x623F;&#xFF1A;{state.dWorkshop === "one_hour_yes" ? "1\u6642\u9593\u306a\u3089\u4f7f\u3048\u308b" : "\u8fd4\u4e8b\u306f\u307e\u3060\u4fdd\u7559"}</span> : null}
           {state.day >= 19 ? <span>&#x6587;&#x5B50;&#x306E;&#x7DE8;&#x96C6;&#xFF1A;{state.fEditor === "named" ? "\u6700\u7d42\u78ba\u8a8d\u306e\u62c5\u5f53\u304c\u6c7a\u307e\u3063\u305f" : "\u6700\u7d42\u78ba\u8a8d\u306e\u62c5\u5f53\u304c\u66d6\u6627"}</span> : null}
-          {state.day >= 21 ? <span>&#x967D;&#x83DC;&#x3078;&#x306E;&#x95A2;&#x308F;&#x308A;&#xFF1A;{state.encouragementOnly ? "1\u6642\u9593\u306a\u3089\u4f7f\u3048\u308b" : "\u672c\u4eba\u306e\u5224\u65ad\u3092\u5f85\u3063\u3066\u3044\u308b"}</span> : null}
+          {state.day >= 21 ? <span>&#x967D;&#x83DC;&#x3078;&#x306E;&#x95A2;&#x308F;&#x308A;&#xFF1A;{state.encouragementOnly ? "\u5fdc\u63f4\u3060\u3051\u3092\u6e21\u3057\u305f" : "\u672c\u4eba\u306e\u5224\u65ad\u3092\u5f85\u3063\u3066\u3044\u308b"}</span> : null}
           {state.day >= 24 ? <span>&#x5171;&#x540C;&#x6848;&#x306E;&#x6E96;&#x5099;&#xFF1A;{state.pickupPlan === "time_split_owned_by_hina" && state.fEditor === "named" && state.jWork !== "extra_declined" && state.mSeats === "bounded" && state.hyFactCheck === "direct" && state.signVersion !== "vague_uncorrected" ? "\u5f79\u5272\u3068\u6761\u4ef6\u304c\u5177\u4f53\u5316\u3057\u3066\u3044\u308b" : "\u307e\u3060\u57cb\u307e\u3063\u3066\u3044\u306a\u3044\u5f79\u5272\u3084\u6761\u4ef6\u304c\u3042\u308b"}</span> : null}
         </div>
       ) : null}

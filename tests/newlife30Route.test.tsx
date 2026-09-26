@@ -200,3 +200,20 @@ describe("NEW LIFE Day 11-16 visible consequence chain", () => {
     expect(screen.getByText("\u4ec1\u3078\u306e\u8ffd\u52a0\u4f9d\u983c\uff1a\u5185\u5bb9\u3068\u6642\u9593\u3092\u6c7a\u3081\u3066\u5408\u610f\u3057\u305f")).toBeInTheDocument();
   });
 });
+
+
+describe("NEW LIFE Day 30 rendered ending", () => {
+  it("renders a readable path summary instead of mojibake after a full 30-day run", async () => {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+    for (let step = 0; step < 31; step += 1) {
+      const advance = screen.queryByRole("button", { name: "次の日へ" }) ?? screen.getByRole("button", { name: "この日を終える" });
+      await user.click(advance);
+    }
+    expect(screen.getByRole("heading", { name: "30日を終えて" })).toBeInTheDocument();
+    expect(screen.getByText("30日後に残ったもの")).toBeInTheDocument();
+    expect(screen.getByText(/成功・失敗ではなく、あなたが作った経路です。/)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/\?{4,}/);
+  });
+});
