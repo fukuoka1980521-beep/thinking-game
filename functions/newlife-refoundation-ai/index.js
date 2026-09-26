@@ -7,6 +7,7 @@ const {
   buildNpcPrompt,
   buildConverseResponseSchema,
   buildConversePrompt,
+  buildNpcExchangePrompt,
   normalizeConverseResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
@@ -111,10 +112,29 @@ async function attemptConverseTurn(client, body) {
   return normalizeConverseResponse(parsed, body.targetNpc);
 }
 
+
+async function attemptNpcExchangeTurn(client, body) {
+  const text = await callModel(client, {
+    systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
+    prompt: buildNpcExchangePrompt(body),
+    responseSchema: CONVERSE_RESPONSE_SCHEMA,
+  });
+  if (!text) return null;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+
+  return normalizeConverseResponse(parsed, body.targetNpc);
+}
+
 /**
  * HTTP Cloud Function (Gen 2). POST-only, stateless. One operation
  * discriminator (`interpret_turn` / `generate_npc_line` / `converse_turn` /
- * `organize_thought`), each returning only the closed shape its client-side
+ * `continue_npc_exchange` / `organize_thought`), each returning only the closed shape its client-side
  * contract validates (`isValidRawTurnClassification` / `isValidRawNpcLine` /
  * `isValidRawConverseResult` / `isValidRawThoughtOrganizerResult`) — never a
  * state delta, never a score. Never logs the request body or player free
@@ -128,7 +148,7 @@ exports.newlifeRefoundationAi = async (req, res) => {
     res.status(204).send("");
     return;
   }
-  // V40: no-model-call health/version path. Returns before any validation,
+  // V41: no-model-call health/version path. Returns before any validation,
   // rate-limit consumption, or Vertex AI client construction -- a caller can
   // confirm which build a deployed instance is running without spending a
   // model call, a rate-limit slot, or sending any player data.
@@ -178,12 +198,29 @@ exports.newlifeRefoundationAi = async (req, res) => {
         return;
       }
 
-      // V38: converse_turn has its own response path (normalize + one retry
-      // on a genuinely unusable line) rather than the shared parse/respond
-      // code below, which the other three operations still use unchanged.
+      // V38/V41: player-to-NPC dialogue has its own normalized response path.
       let normalized = await attemptConverseTurn(client, req.body);
       if (!normalized) {
         normalized = await attemptConverseTurn(client, req.body);
+      }
+      if (!normalized) {
+        res.status(502).json({ error: "unusable_model_response" });
+        return;
+      }
+      res.status(200).json(normalized);
+      return;
+    } else if (req.body.operation === "continue_npc_exchange") {
+      if (!NPC_IDS.includes(req.body.targetNpc)) {
+        res.status(400).json({ error: "invalid_target_npc" });
+        return;
+      }
+
+      // V41: the player did not speak again. The request is valid only when
+      // recentDialogue ends in the other NPC, and continuationDepth is
+      // bounded server-side. Never fabricate a synthetic player utterance.
+      let normalized = await attemptNpcExchangeTurn(client, req.body);
+      if (!normalized) {
+        normalized = await attemptNpcExchangeTurn(client, req.body);
       }
       if (!normalized) {
         res.status(502).json({ error: "unusable_model_response" });
