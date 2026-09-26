@@ -140,3 +140,26 @@ describe("NEW LIFE 30-day free-talk UI smoke test (Phase 28)", () => {
     expect(ui.queryByText(clarificationLine("hina"))).not.toBeInTheDocument();
   });
 });
+
+
+describe("NEW LIFE midgame visible consequence loop", () => {
+  it("shows Day 9 boundary work and Day 10 pickup planning as player-visible world state", async () => {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+
+    for (let day = 1; day < 9; day += 1) {
+      await user.click(screen.getByRole("button", { name: "次の日へ" }));
+    }
+    expect(screen.getByText("待つ場所はどこか")).toBeInTheDocument();
+    expect(screen.getByText("喫茶の席：まだ曖昧")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "美代子に答えてもらう" }));
+    expect(screen.getByText("喫茶の席：使える範囲を確認した")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "次の日へ" }));
+    expect(screen.getByText("空欄の一行")).toBeInTheDocument();
+    expect(screen.getByText("受け渡し：担当がまだ決まっていない")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "時間を分ける提案をする" }));
+    expect(screen.getByText("受け渡し：時間を分ける案が具体化した")).toBeInTheDocument();
+  });
+});

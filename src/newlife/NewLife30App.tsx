@@ -161,11 +161,18 @@ export function NewLife30App({ onExit }: Props) {
         {dayLabel(state)} ／ 全{TOTAL_DAYS}日
       </p>
       <h1 className="newlife30-title">{scene.title}</h1>
-      {previousDayTrace && state.day >= 2 && state.day <= 3 ? (
+      {previousDayTrace && state.day >= 2 ? (
         <div className="newlife30-yesterday" aria-label="前日のあなたの行動">
           <span>昨日のあなた</span>
           <strong>{previousDayTrace}</strong>
           <small>その行動を覚えたまま、今日が始まります。</small>
+        </div>
+      ) : null}
+      {state.day >= 9 && state.day <= 11 ? (
+        <div className="newlife30-world-state" aria-label="いま積み上がっていること">
+          <strong>いま積み上がっていること</strong>
+          <span>喫茶の席：{state.mSeats === "bounded" ? "使える範囲を確認した" : "まだ曖昧"}</span>
+          <span>受け渡し：{state.pickupPlan === "time_split_owned_by_hina" ? "時間を分ける案が具体化した" : "担当がまだ決まっていない"}</span>
         </div>
       ) : null}
       <div className="newlife30-scene">
