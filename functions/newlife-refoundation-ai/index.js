@@ -6,6 +6,7 @@ const {
   buildNpcResponseSchema,
   buildNpcPrompt,
   buildConverseResponseSchema,
+  buildConverseLineOnlyResponseSchema,
   buildConversePrompt,
   buildNpcExchangePrompt,
   normalizeConverseResponse,
@@ -40,6 +41,7 @@ const modelCallLimiter = createFixedWindowLimiter(MAX_MODEL_CALLS_PER_MINUTE, 60
 const INTERPRET_RESPONSE_SCHEMA = buildInterpretResponseSchema(Type);
 const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
 const ORGANIZE_THOUGHT_RESPONSE_SCHEMA = buildOrganizeThoughtResponseSchema(Type);
+const CONVERSE_LINE_ONLY_RESPONSE_SCHEMA = buildConverseLineOnlyResponseSchema(Type);
 
 let genAiClient;
 function getClient() {
