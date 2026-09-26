@@ -100,7 +100,7 @@ const input=document.getElementById("utterance");
 const send=document.getElementById("send");
 const debug=document.getElementById("debug");
 const thought=document.getElementById("thought");
-let target=null,busy=false,remainingMinutes=50,boundaryStatus="UNKNOWN",relationship={MIKA:"NEUTRAL",RYO:"NEUTRAL"},activeCommitment=null;
+let target=null,busy=false,remainingMinutes=50,boundaryStatus="UNKNOWN",relationship={MIKA:"NEUTRAL",RYO:"NEUTRAL"},activeCommitment=null,sceneRevisionText=null,sceneRevisionSummary=null;
 const MAX_NPC_EXCHANGE_TURNS=3;
 const history=[];
 
@@ -109,6 +109,25 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
 function addLine(who,text,cls){history.push({speaker:who,text});transcriptEl.insertAdjacentHTML("beforeend",'<div class="line '+cls+'"><span class="who">'+esc(who==="PLAYER"?"あなた":who==="MIKA"?"美香":who==="RYO"?"亮":"システム")+':</span> '+esc(text)+'</div>');transcriptEl.scrollTop=transcriptEl.scrollHeight}
 function recentDialogue(){return history.slice(-8).map(x=>({speaker:x.speaker,text:x.text}))}
 function isNpcId(id){return id==="MIKA"||id==="RYO"}
+function applySceneRevisionProposal(data){
+  const proposal=data?.sceneRevisionProposal;
+  if(!proposal||proposal.hasProposal!==true||typeof proposal.revisedText!=="string"||!proposal.revisedText.trim())return false;
+  sceneRevisionText=proposal.revisedText.trim();
+  sceneRevisionSummary=typeof proposal.changeSummary==="string"?proposal.changeSummary.trim():"";
+  document.getElementById("revisionText").textContent=sceneRevisionText;
+  document.getElementById("revisionSummary").textContent=sceneRevisionSummary?("変更点: "+sceneRevisionSummary):"";
+  document.getElementById("revisionPanel").style.display="block";
+  return true;
+}
+function currentDynamicState(npc){
+  return {
+    relationshipState:relationship[npc],
+    boundaryStatus,
+    remainingMinutes,
+    activeCommitment,
+    sceneRevisionText
+  };
+}
 
 async function post(body){
   let lastError=null;
