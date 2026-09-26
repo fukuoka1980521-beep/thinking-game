@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>NEW LIFE — 人間関係ケース検証</title>
+<style>
+:root{color-scheme:dark;--bg:#0a0d12;--panel:#121823;--line:#2d394d;--text:#f3f6fa;--muted:#aab5c6;--ok:#9ee0a4;--bad:#ff9c9c;--accent:#efbd72}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#10141c,#090b10 70%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI","Yu Gothic UI",sans-serif}
+main{max-width:920px;margin:0 auto;padding:18px}.card{border:1px solid var(--line);border-radius:16px;background:rgba(18,24,35,.96);padding:18px;margin:12px 0}
+h1{font-size:22px;margin:0 0 8px}h2{font-size:16px;margin:0 0 10px}.muted{color:var(--muted);font-size:13px;line-height:1.6}
+.status{font-size:13px;padding:9px 11px;border-radius:10px;background:#0c1118;border:1px solid var(--line)}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.transcript{min-height:260px;max-height:500px;overflow:auto;padding:10px;border:1px solid var(--line);border-radius:12px;background:#0c1118}
+.line{margin:8px 0;line-height:1.7}.who{font-weight:700}.miyoko{color:#f3b7d3}.fumiko{color:#9dc4ff}.you{color:#ffe2a9}.system{color:#9aa6b6;font-size:13px}
+.row{display:flex;gap:8px}.row input{flex:1;min-width:0;background:#0b1017;color:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit}
+button{border:1px solid #516985;background:#1f2b3b;color:white;border-radius:10px;padding:10px 14px;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}
+.targets{display:flex;gap:8px;flex-wrap:wrap}.targets button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.artifact{white-space:pre-wrap;background:#0b1017;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:18px;text-align:center}
+.panel{border:1px dashed #4b7961;border-radius:12px;padding:12px;background:#0d1812}.panel h3{margin:0 0 8px;font-size:14px}
+details{border:1px dashed #3d4c63;border-radius:10px;padding:9px;margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.metric{border:1px solid var(--line);border-radius:10px;padding:10px}.metric label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.metric select,textarea{width:100%;background:#0b1017;color:#fff;border:1px solid var(--line);border-radius:8px;padding:9px}.result{white-space:pre-wrap;background:#0b1017;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}.row{flex-direction:column}}
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>NEW LIFE — 誤解・境界テスト</h1>
+    <p class="muted">演劇・試売とは違い、今回は『同じ言葉を二人が違う意味で受け取った』人間関係の問題を試します。どちらかを正解にするのではなく、今の境界と次の行動まで進められるかを確認します。</p>
+    <div id="status" class="status bad">V45 backend を確認中…</div>
+  </div>
+
+  <div id="consentCard" class="card" style="display:none">
+    <h2>AI利用の確認</h2>
+    <p class="muted">入力文と直近の会話は、Google Cloud上のNEW LIFE専用AIへ送られます。</p>
+    <button id="consent">同意して始める</button>
+  </div>
+
+  <div id="game" style="display:none">
+    <div class="card">
+      <h2>今回の状況</h2>
+      <p>会館前の掲示に「混雑時の待合は喫茶みよこへ」と出ています。美代子は前日に「何か手伝えることがあれば言って」と言いましたが、席を待合にするとまでは話していません。文子は数席ならお願いできる意味だと受け取り、掲示しました。いま、その掲示を見た人が喫茶店前に来ています。</p>
+      <p class="muted">あなたは近所の人としてその場にいます。上司でも責任者でもありません。話しても、手伝っても、任せても構いません。</p>
+      <div class="artifact"><strong>現在の掲示</strong><br/>混雑時の待合は喫茶みよこへ</div>
+      <div class="artifact" style="margin-top:8px;font-size:15px;text-align:left"><strong>昨日、確認できている会話</strong><br/>文子「明日、会館が混んだらどうしよう」<br/>美代子「何か手伝えることがあれば言って」<br/><span class="muted">席を提供すること・席数・時間は、この会話では決めていません。</span></div>
+      <div id="transcript" class="transcript" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2>自由会話</h2>
+      <div class="targets">
+        <button id="targetMiyoko" type="button" aria-pressed="false">美代子に話す</button>
+        <button id="targetFumiko" type="button" aria-pressed="false">文子に話す</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <input id="utterance" maxlength="400" autocomplete="off" placeholder="相手を選び、自分の言葉で話す"/>
+        <button id="send" disabled>話す</button>
+      </div>
+      <details>
+        <summary>AIの意味理解と候補状態を見る</summary>
+        <pre id="debug" class="muted" style="white-space:pre-wrap"></pre>
+      </details>
+    </div>
+
+    <div class="card">
+      <button id="organize">考えを整理する</button>
+      <p class="muted">これは美代子・文子の発言ではありません。</p>
+      <div id="thought" class="panel" style="display:none"></div>
+    </div>
+
+    <div class="card">
+      <h2>あなたの評価</h2>
+      <div class="grid">
+        <div class="metric"><label>意味理解</label><select id="meaning"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+        <div class="metric"><label>自然さ</label><select id="natural"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+        <div class="metric"><label>キャラ差</label><select id="character"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+        <div class="metric"><label>前進性</label><select id="progress"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+      </div>
+      <textarea id="note" rows="4" placeholder="違和感・良かった点をそのまま書く"></textarea>
+      <button id="save" style="margin-top:8px">評価を保存・表示</button>
+      <div id="result" class="result" style="display:none"></div>
+    </div>
+  </div>
+</main>
+<script>
+const params=new URLSearchParams(location.search);
+const DEFAULT_ENDPOINT="https://newlife-refoundation-ai-zqtk74q2ra-an.a.run.app";
+const endpoint=params.get("endpoint")||DEFAULT_ENDPOINT;
+const statusEl=document.getElementById("status"),consentCard=document.getElementById("consentCard"),game=document.getElementById("game");
+const transcriptEl=document.getElementById("transcript"),input=document.getElementById("utterance"),send=document.getElementById("send"),debug=document.getElementById("debug"),thought=document.getElementById("thought");
+let target=null,busy=false,remainingMinutes=25,boundaryStatus="UNKNOWN",relationship={MIYOKO:"NEUTRAL",FUMIKO:"NEUTRAL"},activeCommitment=null;
+const MAX_NPC_EXCHANGE_TURNS=3;
+const history=[];
+
+function safeEndpoint(url){try{const u=new URL(url);return u.protocol==="https:"&&(u.hostname.endsWith(".run.app")||u.hostname.endsWith(".cloudfunctions.net"))}catch{return false}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>c==="&"?"&amp;":c==="<"?"&lt;":c===">"?"&gt;":c.charCodeAt(0)===34?"&quot;":"&#39;")}
+function displayName(id){return id==="MIYOKO"?"美代子":id==="FUMIKO"?"文子":id==="PLAYER"?"あなた":"システム"}
+function cssClass(id){return id==="MIYOKO"?"miyoko":id==="FUMIKO"?"fumiko":id==="PLAYER"?"you":"system"}
+function addLine(who,text){history.push({speaker:who,text});transcriptEl.insertAdjacentHTML("beforeend",'<div class="line '+cssClass(who)+'"><span class="who">'+esc(displayName(who))+':</span> '+esc(text)+'</div>');transcriptEl.scrollTop=transcriptEl.scrollHeight}
+function recentDialogue(){return history.slice(-8).map(x=>({speaker:x.speaker,text:x.text}))}
+function isNpcId(id){return id==="MIYOKO"||id==="FUMIKO"}
+function dynamicState(npc){return {relationshipState:relationship[npc],boundaryStatus,remainingMinutes,activeCommitment,sceneRevisionText:null}}
+
+async function post(body){
+  let lastError=null;
+  for(let attempt=1;attempt<=2;attempt++){
+    const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),45000);
+    try{
+      const res=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),signal:ctrl.signal});
+      const textBody=await res.text();let data;try{data=JSON.parse(textBody)}catch{throw new Error("AI応答がJSONではありません")}
+      if(!res.ok){const e=new Error(data?.error||("HTTP "+res.status));e.status=res.status;throw e}
+      return data;
+    }catch(err){
+      lastError=err;const retryable=!err?.status||err.status===502||err.name==="AbortError";
+      if(attempt===1&&retryable){await new Promise(r=>setTimeout(r,700));continue}
+      throw err;
+    }finally{clearTimeout(timer)}
+  }
+  throw lastError||new Error("AI接続に失敗しました");
+}
+function selectTarget(id){
+  if(busy)return;target=id;
+  document.getElementById("targetMiyoko").setAttribute("aria-pressed",id==="MIYOKO");
+  document.getElementById("targetFumiko").setAttribute("aria-pressed",id==="FUMIKO");
+  input.placeholder=displayName(id)+"に自由に話す";send.disabled=!input.value.trim()||busy;input.focus();
+}
+function setBusy(value){
+  busy=value;send.disabled=value||!target||!input.value.trim();
+  document.getElementById("targetMiyoko").disabled=value;document.getElementById("targetFumiko").disabled=value;
+}
+document.getElementById("targetMiyoko").onclick=()=>selectTarget("MIYOKO");
+document.getElementById("targetFumiko").onclick=()=>selectTarget("FUMIKO");
+input.oninput=()=>{send.disabled=!target||!input.value.trim()||busy};
+input.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)send.click()};
+
+async function continueNpcExchange(initialData){
+  let data=initialData;
+  for(let depth=1;depth<=MAX_NPC_EXCHANGE_TURNS;depth++){
+    if(data?.sceneStatus!=="NPC_EXCHANGE"||!isNpcId(data?.nextNpc))return data;
+    const nextNpc=data.nextNpc,last=history[history.length-1];
+    if(!last||!isNpcId(last.speaker)||last.speaker===nextNpc)return data;
+    const next=await post({operation:"continue_npc_exchange",caseId:"CAFE_BOUNDARY_V1",targetNpc:nextNpc,recentDialogue:recentDialogue(),continuationDepth:depth,dynamicState:dynamicState(nextNpc)});
+    if(!next||next.npc!==nextNpc||typeof next.npcLine!=="string"||!next.npcLine.trim())throw new Error("NPC間会話の応答形式が不正です");
+    addLine(nextNpc,next.npcLine);remainingMinutes=Math.max(0,remainingMinutes-1);data=next;debug.textContent=JSON.stringify(data,null,2);
+  }
+  return data;
+}
+async function talk(){
+  const utterance=input.value.trim();if(!utterance||!target||busy)return;
+  const requestTarget=target;setBusy(true);addLine("PLAYER",utterance);input.value="";
+  try{
+    const data=await post({operation:"converse_turn",caseId:"CAFE_BOUNDARY_V1",targetNpc:requestTarget,rawPlayerUtterance:utterance,recentDialogue:recentDialogue().slice(0,-1),dynamicState:dynamicState(requestTarget)});
+    debug.textContent=JSON.stringify(data,null,2);
+    if(!data||data.npc!==requestTarget||typeof data.npcLine!=="string"||!data.npcLine.trim())throw new Error("会話応答の形式が不正です");
+    addLine(requestTarget,data.npcLine);remainingMinutes=Math.max(0,remainingMinutes-2);await continueNpcExchange(data);
+  }catch(err){addLine("SYSTEM","AI接続エラー: "+(err?.message||String(err)))}finally{setBusy(false)}
+}
+send.onclick=talk;
+
+document.getElementById("organize").onclick=async()=>{
+  const btn=document.getElementById("organize");btn.disabled=true;
+  try{
+    const data=await post({operation:"organize_thought",validatedWorldFacts:"前日、美代子は『何か手伝えることがあれば言って』と発言した。席の提供・席数・時間は明示していない。文子は『混雑時の待合は喫茶みよこへ』という掲示を出した。今、その掲示を見た来訪者が店前に来ている。",recentDialogue:recentDialogue(),currentProblem:"過去の言葉の勝ち負けではなく、今いる来訪者をどうするか、今日の席の境界と掲示の訂正、次回の確認方法を決める。"});
+    const section=(title,arr)=>Array.isArray(arr)&&arr.length?'<p><strong>'+esc(title)+':</strong> '+arr.map(esc).join(" / ")+'</p>':"";
+    thought.innerHTML='<h3>思考整理</h3>'+section("わかっている",data.known)+section("そうかもしれない",data.possible)+section("まだわからない",data.unknown)+section("選択肢",data.options)+(data.nextCheck?'<p><strong>次に確かめること:</strong> '+esc(data.nextCheck)+'</p>':"");thought.style.display="block";
+  }catch(err){thought.innerHTML='<p class="bad">取得失敗: '+esc(err?.message||String(err))+'</p>';thought.style.display="block"}finally{btn.disabled=false}
+};
+
+async function verifyBackend(){
+  if(!safeEndpoint(endpoint)){statusEl.textContent="endpoint が不正です";return}
+  try{
+    const res=await fetch(endpoint,{method:"GET"});if(!res.ok)throw new Error("health "+res.status);const data=await res.json();
+    if(!data||data.service!=="newlife-refoundation-ai"||data.contractVersion!=="V45"||!Array.isArray(data.operations)||!data.operations.includes("converse_turn"))throw new Error("health mismatch");
+    statusEl.className="status ok";statusEl.textContent="V45 接続確認済み / build "+String(data.buildSha).slice(0,8);consentCard.style.display="block";
+  }catch{statusEl.className="status bad";statusEl.textContent="V45 backend を確認できないため開始を停止しています。"}
+}
+verifyBackend();
+document.getElementById("consent").onclick=()=>{
+  consentCard.style.display="none";game.style.display="block";
+  addLine("MIYOKO","文子さん、あの『待合はうちへ』って掲示、私そこまで引き受けたつもりはないのよ。");
+  addLine("FUMIKO","でも昨日、『何か手伝えることがあれば言って』って言ってくれたでしょう。私は何席かならお願いできると思ったの。");
+};
+document.getElementById("save").onclick=()=>{
+  const result={caseId:"CAFE_BOUNDARY_V1",meaning:Number(document.getElementById("meaning").value),naturalness:Number(document.getElementById("natural").value),characterDifference:Number(document.getElementById("character").value),forwardProgress:Number(document.getElementById("progress").value),note:document.getElementById("note").value.trim(),turns:history,at:new Date().toISOString()};
+  localStorage.setItem("newlife_cafe_v1_result",JSON.stringify(result));const box=document.getElementById("result");box.style.display="block";box.textContent=JSON.stringify(result,null,2);
+};
+</script>
+</body>
+</html>
