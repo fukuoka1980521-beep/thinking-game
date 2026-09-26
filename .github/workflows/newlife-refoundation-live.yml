@@ -125,6 +125,7 @@ jobs:
             const expected=process.argv[2];
             if(!p || p.service!=="newlife-refoundation-ai") throw new Error("wrong service");
             if(typeof p.buildSha!=="string" || p.buildSha!==expected) throw new Error("build SHA mismatch");
+            if(p.contractVersion!=="V42") throw new Error("contract version mismatch");
             if(!Array.isArray(p.operations) || !p.operations.includes("converse_turn") || !p.operations.includes("continue_npc_exchange") || !p.operations.includes("organize_thought")) throw new Error("operation set mismatch");
             console.log("health/build identity OK:", p.buildSha);
           ' "$payload" "${{ steps.source.outputs.sha }}"
@@ -139,6 +140,7 @@ jobs:
             const p=JSON.parse(process.argv[1]);
             if(!p || p.npc!=="MIKA" || typeof p.npcLine!=="string" || !p.npcLine.trim()) throw new Error("invalid converse response");
             if(!p.candidateTurn || typeof p.candidateTurn.action!=="string") throw new Error("candidate turn missing");
+            if(!p.sceneRevisionProposal || typeof p.sceneRevisionProposal.hasProposal!=="boolean") throw new Error("scene revision proposal missing");
             console.log("converse_turn shape OK");
           ' "$payload"
 
