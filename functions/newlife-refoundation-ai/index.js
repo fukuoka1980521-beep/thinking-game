@@ -6,7 +6,6 @@ const {
   buildNpcResponseSchema,
   buildNpcPrompt,
   buildConverseResponseSchema,
-  buildConverseLineOnlyResponseSchema,
   buildConversePrompt,
   buildNpcExchangePrompt,
   normalizeConverseResponse,
@@ -41,7 +40,6 @@ const modelCallLimiter = createFixedWindowLimiter(MAX_MODEL_CALLS_PER_MINUTE, 60
 const INTERPRET_RESPONSE_SCHEMA = buildInterpretResponseSchema(Type);
 const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
 const ORGANIZE_THOUGHT_RESPONSE_SCHEMA = buildOrganizeThoughtResponseSchema(Type);
-const CONVERSE_LINE_ONLY_RESPONSE_SCHEMA = buildConverseLineOnlyResponseSchema(Type);
 
 let genAiClient;
 function getClient() {
@@ -132,23 +130,6 @@ async function attemptNpcExchangeTurn(client, body) {
   return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
 }
 
-async function attemptDialogueLineFallback(client, body, prompt) {
-  const text = await callModel(client, {
-    systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
-    prompt,
-    responseSchema: CONVERSE_LINE_ONLY_RESPONSE_SCHEMA,
-  });
-  if (!text) return null;
-
-  let parsed;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    return null;
-  }
-
-  return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
-}
 
 /**
  * HTTP Cloud Function (Gen 2). POST-only, stateless. One operation
