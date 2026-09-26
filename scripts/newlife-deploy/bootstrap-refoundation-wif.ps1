@@ -51,7 +51,8 @@ $Apis = @(
   "cloudfunctions.googleapis.com",
   "cloudbuild.googleapis.com",
   "run.googleapis.com",
-  "artifactregistry.googleapis.com"
+  "artifactregistry.googleapis.com",
+  "cloudresourcemanager.googleapis.com"
 )
 & $Gcloud services enable @Apis --project=$ProjectId | Out-Null
 
@@ -92,7 +93,8 @@ $Roles = @(
   "roles/iam.serviceAccountUser",
   "roles/artifactregistry.writer",
   "roles/cloudbuild.builds.editor",
-  "roles/storage.objectViewer"
+  "roles/storage.objectViewer",
+  "roles/serviceusage.serviceUsageConsumer"
 )
 foreach ($Role in $Roles) {
   & $Gcloud projects add-iam-policy-binding $ProjectId --member="serviceAccount:$ServiceAccountEmail" --role=$Role --condition=None --quiet | Out-Null
