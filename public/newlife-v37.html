@@ -24,7 +24,7 @@ details{border:1px dashed #3d4c63;border-radius:10px;padding:9px;margin-top:10px
 <main>
   <div class="card">
     <h1>NEW LIFE — 会話・思考整理テスト</h1>
-    <p class="muted">最新版の隔離AIバックエンドを直接確認します。自由入力は一度の <code>converse_turn</code> で、サーバー側にあるストーリー正本とキャラクター背景を使って返答します。必要なときだけ別レイヤーの「思考整理」を呼び出せます。</p>
+    <p class="muted">最新版の隔離AIバックエンドを直接確認します。自由入力は <code>converse_turn</code> で処理し、必要な場面ではNPC同士が最大3ターンだけ自律的に会話を続けます。サーバー側のストーリー正本とキャラクター背景を使い、必要なときだけ別レイヤーの「思考整理」を呼び出せます。</p>
     <div id="status" class="status bad">LIVE AI endpoint を確認中…</div>
   </div>
 
@@ -91,12 +91,14 @@ const send=document.getElementById("send");
 const debug=document.getElementById("debug");
 const thought=document.getElementById("thought");
 let target=null,busy=false,remainingMinutes=50,boundaryStatus="UNKNOWN",relationship={MIKA:"NEUTRAL",RYO:"NEUTRAL"},activeCommitment=null;
+const MAX_NPC_EXCHANGE_TURNS=3;
 const history=[];
 
 function safeEndpoint(url){try{const u=new URL(url);return u.protocol==="https:"&&(u.hostname.endsWith(".run.app")||u.hostname.endsWith(".cloudfunctions.net"))}catch{return false}}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function addLine(who,text,cls){history.push({speaker:who,text});transcriptEl.insertAdjacentHTML("beforeend",'<div class="line '+cls+'"><span class="who">'+esc(who==="PLAYER"?"あなた":who==="MIKA"?"美香":who==="RYO"?"亮":"システム")+':</span> '+esc(text)+'</div>');transcriptEl.scrollTop=transcriptEl.scrollHeight}
 function recentDialogue(){return history.slice(-8).map(x=>({speaker:x.speaker,text:x.text}))}
+function isNpcId(id){return id==="MIKA"||id==="RYO"}
 
 async function post(body){
   let lastError=null;
@@ -140,6 +142,35 @@ document.getElementById("targetRyo").onclick=()=>selectTarget("RYO");
 input.oninput=()=>{send.disabled=!target||!input.value.trim()||busy};
 input.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)send.click()};
 
+
+async function continueNpcExchange(initialData){
+  let data=initialData;
+  for(let depth=1;depth<=MAX_NPC_EXCHANGE_TURNS;depth++){
+    if(data?.sceneStatus!=="NPC_EXCHANGE"||!isNpcId(data?.nextNpc))return data;
+    const nextNpc=data.nextNpc;
+    const last=history[history.length-1];
+    if(!last||!isNpcId(last.speaker)||last.speaker===nextNpc)return data;
+    const next=await post({
+      operation:"continue_npc_exchange",
+      caseId:"COMMUNITY_THEATER_V1",
+      targetNpc:nextNpc,
+      recentDialogue:recentDialogue(),
+      continuationDepth:depth,
+      dynamicState:{
+        relationshipState:relationship[nextNpc],
+        boundaryStatus,
+        remainingMinutes,
+        activeCommitment
+      }
+    });
+    if(!next||next.npc!==nextNpc||typeof next.npcLine!=="string"||!next.npcLine.trim())throw new Error("NPC間会話の応答形式が不正です");
+    addLine(nextNpc,next.npcLine,nextNpc==="MIKA"?"mika":"ryo");
+    remainingMinutes=Math.max(0,remainingMinutes-1);
+    data=next;
+    debug.textContent=JSON.stringify(data,null,2);
+  }
+  return data;
+}
 async function talk(){
   const utterance=input.value.trim();
   if(!utterance||!target||busy)return;
@@ -165,6 +196,7 @@ async function talk(){
     if(!data||data.npc!==requestTarget||typeof data.npcLine!=="string"||!data.npcLine.trim())throw new Error("会話応答の形式が不正です");
     addLine(requestTarget,data.npcLine,requestTarget==="MIKA"?"mika":"ryo");
     remainingMinutes=Math.max(0,remainingMinutes-2);
+    await continueNpcExchange(data);
   }catch(err){
     addLine("SYSTEM","AI接続エラー: "+(err?.message||String(err)),"system");
   }finally{
@@ -205,7 +237,7 @@ async function verifyBackend(){
     clearTimeout(timer);
     if(!res.ok)throw new Error("health HTTP "+res.status);
     const data=await res.json();
-    if(!data||data.service!=="newlife-refoundation-ai"||typeof data.buildSha!=="string"||!data.buildSha.trim()){
+    if(!data||data.service!=="newlife-refoundation-ai"||typeof data.buildSha!=="string"||!data.buildSha.trim()||data.contractVersion!=="V41"||!Array.isArray(data.operations)||!data.operations.includes("continue_npc_exchange")){
       throw new Error("health response mismatch");
     }
     const shortSha=data.buildSha==="unknown"?"unknown":data.buildSha.slice(0,8);
