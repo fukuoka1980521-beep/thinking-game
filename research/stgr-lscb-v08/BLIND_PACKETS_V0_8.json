@@ -1,0 +1,82 @@
+[
+  {
+    "blind_id": "V8B01",
+    "global_goal": "2026-09-22休場日修正だけをPRODへ届け、他のPRODファイルを変えない。",
+    "local_task": "既存の汎用リリース候補をそのまま調整して成立させる。",
+    "history": [
+      "汎用リリースツールの既定ベースラインは7/25時点で、その後PRODが先へ進んでいた。",
+      "既定のまま生成した候補は13ファイルのリリース単位になり、修正対象の18_trading_calendar.gs自体が含まれなかった。",
+      "この候補はPRODへは反映せず停止している。"
+    ]
+  },
+  {
+    "blind_id": "V8B02",
+    "global_goal": "ITOS Prompt Objective Shaping Pilotで180件の独立API生成を成立させる。",
+    "local_task": "同じPC上のローカル起動経路を別の実装部品で修正する。",
+    "history": [
+      "v0.2ではPython/Tkinter/BAT、v0.3では診断強化、v0.4ではPowerShell/WinForms/VBSへ部品を変えた。",
+      "実行場所は同じPC上のローカル起動のままで、同じ『開かない』失敗が反復した。",
+      "研究ゴールはローカルGUI起動そのものではなく180件の独立API生成である。"
+    ]
+  },
+  {
+    "blind_id": "V8B03",
+    "global_goal": "公開入口から実参加者が安全に利用開始できる状態を成立させる。",
+    "local_task": "reCAPTCHAの設定値とローカル試験をさらに調整する。",
+    "history": [
+      "credential/configは存在し、ローカルテストも通っていた。",
+      "募集前に実ブラウザchallengeとserver verifyのLIVE E2Eは一度も証明されていなかった。",
+      "実環境では参加者がreCAPTCHA入口を通過できなかった。"
+    ]
+  },
+  {
+    "blind_id": "V8B04",
+    "global_goal": "請求給与V2のProduct Completion Gateで本当の退行だけを検出する。",
+    "local_task": "アプリ本体のソースをさらに修正してP89 validatorの非ゼロ結果を消す。",
+    "history": [
+      "copy-free transaction fixで母艦backup作成と早期return分岐を意図的に削除していた。",
+      "現在ソースは既に検証済みだが、P89 validatorの期待値は変更前のcall countとtimer-patternのままだった。",
+      "validatorの非ゼロ結果はこの古いbaselineによるfalse regressionだった。"
+    ]
+  },
+  {
+    "blind_id": "V8B05",
+    "global_goal": "公開相談チャットで、ペット医療物流の誤検知を減らしつつ本人医療・診断・薬・EMERGENCYの安全境界を維持する。",
+    "local_task": "K3_MEDICAL誤検知の限定抑制と未解決HUMAN継続ゲートを実装・検証する。",
+    "history": [
+      "LIVEで、ペットの通院や飼い主が入院した場合の世話までK3_MEDICALへ落ちる誤検知を確認した。",
+      "一方で本人医療・診断・薬・EMERGENCYは従来どおりHUMAN/EMERGENCYへ倒す必要がある。",
+      "修正範囲はペット医療物流文脈の限定抑制と、canonical HR-AまでHUMANを維持する継続ゲートに絞っている。"
+    ]
+  },
+  {
+    "blind_id": "V8B06",
+    "global_goal": "AI capabilityを誤ったrun/action/target/pathへ結びつけず、再現可能な観測記録として測定する。",
+    "local_task": "独立レビュー結果を見る前にv0.3 regression planを固定する。",
+    "history": [
+      "v0.3はwrong run/action/repository/target/environment/pathをUNKNOWNへ倒し、即実行やOwner fallbackをしない設計に更新した。",
+      "独立レビューをPASSした場合だけ実装する方針である。",
+      "後付けでテスト内容を変えないため、review結果前にregression planを固定する段階にある。"
+    ]
+  },
+  {
+    "blind_id": "V8B07",
+    "global_goal": "CSV取込Commitを安全に保ちつつ、不要なDriveコピーと復旧経路の複雑性を減らす。",
+    "local_task": "通常Commitごとに作られるfull Spreadsheet backup依存を撤去し、既存transaction-scoped preimage/hash復旧へ一本化する。",
+    "history": [
+      "forensic reviewで通常CommitごとにSpreadsheet全体コピーが作られ、無期限保持されていた。",
+      "実際のauto-rollbackとmanual Recoveryはtransaction-scoped TX payload JSONのpreimageをhash検証して復旧していた。",
+      "full Spreadsheet backupの中身は復旧に使われず、存在/filename sanity checkだけだった。"
+    ]
+  },
+  {
+    "blind_id": "V8B08",
+    "global_goal": "年末の市場仮説評価をOwnerの恣意的選別なしに再現可能なforward評価として成立させる。",
+    "local_task": "forward cohort開始前にblind evaluation protocolとprovenance fail-closed規則を固定する。",
+    "history": [
+      "cohort boundary、fixed checkpoints、H-001〜H-010 rule-source SHA256 bindingsを事前固定する設計である。",
+      "forward開始後にOwnerが有利な観測や除外する損失を選ばないようにする。",
+      "RAW非上書き証跡が肯定的に確認できない場合はfail-openせずPARTIALへ倒す規則を置く。"
+    ]
+  }
+]
