@@ -119,12 +119,20 @@ async function post(body){
 }
 
 function selectTarget(id){
+  if(busy)return;
   target=id;
   document.getElementById("targetMika").setAttribute("aria-pressed",id==="MIKA");
   document.getElementById("targetRyo").setAttribute("aria-pressed",id==="RYO");
   input.placeholder=(id==="MIKA"?"美香":"亮")+"に自由に話す";
   send.disabled=!input.value.trim()||busy;
   input.focus();
+}
+
+function setConversationBusy(value){
+  busy=value;
+  send.disabled=value||!target||!input.value.trim();
+  document.getElementById("targetMika").disabled=value;
+  document.getElementById("targetRyo").disabled=value;
 }
 document.getElementById("targetMika").onclick=()=>selectTarget("MIKA");
 document.getElementById("targetRyo").onclick=()=>selectTarget("RYO");
@@ -134,31 +142,32 @@ input.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)send.click()};
 async function talk(){
   const utterance=input.value.trim();
   if(!utterance||!target||busy)return;
-  busy=true;send.disabled=true;
+  const requestTarget=target;
+  setConversationBusy(true);
   addLine("PLAYER",utterance,"you");
   input.value="";
   try{
     const data=await post({
       operation:"converse_turn",
       caseId:"COMMUNITY_THEATER_V1",
-      targetNpc:target,
+      targetNpc:requestTarget,
       rawPlayerUtterance:utterance,
       recentDialogue:recentDialogue().slice(0,-1),
       dynamicState:{
-        relationshipState:relationship[target],
+        relationshipState:relationship[requestTarget],
         boundaryStatus,
         remainingMinutes,
         activeCommitment
       }
     });
     debug.textContent=JSON.stringify(data,null,2);
-    if(!data||data.npc!==target||typeof data.npcLine!=="string"||!data.npcLine.trim())throw new Error("会話応答の形式が不正です");
-    addLine(target,data.npcLine,target==="MIKA"?"mika":"ryo");
+    if(!data||data.npc!==requestTarget||typeof data.npcLine!=="string"||!data.npcLine.trim())throw new Error("会話応答の形式が不正です");
+    addLine(requestTarget,data.npcLine,requestTarget==="MIKA"?"mika":"ryo");
     remainingMinutes=Math.max(0,remainingMinutes-2);
   }catch(err){
     addLine("SYSTEM","AI接続エラー: "+(err?.message||String(err)),"system");
   }finally{
-    busy=false;send.disabled=!target||!input.value.trim();
+    setConversationBusy(false);
   }
 }
 send.onclick=talk;
