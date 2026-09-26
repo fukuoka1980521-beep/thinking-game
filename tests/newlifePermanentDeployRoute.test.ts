@@ -42,8 +42,17 @@ describe("NEW LIFE permanent isolated deploy route", () => {
     expect(workflow).not.toMatch(/branches:\s*\n\s*-\s*master/);
   });
 
-  it("cleanly skips deployment until WIF repository variables exist", () => {
+  it("reduces the permanent bootstrap to one non-secret GitHub variable", () => {
+    expect(workflow).toContain("GCP_PROJECT_ID: gas-test-runner-20260620-wjxf");
+    expect(workflow).toContain("GCP_DEPLOY_SERVICE_ACCOUNT: newlife-refoundation-deployer@gas-test-runner-20260620-wjxf.iam.gserviceaccount.com");
+    expect(workflow).toContain("vars.GCP_WIF_PROVIDER");
+    expect(workflow).not.toContain("vars.GCP_PROJECT_ID");
+    expect(workflow).not.toContain("vars.GCP_DEPLOY_SERVICE_ACCOUNT");
+  });
+
+  it("cleanly skips deployment until the WIF provider variable exists", () => {
     expect(workflow).toContain("GCP_WIF_READY=NO");
+    expect(workflow).toContain("Missing repository variable: GCP_WIF_PROVIDER");
     expect(workflow).toContain("ready=false");
     expect(workflow).toContain("if: needs.readiness.outputs.ready == 'true'");
   });
