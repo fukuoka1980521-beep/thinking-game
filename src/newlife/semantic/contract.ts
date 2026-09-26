@@ -37,6 +37,23 @@ export interface FactsSnapshot {
   unknown: FactCategory[];
   /** Terms a generated response must never affirm, regardless of phrasing (e.g. Daisuke's rejected barber canon). Checked by `truthGate.ts`. */
   negativeConstraints: string[];
+  /**
+   * Compact ownership ledger for facts that are easy for a generative NPC to
+   * misattribute. These are assertions, not chat history: the model may
+   * paraphrase them but must never move the actor/speaker/permission owner.
+   */
+  ownershipFacts: OwnershipFact[];
+}
+
+export type OwnershipKind = "said" | "did" | "offered" | "permission" | "responsibility" | "unresolved";
+
+export interface OwnershipFact {
+  kind: OwnershipKind;
+  /** Canonical owner/actor. "player" is intentionally explicit. */
+  owner: NpcId | "player" | "world";
+  statement: string;
+  /** Optional other party when the fact is relational (permission, offer, responsibility). */
+  counterparty?: NpcId | "player";
 }
 
 /** One clause of a (possibly multi-intent) player utterance. `utteranceSpan` is the substring this clause was extracted from, kept for auditability — never re-parsed or trusted as a boundary by the truth gate. */
