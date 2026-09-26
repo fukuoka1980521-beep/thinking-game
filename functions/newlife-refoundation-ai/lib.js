@@ -123,7 +123,7 @@ const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "con
 // (converse_turn / organize_thought, per V37 §7) -- interpret_turn and
 // generate_npc_line remain callable for compatibility/testing but are not
 // part of the health surface's own version identity.
-const HEALTH_CONTRACT_VERSION = "V43";
+const HEALTH_CONTRACT_VERSION = "V44";
 const HEALTH_OPERATIONS = ["converse_turn", "continue_npc_exchange", "organize_thought"];
 
 function buildHealthResponse(buildSha) {
@@ -420,6 +420,11 @@ function getCaseNpcIds(caseId) {
   return dossiers ? Object.keys(dossiers) : [];
 }
 
+function caseUsesSceneRevision(caseId) {
+  const canon = getCaseCanon(caseId);
+  return Boolean(canon && typeof canon.disputedSceneExcerpt === "string" && canon.disputedSceneExcerpt.trim());
+}
+
 // V31 §2 / src/newlife/refoundation/npcGeneration.ts's NPC_VOICE_CONSTRAINTS,
 // hand-copied for the same "separate deployment artifact" reason as the
 // enums above. Never invented biography beyond what those two sources state.
@@ -590,8 +595,8 @@ function buildNpcPrompt(projection) {
  * natural-language output, since this operation's whole point is that the
  * model is no longer limited to a narrow classification (V37 §0).
  */
-function buildConverseResponseSchema(Type) {
-  return {
+function buildConverseResponseSchema(Type, caseId = "COMMUNITY_THEATER_V1") {
+  const schema = {
     type: Type.OBJECT,
     properties: {
       npc: { type: Type.STRING, enum: NPC_IDS },
@@ -637,6 +642,12 @@ function buildConverseResponseSchema(Type) {
       "sceneRevisionProposal",
     ],
   };
+
+  if (!caseUsesSceneRevision(caseId)) {
+    delete schema.properties.sceneRevisionProposal;
+    schema.required = schema.required.filter((key) => key !== "sceneRevisionProposal");
+  }
+  return schema;
 }
 
 /**
@@ -774,9 +785,10 @@ function normalizeConverseResponse(parsed, expectedNpc, caseId = "COMMUNITY_THEA
     thoughtSupportSignal: metadataFallback ? false : parsed.thoughtSupportSignal === true,
     sceneStatus: metadataFallback ? "AWAIT_PLAYER" : sceneStatus,
     nextNpc: metadataFallback ? null : nextNpc,
-    sceneRevisionProposal: metadataFallback
-      ? { hasProposal: false, revisedText: "", changeSummary: "" }
-      : normalizeSceneRevisionProposal(parsed.sceneRevisionProposal),
+    sceneRevisionProposal:
+      metadataFallback || !caseUsesSceneRevision(caseId)
+        ? { hasProposal: false, revisedText: "", changeSummary: "" }
+        : normalizeSceneRevisionProposal(parsed.sceneRevisionProposal),
   };
 }
 
@@ -1032,6 +1044,7 @@ module.exports = {
   getCaseCanon,
   getCaseDossiers,
   getCaseNpcIds,
+  caseUsesSceneRevision,
   INTERPRET_SYSTEM_INSTRUCTION,
   NPC_SYSTEM_INSTRUCTION,
   CONVERSE_SYSTEM_INSTRUCTION,
