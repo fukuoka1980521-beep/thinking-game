@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NEW LIFE V43 — cross-case transfer human test (STREET_BAKE_SALE_V1)</title>
+<style>
+  :root { color-scheme: light; }
+  body {
+    font-family: "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
+    max-width: 780px;
+    margin: 24px auto;
+    padding: 0 16px 64px;
+    line-height: 1.6;
+    color: #1a1a1a;
+  }
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1.05rem; margin-top: 2em; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+  section { margin-bottom: 1.5em; }
+  fieldset { border: 1px solid #ccc; border-radius: 6px; padding: 12px 16px; }
+  legend { padding: 0 6px; font-weight: 600; }
+  label { display: block; font-size: 0.9rem; margin: 6px 0 2px; }
+  input[type="text"], textarea {
+    width: 100%; box-sizing: border-box; padding: 6px 8px; font-size: 0.95rem;
+    border: 1px solid #bbb; border-radius: 4px;
+  }
+  textarea { resize: vertical; min-height: 2.4em; }
+  button {
+    cursor: pointer; padding: 6px 12px; border-radius: 4px; border: 1px solid #888;
+    background: #f4f4f4; font-size: 0.9rem; margin: 4px 4px 4px 0;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.primary { background: #2b5fad; color: white; border-color: #2b5fad; }
+  button.hina { background: #fde6ea; border-color: #d97b95; }
+  button.yohei { background: #e6eef5; border-color: #5f7f9c; }
+  .status-ok { color: #157a3d; }
+  .status-bad { color: #b3261e; }
+  .log { border: 1px solid #ddd; border-radius: 6px; padding: 10px 12px; max-height: 320px; overflow-y: auto; background: #fafafa; }
+  .log .line { margin-bottom: 8px; }
+  .log .speaker { font-weight: 700; }
+  .log .speaker.PLAYER { color: #2b5fad; }
+  .log .speaker.HINA { color: #b3406a; }
+  .log .speaker.YOHEI { color: #3d5872; }
+  .log .speaker.SYSTEM { color: #777; font-style: italic; }
+  .artifact-box { border: 1px dashed #999; border-radius: 6px; padding: 10px 12px; background: #fffbea; white-space: pre-wrap; }
+  .artifact-box.revised { background: #eafaf0; border-style: solid; }
+  details summary { cursor: pointer; font-weight: 600; }
+  pre { white-space: pre-wrap; word-break: break-all; background: #111; color: #d8d8d8; padding: 10px; border-radius: 6px; font-size: 0.8rem; }
+  .hint { font-size: 0.85rem; color: #555; }
+  .facts-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .facts-table td { padding: 2px 8px 2px 0; vertical-align: top; }
+  .facts-table td:first-child { font-weight: 600; white-space: nowrap; color: #444; }
+</style>
+</head>
+<body>
+  <h1>NEW LIFE V43 — cross-case transfer human test</h1>
+  <p class="hint">
+    caseId <code>STREET_BAKE_SALE_V1</code> (HINA / YOHEI) — a second, materially different
+    case run through the same server-owned case-registry engine that already runs the
+    <code>COMMUNITY_THEATER_V1</code> case. This page never bundles hidden canon; it only ever
+    sends <code>caseId</code>/<code>targetNpc</code>/<code>rawPlayerUtterance</code>/
+    <code>recentDialogue</code>/<code>dynamicState</code> — the server looks up canon/dossiers
+    itself from <code>CASE_REGISTRY</code>.
+  </p>
+
+  <section>
+    <h2>1. Endpoint</h2>
+    <fieldset>
+      <legend>functions/newlife-refoundation-ai endpoint</legend>
+      <label for="endpoint-url">Deployed HTTPS trigger URL</label>
+      <input id="endpoint-url" type="text" placeholder="https://REGION-PROJECT.cloudfunctions.net/newlifeRefoundationAi" />
+      <button id="save-endpoint">Save</button>
+      <button id="check-health" class="primary">Check V43 health</button>
+      <p id="health-result" class="hint"></p>
+      <p class="hint">
+        Must be opened from an allowed CORS origin
+        (<code>https://fukuoka1980521-beep.github.io</code>, or a local dev server on
+        <code>localhost:5173</code>–<code>5175</code>) — opening this file directly
+        (<code>file://</code>) will fail CORS.
+      </p>
+    </fieldset>
+  </section>
+
+  <section>
+    <h2>2. Consent</h2>
+    <fieldset>
+      <legend>Debug/test tool — same consent posture as the refoundation slice</legend>
+      <p class="hint">
+        This sends whatever you type to a live model. Do not enter real personal information —
+        use only fictional test utterances about the STREET_BAKE_SALE_V1 case.
+      </p>
+      <div id="consent-gate">
+        <button id="consent-accept" class="primary">Accept and continue</button>
+        <button id="consent-decline">Decline</button>
+      </div>
+      <p id="consent-status" class="hint"></p>
+    </fieldset>
+  </section>
+
+  <section id="case-panel" style="display:none;">
+    <h2>3. Case: STREET_BAKE_SALE_V1</h2>
+    <table class="facts-table">
+      <tr><td>Prepared</td><td>スコーン20個（280円）・クッキー10袋（240円）、合計30点</td></tr>
+      <tr><td>Reserved</td><td>12点</td></tr>
+      <tr><td>Walk-in</td><td>18点</td></tr>
+      <tr><td>Staffing</td><td>受け渡し担当は未定（陽菜が自分で焼いて自分で売っている）</td></tr>
+      <tr><td>Cost/profit</td><td>不明（材料費・時間・利益は未計算）</td></tr>
+    </table>
+
+    <h3>Original sign</h3>
+    <div class="artifact-box">本日30点。スコーンとクッキーあります。</div>
+
+    <h3>Current sign (artifactRevisionText)</h3>
+    <div id="artifact-current" class="artifact-box">（まだ改訂案はありません）</div>
+
+    <h2>4. Talk to a character</h2>
+    <label for="utterance">Your utterance</label>
+    <textarea id="utterance" placeholder="例: 看板の「本日30点」は何を指していますか？"></textarea>
+    <div>
+      <button id="send-hina" class="hina" disabled>陽菜(HINA)に話す</button>
+      <button id="send-yohei" class="yohei" disabled>洋平(YOHEI)に話す</button>
+      <button id="continue-exchange" disabled>NPC同士の続きを見る (continue_npc_exchange)</button>
+      <button id="reset-session">Reset session</button>
+    </div>
+    <p id="send-status" class="hint"></p>
+
+    <h2>5. Conversation log</h2>
+    <div id="log" class="log"></div>
+
+    <h2>6. Debug / evaluation</h2>
+    <details>
+      <summary>Last raw response JSON</summary>
+      <pre id="debug-json">(none yet)</pre>
+    </details>
+  </section>
+
+<script>
+(function () {
+  "use strict";
+
+  const CASE_ID = "STREET_BAKE_SALE_V1";
+  const NPC_DISPLAY = { HINA: "陽菜", YOHEI: "洋平" };
+  const MAX_RECENT_DIALOGUE_ENTRIES = 12;
+  const MAX_NPC_EXCHANGE_DEPTH = 3;
+
+  const ENDPOINT_STORAGE_KEY = "thinking-game:newlife-v43-transfer-endpoint";
+  const CONSENT_STORAGE_KEY = "thinking-game:newlife-refoundation-ai-consent:v1";
+
+  const els = {
+    endpointUrl: document.getElementById("endpoint-url"),
+    saveEndpoint: document.getElementById("save-endpoint"),
+    checkHealth: document.getElementById("check-health"),
+    healthResult: document.getElementById("health-result"),
+    consentGate: document.getElementById("consent-gate"),
+    consentAccept: document.getElementById("consent-accept"),
+    consentDecline: document.getElementById("consent-decline"),
+    consentStatus: document.getElementById("consent-status"),
+    casePanel: document.getElementById("case-panel"),
+    artifactCurrent: document.getElementById("artifact-current"),
+    utterance: document.getElementById("utterance"),
+    sendHina: document.getElementById("send-hina"),
+    sendYohei: document.getElementById("send-yohei"),
+    continueExchange: document.getElementById("continue-exchange"),
+    resetSession: document.getElementById("reset-session"),
+    sendStatus: document.getElementById("send-status"),
+    log: document.getElementById("log"),
+    debugJson: document.getElementById("debug-json"),
+  };
+
+  /** Fresh per-session dynamic state — never persisted, mirrors ConversationDynamicState. */
+  function freshDynamicState() {
+    return {
+      relationshipState: "NEUTRAL",
+      boundaryStatus: "UNKNOWN",
+      remainingMinutes: 60,
+      activeCommitment: null,
+      artifactRevisionText: "",
+    };
+  }
+
+  const session = {
+    recentDialogue: /** @type {{speaker:string,text:string}[]} */ ([]),
+    dynamicState: freshDynamicState(),
+    pendingExchange: /** @type {{targetNpc:string, continuationDepth:number} | null} */ (null),
+  };
+
+  function getEndpoint() {
+    return els.endpointUrl.value.trim();
+  }
+
+  function loadEndpoint() {
+    const stored = localStorage.getItem(ENDPOINT_STORAGE_KEY);
+    if (stored) els.endpointUrl.value = stored;
+  }
+
+  els.saveEndpoint.addEventListener("click", () => {
+    localStorage.setItem(ENDPOINT_STORAGE_KEY, getEndpoint());
+    els.healthResult.textContent = "Saved.";
+  });
+
+  async function checkHealth() {
+    const url = getEndpoint();
+    if (!url) {
+      els.healthResult.textContent = "Enter an endpoint URL first.";
+      els.healthResult.className = "hint status-bad";
+      return;
+    }
+    els.healthResult.textContent = "Checking...";
+    els.healthResult.className = "hint";
+    try {
+      const res = await fetch(url, { method: "GET" });
+      const body = await res.json();
+      const ok = res.ok && body.contractVersion === "V43" && Array.isArray(body.operations);
+      els.healthResult.textContent = ok
+        ? `OK — service=${body.service} contractVersion=${body.contractVersion} buildSha=${body.buildSha} operations=${body.operations.join(",")}`
+        : `Unexpected response (http ${res.status}): ${JSON.stringify(body)}`;
+      els.healthResult.className = "hint " + (ok ? "status-ok" : "status-bad");
+    } catch (err) {
+      els.healthResult.textContent = "Request failed: " + (err && err.message ? err.message : String(err));
+      els.healthResult.className = "hint status-bad";
+    }
+  }
+  els.checkHealth.addEventListener("click", checkHealth);
+
+  function readConsent() {
+    const raw = localStorage.getItem(CONSENT_STORAGE_KEY);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && (parsed.status === "accepted" || parsed.status === "declined") ? parsed.status : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeConsent(status) {
+    localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify({ status, respondedAt: new Date().toISOString() }));
+  }
+
+  function applyConsentState(status) {
+    if (status === "accepted") {
+      els.consentStatus.textContent = "Consent: accepted. You can talk to Hina/Yohei below.";
+      els.consentStatus.className = "hint status-ok";
+      els.casePanel.style.display = "";
+      els.sendHina.disabled = false;
+      els.sendYohei.disabled = false;
+    } else if (status === "declined") {
+      els.consentStatus.textContent = "Consent: declined. This tool will not make any network call.";
+      els.consentStatus.className = "hint status-bad";
+      els.casePanel.style.display = "none";
+    } else {
+      els.consentStatus.textContent = "";
+      els.casePanel.style.display = "none";
+    }
+  }
+
+  els.consentAccept.addEventListener("click", () => {
+    writeConsent("accepted");
+    applyConsentState("accepted");
+  });
+  els.consentDecline.addEventListener("click", () => {
+    writeConsent("declined");
+    applyConsentState("declined");
+  });
+
+  function appendLog(speaker, text) {
+    const line = document.createElement("div");
+    line.className = "line";
+    const speakerSpan = document.createElement("span");
+    speakerSpan.className = "speaker " + speaker;
+    speakerSpan.textContent = speaker + ": ";
+    line.appendChild(speakerSpan);
+    line.appendChild(document.createTextNode(text));
+    els.log.appendChild(line);
+    els.log.scrollTop = els.log.scrollHeight;
+  }
+
+  function pushDialogue(speaker, text) {
+    session.recentDialogue.push({ speaker, text });
+    if (session.recentDialogue.length > MAX_RECENT_DIALOGUE_ENTRIES) {
+      session.recentDialogue = session.recentDialogue.slice(-MAX_RECENT_DIALOGUE_ENTRIES);
+    }
+  }
+
+  function renderArtifact() {
+    if (session.dynamicState.artifactRevisionText) {
+      els.artifactCurrent.textContent = session.dynamicState.artifactRevisionText;
+      els.artifactCurrent.classList.add("revised");
+    } else {
+      els.artifactCurrent.textContent = "（まだ改訂案はありません）";
+      els.artifactCurrent.classList.remove("revised");
+    }
+  }
+
+  function applyResult(result) {
+    els.debugJson.textContent = JSON.stringify(result, null, 2);
+
+    pushDialogue(result.npc, result.npcLine);
+    appendLog(result.npc, result.npcLine);
+
+    if (result.artifactRevisionProposal && result.artifactRevisionProposal.hasProposal) {
+      session.dynamicState.artifactRevisionText = result.artifactRevisionProposal.revisedText;
+      appendLog("SYSTEM", "実物の改訂案が更新されました: " + result.artifactRevisionProposal.changeSummary);
+    }
+    renderArtifact();
+
+    if (result.sceneStatus === "NPC_EXCHANGE" && result.nextNpc) {
+      session.pendingExchange = { targetNpc: result.nextNpc, continuationDepth: 1 };
+      els.continueExchange.disabled = false;
+      els.continueExchange.textContent = `NPC同士の続きを見る (次: ${NPC_DISPLAY[result.nextNpc] || result.nextNpc})`;
+    } else {
+      session.pendingExchange = null;
+      els.continueExchange.disabled = true;
+      els.continueExchange.textContent = "NPC同士の続きを見る (continue_npc_exchange)";
+    }
+  }
+
+  async function postOperation(body) {
+    const url = getEndpoint();
+    if (!url) throw new Error("no_endpoint_configured");
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const parsed = await res.json().catch(() => null);
+    if (!res.ok || !parsed) {
+      throw new Error(`http_${res.status}: ${parsed ? JSON.stringify(parsed) : "(unparseable body)"}`);
+    }
+    return parsed;
+  }
+
+  async function sendToNpc(targetNpc) {
+    if (readConsent() !== "accepted") {
+      els.sendStatus.textContent = "Accept consent above first.";
+      els.sendStatus.className = "hint status-bad";
+      return;
+    }
+    const utterance = els.utterance.value.trim();
+    if (!utterance) {
+      els.sendStatus.textContent = "Enter an utterance first.";
+      els.sendStatus.className = "hint status-bad";
+      return;
+    }
+    els.sendStatus.textContent = "Sending...";
+    els.sendStatus.className = "hint";
+    els.sendHina.disabled = true;
+    els.sendYohei.disabled = true;
+    try {
+      pushDialogue("PLAYER", utterance);
+      appendLog("PLAYER", utterance);
+      els.utterance.value = "";
+
+      const result = await postOperation({
+        operation: "converse_turn",
+        caseId: CASE_ID,
+        targetNpc,
+        rawPlayerUtterance: utterance,
+        recentDialogue: session.recentDialogue.slice(0, -1),
+        dynamicState: session.dynamicState,
+      });
+      applyResult(result);
+      els.sendStatus.textContent = "OK.";
+      els.sendStatus.className = "hint status-ok";
+    } catch (err) {
+      els.sendStatus.textContent = "Failed: " + (err && err.message ? err.message : String(err));
+      els.sendStatus.className = "hint status-bad";
+    } finally {
+      els.sendHina.disabled = false;
+      els.sendYohei.disabled = false;
+    }
+  }
+
+  els.sendHina.addEventListener("click", () => sendToNpc("HINA"));
+  els.sendYohei.addEventListener("click", () => sendToNpc("YOHEI"));
+
+  els.continueExchange.addEventListener("click", async () => {
+    if (!session.pendingExchange) return;
+    const { targetNpc, continuationDepth } = session.pendingExchange;
+    els.continueExchange.disabled = true;
+    els.sendStatus.textContent = "Continuing NPC exchange...";
+    els.sendStatus.className = "hint";
+    try {
+      const result = await postOperation({
+        operation: "continue_npc_exchange",
+        caseId: CASE_ID,
+        targetNpc,
+        recentDialogue: session.recentDialogue,
+        continuationDepth,
+        dynamicState: session.dynamicState,
+      });
+      applyResult(result);
+      if (session.pendingExchange && continuationDepth < MAX_NPC_EXCHANGE_DEPTH) {
+        session.pendingExchange.continuationDepth = continuationDepth + 1;
+      }
+      els.sendStatus.textContent = "OK.";
+      els.sendStatus.className = "hint status-ok";
+    } catch (err) {
+      els.sendStatus.textContent = "Failed: " + (err && err.message ? err.message : String(err));
+      els.sendStatus.className = "hint status-bad";
+    }
+  });
+
+  els.resetSession.addEventListener("click", () => {
+    session.recentDialogue = [];
+    session.dynamicState = freshDynamicState();
+    session.pendingExchange = null;
+    els.log.innerHTML = "";
+    els.debugJson.textContent = "(none yet)";
+    els.continueExchange.disabled = true;
+    els.continueExchange.textContent = "NPC同士の続きを見る (continue_npc_exchange)";
+    els.sendStatus.textContent = "Session reset.";
+    els.sendStatus.className = "hint";
+    renderArtifact();
+  });
+
+  loadEndpoint();
+  applyConsentState(readConsent());
+  renderArtifact();
+})();
+</script>
+</body>
+</html>

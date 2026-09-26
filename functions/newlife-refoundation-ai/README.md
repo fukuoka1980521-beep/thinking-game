@@ -40,12 +40,23 @@ One function, one `operation` discriminator in the POST body:
   `{ operation, caseId, targetNpc, rawPlayerUtterance, recentDialogue,
   dynamicState }`. The client sends only dynamic/conversational data; the
   function builds the full `CharacterConversationContext` server-side from
-  the canonical `SCENE_CANON`/`CHARACTER_DOSSIERS` in `lib.js` (never sent
-  by the client — V37 §1's explicit prohibition). Output: `{ npc, npcLine, understoodPlayerMeaning, candidateTurn, candidateFactRevealIds, candidateCommitments, uncertainty, thoughtSupportSignal, sceneStatus, nextNpc, sceneRevisionProposal }`. `sceneRevisionProposal` is a concrete working-script draft only when `hasProposal=true`; it is not approval. Only `npcLine`
+  `lib.js`'s server-owned `CASE_REGISTRY` (V43), keyed by `caseId` — never
+  sent by the client (V37 §1's explicit prohibition). `CASE_REGISTRY`
+  currently has two cases: `COMMUNITY_THEATER_V1` (MIKA/RYO, frozen V42
+  regression baseline) and `STREET_BAKE_SALE_V1` (HINA/YOHEI, V43). `targetNpc`
+  and, for `continue_npc_exchange`, the handed-off `nextNpc` are always
+  validated against the *selected case's own* `npcIds` — an NPC can never
+  answer for, or hand a scene off into, a case it doesn't belong to. Output:
+  `{ npc, npcLine, understoodPlayerMeaning, candidateTurn, candidateFactRevealIds, candidateCommitments, uncertainty, thoughtSupportSignal, sceneStatus, nextNpc, artifactRevisionProposal }`. `artifactRevisionProposal` (V43; the V42 field was
+  named `sceneRevisionProposal`) is a concrete revision draft of that case's
+  own `editableArtifact` (the theater case's script, the bake-sale case's
+  public sign) only when `hasProposal=true`; it is not approval. Only `npcLine`
   is meant for immediate display; `candidateTurn`/`candidateFactRevealIds`/
   `candidateCommitments` are proposals only, validated and applied by the
   deterministic client (`relationshipReducer.ts`/`ending.ts`), never by this
-  function or the model itself.
+  function or the model itself. `dynamicState.artifactRevisionText` (V43; the
+  V42 field name `sceneRevisionText` is still accepted for compatibility) is
+  the only actual current draft of that artifact.
 - `continue_npc_exchange` (V41/V42) — input: `{ operation, caseId, targetNpc, recentDialogue, continuationDepth, dynamicState }`. This is used only after a normal `converse_turn` has handed the scene to the other NPC. The final `recentDialogue` entry must be the other NPC; no synthetic player utterance is accepted. The browser and server cap the exchange at three continuation turns, and the final continuation must stop with `AWAIT_PLAYER`, `RESOLVED`, or `STALLED`.
 - `organize_thought` (V37 §5, a separate non-NPC layer) — input:
   `{ operation, validatedWorldFacts, recentDialogue, currentProblem }`.
@@ -80,7 +91,7 @@ a second, independent time (`isValidRawConverseResult` /
 {
   "service": "newlife-refoundation-ai",
   "buildSha": "<NEWLIFE_REFOUNDATION_BUILD_SHA env var, or \"unknown\">",
-  "contractVersion": "V42",
+  "contractVersion": "V43",
   "operations": ["converse_turn", "continue_npc_exchange", "organize_thought"]
 }
 ```
@@ -110,7 +121,14 @@ deployed commit SHA.
   silently reset.
 - The `converse_turn` system instruction carries the same untrusted-input,
   tone-blindness, and no-invented-facts rules as the two above, plus its own
-  V42 artifact rule: `SCENE_CANON.disputedSceneExcerpt` is the concrete script text, `dynamicState.sceneRevisionText` is the only actual current draft, and a player claim that a rewrite exists never substitutes for text. Mika compares a real draft against her private identifying anchors and must name concrete remaining problems instead of repeatedly asking to see a nonexistent script.
+  artifact rule (introduced V42 for the theater script, generalized V43 to
+  any case's `editableArtifact`): the case's `editableArtifact.originalText`
+  is the concrete real-object text, `dynamicState.artifactRevisionText` is
+  the only actual current draft, and a player claim that a rewrite exists
+  never substitutes for text. The NPC who can inspect the artifact compares
+  a real draft against their own private/factual anchors and must name
+  concrete remaining problems instead of repeatedly asking to see a
+  nonexistent draft.
   requirements specific to generative reasoning: forbidden knowledge
   (`characterDossier.forbiddenKnowledge`) must stay unknown to the NPC unless
   actually raised in `recentDialogue`, a `CLARIFY`-shaped `candidateTurn`

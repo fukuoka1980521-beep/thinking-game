@@ -297,14 +297,49 @@ describe("functions/newlife-refoundation-ai/lib.js — validateInput (converse_t
     ).toBe("invalid_active_commitment");
   });
 
-  it("accepts a concrete scene revision in dynamic state and rejects an oversized draft", () => {
+  it("accepts a concrete artifact revision in dynamic state (generic V43 field name) and rejects an oversized draft", () => {
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ artifactRevisionText: "会社で上司と退職の話をする場面。" }) })),
+    ).toBeNull();
+    const tooLong = "あ".repeat(lib.MAX_ARTIFACT_REVISION_LENGTH + 1);
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ artifactRevisionText: tooLong }) })),
+    ).toBe("invalid_artifact_revision");
+  });
+
+  it("still accepts the legacy V42 sceneRevisionText field name for compatibility, with the same bounds", () => {
     expect(
       lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ sceneRevisionText: "会社で上司と退職の話をする場面。" }) })),
     ).toBeNull();
-    const tooLong = "あ".repeat(lib.MAX_SCENE_REVISION_LENGTH + 1);
+    const tooLong = "あ".repeat(lib.MAX_ARTIFACT_REVISION_LENGTH + 1);
     expect(
       lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ sceneRevisionText: tooLong }) })),
-    ).toBe("invalid_scene_revision");
+    ).toBe("invalid_artifact_revision");
+  });
+
+  it("rejects a caseId that exists as a string but names no case in CASE_REGISTRY, same as any other unknown caseId", () => {
+    expect(lib.validateInput(validConverseBody({ caseId: "STREET_BAKE_SALE_V2" }))).toBe("invalid_case_id");
+  });
+
+  it("accepts a well-formed STREET_BAKE_SALE_V1 request with HINA/YOHEI", () => {
+    expect(
+      lib.validateInput(
+        validConverseBody({
+          caseId: "STREET_BAKE_SALE_V1",
+          targetNpc: "HINA",
+          recentDialogue: [{ speaker: "YOHEI", text: "その「本日30点」、予約の十二も入ってるんだろ。" }],
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it("rejects a targetNpc that exists in the registry but not in the request's own case (cross-case leak)", () => {
+    expect(lib.validateInput(validConverseBody({ caseId: "STREET_BAKE_SALE_V1", targetNpc: "MIKA" }))).toBe(
+      "invalid_target_npc",
+    );
+    expect(lib.validateInput(validConverseBody({ caseId: "COMMUNITY_THEATER_V1", targetNpc: "HINA" }))).toBe(
+      "invalid_target_npc",
+    );
   });
 });
 
@@ -322,6 +357,33 @@ describe("functions/newlife-refoundation-ai/lib.js — validateInput (continue_n
   it("hard-bounds continuationDepth to the server maximum", () => {
     expect(lib.validateInput(validNpcExchangeBody({ continuationDepth: 0 }))).toBe("invalid_continuation_depth");
     expect(lib.validateInput(validNpcExchangeBody({ continuationDepth: lib.MAX_NPC_EXCHANGE_DEPTH + 1 }))).toBe("invalid_continuation_depth");
+  });
+
+  it("accepts a bounded STREET_BAKE_SALE_V1 exchange (V43)", () => {
+    expect(
+      lib.validateInput(
+        validNpcExchangeBody({
+          caseId: "STREET_BAKE_SALE_V1",
+          targetNpc: "HINA",
+          recentDialogue: [
+            { speaker: "PLAYER", text: "二人で相談して直してください。" },
+            { speaker: "YOHEI", text: "陽菜、看板の表現、直せるか？" },
+          ],
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it("rejects an exchange source NPC that belongs to a different case (nextNpc/source cannot escape the selected case)", () => {
+    expect(
+      lib.validateInput(
+        validNpcExchangeBody({
+          caseId: "STREET_BAKE_SALE_V1",
+          targetNpc: "HINA",
+          recentDialogue: [{ speaker: "RYO", text: "美香、この変更案なら進められるか？" }],
+        }),
+      ),
+    ).toBe("invalid_exchange_source");
   });
 });
 describe("functions/newlife-refoundation-ai/lib.js — validateInput (organize_thought, V37 §5)", () => {
@@ -480,6 +542,84 @@ describe("functions/newlife-refoundation-ai/lib.js — normalizeConverseResponse
     expect(typeof result.understoodPlayerMeaning).toBe("string");
     expect(result.understoodPlayerMeaning.length).toBeGreaterThan(0);
   });
+
+  it("(V43) restricts nextNpc to the caseNpcIds passed in, defaulting to the full cross-case union when omitted", () => {
+    const parsed = validParsed({ sceneStatus: "NPC_EXCHANGE", nextNpc: "HINA" });
+    // Theater-only caseNpcIds: HINA does not belong, so the handoff is rejected and sceneStatus falls back.
+    const restricted = lib.normalizeConverseResponse(parsed, "MIKA", ["MIKA", "RYO"]);
+    expect(restricted.nextNpc).toBeNull();
+    expect(restricted.sceneStatus).toBe("AWAIT_PLAYER");
+    // No caseNpcIds argument at all: falls back to ALL_CASE_NPC_IDS, so HINA is accepted.
+    const unrestricted = lib.normalizeConverseResponse(parsed, "MIKA");
+    expect(unrestricted.nextNpc).toBe("HINA");
+    expect(unrestricted.sceneStatus).toBe("NPC_EXCHANGE");
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — CASE_REGISTRY (V43)", () => {
+  it("exposes both cases, each with npcIds/canon/dossiers/editableArtifact", () => {
+    expect(lib.CASE_REGISTRY.COMMUNITY_THEATER_V1.npcIds).toEqual(["MIKA", "RYO"]);
+    expect(lib.CASE_REGISTRY.COMMUNITY_THEATER_V1.canon).toBe(lib.SCENE_CANON);
+    expect(lib.CASE_REGISTRY.COMMUNITY_THEATER_V1.dossiers).toBe(lib.CHARACTER_DOSSIERS);
+    expect(lib.CASE_REGISTRY.STREET_BAKE_SALE_V1.npcIds).toEqual(["HINA", "YOHEI"]);
+    expect(lib.CASE_REGISTRY.STREET_BAKE_SALE_V1.canon).toBe(lib.STREET_BAKE_SALE_CANON);
+    expect(lib.CASE_REGISTRY.STREET_BAKE_SALE_V1.dossiers).toBe(lib.STREET_BAKE_SALE_DOSSIERS);
+    for (const entry of Object.values(lib.CASE_REGISTRY) as any[]) {
+      expect(typeof entry.editableArtifact.label).toBe("string");
+      expect(entry.editableArtifact.originalText.length).toBeGreaterThan(0);
+      expect(entry.editableArtifact.revisionPurpose.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("ALL_CASE_NPC_IDS is the deduplicated union of every case's npcIds", () => {
+    expect(lib.ALL_CASE_NPC_IDS).toEqual(["MIKA", "RYO", "HINA", "YOHEI"]);
+  });
+
+  it("STREET_BAKE_SALE_V1 canon states the opening quantities/prices/staffing facts from the task doc, without inventing cost/profit", () => {
+    const facts = lib.STREET_BAKE_SALE_CANON.openingFacts;
+    expect(facts.totalPrepared).toContain("20個");
+    expect(facts.totalPrepared).toContain("280円");
+    expect(facts.totalPrepared).toContain("10袋");
+    expect(facts.totalPrepared).toContain("240円");
+    expect(facts.reserved).toContain("12");
+    expect(facts.walkIn).toContain("18");
+    expect(facts.staffing).toMatch(/受け渡し.*担当.*決まっていない/);
+    expect(facts.costUnknown).toMatch(/利益はまだ分かっていない/);
+    expect(facts.originalSign).toBe("本日30点。スコーンとクッキーあります。");
+    expect(lib.CASE_REGISTRY.STREET_BAKE_SALE_V1.editableArtifact.originalText).toBe(facts.originalSign);
+  });
+
+  it("Hina/Yohei dossiers state their own resolutionPolicy without inventing profit/cost data, and Yohei cannot own/decide for Hina's shop", () => {
+    const hina = lib.STREET_BAKE_SALE_DOSSIERS.HINA;
+    const yohei = lib.STREET_BAKE_SALE_DOSSIERS.YOHEI;
+    expect(hina.resolutionPolicy.minimumRequirementIfAsked).toMatch(/12|18/);
+    expect(JSON.stringify(hina)).not.toMatch(/利益は\d|原価\d/);
+    expect(yohei.availableOptions).toMatch(/経営判断そのものはできない/);
+    expect(JSON.stringify(yohei)).not.toMatch(/利益は\d|原価\d/);
+  });
+
+  it("buildConversePrompt looks up canon/dossier from the request's own case (STREET_BAKE_SALE_V1), never the theater case", () => {
+    const body = validConverseBody({
+      caseId: "STREET_BAKE_SALE_V1",
+      targetNpc: "HINA",
+      recentDialogue: [{ speaker: "YOHEI", text: "その「本日30点」、予約の十二も入ってるんだろ。" }],
+    });
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).toContain("陽菜");
+    expect(prompt).toContain("本日30点。スコーンとクッキーあります。");
+    expect(prompt).not.toContain("美香");
+    expect(prompt).not.toContain(lib.SCENE_CANON.disputedSceneExcerpt);
+  });
+
+  it("buildConversePrompt embeds the resolved dynamicState.artifactRevisionText for either field name the caller sent, never both raw keys at once", () => {
+    const body = validConverseBody({ dynamicState: validDynamicState({ artifactRevisionText: "新しい看板案。" }) });
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).toContain(JSON.stringify("新しい看板案。"));
+
+    const legacyBody = validConverseBody({ dynamicState: validDynamicState({ sceneRevisionText: "旧フィールド名での案。" }) });
+    const legacyPrompt = lib.buildConversePrompt(legacyBody);
+    expect(legacyPrompt).toContain(JSON.stringify("旧フィールド名での案。"));
+  });
 });
 
 describe("functions/newlife-refoundation-ai/lib.js — Mika character voice register constraints (V38)", () => {
@@ -530,11 +670,16 @@ describe("functions/newlife-refoundation-ai/lib.js — converse_turn / organize_
     expect(schema.required).toContain("npcLine");
     expect(schema.required).toContain("candidateTurn");
     expect(schema.properties.sceneStatus.enum).toEqual(lib.SCENE_STATUSES);
-    expect(schema.properties.nextNpc.enum).toEqual(lib.NPC_IDS);
+    // V43: npc/nextNpc enum spans the full cross-case union (ALL_CASE_NPC_IDS),
+    // not the legacy theater-only NPC_IDS -- per-request acceptance is
+    // enforced case-scoped elsewhere (validateInput/normalizeConverseResponse).
+    expect(schema.properties.npc.enum).toEqual(lib.ALL_CASE_NPC_IDS);
+    expect(schema.properties.nextNpc.enum).toEqual(lib.ALL_CASE_NPC_IDS);
+    expect(schema.properties.nextNpc.enum).toEqual(expect.arrayContaining(["MIKA", "RYO", "HINA", "YOHEI"]));
     expect(schema.required).toContain("sceneStatus");
     expect(schema.required).toContain("nextNpc");
-    expect(schema.properties.sceneRevisionProposal.required).toEqual(["hasProposal", "revisedText", "changeSummary"]);
-    expect(schema.required).toContain("sceneRevisionProposal");
+    expect(schema.properties.artifactRevisionProposal.required).toEqual(["hasProposal", "revisedText", "changeSummary"]);
+    expect(schema.required).toContain("artifactRevisionProposal");
   });
 
   it("the organize_thought schema has no npc field at all (V37 §5 separation)", () => {
@@ -646,19 +791,21 @@ describe("functions/newlife-refoundation-ai/lib.js — V39 conversation progress
     expect(JSON.stringify(lib.CHARACTER_DOSSIERS.MIKA.knowledge)).toContain("青いマフラー");
   });
 
-  it("V42 system policy distinguishes an actual draft from a player claim and lets Mika critique concrete remaining anchors", () => {
+  it("V42/V43 system policy distinguishes an actual draft from a player claim and lets the artifact's reader critique concrete remaining anchors, generalized to any case's artifact", () => {
     const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    // The legacy V42 field name is still explicitly named (compatibility note), alongside the generic V43 one.
     expect(instruction).toMatch(/dynamicState\.sceneRevisionText/);
+    expect(instruction).toMatch(/dynamicState\.artifactRevisionText/);
     expect(instruction).toMatch(/まだ見せてもらっていない/);
-    expect(instruction).toMatch(/sceneRevisionProposal\.hasProposal=true/);
+    expect(instruction).toMatch(/artifactRevisionProposal\.hasProposal=true/);
     expect(instruction).toMatch(/どの具体的な言い回し・設定・行動が残っているのか/);
   });
 
-  it("normalizes valid scene revision proposals and suppresses malformed/empty ones", () => {
-    expect(lib.normalizeSceneRevisionProposal({ hasProposal: true, revisedText: "会社を辞める場面。", changeSummary: "舞台を会社に変更" })).toEqual({
+  it("normalizes valid artifact revision proposals and suppresses malformed/empty ones (V43, renamed from normalizeSceneRevisionProposal)", () => {
+    expect(lib.normalizeArtifactRevisionProposal({ hasProposal: true, revisedText: "会社を辞める場面。", changeSummary: "舞台を会社に変更" })).toEqual({
       hasProposal: true, revisedText: "会社を辞める場面。", changeSummary: "舞台を会社に変更"
     });
-    expect(lib.normalizeSceneRevisionProposal({ hasProposal: true, revisedText: "", changeSummary: "x" })).toEqual({
+    expect(lib.normalizeArtifactRevisionProposal({ hasProposal: true, revisedText: "", changeSummary: "x" })).toEqual({
       hasProposal: false, revisedText: "", changeSummary: ""
     });
   });
@@ -715,19 +862,19 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   });
 });
 
-describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V42)", () => {
+describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V43)", () => {
   it("returns the exact safe shape with buildSha defaulted to \"unknown\" when no build SHA is supplied", () => {
     expect(lib.buildHealthResponse(undefined)).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V42",
+      contractVersion: "V43",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
     // No-arg call (matches how index.js calls it when the env var is unset).
     expect(lib.buildHealthResponse()).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V42",
+      contractVersion: "V43",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
@@ -736,7 +883,7 @@ describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V42)
     expect(lib.buildHealthResponse("abc1234")).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "abc1234",
-      contractVersion: "V42",
+      contractVersion: "V43",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
@@ -821,7 +968,8 @@ describe("functions/newlife-refoundation-ai/index.js — converse_turn envelope 
 
   it("imports and calls normalizeConverseResponse instead of returning the raw parsed model output directly", () => {
     expect(source).toMatch(/normalizeConverseResponse/);
-    expect(source).toContain("normalizeConverseResponse(parsed, body.targetNpc)");
+    // V43: also passes the request's own case-scoped npcIds so nextNpc can't escape the selected case.
+    expect(source).toContain("normalizeConverseResponse(parsed, body.targetNpc, CASE_REGISTRY[body.caseId].npcIds)");
   });
 
   it("retries converse_turn exactly once when no usable line comes back, before failing closed", () => {
