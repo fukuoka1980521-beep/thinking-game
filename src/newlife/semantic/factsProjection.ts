@@ -30,10 +30,11 @@ import {
 } from "../npcVoice";
 import type { NewLife30State, NpcId } from "../types";
 import type { FactCategory, FactsSnapshot } from "./contract";
+import { compactLedger, type FactLedger } from "./factLedger";
 
 export const NEGATIVE_CONSTRAINTS = ["理容", "床屋", "理髪", "barber"];
 
-export function projectFacts(npc: NpcId, state: NewLife30State): FactsSnapshot {
+export function projectFacts(npc: NpcId, state: NewLife30State, ledger?: FactLedger): FactsSnapshot {
   const known: Partial<Record<FactCategory, string>> = {
     menu: MENU_FACT,
     reservation_count: RESERVATION_FACT,
@@ -60,5 +61,6 @@ export function projectFacts(npc: NpcId, state: NewLife30State): FactsSnapshot {
     known,
     unknown,
     negativeConstraints: NEGATIVE_CONSTRAINTS,
+    ...(ledger ? { ledger: compactLedger(ledger) } : {}),
   };
 }

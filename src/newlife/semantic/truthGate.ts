@@ -16,6 +16,10 @@
  * in-voice) — that remains a human-playtest judgment, not an automatable
  * one, per this project's own "technical PASS is not product PASS" rule.
  *
+ * **Fact ownership (Phase 25.2):** `attributionGate.ts` additionally rejects a
+ * line that moves a quote, an action, a permission or a responsibility onto
+ * the wrong person according to `FactsSnapshot.ledger`.
+ *
  * **Category scoping (Phase 30 instruction 17):** the original Phase 29
  * version pooled every number across *all* of `snapshot.known` before
  * checking the response, so a number that was only ever valid for, say,
@@ -28,9 +32,22 @@
  * intent that character/preference answers should not smuggle in numeric
  * claims they were never grounded in.
  */
+import { checkAttribution, type AttributionViolationCode } from "./attributionGate";
 import type { FactCategory, FactsSnapshot, SemanticInterpretation } from "./contract";
 
-export type TruthGateViolationCode = "banned_term" | "unsupported_numeric_claim" | "overclaimed_required_fact";
+export type TruthGateViolationCode =
+  | "banned_term"
+  | "unsupported_numeric_claim"
+  | "overclaimed_required_fact"
+  | AttributionViolationCode;
+
+/** Violations of fact OWNERSHIP (Phase 25.2) — the class the coordinator answers with a regeneration, not just a fallback. */
+export const ATTRIBUTION_VIOLATION_CODES: readonly TruthGateViolationCode[] = [
+  "quote_speaker_mismatch",
+  "action_actor_mismatch",
+  "fabricated_permission",
+  "responsibility_shift",
+];
 
 export interface TruthGateViolation {
   code: TruthGateViolationCode;
@@ -90,6 +107,12 @@ export function runTruthGate(interpretation: SemanticInterpretation, snapshot: F
         violations.push({ code: "overclaimed_required_fact", detail: required });
       }
     }
+  }
+
+  // Phase 25.2 CHECK 1-4: who said / did / permitted / owns what (needs the
+  // conversation ledger; absent ledger = nothing to contradict).
+  for (const v of checkAttribution(response, snapshot.npc, snapshot.ledger)) {
+    violations.push({ code: v.code, detail: v.detail });
   }
 
   return { passed: violations.length === 0, violations };
