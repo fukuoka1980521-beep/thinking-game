@@ -163,3 +163,40 @@ describe("NEW LIFE midgame visible consequence loop", () => {
     expect(screen.getByText("受け渡し：時間を分ける案が具体化した")).toBeInTheDocument();
   });
 });
+
+
+describe("NEW LIFE Day 11-16 visible consequence chain", () => {
+  it("turns sign, reporting, direct fact-check and paid-work choices into visible world consequences", async () => {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+    for (let day = 1; day < 11; day += 1) await user.click(screen.getByRole("button", { name: "\u6b21\u306e\u65e5\u3078" }));
+
+    expect(screen.getByText("\u671d\uff1a\u5024\u672d\u3068\u539f\u7a3f")).toBeInTheDocument();
+    expect(screen.getByText("\u63b2\u793a\uff1a\u307e\u3060\u63b2\u793a\u524d")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "\u8cbc\u308b\u524d\u306b\u4e88\u7d0412\uff0f\u5e97\u982d18\u3068\u76f4\u3059\u3088\u3046\u4f1d\u3048\u308b" }));
+    expect(screen.getByText("\u63b2\u793a\uff1a\u6700\u521d\u304b\u3089\u5185\u8a33\u304c\u660e\u78ba")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "\u6b21\u306e\u65e5\u3078" }));
+    expect(screen.getByText("\u5348\u5f8c\uff1a\u91cd\u306a\u308b\u4e8c\u4eba")).toBeInTheDocument();
+    expect(screen.getByText("\u63b2\u793a\uff1a\u6700\u521d\u304b\u3089\u5185\u8a33\u304c\u660e\u78ba")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "\u3053\u306e\u65e5\u3092\u7d42\u3048\u308b" }));
+    await user.click(screen.getByRole("button", { name: "\u6b21\u306e\u65e5\u3078" }));
+
+    expect(screen.getByText("\u5ba2\u304c\u5f85\u3063\u305f\u6642\u9593")).toBeInTheDocument();
+    expect(screen.getByText("\u4f1d\u3048\u65b9\uff1a\u4e8b\u5b9f\u306e\u7bc4\u56f2\u3092\u4fdd\u3063\u3066\u3044\u308b")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "\u5ba2\u306f\u3082\u3063\u3068\u6012\u3063\u3066\u3044\u305f\u3068\u8a71\u3092\u76db\u3063\u3066\u4f1d\u3048\u308b" }));
+    expect(screen.getByText("\u4f1d\u3048\u65b9\uff1a\u8a71\u3092\u76db\u3063\u305f\u5185\u5bb9\u304c\u6b8b\u3063\u3066\u3044\u308b")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "\u6b21\u306e\u65e5\u3078" }));
+
+    expect(screen.getByText("\u967d\u83dc\u3068\u6d0b\u5e73\uff1a\u307e\u3060\u76f4\u63a5\u7167\u5408\u3057\u3066\u3044\u306a\u3044")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "\u4e21\u8005\u3092\u5f15\u304d\u5408\u308f\u305b\u3066\u76f4\u63a5\u7167\u5408\u3055\u305b\u308b" }));
+    expect(screen.getByText("\u967d\u83dc\u3068\u6d0b\u5e73\uff1a\u4e8c\u4eba\u3067\u76f4\u63a5\u78ba\u304b\u3081\u305f")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "\u6b21\u306e\u65e5\u3078" }));
+    await user.click(screen.getByRole("button", { name: "\u6b21\u306e\u65e5\u3078" }));
+
+    expect(screen.getByText("\u4e8c\u6642\u9593\u306e\u4ed5\u4e8b")).toBeInTheDocument();
+    expect(screen.getByText("\u4ec1\u3078\u306e\u8ffd\u52a0\u4f9d\u983c\uff1a\u6700\u521d\u306e\u4e8c\u6642\u9593\u3060\u3051\u5408\u610f\u6e08\u307f")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "\u6709\u511f\u306e\u8a2d\u55b6\u5185\u5bb9\u3092\u4e00\u7dd2\u306b\u6574\u7406\u3059\u308b" }));
+    expect(screen.getByText("\u4ec1\u3078\u306e\u8ffd\u52a0\u4f9d\u983c\uff1a\u5185\u5bb9\u3068\u6642\u9593\u3092\u6c7a\u3081\u3066\u5408\u610f\u3057\u305f")).toBeInTheDocument();
+  });
+});
