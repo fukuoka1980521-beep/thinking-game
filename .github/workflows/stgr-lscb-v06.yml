@@ -1,0 +1,101 @@
+name: STGR LSCB v0.6 Research Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/stgr-lscb-v06
+    paths:
+      - research/stgr-lscb-v06/RUN_V06
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: stgr-lscb-v06-research
+  cancel-in-progress: false
+
+jobs:
+  run-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout isolated research branch
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud with repository OIDC
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_STGR_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Verify permanent auth route
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud projects describe "${{ vars.GCP_PROJECT_ID }}" --format='value(projectId)'
+          test -n "$(gcloud auth print-access-token)"
+          echo "GCP_WIF_AUTH=PASS"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile and synthetic-validate exact runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile research/stgr-lscb-v06/run_v06_ci.py
+          rm -rf /tmp/stgr-v06-synth
+          python research/stgr-lscb-v06/run_v06_ci.py             --synthetic             --output-dir /tmp/stgr-v06-synth
+          test -f /tmp/stgr-v06-synth/STGR_LSCB_RESULTS_V0_6.zip
+          test -f /tmp/stgr-v06-synth/CALIBRATION_RESULT.json
+          echo "SYNTHETIC_PIPELINE=PASS"
+
+      - name: Run live calibration-gated v0.6
+        id: live
+        shell: bash
+        run: |
+          rm -rf research/stgr-lscb-v06/run_output
+          mkdir -p research/stgr-lscb-v06/run_output
+          set +e
+          python research/stgr-lscb-v06/run_v06_ci.py             --output-dir research/stgr-lscb-v06/run_output             2>&1 | tee research/stgr-lscb-v06/run_output/LIVE_RUN_LOG.txt
+          code=${PIPESTATUS[0]}
+          echo "exit_code=${code}" >> "${GITHUB_OUTPUT}"
+          test -f research/stgr-lscb-v06/run_output/STGR_LSCB_RESULTS_V0_6.zip
+          exit 0
+
+      - name: Persist exact research evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "stgr-research-bot"
+          git config user.email "stgr-research-bot@users.noreply.github.com"
+          git add research/stgr-lscb-v06/run_output
+          if ! git diff --cached --quiet; then
+            git commit -m "research(stgr): persist v0.6 live result [skip ci]"
+            git push origin HEAD:research/stgr-lscb-v06
+          fi
+
+      - name: Upload exact result ZIP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: STGR_LSCB_RESULTS_V0_6
+          path: research/stgr-lscb-v06/run_output/STGR_LSCB_RESULTS_V0_6.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce technical validity
+        if: steps.live.outputs.exit_code != '0'
+        shell: bash
+        run: |
+          echo "::error::v0.6 ended in TECHNICAL_FAIL; evidence was persisted."
+          exit 2
