@@ -17,9 +17,9 @@
 - [x] 2025–2026 metacognitive-agent literature checked
 - [x] Novelty wording narrowed; no “first” claim
 - [x] Causal-effect language explicitly excluded
-- [ ] Final independent PR review on latest manuscript head
-- [ ] Final spelling/reference-format pass
-- [ ] Freeze manuscript release commit
+- [x] Final independent PR review on manuscript text: SUCCESS / no comments
+- [x] Final spelling/reference-format pass
+- [ ] Freeze manuscript release commit after this checklist-only update receives final review
 
 ## Publication metadata
 - [x] Title drafted
