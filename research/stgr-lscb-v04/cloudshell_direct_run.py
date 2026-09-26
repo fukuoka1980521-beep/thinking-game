@@ -26,6 +26,9 @@ OUT = REPO_ROOT / "research/stgr-lscb-v04/STGR_LSCB_RESULTS_V0_4.zip"
 DRIVE_FOLDER_ID = "19edDH7Jb534Mt9WYfuSXaCJL3n-WStf2"
 PROJECT_ID = "gas-test-runner-20260620-wjxf"
 _TOKEN = {"value": None, "at": 0.0}
+CACHE_DIR = pathlib.Path.home() / ".stgr_lscb_v04_call_cache"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+_PROGRESS = {"api_calls": 0, "cache_hits": 0}
 
 def access_token():
     # gcloud user access tokens are short-lived. Cache for 45 minutes so the
@@ -45,7 +48,67 @@ def heartbeat(stop_event):
     started = time.time()
     while not stop_event.wait(60):
         mins = int((time.time() - started) // 60)
-        print(f"[STGR v0.4] still running: {mins} min", flush=True)
+        print(
+            f"[STGR v0.4] running: {mins} min | "
+            f"new_api_calls={_PROGRESS['api_calls']} | "
+            f"reused_cached_calls={_PROGRESS['cache_hits']}",
+            flush=True,
+        )
+
+def install_persistent_call_cache(experiment):
+    """Cache each successful model call by exact prompt+schema+runtime config.
+
+    This does not change prompts, outputs, scoring, or run order. It only makes
+    a Cloud Shell restart resumable: already completed calls are replayed from
+    the exact saved response tuple, while unseen calls still hit Vertex AI.
+    Failures are never cached.
+    """
+    original = experiment.call_vertex
+
+    def cached_call_vertex(prompt, schema, max_attempts=5):
+        key_payload = {
+            "prompt": prompt,
+            "schema": schema,
+            "project": experiment.PROJECT,
+            "location": experiment.LOCATION,
+            "model": experiment.MODEL,
+            "max_output_tokens": experiment.MAX_OUTPUT_TOKENS,
+            "temperature": experiment.TEMPERATURE,
+            "max_attempts": max_attempts,
+        }
+        key = hashlib.sha256(
+            json.dumps(key_payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        ).hexdigest()
+        path = CACHE_DIR / f"{key}.json"
+        if path.exists():
+            saved = json.loads(path.read_text(encoding="utf-8"))
+            _PROGRESS["cache_hits"] += 1
+            return (
+                saved["parsed"],
+                saved["text"],
+                saved["usage"],
+                saved["elapsed"],
+                saved["finish"],
+                saved["retries"],
+            )
+
+        result = original(prompt, schema, max_attempts=max_attempts)
+        parsed, text, usage, elapsed, finish, retries = result
+        payload = {
+            "parsed": parsed,
+            "text": text,
+            "usage": usage,
+            "elapsed": elapsed,
+            "finish": finish,
+            "retries": retries,
+        }
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(path)
+        _PROGRESS["api_calls"] += 1
+        return result
+
+    experiment.call_vertex = cached_call_vertex
 
 def upload_result():
     token = access_token()
@@ -102,6 +165,12 @@ def main():
             experiment.MODEL = os.environ["VERTEX_MODEL"]
             experiment.MAX_OUTPUT_TOKENS = int(os.environ["MAX_OUTPUT_TOKENS"])
             experiment.TEMPERATURE = float(os.environ["TEMPERATURE"])
+            install_persistent_call_cache(experiment)
+            print(
+                f"[STGR v0.4] persistent cache: {CACHE_DIR} "
+                f"({len(list(CACHE_DIR.glob('*.json')))} saved calls available)",
+                flush=True,
+            )
 
             payload = experiment.run_experiment_zip()
             OUT.write_bytes(payload)
