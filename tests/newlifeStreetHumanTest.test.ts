@@ -6,6 +6,12 @@ const root = path.resolve(__dirname, "..");
 const page = fs.readFileSync(path.join(root, "public/newlife-street-v1.html"), "utf8");
 
 describe("NEW LIFE V43 street-trial human test", () => {
+  it("has syntactically valid inline JavaScript", () => {
+    const match = page.match(/<script>([\s\S]*?)<\/script>/);
+    expect(match).not.toBeNull();
+    expect(() => new Function(match![1])).not.toThrow();
+  });
+
   it("uses the second server-owned case and only its two NPCs", () => {
     expect(page).toContain('caseId:"STREET_TRIAL_V1"');
     expect(page).toContain('targetNpc:requestTarget');
