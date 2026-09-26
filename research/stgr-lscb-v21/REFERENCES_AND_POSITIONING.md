@@ -35,3 +35,4 @@ The manuscript's defensible differentiators are the combination of:
 - bounded external-evidence reassessment;
 - leakage-free non-controlling shadow next-operation paired with the live decision;
 - strict frozen stopping threshold and explicit exclusion of post-hoc cases.
+\n12. Valiente & Pilly — Metacognition for Unknown Situations and Environments (MUSE). Neural Networks 194 (2026), 108131. DOI: 10.1016/j.neunet.2025.108131.\n
