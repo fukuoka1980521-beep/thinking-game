@@ -131,6 +131,21 @@ function validStreetConverseBody(overrides: Partial<Record<string, unknown>> = {
   };
 }
 
+function validCafeConverseBody(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    operation: "converse_turn",
+    caseId: "CAFE_BOUNDARY_V1",
+    targetNpc: "MIYOKO",
+    rawPlayerUtterance: "昨日の『手伝う』って、席を貸す意味まで含んでいたの？",
+    recentDialogue: [
+      { speaker: "MIYOKO", text: "私は待合にするとは言ってないのよ。" },
+      { speaker: "FUMIKO", text: "でも、手伝えることがあればって言ってくれたでしょう。" },
+    ],
+    dynamicState: validDynamicState(),
+    ...overrides,
+  };
+}
+
 function validOrganizeThoughtBody(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     operation: "organize_thought",
@@ -397,6 +412,65 @@ describe("functions/newlife-refoundation-ai/lib.js — V43 second-case generaliz
     };
     const normalized = lib.normalizeConverseResponse(parsed, "YOHEI", "STREET_TRIAL_V1");
     expect(normalized.npcLine).toContain("説明");
+    expect(normalized.sceneRevisionProposal).toEqual({ hasProposal: false, revisedText: "", changeSummary: "" });
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — V45 ambiguous relationship case", () => {
+  it("accepts Miyoko/Fumiko only inside the cafe-boundary case", () => {
+    expect(lib.validateInput(validCafeConverseBody())).toBeNull();
+    expect(lib.validateInput(validCafeConverseBody({ targetNpc: "FUMIKO" }))).toBeNull();
+    expect(lib.validateInput(validCafeConverseBody({ targetNpc: "HINA" }))).toBe("invalid_target_npc");
+    expect(lib.validateInput(validStreetConverseBody({ targetNpc: "MIYOKO" }))).toBe("invalid_target_npc");
+  });
+
+  it("keeps the prior statement and the two interpretations distinct in server-owned canon", () => {
+    const canon = lib.getCaseCanon("CAFE_BOUNDARY_V1");
+    expect(canon.observableArtifacts.priorExchange).toContain("何か手伝えることがあれば");
+    expect(canon.interpretationAmbiguity).toContain("共有された明示的合意はない");
+    expect(lib.getCaseNpcIds("CAFE_BOUNDARY_V1")).toEqual(["MIYOKO", "FUMIKO"]);
+  });
+
+  it("buildConversePrompt uses Miyoko's cafe canon without leaking theater or stock-count conflicts", () => {
+    const prompt = lib.buildConversePrompt(validCafeConverseBody());
+    expect(prompt).toContain("混雑時の待合は喫茶みよこへ");
+    expect(prompt).toContain("美代子");
+    expect(prompt).toContain("文子");
+    expect(prompt).not.toContain("青いマフラー");
+    expect(prompt).not.toContain("予約12点／店頭18点");
+  });
+
+  it("shared instruction forbids declaring one interpretation objectively correct and allows resolution without agreement about the past", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toMatch(/どちらか一方の解釈を客観的に正しい事実へ格上げしない/);
+    expect(instruction).toMatch(/実際に何と言ったか／何が明示されなかったか/);
+    expect(instruction).toMatch(/過去の意味について完全に同意させる必要はない/);
+    expect(instruction).toMatch(/全部自分が悪かった/);
+  });
+
+  it("the cafe case has no theater revision field in the model schema", () => {
+    const FakeType = { OBJECT: "OBJECT", STRING: "STRING", ARRAY: "ARRAY", BOOLEAN: "BOOLEAN" };
+    const schema = lib.buildConverseResponseSchema(FakeType, "CAFE_BOUNDARY_V1");
+    expect(schema.properties.sceneRevisionProposal).toBeUndefined();
+    expect(schema.required).not.toContain("sceneRevisionProposal");
+    expect(lib.caseUsesSceneRevision("CAFE_BOUNDARY_V1")).toBe(false);
+  });
+
+  it("NPC handoff cannot jump from the cafe case to Hina/Yohei", () => {
+    const parsed = {
+      npcLine: "今いる方をどうするかは、私が決めたいの。",
+      understoodPlayerMeaning: "今日の対応を決めたい",
+      candidateTurn: { action: "ASK_BOUNDARY", boundaryMode: "DISCOVER", relationalEvents: [], needsClarification: false },
+      candidateFactRevealIds: [],
+      candidateCommitments: [],
+      uncertainty: "LOW",
+      thoughtSupportSignal: false,
+      sceneStatus: "NPC_EXCHANGE",
+      nextNpc: "HINA",
+    };
+    const normalized = lib.normalizeConverseResponse(parsed, "MIYOKO", "CAFE_BOUNDARY_V1");
+    expect(normalized.sceneStatus).toBe("AWAIT_PLAYER");
+    expect(normalized.nextNpc).toBeNull();
     expect(normalized.sceneRevisionProposal).toEqual({ hasProposal: false, revisedText: "", changeSummary: "" });
   });
 });
@@ -802,19 +876,19 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   });
 });
 
-describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V44)", () => {
+describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V45)", () => {
   it("returns the exact safe shape with buildSha defaulted to \"unknown\" when no build SHA is supplied", () => {
     expect(lib.buildHealthResponse(undefined)).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V44",
+      contractVersion: "V45",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
     // No-arg call (matches how index.js calls it when the env var is unset).
     expect(lib.buildHealthResponse()).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V44",
+      contractVersion: "V45",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
@@ -823,7 +897,7 @@ describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V44)
     expect(lib.buildHealthResponse("abc1234")).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "abc1234",
-      contractVersion: "V44",
+      contractVersion: "V45",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
