@@ -296,6 +296,16 @@ describe("functions/newlife-refoundation-ai/lib.js — validateInput (converse_t
       lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ activeCommitment: tooLong }) })),
     ).toBe("invalid_active_commitment");
   });
+
+  it("accepts a concrete scene revision in dynamic state and rejects an oversized draft", () => {
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ sceneRevisionText: "会社で上司と退職の話をする場面。" }) })),
+    ).toBeNull();
+    const tooLong = "あ".repeat(lib.MAX_SCENE_REVISION_LENGTH + 1);
+    expect(
+      lib.validateInput(validConverseBody({ dynamicState: validDynamicState({ sceneRevisionText: tooLong }) })),
+    ).toBe("invalid_scene_revision");
+  });
 });
 
 
@@ -523,6 +533,8 @@ describe("functions/newlife-refoundation-ai/lib.js — converse_turn / organize_
     expect(schema.properties.nextNpc.enum).toEqual(lib.NPC_IDS);
     expect(schema.required).toContain("sceneStatus");
     expect(schema.required).toContain("nextNpc");
+    expect(schema.properties.sceneRevisionProposal.required).toEqual(["hasProposal", "revisedText", "changeSummary"]);
+    expect(schema.required).toContain("sceneRevisionProposal");
   });
 
   it("the organize_thought schema has no npc field at all (V37 §5 separation)", () => {
@@ -627,6 +639,29 @@ describe("functions/newlife-refoundation-ai/lib.js — V39 conversation progress
     expect(prompt).toContain("continuationDepth");
     expect(prompt).not.toContain("rawPlayerUtterance");
   });
+  it("V42 gives the disputed scene a concrete script artifact and Mika concrete private identifying anchors", () => {
+    expect(lib.SCENE_CANON.disputedSceneExcerpt).toContain("ここを出たら、もう戻るな");
+    expect(lib.SCENE_CANON.disputedSceneExcerpt).toContain("青いマフラー");
+    expect(JSON.stringify(lib.CHARACTER_DOSSIERS.MIKA.knowledge)).toContain("駅前の古い喫茶店");
+    expect(JSON.stringify(lib.CHARACTER_DOSSIERS.MIKA.knowledge)).toContain("青いマフラー");
+  });
+
+  it("V42 system policy distinguishes an actual draft from a player claim and lets Mika critique concrete remaining anchors", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toMatch(/dynamicState\.sceneRevisionText/);
+    expect(instruction).toMatch(/まだ見せてもらっていない/);
+    expect(instruction).toMatch(/sceneRevisionProposal\.hasProposal=true/);
+    expect(instruction).toMatch(/どの具体的な言い回し・設定・行動が残っているのか/);
+  });
+
+  it("normalizes valid scene revision proposals and suppresses malformed/empty ones", () => {
+    expect(lib.normalizeSceneRevisionProposal({ hasProposal: true, revisedText: "会社を辞める場面。", changeSummary: "舞台を会社に変更" })).toEqual({
+      hasProposal: true, revisedText: "会社を辞める場面。", changeSummary: "舞台を会社に変更"
+    });
+    expect(lib.normalizeSceneRevisionProposal({ hasProposal: true, revisedText: "", changeSummary: "x" })).toEqual({
+      hasProposal: false, revisedText: "", changeSummary: ""
+    });
+  });
   it("Ryo gets the same general progression rule (present once in the shared instruction) plus his own logistics-based minimum requirement, but no Mika-specific privacy/identifiability criteria", () => {
     const ryo = lib.CHARACTER_DOSSIERS.RYO;
     expect(ryo.resolutionPolicy).toBeDefined();
@@ -680,19 +715,19 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   });
 });
 
-describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V41)", () => {
+describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V42)", () => {
   it("returns the exact safe shape with buildSha defaulted to \"unknown\" when no build SHA is supplied", () => {
     expect(lib.buildHealthResponse(undefined)).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V41",
+      contractVersion: "V42",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
     // No-arg call (matches how index.js calls it when the env var is unset).
     expect(lib.buildHealthResponse()).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V41",
+      contractVersion: "V42",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
@@ -701,7 +736,7 @@ describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V41)
     expect(lib.buildHealthResponse("abc1234")).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "abc1234",
-      contractVersion: "V41",
+      contractVersion: "V42",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
