@@ -92,7 +92,7 @@ const MAX_NPC_EXCHANGE_TURNS=3;
 const history=[];
 
 function safeEndpoint(url){try{const u=new URL(url);return u.protocol==="https:"&&(u.hostname.endsWith(".run.app")||u.hostname.endsWith(".cloudfunctions.net"))}catch{return false}}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[c]))}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;":"&quot;","'":"&#39;"}[c]))}
 function displayName(id){return id==="HINA"?"陽菜":id==="YOHEI"?"洋平":id==="PLAYER"?"あなた":"システム"}
 function cssClass(id){return id==="HINA"?"hina":id==="YOHEI"?"yohei":id==="PLAYER"?"you":"system"}
 function addLine(who,text){history.push({speaker:who,text});transcriptEl.insertAdjacentHTML("beforeend",'<div class="line '+cssClass(who)+'"><span class="who">'+esc(displayName(who))+':</span> '+esc(text)+'</div>');transcriptEl.scrollTop=transcriptEl.scrollHeight}
