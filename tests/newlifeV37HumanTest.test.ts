@@ -18,6 +18,13 @@ describe("NEW LIFE V37 isolated human test", () => {
     expect(page).toContain("recentDialogue:recentDialogue()");
   });
 
+  it("continues NPC-to-NPC exchanges only through the dedicated V41 operation and hard cap", () => {
+    expect(page).toContain('operation:"continue_npc_exchange"');
+    expect(page).toContain("const MAX_NPC_EXCHANGE_TURNS=3");
+    expect(page).toContain("continuationDepth:depth");
+    expect(page).toContain('data?.sceneStatus!=="NPC_EXCHANGE"');
+    expect(page).toContain("await continueNpcExchange(data)");
+  });
   it("keeps thought organization as a separate operation and separate panel", () => {
     expect(page).toContain('operation:"organize_thought"');
     expect(page).toContain("思考整理（キャラクターの発言ではありません）");
