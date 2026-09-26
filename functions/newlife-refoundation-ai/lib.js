@@ -507,13 +507,12 @@ NPC間の引き継ぎ（V41。特定の言い回しではなく状況の意味�
 - 実務上の合意が成立し、次の具体行動が定まり、この場面で追加の判断が不要なら RESOLVED にすること。
 - プレイヤーが不在・離脱している流れでは、NPC間ターンでプレイヤーに返答を求めるためだけの問いかけを作らないこと。
 
-台本という実物の扱い（V42）:
-- sceneCanon.disputedSceneExcerpt は現在の元台本の実物である。プレイヤーは調整役としてこの文面を見ることができるが、どの要素が美香の実話そのものかという対応関係は、美香が会話で明かすまでは美香自身の知識として扱うこと。
-- dynamicState.sceneRevisionText が空でなければ、それが現在実際に作成済みの修正案本文である。NPCはその本文を読めるものとして扱い、『まだ見せてもらっていない』と繰り返してはならない。
-- dynamicState.sceneRevisionText が空のとき、プレイヤーが『もう書き直した』『見せた』と主張しても、実際の本文が存在することにはしない。存在しない文面を見たふり・承認したふりをしないこと。
-- プレイヤーが具体的な書き換え方針を示し、それだけで短い修正案を実際に作れる場合は、sceneRevisionProposal.hasProposal=true とし、revisedText に全文、changeSummary に変更点を返してよい。単なる抽象的な同意や『任せる』だけなら proposal を作らないこと。
-- sceneRevisionProposal は作業用の修正案であり、美香の承認済みという意味ではない。美香が読むターンでは、実際の revisedText / dynamicState.sceneRevisionText を、自分が知っている特定要素と比較し、残っている問題があれば『どの具体的な言い回し・設定・行動が残っているのか』を1つ以上具体的に指摘すること。問題がなければ確認できたことを明示して前へ進むこと。
-- 書き換えでは sceneCanon.dramaticFunction を保つ一方、個人を特定しやすい具体要素は別の人物関係・場所・物・言い回しへ置き換えてよい。`;
+ケース固有の実物を扱うとき（V42/V43）:
+- case canon に disputedSceneExcerpt が存在するケースでは、それが現在の元台本の実物である。dynamicState.sceneRevisionText が空でなければ、それが現在実際に作成済みの修正案本文である。実物があるのに『まだ見せてもらっていない』と繰り返さず、本文そのものを読んで具体的に評価すること。
+- disputedSceneExcerpt が存在しないケースでは、台本や sceneRevisionText を勝手に問題の中心へ持ち込まないこと。代わりに、そのケースの observableArtifacts / practicalGoal など実際に存在する情報を使うこと。
+- プレイヤーが『もう書き直した』『見せた』と主張しても、dynamicState.sceneRevisionText が空なら実際の修正本文が存在することにはしない。存在しない文面を見たふり・承認したふりをしないこと。
+- プレイヤーが具体的な書き換え方針を示し、それだけで短い修正案を実際に作れる台本ケースでは、sceneRevisionProposal.hasProposal=true とし、revisedText に全文、changeSummary に変更点を返してよい。台本以外のケースでは sceneRevisionProposal.hasProposal=false にすること。
+- 台本ケースで美香が実際の revisedText / dynamicState.sceneRevisionText を読むときは、自分が知っている特定要素と比較し、残っている問題があれば『どの具体的な言い回し・設定・行動が残っているのか』を具体的に指摘すること。問題がなければ確認できたことを明示して前へ進むこと。`;
 
 // V37 §5. A separate, non-NPC layer -- must not speak as a character, must
 // not moralize/diagnose, must not force disclosure, and must distinguish
