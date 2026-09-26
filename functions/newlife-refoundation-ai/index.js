@@ -1,6 +1,7 @@
 const { GoogleGenAI, Type } = require("@google/genai");
 const {
   NPC_IDS,
+  CASE_REGISTRY,
   buildInterpretResponseSchema,
   buildInterpretPrompt,
   buildNpcResponseSchema,
@@ -109,7 +110,9 @@ async function attemptConverseTurn(client, body) {
     return null;
   }
 
-  return normalizeConverseResponse(parsed, body.targetNpc);
+  // V43: nextNpc is restricted to this specific request's own case, not the
+  // full cross-case union -- "nextNpc cannot escape the selected case".
+  return normalizeConverseResponse(parsed, body.targetNpc, CASE_REGISTRY[body.caseId].npcIds);
 }
 
 
@@ -128,7 +131,7 @@ async function attemptNpcExchangeTurn(client, body) {
     return null;
   }
 
-  return normalizeConverseResponse(parsed, body.targetNpc);
+  return normalizeConverseResponse(parsed, body.targetNpc, CASE_REGISTRY[body.caseId].npcIds);
 }
 
 /**
@@ -191,9 +194,12 @@ exports.newlifeRefoundationAi = async (req, res) => {
         responseSchema: NPC_RESPONSE_SCHEMA,
       });
     } else if (req.body.operation === "converse_turn") {
-      if (!NPC_IDS.includes(req.body.targetNpc)) {
-        // Defense in depth: validateInput already rejects a targetNpc id
-        // outside NPC_IDS, so this branch is unreachable in practice.
+      // Defense in depth: validateInput already rejects a caseId outside
+      // CASE_REGISTRY or a targetNpc outside that case's own npcIds, so this
+      // branch is unreachable in practice (V43: case-scoped, not the legacy
+      // global NPC_IDS, since a valid targetNpc for one case may not belong
+      // to another).
+      if (!CASE_REGISTRY[req.body.caseId].npcIds.includes(req.body.targetNpc)) {
         res.status(400).json({ error: "invalid_target_npc" });
         return;
       }
@@ -210,7 +216,7 @@ exports.newlifeRefoundationAi = async (req, res) => {
       res.status(200).json(normalized);
       return;
     } else if (req.body.operation === "continue_npc_exchange") {
-      if (!NPC_IDS.includes(req.body.targetNpc)) {
+      if (!CASE_REGISTRY[req.body.caseId].npcIds.includes(req.body.targetNpc)) {
         res.status(400).json({ error: "invalid_target_npc" });
         return;
       }
