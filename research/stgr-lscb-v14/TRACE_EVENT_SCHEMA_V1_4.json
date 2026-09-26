@@ -1,0 +1,166 @@
+{
+  "title": "STGR Prospective Trace Event v1.4",
+  "type": "object",
+  "required": [
+    "trace_id",
+    "event_id",
+    "timestamp",
+    "global_goal_id",
+    "local_task_id",
+    "action_index",
+    "action_type",
+    "task_scope_before",
+    "task_scope_after",
+    "action_result",
+    "local_success",
+    "evidence_delta",
+    "owner_touch",
+    "trigger_flags",
+    "global_reassessment_performed",
+    "decision"
+  ],
+  "properties": {
+    "trace_id": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "global_goal_id": {
+      "type": "string"
+    },
+    "local_task_id": {
+      "type": "string"
+    },
+    "action_index": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "READ",
+        "SEARCH",
+        "PATCH",
+        "TEST",
+        "RUN",
+        "DEPLOY",
+        "RETRY",
+        "WAIT",
+        "DELEGATE",
+        "STOP",
+        "REPLAN",
+        "OTHER"
+      ]
+    },
+    "task_scope_before": {
+      "type": "string",
+      "enum": [
+        "SAME_LOCAL_TASK",
+        "DIFFERENT_TASK_OR_LAYER",
+        "UNKNOWN"
+      ]
+    },
+    "task_scope_after": {
+      "type": "string",
+      "enum": [
+        "SAME_LOCAL_TASK",
+        "DIFFERENT_TASK_OR_LAYER",
+        "STOPPED",
+        "UNKNOWN"
+      ]
+    },
+    "action_result": {
+      "type": "string",
+      "enum": [
+        "SUCCESS",
+        "FAILURE",
+        "PARTIAL",
+        "NO_CHANGE",
+        "UNKNOWN"
+      ]
+    },
+    "local_success": {
+      "type": "boolean"
+    },
+    "evidence_delta": {
+      "type": "string",
+      "enum": [
+        "GLOBAL_EVIDENCE_GAIN",
+        "LOCAL_ONLY_GAIN",
+        "NO_EVIDENCE_GAIN",
+        "NEGATIVE_EVIDENCE",
+        "UNKNOWN"
+      ]
+    },
+    "owner_touch": {
+      "type": "boolean"
+    },
+    "owner_touch_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        null,
+        "RELAY",
+        "TERMINAL",
+        "UI",
+        "AUTH",
+        "BUSINESS_DECISION",
+        "OTHER"
+      ]
+    },
+    "trigger_flags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "REPEATED_REPAIR",
+          "OWNER_MANUAL_REPEAT",
+          "LOCAL_GLOBAL_DIVERGENCE",
+          "EVIDENCE_STALL",
+          "SCOPE_MISMATCH",
+          "MEASUREMENT_CONFLICT",
+          "LIVE_EVIDENCE_GAP",
+          "LOCAL_SUCCESS"
+        ]
+      }
+    },
+    "global_reassessment_performed": {
+      "type": "boolean"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "CONTINUE_LOCAL",
+        "REPLAN_LOCAL",
+        "SWITCH_TASK_OR_LAYER",
+        "DELEGATE_LOCAL",
+        "STOP_LOCAL",
+        "WAIT"
+      ]
+    },
+    "reason_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
