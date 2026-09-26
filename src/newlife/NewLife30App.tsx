@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./newlife30.css";
 import { advanceDay, applyAction, createInitialState, day11PhaseLabel } from "./state";
 import { getScene, TOTAL_DAYS } from "./content";
@@ -49,6 +49,7 @@ export function NewLife30App({ onExit }: Props) {
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [thinking, setThinking] = useState({ important: "", unknown: "", next: "" });
   const [thinkingNote, setThinkingNote] = useState<string | null>(null);
+  const [previousDayTrace, setPreviousDayTrace] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   // Phase 25.2: compact who-said/did/offered/permitted/owns ledger carried across turns
   // (short attributed facts, never a transcript). Re-synced with canonical state each turn.
@@ -68,6 +69,12 @@ export function NewLife30App({ onExit }: Props) {
 
   const scene = useMemo(() => getScene(state.day, state.day11Phase, state.day24Outcome), [state.day, state.day11Phase, state.day24Outcome]);
 
+  useEffect(() => {
+    if (scene.npcsPresent.length > 0 && !scene.npcsPresent.includes(addressee)) {
+      setAddressee(scene.npcsPresent[0]);
+    }
+  }, [scene, addressee]);
+
   function resetTranscriptFor(nextState: NewLife30State) {
     setTranscript([]);
     setState(nextState);
@@ -80,6 +87,8 @@ export function NewLife30App({ onExit }: Props) {
   }
 
   function handleAdvance() {
+    const lastPlayerLine = [...transcript].reverse().find((line) => line.speaker === "あなた");
+    setPreviousDayTrace(lastPlayerLine?.text ?? null);
     resetTranscriptFor(advanceDay(state));
   }
 
@@ -132,12 +141,12 @@ export function NewLife30App({ onExit }: Props) {
   if (state.finished) {
     return (
       <div className="newlife30">
-        <span className="newlife30-badge">NEW LIFE — Phase 27 playable candidate（HUMAN_VALIDATION_STATUS: PENDING）</span>
+        <span className="newlife30-badge">NEW LIFE</span>
         <h1 className="newlife30-title">30日を終えて</h1>
         <div className="newlife30-scene">
           三十日を終えても、六人それぞれの仕事、拒否する権利、未解決の問いは残ります。ここで一区切りです。延長や続編は、あなたが望むときだけ相談します。
         </div>
-        <p className="newlife30-footer">評価スコアはこの画面に表示していません（HUMAN_VALIDATION_STATUS = PENDING）。</p>
+        <p className="newlife30-footer">ここまでの選択と会話が、あなたの30日です。</p>
         <button className="newlife30-exit" onClick={onExit}>
           ホームへ戻る
         </button>
@@ -147,11 +156,18 @@ export function NewLife30App({ onExit }: Props) {
 
   return (
     <div className="newlife30">
-      <span className="newlife30-badge">NEW LIFE — Phase 27 playable candidate（HUMAN_VALIDATION_STATUS: PENDING）</span>
+      <span className="newlife30-badge">NEW LIFE</span>
       <p className="newlife30-daylabel">
         {dayLabel(state)} ／ 全{TOTAL_DAYS}日
       </p>
       <h1 className="newlife30-title">{scene.title}</h1>
+      {previousDayTrace && state.day >= 2 && state.day <= 3 ? (
+        <div className="newlife30-yesterday" aria-label="前日のあなたの行動">
+          <span>昨日のあなた</span>
+          <strong>{previousDayTrace}</strong>
+          <small>その行動を覚えたまま、今日が始まります。</small>
+        </div>
+      ) : null}
       <div className="newlife30-scene">
         {scene.text}
         {scene.lowEngagementHook ? <p className="newlife30-hook">{scene.lowEngagementHook}</p> : null}
@@ -227,8 +243,14 @@ export function NewLife30App({ onExit }: Props) {
             </label>
             <button type="button" onClick={() => {
               const next = thinking.next.trim();
-              setThinkingNote(next ? "次の一歩：" + next : "次の一歩を一つ書くと、ここに残せます。");
-            }}>次の一歩を決める</button>
+              if (!next) {
+                setThinkingNote("次の一歩を一つ書いてください。");
+                return;
+              }
+              setThinkingNote("次の一歩：" + next);
+              setFreeText(next);
+              setThinkingOpen(false);
+            }}>この一歩をゲームで試す</button>
             {thinkingNote ? <p className="newlife30-thinking-note" aria-live="polite">{thinkingNote}</p> : null}
           </div>
         ) : null}

@@ -49,15 +49,53 @@ describe("NEW LIFE 30-day route isolation", () => {
   it("?newlife30=1 opens the NEW LIFE candidate directly, bypassing HomeScreen entirely", () => {
     window.history.pushState({}, "", "/?newlife30=1");
     render(<App />);
-    expect(screen.getByText(/NEW LIFE — Phase 27 playable candidate/)).toBeInTheDocument();
+    expect(screen.getByText(/^NEW LIFE$/)).toBeInTheDocument();
     expect(screen.getByText("値段がついた箱")).toBeInTheDocument();
     expect(screen.queryByText("思考整理ゲーム")).not.toBeInTheDocument();
   });
 
-  it("HUMAN_VALIDATION_STATUS is disclosed as PENDING on every screen of the candidate, never a hidden claim of PASS", () => {
+  it("keeps developer validation labels out of the normal player-facing game screen", () => {
     window.history.pushState({}, "", "/?newlife30=1");
     render(<App />);
-    expect(screen.getByText(/HUMAN_VALIDATION_STATUS: PENDING/)).toBeInTheDocument();
+    expect(screen.queryByText(/HUMAN_VALIDATION_STATUS/)).not.toBeInTheDocument();
+    expect(screen.getByText("あなたなら、どうする？")).toBeInTheDocument();
+  });
+
+  it("carries the player's own trace through Day 1 -> 2 -> 3 and targets an NPC who is actually present", async () => {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText(/自由に話しかける/);
+
+    await user.type(input, "箱、持ちますよ");
+    await user.click(screen.getByRole("button", { name: "話す" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "話す" })).not.toBeDisabled());
+    await user.click(screen.getByRole("button", { name: "次の日へ" }));
+
+    expect(screen.getByText("四つの席")).toBeInTheDocument();
+    expect(screen.getByText("箱、持ちますよ")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveValue("miyoko"));
+
+    await user.type(screen.getByPlaceholderText(/自由に話しかける/), "席のこと、少し聞いてもいいですか");
+    await user.click(screen.getByRole("button", { name: "話す" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "話す" })).not.toBeDisabled());
+    await user.click(screen.getByRole("button", { name: "次の日へ" }));
+
+    expect(screen.getByText("担当という言葉")).toBeInTheDocument();
+    expect(screen.getByText("席のこと、少し聞いてもいいですか")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("combobox")).toHaveValue("miyoko"));
+  });
+
+  it("turns a reflection next-step into the actual free-action input instead of leaving it as a memo", async () => {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "思考を整理する" }));
+    await user.type(screen.getByLabelText("次に一つだけやること"), "陽菜に値段を聞いてみる");
+    await user.click(screen.getByRole("button", { name: "この一歩をゲームで試す" }));
+
+    expect(screen.getByPlaceholderText(/自由に話しかける/)).toHaveValue("陽菜に値段を聞いてみる");
   });
 });
 
