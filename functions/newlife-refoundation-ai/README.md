@@ -36,6 +36,8 @@ secret string.
 
 One function, one `operation` discriminator in the POST body:
 
+V45.1 dialogue hardening keeps the public V45 contract unchanged but makes only `npcLine` universally required from the model for non-theater cases; effect/progression metadata remains in the schema but is optional and is normalized to conservative defaults when absent or malformed. Theater still requires an explicit `sceneRevisionProposal` decision because that artifact is user-visible.
+
 V45 extends the same case-selected architecture to a third problem type: `COMMUNITY_THEATER_V1` (Mika/Ryo), `STREET_TRIAL_V1` (Hina/Yohei), and `CAFE_BOUNDARY_V1` (Miyoko/Fumiko). The third case is intentionally an ambiguous prior-statement / consent-boundary conflict rather than another task with one visible numeric answer. Cross-case NPC ids are rejected server-side. V44 also made the model response schema case-aware: theater-only scene-revision metadata is not requested from cases that have no `disputedSceneExcerpt`, while the normalized public API still returns a stable false/empty revision object.
 
 - `converse_turn` (V37, primary free-conversation path) — input:
