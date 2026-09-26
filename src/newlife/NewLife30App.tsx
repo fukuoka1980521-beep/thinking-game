@@ -162,17 +162,21 @@ export function NewLife30App({ onExit }: Props) {
       </p>
       <h1 className="newlife30-title">{scene.title}</h1>
       {previousDayTrace && state.day >= 2 ? (
-        <div className="newlife30-yesterday" aria-label="前日のあなたの行動">
-          <span>昨日のあなた</span>
+        <div className="newlife30-yesterday" aria-label="&#x524D;&#x65E5;&#x306E;&#x3042;&#x306A;&#x305F;&#x306E;&#x884C;&#x52D5;">
+          <span>&#x6628;&#x65E5;&#x306E;&#x3042;&#x306A;&#x305F;</span>
           <strong>{previousDayTrace}</strong>
-          <small>その行動を覚えたまま、今日が始まります。</small>
+          <small>&#x305D;&#x306E;&#x884C;&#x52D5;&#x3092;&#x899A;&#x3048;&#x305F;&#x307E;&#x307E;&#x3001;&#x4ECA;&#x65E5;&#x304C;&#x59CB;&#x307E;&#x308A;&#x307E;&#x3059;&#x3002;</small>
         </div>
       ) : null}
-      {state.day >= 9 && state.day <= 11 ? (
+      {state.day >= 9 && state.day <= 17 ? (
         <div className="newlife30-world-state" aria-label="いま積み上がっていること">
           <strong>いま積み上がっていること</strong>
           <span>喫茶の席：{state.mSeats === "bounded" ? "使える範囲を確認した" : "まだ曖昧"}</span>
           <span>受け渡し：{state.pickupPlan === "time_split_owned_by_hina" ? "時間を分ける案が具体化した" : "担当がまだ決まっていない"}</span>
+          {state.day >= 11 ? <span>掲示：{state.signVersion === "clear_from_start" ? "最初から内訳が明確" : state.signVersion === "vague_then_corrected" ? "途中で訂正された" : state.signVersion === "vague_uncorrected" ? "内訳が曖昧なまま" : "まだ掲示前"}</span> : null}
+          {state.day >= 13 ? <span>伝え方：{state.playerReport === "reliable" ? "事実の範囲を保っている" : "話を盛った内容が残っている"}</span> : null}
+          {state.day >= 14 ? <span>陽菜と洋平：{state.hyFactCheck === "direct" ? "二人で直接確かめた" : "まだ直接照合していない"}</span> : null}
+          {state.day >= 16 ? <span>仁への追加依頼：{state.jWork === "extra_with_specific_consent" ? "内容と時間を決めて合意した" : state.jWork === "extra_declined" ? "追加は引き受けないことになった" : "最初の二時間だけ合意済み"}</span> : null}
         </div>
       ) : null}
       <div className="newlife30-scene">
