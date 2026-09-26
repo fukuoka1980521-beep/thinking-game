@@ -12,6 +12,7 @@ import { CaseSession } from "./CaseSession";
 import { Case1CApp } from "./case1c/Case1CApp";
 import { Case1TestResultsScreen } from "./case1c/Case1TestResultsScreen";
 import { NewLife30App } from "./newlife/NewLife30App";
+import { RefoundationApp } from "./newlife/refoundation/RefoundationApp";
 import {
   loadInProgressSession,
   loadCompletedLogs,
@@ -35,7 +36,8 @@ type View =
   | { kind: "USER_TEST_THANKS" }
   | { kind: "CASE1C" }
   | { kind: "CASE1C_RESULTS" }
-  | { kind: "NEWLIFE30" };
+  | { kind: "NEWLIFE30" }
+  | { kind: "NEWLIFE_REFOUNDATION" };
 
 // Section 7: after roughly this many cases in one sitting, offer the play-run summary.
 const SESSION_SUMMARY_THRESHOLD = 5;
@@ -66,6 +68,13 @@ function initialViewFromLocation(): View {
   if (params.has("case1results")) return { kind: "CASE1C_RESULTS" };
   if (params.has("case1test")) return { kind: "CASE1C" };
   if (params.has("newlife30")) return { kind: "NEWLIFE30" };
+  // NEW LIFE refoundation (PR #22): isolated vertical-slice candidate under
+  // src/newlife/refoundation/, following the exact same hidden-direct-link
+  // pattern as ?newlife30=1 above. Not linked from HomeScreen or any other
+  // screen. HUMAN_VALIDATION_STATUS is PENDING for this slice; it is
+  // unrelated to CASE1 and does not affect it. Do not merge/deploy the
+  // legacy newlife-phase34-human-playtest-repair candidate into this route.
+  if (params.has("newlife-refoundation")) return { kind: "NEWLIFE_REFOUNDATION" };
   return { kind: "HOME" };
 }
 
@@ -273,6 +282,10 @@ export default function App() {
 
   if (view.kind === "NEWLIFE30") {
     return <NewLife30App onExit={() => setView({ kind: "HOME" })} />;
+  }
+
+  if (view.kind === "NEWLIFE_REFOUNDATION") {
+    return <RefoundationApp onExit={() => setView({ kind: "HOME" })} />;
   }
 
   return (

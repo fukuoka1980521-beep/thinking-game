@@ -37,6 +37,16 @@ jobs:
             Write-Host "PowerShell syntax OK: $($_.Name)"
           }
 
+      - name: Check Bash syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for f in scripts/newlife-deploy/*.sh; do
+            bash -n "$f"
+            echo "Bash syntax OK: $f"
+          done
+
       - name: Check Node script syntax
         shell: bash
         run: |
