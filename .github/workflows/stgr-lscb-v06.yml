@@ -38,7 +38,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gcloud projects describe "${{ vars.STGR_GCP_PROJECT_ID }}" --format='value(projectId)'
           test -n "$(gcloud auth print-access-token)"
           echo "GCP_WIF_AUTH=PASS"
 
