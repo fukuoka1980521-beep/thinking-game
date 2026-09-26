@@ -1,0 +1,87 @@
+[
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E1",
+    "scope": "LOCAL_ACTION",
+    "reason": "The pilot patched the runner and initiated a rerun to resolve the decision token shortage, which directly serves the local task of correcting the current execution path."
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E2",
+    "scope": "LOCAL_ACTION",
+    "reason": "GitHub Actionsの認証失敗に対応し、実験実行経路を維持するためにインタラクティブCloud Shellを代替経路として設定する局所的な修正を行ったため。"
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E3",
+    "scope": "LOCAL_ACTION",
+    "reason": "実験経路の安定化に向けて、成功したCloud Shellのインタラクティブセッション経路を後続の実行に再利用する局所的な調整アクションであるため。"
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E4",
+    "scope": "GLOBAL_REPLAN",
+    "reason": "Session termination occurred, forcing manual intervention by the Owner, which directly contradicts the global goal of avoiding repetitive manual operations and requires a replan to ensure execution stability."
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E5",
+    "scope": "GLOBAL_REPLAN",
+    "reason": "局所的な経路修正ではセッション終了とOwnerの再操作の繰り返しを防げず、アプローチの根本的な再設計が必要なため。"
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E6",
+    "scope": "LOCAL_ACTION",
+    "reason": "v0.6におけるgzip CRCエラーの発生により、現在の実験実行経路に対してさらなる局所的な修正対応が必要となったため。"
+  },
+  {
+    "blind_id": "R13T07_RESEARCH_INFRASTRUCTURE_DRIFT-E7",
+    "scope": "LOCAL_ACTION",
+    "reason": "The event represents a concrete local action of modifying the execution path to GitHub Actions and Google WIF to ensure persistent execution, directly addressing the current local task."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E1",
+    "scope": "EVIDENCE_EVENT",
+    "reason": "The V2 release activation passing LIVE and becoming ready is a key event/evidence observed while waiting for the natural retry."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E2",
+    "scope": "EVIDENCE_EVENT",
+    "reason": "The current state confirms that the initial conditions for the observation are met, with retry_count=0, no assistant reply, and a commitment to no manual intervention."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E3",
+    "scope": "LOCAL_ACTION",
+    "reason": "最初の観測時点では8h retryが発生していないため、引き続きメッセージを変更せずに待機と観測を継続します。"
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E4",
+    "scope": "GLOBAL_REPLAN",
+    "reason": "The discovery that V2 setup does not call the 8h trigger installer, unlike legacy setup, invalidates the strategy of waiting for a natural retry and requires a replan to address this structural difference."
+  },
+  {
+    "blind_id": "R13T08_OLM_RETRY_TRIGGER_GAP-E5",
+    "scope": "GLOBAL_REPLAN",
+    "reason": "The strategy was switched to verify the trigger's existence and safely guarantee it via V2 bootstrap if missing, rather than just waiting passively."
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E1",
+    "scope": "EVIDENCE_EVENT",
+    "reason": "既存のCSVインポートの基本パスが稼働している状態の確認であり、UXやバリデーションの改善を行うための前提となる状況証拠であるため。"
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E2",
+    "scope": "LOCAL_ACTION",
+    "reason": "ローカルタスクである既存CSV取込の説明・validationの改善を直接実行し、UXを向上させたため。"
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E3",
+    "scope": "GLOBAL_REPLAN",
+    "reason": "The discovery that the actual source is a scanned PDF with handwriting and no reliable CSV exists invalidates the assumption of a CSV-based import flow, requiring a global replan of the ingestion strategy."
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E4",
+    "scope": "EVIDENCE_EVENT",
+    "reason": "The approval of the operational model converging PDF and CSV routes into a canonical CSV representation serves as a key milestone and provides a solid foundation for refining the CSV import validation and UX."
+  },
+  {
+    "blind_id": "R13T09_REAL_PDF_INPUT_SHIFT-E5",
+    "scope": "LOCAL_ACTION",
+    "reason": "The decision to switch the implementation policy to require PDF upload, extraction, review, and canonical CSV before staging/commit is a local action taken to refine the validation and UX of the existing CSV import task."
+  }
+]
