@@ -16,6 +16,7 @@
  */
 import type { ConversationalAct } from "../npcVoice";
 import type { NpcId } from "../types";
+import type { FactLedger } from "./factLedger";
 
 /** The six current factual domains from `NEWLIFE_PHASE26_SCENARIO_VALIDATION_V1.md`'s "直接質問の確認表", also enumerated in the Owner's PHASE_29 instructions. */
 export type FactCategory = "menu" | "reservation_count" | "seats" | "workshop" | "yesterday" | "profit";
@@ -37,6 +38,8 @@ export interface FactsSnapshot {
   unknown: FactCategory[];
   /** Terms a generated response must never affirm, regardless of phrasing (e.g. Daisuke's rejected barber canon). Checked by `truthGate.ts`. */
   negativeConstraints: string[];
+  /** Phase 25.2: compact who-said/did/offered/permitted/owns ledger. Optional so callers/servers without it keep working. */
+  ledger?: FactLedger;
 }
 
 /** One clause of a (possibly multi-intent) player utterance. `utteranceSpan` is the substring this clause was extracted from, kept for auditability — never re-parsed or trusted as a boundary by the truth gate. */
@@ -74,5 +77,6 @@ export type SemanticInterpretationResult =
  * exists this Run.
  */
 export interface SemanticInterpreter {
-  interpret(utterance: string, snapshot: FactsSnapshot): Promise<SemanticInterpretationResult>;
+  /** `feedback`: on a regeneration, the gate violations that made the previous proposal unusable (short Japanese sentences). */
+  interpret(utterance: string, snapshot: FactsSnapshot, feedback?: string[]): Promise<SemanticInterpretationResult>;
 }

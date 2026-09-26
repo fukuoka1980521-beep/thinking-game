@@ -20,6 +20,15 @@
  * `config.ts`) or consent not accepted, this function's output is *always*
  * byte-identical to calling `answerFreeText` directly.
  *
+ * Phase 25.2 (fact ownership): when the caller supplies a `ledger`, this
+ * function (a) syncs it with canonical state and records the player's own
+ * free input into it BEFORE anything is generated (CHECK 5), (b) hands the
+ * compact ledger to the interpreter, (c) refuses any proposal whose
+ * who-said/did/permitted/owns attribution contradicts the ledger
+ * (`attributionGate.ts`, via the truth gate) and REGENERATES once with the
+ * violations as feedback, and (d) returns the updated ledger. With no ledger
+ * the behavior is unchanged from Phase 30.
+ *
  * `NewLife30State` is read-only here, as everywhere else in `npcVoice.ts`/
  * `semantic/*` — this function has no write path back into it (Phase 30
  * instruction 11e / Phase 29 §11).
@@ -27,7 +36,8 @@
 import { answerFreeText, isAmbiguousFreeText } from "../npcVoice";
 import type { NewLife30State, NpcId } from "../types";
 import { projectFacts } from "./factsProjection";
-import { runTruthGate } from "./truthGate";
+import { ATTRIBUTION_VIOLATION_CODES, runTruthGate } from "./truthGate";
+import { ledgerReflectsUtterance, recordPlayerUtterance, syncLedgerWithState, type FactLedger } from "./factLedger";
 import type { SemanticInterpreter } from "./contract";
 
 export type FreeTextSource = "deterministic" | "semantic";
@@ -35,6 +45,8 @@ export type FreeTextSource = "deterministic" | "semantic";
 export interface FreeTextResult {
   text: string;
   source: FreeTextSource;
+  /** Present only when the caller passed a ledger: the ledger after this turn (synced + player input recorded). */
+  ledger?: FactLedger;
 }
 
 export interface ResolveFreeTextOptions {
@@ -42,7 +54,12 @@ export interface ResolveFreeTextOptions {
   interpreter: SemanticInterpreter | null;
   /** Sticky per-player choice — declined behaves identically to `interpreter: null` (Phase 30 instruction 12). */
   consentAccepted: boolean;
+  /** Phase 25.2 compact fact-ownership ledger carried across turns by the caller. */
+  ledger?: FactLedger;
 }
+
+/** One proposal + at most one regeneration after an attribution rejection (cost guardrail: never a retry loop). */
+export const MAX_SEMANTIC_ATTEMPTS = 2;
 
 /**
  * Resolves one free-talk turn. Never throws: every failure mode inside the
@@ -58,37 +75,37 @@ export async function resolveFreeText(
   state: NewLife30State,
   options: ResolveFreeTextOptions,
 ): Promise<FreeTextResult> {
-  const deterministic = answerFreeText(npc, text, state);
+  // CHECK 5: the player's own input updates the fact state first.
+  const ledger = options.ledger ? recordPlayerUtterance(syncLedgerWithState(options.ledger, state), text) : undefined;
+  const deterministicText = answerFreeText(npc, text, state, ledger);
+  const finish = (result: FreeTextResult): FreeTextResult => (ledger ? { ...result, ledger } : result);
+  const deterministic = finish({ text: deterministicText, source: "deterministic" });
 
-  if (!options.interpreter || !options.consentAccepted) {
-    return { text: deterministic, source: "deterministic" };
+  if (!options.interpreter || !options.consentAccepted) return deterministic;
+  if (!isAmbiguousFreeText(text)) return deterministic;
+  if (ledger && !ledgerReflectsUtterance(ledger, text)) return deterministic;
+
+  const snapshot = projectFacts(npc, state, ledger);
+
+  let feedback: string[] | undefined;
+  for (let attempt = 1; attempt <= MAX_SEMANTIC_ATTEMPTS; attempt += 1) {
+    let result;
+    try {
+      result = await options.interpreter.interpret(text.trim(), snapshot, feedback);
+    } catch {
+      return deterministic;
+    }
+    if (result.status !== "ok") return deterministic;
+
+    const verdict = runTruthGate(result.interpretation, snapshot);
+    if (verdict.passed) {
+      const proposed = result.interpretation.proposedResponse.trim();
+      return proposed ? finish({ text: proposed, source: "semantic" }) : deterministic;
+    }
+
+    const attribution = verdict.violations.filter((v) => ATTRIBUTION_VIOLATION_CODES.includes(v.code));
+    if (attribution.length === 0) return deterministic; // non-ownership violation: fall back, no retry
+    feedback = attribution.map((v) => v.detail);
   }
-  if (!isAmbiguousFreeText(text)) {
-    return { text: deterministic, source: "deterministic" };
-  }
-
-  const snapshot = projectFacts(npc, state);
-
-  let result;
-  try {
-    result = await options.interpreter.interpret(text.trim(), snapshot);
-  } catch {
-    return { text: deterministic, source: "deterministic" };
-  }
-
-  if (result.status !== "ok") {
-    return { text: deterministic, source: "deterministic" };
-  }
-
-  const verdict = runTruthGate(result.interpretation, snapshot);
-  if (!verdict.passed) {
-    return { text: deterministic, source: "deterministic" };
-  }
-
-  const proposed = result.interpretation.proposedResponse.trim();
-  if (!proposed) {
-    return { text: deterministic, source: "deterministic" };
-  }
-
-  return { text: proposed, source: "semantic" };
+  return deterministic;
 }

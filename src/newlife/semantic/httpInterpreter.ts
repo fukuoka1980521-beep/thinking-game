@@ -87,7 +87,7 @@ export function isValidInterpretation(value: unknown): value is SemanticInterpre
 export class HttpSemanticInterpreter implements SemanticInterpreter {
   constructor(private readonly endpointUrl: string) {}
 
-  async interpret(utterance: string, snapshot: FactsSnapshot): Promise<SemanticInterpretationResult> {
+  async interpret(utterance: string, snapshot: FactsSnapshot, feedback?: string[]): Promise<SemanticInterpretationResult> {
     if (!this.endpointUrl) {
       return { status: "unavailable", reason: "no_endpoint_configured" };
     }
@@ -107,7 +107,10 @@ export class HttpSemanticInterpreter implements SemanticInterpreter {
         // utterance plus the already-minimal FactsSnapshot — never the full
         // `NewLife30State` (no `log`, no `playerReport`, no
         // `publicBlame`), no other NPC's data, no device/user identifier.
-        body: JSON.stringify({ utterance: trimmed, snapshot }),
+        // Phase 25.2: `snapshot.ledger` is the compact fact-ownership ledger
+        // (short attributed facts, never a transcript); `feedback` is present
+        // only on a regeneration after an attribution rejection.
+        body: JSON.stringify({ utterance: trimmed, snapshot, ...(feedback && feedback.length > 0 ? { feedback: feedback.slice(0, 4) } : {}) }),
         signal: controller.signal,
       });
 

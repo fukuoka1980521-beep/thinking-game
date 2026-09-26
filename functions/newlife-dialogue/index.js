@@ -56,7 +56,7 @@ exports.newlifeDialogue = async (req, res) => {
     return;
   }
 
-  const { utterance, snapshot } = req.body;
+  const { utterance, snapshot, feedback } = req.body;
   if (!CHARACTER_PROFILES[snapshot.npc]) {
     // Defense in depth: validateInput already rejects an npc id outside
     // NPC_IDS, so this branch is unreachable in practice, but it keeps this
@@ -76,7 +76,7 @@ exports.newlifeDialogue = async (req, res) => {
       }
       return client.models.generateContent({
         model: MODEL,
-        contents: buildPrompt(snapshot.npc, utterance, snapshot),
+        contents: buildPrompt(snapshot.npc, utterance, snapshot, feedback),
         config: {
           systemInstruction: SYSTEM_INSTRUCTION,
           temperature: 0.4,

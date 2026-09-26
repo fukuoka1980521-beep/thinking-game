@@ -25,6 +25,7 @@
  * flavor pool and returning an unrelated line — a broken adjacency pair.
  */
 import { NPC_NAMES, type NewLife30State, type NpcId } from "./types";
+import { isOfferHelp, offerTask, type FactLedger } from "./semantic/factLedger";
 
 type Intent = "menu" | "product_care" | "reservation_count" | "seats" | "workshop" | "yesterday" | "profit" | "barber_check";
 
@@ -457,6 +458,37 @@ export function clarificationLine(npc: NpcId): string {
   return TOPIC_CLARIFICATION_LINE[npc];
 }
 
+// ---------------------------------------------------------------------------
+// Offer-of-help act (Phase 25.2). The player's own proposal ("手伝います") is a
+// fact the NPC must react to on the very next turn, and it is answered from
+// the fact ledger so the offer stays attributed to the player: the NPC never
+// turns it into her own words, and never hands her own responsibility away.
+// ---------------------------------------------------------------------------
+
+const OFFER_HELP_LINE: Record<NpcId, (task: string | null) => string> = {
+  hina: (t) => `${t ? `${t}を` : ""}手伝ってくれるんですね。ありがとうございます、助かります。`,
+  yohei: (t) => `${t ? `${t}の` : ""}手伝いか。……頼むときは先に言う。`,
+  daisuke: (t) => `お、${t ? `${t}を` : ""}手伝ってくれるのか。頼もしいな。`,
+  jin: (t) => `${t ? `${t}の` : ""}手伝いは、仕事を先に言う。……それから頼む。`,
+  miyoko: (t) => `${t ? `${t}を` : ""}手伝ってくれるのね、ありがとう。気持ちがうれしいわ。`,
+  fumiko: (t) => `${t ? `${t}を` : ""}手伝ってくれるのね、助かるわ。`,
+};
+
+/** True when the line is a directed offer of help from the player (see `factLedger.isOfferHelp`). */
+export function detectOfferHelp(text: string): boolean {
+  return isOfferHelp(text);
+}
+
+function offerHelpLine(npc: NpcId, text: string, ledger?: FactLedger): string {
+  const base = OFFER_HELP_LINE[npc](offerTask(text));
+  const open = ledger?.unresolved[0];
+  if (!open) return base;
+  // Cite the unresolved item and who owns it, from the ledger — not invented.
+  const resp = ledger?.responsibilities.find((r) => r.task === open.text || r.keys.some((k) => open.keys.includes(k)));
+  const owner = !resp ? "" : resp.owner === npc ? "そこは私の担当。" : resp.owner === "player" ? "" : `そこは${NPC_NAMES[resp.owner]}さんの担当。`;
+  return `${base}今残っているのは「${open.text}」。${owner}`;
+}
+
 /**
  * Answers a free-text line addressed to one NPC. Read-only: takes state by
  * reference and never writes to it. Returns display text only.
@@ -470,7 +502,7 @@ export function clarificationLine(npc: NpcId): string {
  * maps to no known fact domain; (5) generic flavor, reserved for genuinely
  * content-light chatter or plain observations.
  */
-export function answerFreeText(npc: NpcId, text: string, state: NewLife30State): string {
+export function answerFreeText(npc: NpcId, text: string, state: NewLife30State, ledger?: FactLedger): string {
   const t = text.trim();
 
   // Priority 1: acts about the conversation itself that never compete with a
@@ -494,6 +526,11 @@ export function answerFreeText(npc: NpcId, text: string, state: NewLife30State):
   if (intent === "workshop") return workshopAnswer(npc, state, state.day);
   if (intent === "yesterday") return yesterdayAnswer(npc, state, state.day);
   if (intent === "profit") return profitAnswer(npc, state.day);
+
+  // Priority 2b (Phase 25.2): the player offering help. Checked after the fact
+  // domains (a fact question still wins) and before the social acts so
+  // "ありがとう、手伝います" is answered as an offer, not just a thank-you.
+  if (t && isOfferHelp(t)) return offerHelpLine(npc, t, ledger);
 
   // Priority 3: remaining conversational acts (compliment/criticism/agreement/
   // disagreement/greeting/leave-taking) — only reached once no fact topic
@@ -538,6 +575,7 @@ export function isAmbiguousFreeText(text: string): boolean {
   const preDomainAct = detectAct(t);
   if (preDomainAct === "tone_feedback" || preDomainAct === "repair_request") return false;
   if (detectIntent(text) !== null) return false;
+  if (isOfferHelp(t)) return false;
   if (detectAct(t) !== null) return false;
   return isQuestionLike(t);
 }

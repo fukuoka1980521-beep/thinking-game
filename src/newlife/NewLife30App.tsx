@@ -9,6 +9,7 @@ import { getNewLifeAiDialogueConsent, setNewLifeAiDialogueConsent, type NewLifeA
 import { HttpSemanticInterpreter } from "./semantic/httpInterpreter";
 import { resolveFreeText } from "./semantic/coordinator";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
+import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
 
 interface Props {
   onExit: () => void;
@@ -46,6 +47,9 @@ export function NewLife30App({ onExit }: Props) {
   const [addressee, setAddressee] = useState<NpcId>("hina");
   const [freeText, setFreeText] = useState("");
   const [pending, setPending] = useState(false);
+  // Phase 25.2: compact who-said/did/offered/permitted/owns ledger carried across turns
+  // (short attributed facts, never a transcript). Re-synced with canonical state each turn.
+  const [ledger, setLedger] = useState<FactLedger>(() => syncLedgerWithState(createEmptyLedger(), createInitialState()));
   const [consentStatus, setConsentStatus] = useState<NewLifeAiDialogueConsentStatus | null>(() => getNewLifeAiDialogueConsent());
   const [pendingSubmission, setPendingSubmission] = useState<{ npc: NpcId; text: string } | null>(null);
 
@@ -79,7 +83,8 @@ export function NewLife30App({ onExit }: Props) {
   async function submitFreeText(npc: NpcId, text: string, consentAccepted: boolean) {
     setPending(true);
     try {
-      const result = await resolveFreeText(npc, text, state, { interpreter, consentAccepted });
+      const result = await resolveFreeText(npc, text, state, { interpreter, consentAccepted, ledger });
+      if (result.ledger) setLedger(result.ledger);
       setTranscript((prev) => [...prev, { speaker: "あなた", text }, { speaker: npcDisplayName(npc), text: result.text }]);
     } finally {
       setPending(false);
