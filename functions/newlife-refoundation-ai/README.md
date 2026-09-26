@@ -41,14 +41,12 @@ One function, one `operation` discriminator in the POST body:
   dynamicState }`. The client sends only dynamic/conversational data; the
   function builds the full `CharacterConversationContext` server-side from
   the canonical `SCENE_CANON`/`CHARACTER_DOSSIERS` in `lib.js` (never sent
-  by the client — V37 §1's explicit prohibition). Output: `{ npc, npcLine,
-  understoodPlayerMeaning, candidateTurn, candidateFactRevealIds,
-  candidateCommitments, uncertainty, thoughtSupportSignal }`. Only `npcLine`
+  by the client — V37 §1's explicit prohibition). Output: `{ npc, npcLine, understoodPlayerMeaning, candidateTurn, candidateFactRevealIds, candidateCommitments, uncertainty, thoughtSupportSignal, sceneStatus, nextNpc, sceneRevisionProposal }`. `sceneRevisionProposal` is a concrete working-script draft only when `hasProposal=true`; it is not approval. Only `npcLine`
   is meant for immediate display; `candidateTurn`/`candidateFactRevealIds`/
   `candidateCommitments` are proposals only, validated and applied by the
   deterministic client (`relationshipReducer.ts`/`ending.ts`), never by this
   function or the model itself.
-- `continue_npc_exchange` (V41) — input: `{ operation, caseId, targetNpc, recentDialogue, continuationDepth, dynamicState }`. This is used only after a normal `converse_turn` has handed the scene to the other NPC. The final `recentDialogue` entry must be the other NPC; no synthetic player utterance is accepted. The browser and server cap the exchange at three continuation turns, and the final continuation must stop with `AWAIT_PLAYER`, `RESOLVED`, or `STALLED`.
+- `continue_npc_exchange` (V41/V42) — input: `{ operation, caseId, targetNpc, recentDialogue, continuationDepth, dynamicState }`. This is used only after a normal `converse_turn` has handed the scene to the other NPC. The final `recentDialogue` entry must be the other NPC; no synthetic player utterance is accepted. The browser and server cap the exchange at three continuation turns, and the final continuation must stop with `AWAIT_PLAYER`, `RESOLVED`, or `STALLED`.
 - `organize_thought` (V37 §5, a separate non-NPC layer) — input:
   `{ operation, validatedWorldFacts, recentDialogue, currentProblem }`.
   Output: `{ known, possible, unknown, options, nextCheck }`. Never speaks
@@ -74,7 +72,7 @@ a second, independent time (`isValidRawConverseResult` /
 `isValidRawNpcLine`) before trusting it — same two-layer discipline
 `functions/newlife-dialogue/` already uses.
 
-## Health / deployment identity (V41)
+## Health / deployment identity (V42)
 
 `GET` on the same endpoint (no body, no `operation`) returns `200` with:
 
@@ -82,7 +80,7 @@ a second, independent time (`isValidRawConverseResult` /
 {
   "service": "newlife-refoundation-ai",
   "buildSha": "<NEWLIFE_REFOUNDATION_BUILD_SHA env var, or \"unknown\">",
-  "contractVersion": "V41",
+  "contractVersion": "V42",
   "operations": ["converse_turn", "continue_npc_exchange", "organize_thought"]
 }
 ```
@@ -112,6 +110,7 @@ deployed commit SHA.
   silently reset.
 - The `converse_turn` system instruction carries the same untrusted-input,
   tone-blindness, and no-invented-facts rules as the two above, plus its own
+  V42 artifact rule: `SCENE_CANON.disputedSceneExcerpt` is the concrete script text, `dynamicState.sceneRevisionText` is the only actual current draft, and a player claim that a rewrite exists never substitutes for text. Mika compares a real draft against her private identifying anchors and must name concrete remaining problems instead of repeatedly asking to see a nonexistent script.
   requirements specific to generative reasoning: forbidden knowledge
   (`characterDossier.forbiddenKnowledge`) must stay unknown to the NPC unless
   actually raised in `recentDialogue`, a `CLARIFY`-shaped `candidateTurn`

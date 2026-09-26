@@ -123,7 +123,7 @@ const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "con
 // (converse_turn / organize_thought, per V37 §7) -- interpret_turn and
 // generate_npc_line remain callable for compatibility/testing but are not
 // part of the health surface's own version identity.
-const HEALTH_CONTRACT_VERSION = "V41";
+const HEALTH_CONTRACT_VERSION = "V42";
 const HEALTH_OPERATIONS = ["converse_turn", "continue_npc_exchange", "organize_thought"];
 
 function buildHealthResponse(buildSha) {
@@ -159,6 +159,8 @@ const MAX_THOUGHT_LIST_ITEMS = 6;
 const MAX_THOUGHT_ITEM_LENGTH = 200;
 const MAX_NEXT_CHECK_LENGTH = 200;
 const MAX_NPC_EXCHANGE_DEPTH = 3;
+const MAX_SCENE_REVISION_LENGTH = 1400;
+const MAX_SCENE_REVISION_SUMMARY_LENGTH = 300;
 
 /**
  * V37 §1 CANONICAL WORLD MODEL. Authored, deterministic, server-owned.
@@ -190,6 +192,8 @@ const SCENE_CANON = {
     consentAmbiguity:
       "美香・亮それぞれの立場から見て一応筋の通る「同意していた／同意していなかった」の解釈が両方成立し得る。どちらが正しいかは物語上まだ確定していない。",
   },
+  disputedSceneExcerpt:
+    "高校を卒業する前の冬、駅前の古い喫茶店で、父に『ここを出たら、もう戻るな』と言われた。私は青いマフラーを椅子に置いて店を出た。振り返らなかった。",
   dramaticFunction:
     "亮が演出上どうしても必要としているのは、フィクション上の登場人物が過去の何かを手放し、区切りをつけて前へ進むという場面の機能であり、美香自身の実体験の内容そのものが必須というわけではない。",
 };
@@ -209,6 +213,7 @@ const CHARACTER_DOSSIERS = {
       "自分はそれを一時的な即興材料だと思っていたこと。",
       "昨日、最終台本を読んで初めて、それが本番台本にそのまま残っていると気づいたこと。",
       "自分の一線は『演技そのものの拒否』ではなく『自分だとわかる実話を公にそのまま使われること』であること。",
+      "元の台本で特に自分の実話と結びつくのは、父との関係、駅前の古い喫茶店、『ここを出たら、もう戻るな』という実際の言い回し、青いマフラーを置いて出たという具体的な行動であること。",
     ],
     beliefs: ["自分は実話をそのまま公開することに明示的に同意した覚えがない。"],
     forbiddenKnowledge: [
@@ -373,7 +378,15 @@ NPC間の引き継ぎ（V41。特定の言い回しではなく状況の意味�
 - sceneStatus="NPC_EXCHANGE" のときだけ nextNpc に、今話しているNPCとは別のNPCを指定すること。それ以外は nextNpc=null にすること。
 - 必要な判断がプレイヤーにしかできない、またはNPC同士でこれ以上進めても同じ主張の反復になる場合は AWAIT_PLAYER または STALLED にすること。
 - 実務上の合意が成立し、次の具体行動が定まり、この場面で追加の判断が不要なら RESOLVED にすること。
-- プレイヤーが不在・離脱している流れでは、NPC間ターンでプレイヤーに返答を求めるためだけの問いかけを作らないこと。`;
+- プレイヤーが不在・離脱している流れでは、NPC間ターンでプレイヤーに返答を求めるためだけの問いかけを作らないこと。
+
+台本という実物の扱い（V42）:
+- sceneCanon.disputedSceneExcerpt は現在の元台本の実物である。プレイヤーは調整役としてこの文面を見ることができるが、どの要素が美香の実話そのものかという対応関係は、美香が会話で明かすまでは美香自身の知識として扱うこと。
+- dynamicState.sceneRevisionText が空でなければ、それが現在実際に作成済みの修正案本文である。NPCはその本文を読めるものとして扱い、『まだ見せてもらっていない』と繰り返してはならない。
+- dynamicState.sceneRevisionText が空のとき、プレイヤーが『もう書き直した』『見せた』と主張しても、実際の本文が存在することにはしない。存在しない文面を見たふり・承認したふりをしないこと。
+- プレイヤーが具体的な書き換え方針を示し、それだけで短い修正案を実際に作れる場合は、sceneRevisionProposal.hasProposal=true とし、revisedText に全文、changeSummary に変更点を返してよい。単なる抽象的な同意や『任せる』だけなら proposal を作らないこと。
+- sceneRevisionProposal は作業用の修正案であり、美香の承認済みという意味ではない。美香が読むターンでは、実際の revisedText / dynamicState.sceneRevisionText を、自分が知っている特定要素と比較し、残っている問題があれば『どの具体的な言い回し・設定・行動が残っているのか』を1つ以上具体的に指摘すること。問題がなければ確認できたことを明示して前へ進むこと。
+- 書き換えでは sceneCanon.dramaticFunction を保つ一方、個人を特定しやすい具体要素は別の人物関係・場所・物・言い回しへ置き換えてよい。`;
 
 // V37 §5. A separate, non-NPC layer -- must not speak as a character, must
 // not moralize/diagnose, must not force disclosure, and must distinguish
@@ -474,6 +487,15 @@ function buildConverseResponseSchema(Type) {
       thoughtSupportSignal: { type: Type.BOOLEAN },
       sceneStatus: { type: Type.STRING, enum: SCENE_STATUSES },
       nextNpc: { type: Type.STRING, enum: NPC_IDS, nullable: true },
+      sceneRevisionProposal: {
+        type: Type.OBJECT,
+        properties: {
+          hasProposal: { type: Type.BOOLEAN },
+          revisedText: { type: Type.STRING },
+          changeSummary: { type: Type.STRING },
+        },
+        required: ["hasProposal", "revisedText", "changeSummary"],
+      },
     },
     required: [
       "npc",
@@ -486,6 +508,7 @@ function buildConverseResponseSchema(Type) {
       "thoughtSupportSignal",
       "sceneStatus",
       "nextNpc",
+      "sceneRevisionProposal",
     ],
   };
 }
@@ -565,6 +588,18 @@ function boundedStringArrayOrEmpty(value) {
  * deterministic arbiter safe without turning a schema wobble into a broken
  * conversation.
  */
+function normalizeSceneRevisionProposal(value) {
+  if (!value || typeof value !== "object" || value.hasProposal !== true) {
+    return { hasProposal: false, revisedText: "", changeSummary: "" };
+  }
+  if (!isNonEmptyBoundedString(value.revisedText, MAX_SCENE_REVISION_LENGTH)) {
+    return { hasProposal: false, revisedText: "", changeSummary: "" };
+  }
+  if (!isNonEmptyBoundedString(value.changeSummary, MAX_SCENE_REVISION_SUMMARY_LENGTH)) {
+    return { hasProposal: false, revisedText: "", changeSummary: "" };
+  }
+  return { hasProposal: true, revisedText: value.revisedText, changeSummary: value.changeSummary };
+}
 function normalizeConverseResponse(parsed, expectedNpc) {
   if (!parsed || typeof parsed !== "object") return null;
   if (!isNonEmptyBoundedString(parsed.npcLine, MAX_NPC_LINE_LENGTH)) return null;
@@ -608,6 +643,9 @@ function normalizeConverseResponse(parsed, expectedNpc) {
     thoughtSupportSignal: metadataFallback ? false : parsed.thoughtSupportSignal === true,
     sceneStatus: metadataFallback ? "AWAIT_PLAYER" : sceneStatus,
     nextNpc: metadataFallback ? null : nextNpc,
+    sceneRevisionProposal: metadataFallback
+      ? { hasProposal: false, revisedText: "", changeSummary: "" }
+      : normalizeSceneRevisionProposal(parsed.sceneRevisionProposal),
   };
 }
 
@@ -674,6 +712,11 @@ function validateConverseTurnInput(body) {
   ) {
     return "invalid_active_commitment";
   }
+  if (
+    dynamicState.sceneRevisionText !== null &&
+    dynamicState.sceneRevisionText !== undefined &&
+    (typeof dynamicState.sceneRevisionText !== "string" || dynamicState.sceneRevisionText.length > MAX_SCENE_REVISION_LENGTH)
+  ) return "invalid_scene_revision";
 
   return null;
 }
@@ -708,6 +751,11 @@ function validateContinueNpcExchangeInput(body) {
     dynamicState.activeCommitment !== undefined &&
     (typeof dynamicState.activeCommitment !== "string" || dynamicState.activeCommitment.length > MAX_ACTIVE_COMMITMENT_LENGTH)
   ) return "invalid_active_commitment";
+  if (
+    dynamicState.sceneRevisionText !== null &&
+    dynamicState.sceneRevisionText !== undefined &&
+    (typeof dynamicState.sceneRevisionText !== "string" || dynamicState.sceneRevisionText.length > MAX_SCENE_REVISION_LENGTH)
+  ) return "invalid_scene_revision";
 
   return null;
 }
@@ -840,6 +888,8 @@ module.exports = {
   MAX_THOUGHT_ITEM_LENGTH,
   MAX_NEXT_CHECK_LENGTH,
   MAX_NPC_EXCHANGE_DEPTH,
+  MAX_SCENE_REVISION_LENGTH,
+  MAX_SCENE_REVISION_SUMMARY_LENGTH,
   NPC_VOICE_CONSTRAINTS,
   SCENE_CANON,
   CHARACTER_DOSSIERS,
@@ -854,6 +904,7 @@ module.exports = {
   buildConverseResponseSchema,
   buildConversePrompt,
   buildNpcExchangePrompt,
+  normalizeSceneRevisionProposal,
   normalizeConverseResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
