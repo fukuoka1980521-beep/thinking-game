@@ -1,0 +1,40 @@
+name: STGR LSCB v0.7 Blind Annotation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - research/stgr-lscb-v07
+    paths:
+      - research/stgr-lscb-v07/RUN_ANNOTATE_V07
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  annotate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.STGR_GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.STGR_GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.STGR_GCP_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run blind annotation
+        run: |
+          python research/stgr-lscb-v07/annotate_v07.py
+      - name: Persist annotation
+        run: |
+          git config user.name "stgr-research-bot"
+          git config user.email "stgr-research-bot@users.noreply.github.com"
+          git add research/stgr-lscb-v07/GEMINI_BLIND_ANNOTATION_V0_1.json
+          git commit -m "research(stgr): persist Gemini blind annotations [skip ci]"
+          git push origin HEAD:research/stgr-lscb-v07
