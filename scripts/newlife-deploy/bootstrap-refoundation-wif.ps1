@@ -58,18 +58,31 @@ $Apis = @(
 $ProjectNumber = (& $Gcloud projects describe $ProjectId --format="value(projectNumber)").Trim()
 if (-not $ProjectNumber) { throw "Could not resolve project number." }
 
-& $Gcloud iam workload-identity-pools describe $PoolId --project=$ProjectId --location=global *> $null
-if ($LASTEXITCODE -ne 0) {
+function Test-GcloudResource {
+  param([string[]]$CommandArgs)
+  $PreviousErrorActionPreference = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    & $Gcloud @CommandArgs 2>$null | Out-Null
+    return ($LASTEXITCODE -eq 0)
+  }
+  finally {
+    $ErrorActionPreference = $PreviousErrorActionPreference
+  }
+}
+
+$PoolArgs = @("iam","workload-identity-pools","describe",$PoolId,"--project=$ProjectId","--location=global")
+if (-not (Test-GcloudResource $PoolArgs)) {
   & $Gcloud iam workload-identity-pools create $PoolId --project=$ProjectId --location=global --display-name="GitHub Actions" | Out-Null
 }
 
-& $Gcloud iam workload-identity-pools providers describe $ProviderId --project=$ProjectId --location=global --workload-identity-pool=$PoolId *> $null
-if ($LASTEXITCODE -ne 0) {
+$ProviderArgs = @("iam","workload-identity-pools","providers","describe",$ProviderId,"--project=$ProjectId","--location=global","--workload-identity-pool=$PoolId")
+if (-not (Test-GcloudResource $ProviderArgs)) {
   & $Gcloud iam workload-identity-pools providers create-oidc $ProviderId --project=$ProjectId --location=global --workload-identity-pool=$PoolId --display-name="GitHub OIDC" --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" --attribute-condition="assertion.repository == 'fukuoka1980521-beep/thinking-game'" --issuer-uri="https://token.actions.githubusercontent.com" | Out-Null
 }
 
-& $Gcloud iam service-accounts describe $ServiceAccountEmail --project=$ProjectId *> $null
-if ($LASTEXITCODE -ne 0) {
+$ServiceAccountArgs = @("iam","service-accounts","describe",$ServiceAccountEmail,"--project=$ProjectId")
+if (-not (Test-GcloudResource $ServiceAccountArgs)) {
   & $Gcloud iam service-accounts create $ServiceAccountId --project=$ProjectId --display-name="NEW LIFE refoundation GitHub deployer" | Out-Null
 }
 
