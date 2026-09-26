@@ -1,0 +1,173 @@
+[
+  {
+    "shadow_id": "V16S01",
+    "label": "repair-loop decision point",
+    "global_goal_id": "STGR-V14-PROSPECTIVE-REAL-WIRING",
+    "local_task_id": "DEVOS-ORCHESTRATOR-TRACE-WIRING",
+    "cumulative_events": [
+      {
+        "action_index": 1,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "event_summary": "The missing live wiring was identified and an isolated development branch was opened."
+      },
+      {
+        "action_index": 2,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "event_summary": "A prospective trace emitter and tests were added."
+      },
+      {
+        "action_index": 3,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "event_summary": "A cross-run decision gate using persistent trace history was added."
+      },
+      {
+        "action_index": 4,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "event_summary": "The Orchestrator workflow was wired to record request/result events and trace artifacts."
+      },
+      {
+        "action_index": 5,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "event_summary": "CI showed that traceContext was rejected by the request allowlist."
+      },
+      {
+        "action_index": 6,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "event_summary": "The request allowlist was patched to accept optional traceContext."
+      },
+      {
+        "action_index": 7,
+        "action_type": "TEST",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "event_summary": "Bridge CI passed after the allowlist repair."
+      },
+      {
+        "action_index": 8,
+        "action_type": "DEPLOY",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "event_summary": "The instrumentation wiring was merged to master."
+      },
+      {
+        "action_index": 9,
+        "action_type": "READ",
+        "action_result": "PARTIAL",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "event_summary": "A post-merge audit found the new trace/gate tests were not included in CI."
+      },
+      {
+        "action_index": 10,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "event_summary": "CI was updated to include the new trace/gate tests."
+      },
+      {
+        "action_index": 11,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "event_summary": "The expanded test coverage exposed a KeyError for decision in the trace emitter context."
+      }
+    ],
+    "question": "What should the agent do next to advance the global goal efficiently and safely?"
+  },
+  {
+    "shadow_id": "V16S02",
+    "label": "external-runner availability decision point",
+    "global_goal_id": "STGR-V14-PROSPECTIVE-REAL-WIRING",
+    "local_task_id": "DEVOS-ORCHESTRATOR-TRACE-WIRING",
+    "cumulative_events": [
+      {
+        "action_index": 12,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": false,
+        "event_summary": "The architecture was reviewed; the failure was localized to trace-context propagation, so one bounded emitter fix was selected."
+      },
+      {
+        "action_index": 13,
+        "action_type": "PATCH",
+        "action_result": "SUCCESS",
+        "evidence_delta": "LOCAL_ONLY_GAIN",
+        "local_success": true,
+        "event_summary": "The bounded emitter context fix was applied."
+      },
+      {
+        "action_index": 14,
+        "action_type": "TEST",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "event_summary": "Legacy bridge tests, trace/gate tests, and PowerShell syntax all passed."
+      },
+      {
+        "action_index": 15,
+        "action_type": "DEPLOY",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": true,
+        "event_summary": "CI coverage and context propagation changes were merged to master."
+      },
+      {
+        "action_index": 16,
+        "action_type": "RUN",
+        "action_result": "NO_CHANGE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "event_summary": "The live post-merge smoke was queued because the authorized self-hosted Windows runner was offline."
+      }
+    ],
+    "question": "What should the agent do next to advance the global goal efficiently and safely?"
+  },
+  {
+    "shadow_id": "V16S03",
+    "label": "measurement-conflict decision point",
+    "global_goal_id": "STGR-V14-PROSPECTIVE-REAL-WIRING",
+    "local_task_id": "DEVOS-ORCHESTRATOR-TRACE-WIRING",
+    "cumulative_events": [
+      {
+        "action_index": 17,
+        "action_type": "REPLAN",
+        "action_result": "SUCCESS",
+        "evidence_delta": "GLOBAL_EVIDENCE_GAIN",
+        "local_success": false,
+        "event_summary": "Implementation and CI were green while the authorized runner remained offline, so the workflow waited rather than changing code."
+      },
+      {
+        "action_index": 18,
+        "action_type": "TEST",
+        "action_result": "FAILURE",
+        "evidence_delta": "NEGATIVE_EVIDENCE",
+        "local_success": false,
+        "event_summary": "The trace validator failed because its timing semantics classified the current event as invalid earlier than intended."
+      }
+    ],
+    "question": "What should the agent do next to advance the global goal efficiently and safely?"
+  }
+]
