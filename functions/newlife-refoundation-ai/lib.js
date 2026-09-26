@@ -111,6 +111,26 @@ const MAX_SCENE_CONTEXT_LENGTH = 2000;
 
 const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "organize_thought"];
 
+// V40. Deployment identity/health surface for the permanent GitHub Actions ->
+// isolated-backend route: lets a client (e.g. the human-test page) confirm
+// which build it is actually talking to without spending a model call, a
+// rate-limit slot, or touching player data. `contractVersion`/`HEALTH_OPERATIONS`
+// name the two operations this contract currently treats as primary
+// (converse_turn / organize_thought, per V37 §7) -- interpret_turn and
+// generate_npc_line remain callable for compatibility/testing but are not
+// part of the health surface's own version identity.
+const HEALTH_CONTRACT_VERSION = "V40";
+const HEALTH_OPERATIONS = ["converse_turn", "organize_thought"];
+
+function buildHealthResponse(buildSha) {
+  return {
+    service: "newlife-refoundation-ai",
+    buildSha: buildSha || "unknown",
+    contractVersion: HEALTH_CONTRACT_VERSION,
+    operations: HEALTH_OPERATIONS,
+  };
+}
+
 // V37 §1. Closed set of one for this vertical slice — the client asserts
 // which case it means, but the server is the sole source of the case's
 // canon (SCENE_CANON/CHARACTER_DOSSIERS below); the client never sends the
@@ -702,7 +722,9 @@ function applyCors(req, res) {
     res.set("Access-Control-Allow-Origin", origin);
     res.set("Vary", "Origin");
   }
-  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  // V40: GET is the no-model-call health/version path; existing POST
+  // operation contract and OPTIONS preflight handling are unchanged.
+  res.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type");
 }
 
@@ -718,6 +740,9 @@ module.exports = {
   DIALOGUE_SPEAKERS,
   UNCERTAINTY_LEVELS,
   OPERATIONS,
+  HEALTH_CONTRACT_VERSION,
+  HEALTH_OPERATIONS,
+  buildHealthResponse,
   MAX_UTTERANCE_LENGTH,
   MAX_CASE_CONTEXT_LENGTH,
   MAX_SCENE_CONTEXT_LENGTH,

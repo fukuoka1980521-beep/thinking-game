@@ -530,10 +530,10 @@ describe("functions/newlife-refoundation-ai/lib.js — applyCors", () => {
     expect(calls.headers["Access-Control-Allow-Origin"]).toBeUndefined();
   });
 
-  it("only ever allows POST and OPTIONS", () => {
+  it("only ever allows GET, POST, and OPTIONS (V40 adds GET for the no-model-call health path)", () => {
     const { res, calls } = mockRes();
     lib.applyCors(mockReq(), res);
-    expect(calls.headers["Access-Control-Allow-Methods"]).toBe("POST, OPTIONS");
+    expect(calls.headers["Access-Control-Allow-Methods"]).toBe("GET, POST, OPTIONS");
   });
 });
 
@@ -635,6 +635,44 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V40)", () => {
+  it("returns the exact safe shape with buildSha defaulted to \"unknown\" when no build SHA is supplied", () => {
+    expect(lib.buildHealthResponse(undefined)).toEqual({
+      service: "newlife-refoundation-ai",
+      buildSha: "unknown",
+      contractVersion: "V40",
+      operations: ["converse_turn", "organize_thought"],
+    });
+    // No-arg call (matches how index.js calls it when the env var is unset).
+    expect(lib.buildHealthResponse()).toEqual({
+      service: "newlife-refoundation-ai",
+      buildSha: "unknown",
+      contractVersion: "V40",
+      operations: ["converse_turn", "organize_thought"],
+    });
+  });
+
+  it("echoes a supplied build SHA verbatim instead of defaulting", () => {
+    expect(lib.buildHealthResponse("abc1234")).toEqual({
+      service: "newlife-refoundation-ai",
+      buildSha: "abc1234",
+      contractVersion: "V40",
+      operations: ["converse_turn", "organize_thought"],
+    });
+  });
+
+  it("never includes project/location/model identity, credentials, or any player-data field", () => {
+    const response = lib.buildHealthResponse("abc1234") as Record<string, unknown>;
+    expect(Object.keys(response).sort()).toEqual(["buildSha", "contractVersion", "operations", "service"]);
+    const serialized = JSON.stringify(response);
+    expect(serialized).not.toMatch(/project|location|apiKey|token|credential/i);
+  });
+
+  it("is a pure function of its single argument -- takes no client/model dependency and cannot itself call Vertex AI", () => {
+    expect(lib.buildHealthResponse.length).toBe(1);
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — no secret material", () => {
   it("never hardcodes an API key or bearer token anywhere in this function's own source", () => {
     const fs = require("node:fs");
@@ -659,6 +697,41 @@ describe("functions/newlife-refoundation-ai/index.js — prior real Vertex AI le
     const fs = require("node:fs");
     const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-refoundation-ai", "index.js"), "utf-8");
     expect(source).not.toMatch(/console\.(log|error)\([^)]*req\.body/);
+  });
+});
+
+describe("functions/newlife-refoundation-ai/index.js — health/version path (V40)", () => {
+  const fs = require("node:fs");
+  const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-refoundation-ai", "index.js"), "utf-8");
+
+  it("imports buildHealthResponse from lib.js", () => {
+    expect(source).toMatch(/buildHealthResponse/);
+    expect(source).toMatch(/require\(["']\.\/lib["']\)/);
+  });
+
+  it("handles GET by returning buildHealthResponse(...) and returning immediately, before the POST-only 405 branch", () => {
+    expect(source).toMatch(
+      /req\.method === "GET"\)[\s\S]{0,120}res\.status\(200\)\.json\(buildHealthResponse\(process\.env\.NEWLIFE_REFOUNDATION_BUILD_SHA\)\)[\s\S]{0,40}return;/
+    );
+    // The GET branch must appear before the generic "not POST -> 405" check,
+    // so GET is handled on its own rather than falling into method_not_allowed.
+    const getBranchIndex = source.indexOf('req.method === "GET"');
+    const postOnlyCheckIndex = source.indexOf('req.method !== "POST"');
+    expect(getBranchIndex).toBeGreaterThan(-1);
+    expect(postOnlyCheckIndex).toBeGreaterThan(-1);
+    expect(getBranchIndex).toBeLessThan(postOnlyCheckIndex);
+  });
+
+  it("does not call the model, the rate limiter, or read req.body anywhere in the GET branch", () => {
+    const getBranchStart = source.indexOf('req.method === "GET"');
+    const postOnlyCheckIndex = source.indexOf('req.method !== "POST"');
+    const getBranch = source.slice(getBranchStart, postOnlyCheckIndex);
+    expect(getBranch).not.toMatch(/callModel|getClient|modelCallLimiter|req\.body|validateInput/);
+  });
+
+  it("does not change the existing OPTIONS preflight or POST-only 405 responses", () => {
+    expect(source).toContain('res.status(204).send("");');
+    expect(source).toContain('res.status(405).json({ error: "method_not_allowed" });');
   });
 });
 

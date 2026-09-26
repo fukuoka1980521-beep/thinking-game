@@ -10,6 +10,7 @@ const {
   normalizeConverseResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
+  buildHealthResponse,
   INTERPRET_SYSTEM_INSTRUCTION,
   NPC_SYSTEM_INSTRUCTION,
   CONVERSE_SYSTEM_INSTRUCTION,
@@ -125,6 +126,14 @@ exports.newlifeRefoundationAi = async (req, res) => {
 
   if (req.method === "OPTIONS") {
     res.status(204).send("");
+    return;
+  }
+  // V40: no-model-call health/version path. Returns before any validation,
+  // rate-limit consumption, or Vertex AI client construction -- a caller can
+  // confirm which build a deployed instance is running without spending a
+  // model call, a rate-limit slot, or sending any player data.
+  if (req.method === "GET") {
+    res.status(200).json(buildHealthResponse(process.env.NEWLIFE_REFOUNDATION_BUILD_SHA));
     return;
   }
   if (req.method !== "POST") {

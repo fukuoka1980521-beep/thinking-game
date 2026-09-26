@@ -74,6 +74,26 @@ a second, independent time (`isValidRawConverseResult` /
 `isValidRawNpcLine`) before trusting it — same two-layer discipline
 `functions/newlife-dialogue/` already uses.
 
+## Health / deployment identity (V40)
+
+`GET` on the same endpoint (no body, no `operation`) returns `200` with:
+
+```json
+{
+  "service": "newlife-refoundation-ai",
+  "buildSha": "<NEWLIFE_REFOUNDATION_BUILD_SHA env var, or \"unknown\">",
+  "contractVersion": "V40",
+  "operations": ["converse_turn", "organize_thought"]
+}
+```
+
+This never calls Vertex AI, never consumes a rate-limit slot, and never reads
+player data — it exists so a test page (or the permanent GitHub Actions
+deploy workflow) can confirm which build a deployed instance is actually
+running without spending a model call. `NEWLIFE_REFOUNDATION_BUILD_SHA` is not
+set by any code in this repo yet; a future deploy step may set it to the
+deployed commit SHA.
+
 ## Prompt-injection / tone-bias defenses
 
 - The `interpret_turn` system instruction explicitly tells the model to
