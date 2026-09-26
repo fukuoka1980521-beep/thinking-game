@@ -39,7 +39,6 @@ const modelCallLimiter = createFixedWindowLimiter(MAX_MODEL_CALLS_PER_MINUTE, 60
 
 const INTERPRET_RESPONSE_SCHEMA = buildInterpretResponseSchema(Type);
 const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
-const CONVERSE_RESPONSE_SCHEMA = buildConverseResponseSchema(Type);
 const ORGANIZE_THOUGHT_RESPONSE_SCHEMA = buildOrganizeThoughtResponseSchema(Type);
 
 let genAiClient;
@@ -98,7 +97,7 @@ async function attemptConverseTurn(client, body) {
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
     prompt: buildConversePrompt(body),
-    responseSchema: CONVERSE_RESPONSE_SCHEMA,
+    responseSchema: buildConverseResponseSchema(Type, body.caseId),
   });
   if (!text) return null;
 
@@ -117,7 +116,7 @@ async function attemptNpcExchangeTurn(client, body) {
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
     prompt: buildNpcExchangePrompt(body),
-    responseSchema: CONVERSE_RESPONSE_SCHEMA,
+    responseSchema: buildConverseResponseSchema(Type, body.caseId),
   });
   if (!text) return null;
 
@@ -148,7 +147,7 @@ exports.newlifeRefoundationAi = async (req, res) => {
     res.status(204).send("");
     return;
   }
-  // V43: no-model-call health/version path. Returns before any validation,
+  // V44: no-model-call health/version path. Returns before any validation,
   // rate-limit consumption, or Vertex AI client construction -- a caller can
   // confirm which build a deployed instance is running without spending a
   // model call, a rate-limit slot, or sending any player data.

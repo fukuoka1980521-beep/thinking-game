@@ -379,6 +379,25 @@ describe("functions/newlife-refoundation-ai/lib.js — V43 second-case generaliz
     const normalized = lib.normalizeConverseResponse(parsed, "HINA", "STREET_TRIAL_V1");
     expect(normalized.sceneStatus).toBe("AWAIT_PLAYER");
     expect(normalized.nextNpc).toBeNull();
+    expect(normalized.sceneRevisionProposal).toEqual({ hasProposal: false, revisedText: "", changeSummary: "" });
+  });
+
+  it("suppresses theater-only scene revision metadata even if a street model response tries to provide it", () => {
+    const parsed = {
+      npcLine: "説明すれば伝わると思います。",
+      understoodPlayerMeaning: "今日は口頭説明で対応する",
+      candidateTurn: { action: "OTHER", boundaryMode: "NOT_RELEVANT", relationalEvents: [], needsClarification: false },
+      candidateFactRevealIds: [],
+      candidateCommitments: [],
+      uncertainty: "LOW",
+      thoughtSupportSignal: false,
+      sceneStatus: "AWAIT_PLAYER",
+      nextNpc: null,
+      sceneRevisionProposal: { hasProposal: true, revisedText: "台本らしき文", changeSummary: "irrelevant" },
+    };
+    const normalized = lib.normalizeConverseResponse(parsed, "YOHEI", "STREET_TRIAL_V1");
+    expect(normalized.npcLine).toContain("説明");
+    expect(normalized.sceneRevisionProposal).toEqual({ hasProposal: false, revisedText: "", changeSummary: "" });
   });
 });
 
@@ -595,6 +614,16 @@ describe("functions/newlife-refoundation-ai/lib.js — converse_turn / organize_
     expect(schema.required).toContain("sceneRevisionProposal");
   });
 
+  it("V44 omits theater-only revision metadata from the street response schema", () => {
+    const streetSchema = lib.buildConverseResponseSchema(FakeType, "STREET_TRIAL_V1");
+    expect(lib.caseUsesSceneRevision("COMMUNITY_THEATER_V1")).toBe(true);
+    expect(lib.caseUsesSceneRevision("STREET_TRIAL_V1")).toBe(false);
+    expect(streetSchema.properties.sceneRevisionProposal).toBeUndefined();
+    expect(streetSchema.required).not.toContain("sceneRevisionProposal");
+    expect(streetSchema.required).toContain("npcLine");
+    expect(streetSchema.required).toContain("sceneStatus");
+  });
+
   it("the organize_thought schema has no npc field at all (V37 §5 separation)", () => {
     const schema = lib.buildOrganizeThoughtResponseSchema(FakeType);
     expect(Object.keys(schema.properties)).not.toContain("npc");
@@ -752,7 +781,7 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   it("the generate_npc_line schema is restricted to { npc, text } for MIKA/RYO only", () => {
     const FakeType = { OBJECT: "OBJECT", STRING: "STRING" };
     const schema = lib.buildNpcResponseSchema(FakeType);
-    expect(schema.properties.npc.enum).toEqual(["MIKA", "RYO"]);
+    expect(schema.properties.npc.enum).toEqual(lib.NPC_IDS);
     expect(Object.keys(schema.properties).sort()).toEqual(["npc", "text"]);
     expect(schema.required).toEqual(["npc", "text"]);
   });
@@ -773,19 +802,19 @@ describe("functions/newlife-refoundation-ai/lib.js — schema/prompt constructio
   });
 });
 
-describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V43)", () => {
+describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V44)", () => {
   it("returns the exact safe shape with buildSha defaulted to \"unknown\" when no build SHA is supplied", () => {
     expect(lib.buildHealthResponse(undefined)).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V43",
+      contractVersion: "V44",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
     // No-arg call (matches how index.js calls it when the env var is unset).
     expect(lib.buildHealthResponse()).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "unknown",
-      contractVersion: "V43",
+      contractVersion: "V44",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
@@ -794,7 +823,7 @@ describe("functions/newlife-refoundation-ai/lib.js — buildHealthResponse (V43)
     expect(lib.buildHealthResponse("abc1234")).toEqual({
       service: "newlife-refoundation-ai",
       buildSha: "abc1234",
-      contractVersion: "V43",
+      contractVersion: "V44",
       operations: ["converse_turn", "continue_npc_exchange", "organize_thought"],
     });
   });
@@ -879,7 +908,8 @@ describe("functions/newlife-refoundation-ai/index.js — converse_turn envelope 
 
   it("imports and calls normalizeConverseResponse instead of returning the raw parsed model output directly", () => {
     expect(source).toMatch(/normalizeConverseResponse/);
-    expect(source).toContain("normalizeConverseResponse(parsed, body.targetNpc)");
+    expect(source).toContain("normalizeConverseResponse(parsed, body.targetNpc, body.caseId)");
+    expect(source).toContain("buildConverseResponseSchema(Type, body.caseId)");
   });
 
   it("retries converse_turn exactly once when no usable line comes back, before failing closed", () => {
