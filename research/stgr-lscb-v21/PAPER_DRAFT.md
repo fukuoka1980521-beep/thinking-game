@@ -144,14 +144,12 @@ Both completed normally without mandatory trigger activation.
 
 ### 6.1 Episode-level paired decisions
 
-| Episode | Natural state | Shadow next operation | Actual gated operation | Main evidence obtained |
-|---|---|---|---|---|
-| 001 | repeated repair / local-global divergence | MUTATE_LOCAL | REPLAN_LOCAL | architecture was rechecked before another repair |
-| 002 | authorized live runner unavailable | WAIT | WAIT | availability blocker remained a wait condition, not a patch target |
-| 003 | trace-validator timing conflict | MUTATE_LOCAL | REPLAN_LOCAL | measurement semantics were separated from implementation repair |
-| 004 | focused repair PASS, unrelated full-suite failures | SWITCH_TASK_OR_LAYER | OBSERVE_OR_TEST | clean HEAD reproduced the same failures; scope expansion was unnecessary |
-| 005 | drift audit FAIL, later validator ALL_PASS, publish complete | STOP_LOCAL | OBSERVE_OR_TEST | later validator covered a different invariant; audit state still required interpretation |
-| 006 | successful merge followed by local/remote Git divergence | MUTATE_LOCAL | OBSERVE_OR_TEST | patch-equivalence inspection identified unique local work that blind reset could discard |
+- **Episode 001 — repeated repair / local-global divergence.** Shadow: `MUTATE_LOCAL`. Gate: `REPLAN_LOCAL`. Evidence: architecture was rechecked before another repair.
+- **Episode 002 — authorized live runner unavailable.** Shadow: `WAIT`. Gate: `WAIT`. Evidence: the availability blocker remained a wait condition rather than becoming a patch target.
+- **Episode 003 — trace-validator timing conflict.** Shadow: `MUTATE_LOCAL`. Gate: `REPLAN_LOCAL`. Evidence: measurement semantics were separated from implementation repair.
+- **Episode 004 — focused repair PASS with unrelated full-suite failures.** Shadow: `SWITCH_TASK_OR_LAYER`. Gate: `OBSERVE_OR_TEST`. Evidence: clean HEAD reproduced the same failures, showing that scope expansion was unnecessary.
+- **Episode 005 — drift audit FAIL, later validator ALL_PASS, publish complete.** Shadow: `STOP_LOCAL`. Gate: `OBSERVE_OR_TEST`. Evidence: the later validator covered a different invariant, so the audit state still required interpretation.
+- **Episode 006 — successful merge followed by local/remote Git divergence.** Shadow: `MUTATE_LOCAL`. Gate: `OBSERVE_OR_TEST`. Evidence: patch-equivalence inspection identified unique local work that a blind reset could discard.
 
 ### 6.2 Shadow operation profile
 
