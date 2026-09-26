@@ -751,24 +751,19 @@ function buildConverseResponseSchema(Type, caseId = "COMMUNITY_THEATER_V1") {
         required: ["hasProposal", "revisedText", "changeSummary"],
       },
     },
-    required: [
-      "npc",
-      "npcLine",
-      "understoodPlayerMeaning",
-      "candidateTurn",
-      "candidateFactRevealIds",
-      "candidateCommitments",
-      "uncertainty",
-      "thoughtSupportSignal",
-      "sceneStatus",
-      "nextNpc",
-      "sceneRevisionProposal",
-    ],
+    // V46: only the visible dialogue line is universally required from the
+    // model. All effect/progression metadata is optional and is independently
+    // normalized to conservative defaults when absent or malformed.
+    required: ["npcLine"],
   };
 
-  if (!caseUsesSceneRevision(caseId)) {
+  if (caseUsesSceneRevision(caseId)) {
+    // Theater's concrete-script workflow still needs an explicit artifact
+    // decision on every turn so the browser can distinguish "no draft" from
+    // "draft exists".
+    schema.required.push("sceneRevisionProposal");
+  } else {
     delete schema.properties.sceneRevisionProposal;
-    schema.required = schema.required.filter((key) => key !== "sceneRevisionProposal");
   }
   return schema;
 }

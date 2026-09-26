@@ -130,6 +130,7 @@ async function attemptNpcExchangeTurn(client, body) {
   return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
 }
 
+
 /**
  * HTTP Cloud Function (Gen 2). POST-only, stateless. One operation
  * discriminator (`interpret_turn` / `generate_npc_line` / `converse_turn` /

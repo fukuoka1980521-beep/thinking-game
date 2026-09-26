@@ -456,6 +456,26 @@ describe("functions/newlife-refoundation-ai/lib.js — V45 ambiguous relationshi
     expect(lib.caseUsesSceneRevision("CAFE_BOUNDARY_V1")).toBe(false);
   });
 
+  it("V46 salvages a cafe reply when the model returns only a usable npcLine", () => {
+    const normalized = lib.normalizeConverseResponse(
+      { npcLine: "今日ここで受け入れられる席数は、美代子さんに決めてもらいましょう。" },
+      "FUMIKO",
+      "CAFE_BOUNDARY_V1",
+    );
+    expect(normalized).not.toBeNull();
+    expect(normalized.npc).toBe("FUMIKO");
+    expect(normalized.npcLine).toContain("美代子さん");
+    expect(normalized.candidateTurn).toEqual({
+      action: "CLARIFY",
+      boundaryMode: "UNKNOWN",
+      relationalEvents: [],
+      needsClarification: true,
+    });
+    expect(normalized.sceneStatus).toBe("AWAIT_PLAYER");
+    expect(normalized.nextNpc).toBeNull();
+    expect(normalized.sceneRevisionProposal).toEqual({ hasProposal: false, revisedText: "", changeSummary: "" });
+  });
+
   it("NPC handoff cannot jump from the cafe case to Hina/Yohei", () => {
     const parsed = {
       npcLine: "今いる方をどうするかは、私が決めたいの。",
@@ -679,23 +699,26 @@ describe("functions/newlife-refoundation-ai/lib.js — converse_turn / organize_
     expect(candidateTurn.properties.relationalEvents.items.enum).toEqual(lib.RELATIONAL_EVENTS);
     expect(schema.properties.uncertainty.enum).toEqual(lib.UNCERTAINTY_LEVELS);
     expect(schema.required).toContain("npcLine");
-    expect(schema.required).toContain("candidateTurn");
+    expect(schema.required).not.toContain("candidateTurn");
     expect(schema.properties.sceneStatus.enum).toEqual(lib.SCENE_STATUSES);
     expect(schema.properties.nextNpc.enum).toEqual(lib.NPC_IDS);
-    expect(schema.required).toContain("sceneStatus");
-    expect(schema.required).toContain("nextNpc");
+    expect(schema.required).not.toContain("sceneStatus");
+    expect(schema.required).not.toContain("nextNpc");
     expect(schema.properties.sceneRevisionProposal.required).toEqual(["hasProposal", "revisedText", "changeSummary"]);
     expect(schema.required).toContain("sceneRevisionProposal");
   });
 
-  it("V44 omits theater-only revision metadata from the street response schema", () => {
+  it("V46 requires only visible dialogue for non-theater cases and leaves effect metadata optional", () => {
     const streetSchema = lib.buildConverseResponseSchema(FakeType, "STREET_TRIAL_V1");
+    const cafeSchema = lib.buildConverseResponseSchema(FakeType, "CAFE_BOUNDARY_V1");
     expect(lib.caseUsesSceneRevision("COMMUNITY_THEATER_V1")).toBe(true);
     expect(lib.caseUsesSceneRevision("STREET_TRIAL_V1")).toBe(false);
     expect(streetSchema.properties.sceneRevisionProposal).toBeUndefined();
-    expect(streetSchema.required).not.toContain("sceneRevisionProposal");
-    expect(streetSchema.required).toContain("npcLine");
-    expect(streetSchema.required).toContain("sceneStatus");
+    expect(cafeSchema.properties.sceneRevisionProposal).toBeUndefined();
+    expect(streetSchema.required).toEqual(["npcLine"]);
+    expect(cafeSchema.required).toEqual(["npcLine"]);
+    expect(streetSchema.properties.candidateTurn).toBeDefined();
+    expect(cafeSchema.properties.sceneStatus).toBeDefined();
   });
 
   it("the organize_thought schema has no npc field at all (V37 §5 separation)", () => {
