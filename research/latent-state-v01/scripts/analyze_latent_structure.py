@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exploratory latent-structure analyzer v0.2.
+"""Exploratory OLSR analyzer v0.3.
 
 Research rules:
 - Dataset roles are explicit and never pooled implicitly.
@@ -146,6 +146,205 @@ def svd_summary(matrix: np.ndarray, columns: list[str], case_ids: list[str], max
             ],
         })
     return {"status": "OK", "components": components}
+
+
+
+def permutation_component_signal(
+    matrix: np.ndarray,
+    max_components: int,
+    n_permutations: int = 200,
+    seed: int = 0,
+):
+    """Column-wise permutation null preserving feature marginals."""
+    if matrix.shape[0] < 8 or matrix.shape[1] < 2:
+        return {
+            "status": "INSUFFICIENT_DIMENSIONS",
+            "n_cases": int(matrix.shape[0]),
+            "n_features": int(matrix.shape[1]),
+        }
+    centered = matrix - matrix.mean(axis=0, keepdims=True)
+    observed = np.linalg.svd(centered, compute_uv=False)
+    k = min(max_components, len(observed), matrix.shape[0] - 1)
+    observed = observed[:k]
+    rng = np.random.default_rng(seed)
+    null = np.zeros((n_permutations, k), dtype=float)
+    for b in range(n_permutations):
+        permuted = matrix.copy()
+        for j in range(permuted.shape[1]):
+            permuted[:, j] = rng.permutation(permuted[:, j])
+        permuted -= permuted.mean(axis=0, keepdims=True)
+        sv = np.linalg.svd(permuted, compute_uv=False)[:k]
+        null[b, :len(sv)] = sv
+    q95 = np.quantile(null, 0.95, axis=0)
+    return {
+        "status": "OK",
+        "n_permutations": n_permutations,
+        "seed": seed,
+        "components": [
+            {
+                "component": i + 1,
+                "observed_singular_value": float(observed[i]),
+                "null_95th_percentile": float(q95[i]),
+                "exceeds_null_95": bool(observed[i] > q95[i]),
+            }
+            for i in range(k)
+        ],
+        "interpretation": (
+            "Exploratory permutation null preserving marginal feature frequencies; "
+            "not a formal population-level significance claim."
+        ),
+    }
+
+
+def binary_mca_lens(
+    values: np.ndarray,
+    case_ids: list[str],
+    max_components: int,
+    min_coverage: float = 0.80,
+):
+    """Multiple correspondence analysis on sufficiently complete binary features."""
+    n = values.shape[0]
+    if n < 8:
+        return {"status": "INSUFFICIENT_CASES", "n_cases": n}
+
+    feature_indices = []
+    features = []
+    for j, feature in enumerate(CORE_FEATURES):
+        col = values[:, j]
+        observed = ~np.isnan(col)
+        if float(observed.mean()) < min_coverage:
+            continue
+        vals = np.unique(col[observed])
+        if len(vals) < 2:
+            continue
+        feature_indices.append(j)
+        features.append(feature)
+
+    if len(features) < 2:
+        return {
+            "status": "INSUFFICIENT_ELIGIBLE_FEATURES",
+            "eligible_features": features,
+            "min_coverage": min_coverage,
+        }
+
+    selected = values[:, feature_indices]
+    complete_mask = ~np.isnan(selected).any(axis=1)
+    complete = selected[complete_mask]
+    complete_ids = [cid for cid, keep in zip(case_ids, complete_mask) if keep]
+    min_rows = max(8, 2 * len(features))
+    if complete.shape[0] < min_rows:
+        return {
+            "status": "INSUFFICIENT_COMPLETE_CASES",
+            "eligible_features": features,
+            "complete_cases": int(complete.shape[0]),
+            "minimum_complete_cases": min_rows,
+            "min_coverage": min_coverage,
+        }
+
+    q = len(features)
+    g = np.zeros((complete.shape[0], 2 * q), dtype=float)
+    category_names = []
+    category_features = []
+    for j, feature in enumerate(features):
+        g[:, 2*j] = (complete[:, j] == 0).astype(float)
+        g[:, 2*j + 1] = (complete[:, j] == 1).astype(float)
+        category_names.extend([f"{feature}=0", f"{feature}=1"])
+        category_features.extend([feature, feature])
+
+    total = float(g.sum())
+    p = g / total
+    r = p.sum(axis=1)
+    c = p.sum(axis=0)
+    expected = np.outer(r, c)
+    denom = np.sqrt(expected)
+    valid_categories = c > 0
+    standardized = np.zeros_like(p)
+    standardized[:, valid_categories] = (
+        (p[:, valid_categories] - expected[:, valid_categories])
+        / denom[:, valid_categories]
+    )
+
+    u, singular, vt = np.linalg.svd(standardized, full_matrices=False)
+    k = min(max_components, len(singular), complete.shape[0] - 1)
+    inertia = singular[:k] ** 2
+    total_inertia = float((singular ** 2).sum()) or 1.0
+    coords = u[:, :k] * singular[:k]
+    components = []
+
+    for i in range(k):
+        loading = vt[i]
+        agg = {}
+        for name, feature, value in zip(category_names, category_features, loading):
+            agg[feature] = agg.get(feature, 0.0) + abs(float(value))
+        top_features = sorted(agg.items(), key=lambda x: x[1], reverse=True)[:8]
+        order = np.argsort(np.abs(loading))[::-1][:10]
+        case_order = np.argsort(np.abs(coords[:, i]))[::-1][:5]
+        components.append({
+            "component": i + 1,
+            "inertia_fraction": float(inertia[i] / total_inertia),
+            "top_features": [
+                {"feature": name, "aggregate_abs_loading": score}
+                for name, score in top_features
+            ],
+            "top_categories": [
+                {
+                    "category": category_names[j],
+                    "loading": float(loading[j]),
+                }
+                for j in order
+            ],
+            "extreme_cases": [
+                {
+                    "case_id": complete_ids[j],
+                    "coordinate": float(coords[j, i]),
+                }
+                for j in case_order
+            ],
+        })
+
+    return {
+        "status": "OK",
+        "method": "MCA via correspondence analysis of complete binary indicator matrix",
+        "eligible_features": features,
+        "complete_cases": int(complete.shape[0]),
+        "min_coverage": min_coverage,
+        "components": components,
+        "interpretation": (
+            "Categorical-data sensitivity lens. Components are exploratory and "
+            "must not be treated as causal mechanisms."
+        ),
+    }
+
+
+def cross_method_convergence(structured: dict[str, Any], mca: dict[str, Any]):
+    if structured.get("status") != "OK" or mca.get("status") != "OK":
+        return {"status": "UNAVAILABLE"}
+    s_components = structured.get("components") or []
+    m_components = mca.get("components") or []
+    if not s_components or not m_components:
+        return {"status": "UNAVAILABLE"}
+
+    svd_top = {
+        x["feature"]
+        for x in s_components[0].get("top_loadings", [])[:5]
+    }
+    mca_top = {
+        x["feature"]
+        for x in m_components[0].get("top_features", [])[:5]
+    }
+    union = svd_top | mca_top
+    score = (len(svd_top & mca_top) / len(union)) if union else 0.0
+    return {
+        "status": "OK",
+        "first_component_top5_jaccard": float(score),
+        "svd_top_features": sorted(svd_top),
+        "mca_top_features": sorted(mca_top),
+        "candidate_convergent": bool(score >= 0.40),
+        "threshold_note": (
+            "Top-feature Jaccard >=0.40 is an operational convergence heuristic, "
+            "not statistical proof."
+        ),
+    }
 
 
 def prepare_semantic_matrix(values: np.ndarray, min_coverage: float):
@@ -309,6 +508,9 @@ def semantic_structured_svd(values: np.ndarray, case_ids: list[str], max_compone
     out["leave_one_out_stability"] = leave_one_out_component_stability(
         values, source_indices, matrix, max_components
     )
+    out["permutation_null"] = permutation_component_signal(
+        matrix, max_components
+    )
     return out
 
 
@@ -431,29 +633,61 @@ def topic_model(rows: list[dict[str, Any]], n_topics: int):
     }
 
 
-def analysis_readiness(rows: list[dict[str, Any]], structured: dict[str, Any]):
+def analysis_readiness(
+    rows: list[dict[str, Any]],
+    structured: dict[str, Any],
+    mca: dict[str, Any],
+    convergence: dict[str, Any],
+):
     n = len(rows)
     projects = len({r.get("project") for r in rows if r.get("project")})
     tracks = len({r.get("track") for r in rows if r.get("track")})
+    eligible_count = len(structured.get("eligible_features") or [])
+    dynamic_min_cases = max(24, 2 * max(1, eligible_count))
+
+    stability = structured.get("leave_one_out_stability", {})
+    stable = stability.get("first_component_candidate_stable") is True
+    permutation = structured.get("permutation_null", {})
+    permutation_components = permutation.get("components") or []
+    exceeds_null = bool(
+        permutation_components
+        and permutation_components[0].get("exceeds_null_95") is True
+    )
+    mca_ok = mca.get("status") == "OK"
+    convergent = convergence.get("candidate_convergent") is True
 
     if n < 8 or projects < 2 or tracks < 2:
         level = "ACCUMULATE_ONLY"
+    elif (
+        n >= dynamic_min_cases
+        and projects >= 3
+        and tracks >= 2
+        and stable
+        and exceeds_null
+        and mca_ok
+        and convergent
+    ):
+        level = "CANDIDATE_STRUCTURE_ONLY"
     else:
-        stability = structured.get("leave_one_out_stability", {})
-        stable = stability.get("first_component_candidate_stable") is True
-        if n >= 12 and projects >= 3 and tracks >= 2 and stable:
-            level = "CANDIDATE_STRUCTURE_ONLY"
-        else:
-            level = "EXPLORATORY_ONLY"
+        level = "EXPLORATORY_ONLY"
 
     return {
         "level": level,
         "n_cases": n,
         "n_projects": projects,
         "n_tracks": tracks,
+        "eligible_structured_features": eligible_count,
+        "dynamic_min_cases_for_candidate": dynamic_min_cases,
+        "checks": {
+            "leave_one_out_stable": stable,
+            "first_component_exceeds_permutation_null_95": exceeds_null,
+            "mca_available": mca_ok,
+            "cross_method_candidate_convergent": convergent,
+        },
         "policy": (
-            "Operational anti-overfit gate only. It does not establish statistical "
-            "power, validity, prevalence, or causality."
+            "Operational anti-overfit gate only. The dynamic case floor, "
+            "permutation null, MCA sensitivity lens, and convergence threshold "
+            "do not establish statistical power, validity, prevalence, or causality."
         ),
         "factor_naming_allowed": level == "CANDIDATE_STRUCTURE_ONLY",
         "development_os_promotion_allowed": False,
@@ -467,12 +701,13 @@ def main():
     p.add_argument("--max-components", type=int, default=5)
     p.add_argument("--min-coverage", type=float, default=0.60)
     p.add_argument("--topics", type=int, default=3)
+    p.add_argument("--mca-min-coverage", type=float, default=0.80)
     p.add_argument("--output", type=Path)
     args = p.parse_args()
 
     rows = load_jsonl(args.jsonl, args.dataset_role)
     result: dict[str, Any] = {
-        "research_phase": "latent-state-reliability-v0.2",
+        "research_phase": "operational-latent-state-reliability-v0.3",
         "dataset_role": args.dataset_role,
         "causal_interpretation_allowed": False,
         "n_cases": len(rows),
@@ -487,8 +722,17 @@ def main():
         result["structured_feature_svd"] = semantic_structured_svd(
             values, ids, args.max_components, args.min_coverage
         )
+        result["binary_mca_lens"] = binary_mca_lens(
+            values, ids, args.max_components, args.mca_min_coverage
+        )
+        result["cross_method_convergence"] = cross_method_convergence(
+            result["structured_feature_svd"], result["binary_mca_lens"]
+        )
         result["analysis_readiness"] = analysis_readiness(
-            rows, result["structured_feature_svd"]
+            rows,
+            result["structured_feature_svd"],
+            result["binary_mca_lens"],
+            result["cross_method_convergence"],
         )
         result["missingness_svd"] = missingness_svd(
             missingness, ids, args.max_components
