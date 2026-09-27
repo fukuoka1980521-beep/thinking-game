@@ -1,0 +1,46 @@
+# Latent State Reliability Research v0.1
+
+This phase extends the STGR / LSCB program without modifying the frozen six-episode confirmatory dataset.
+
+## Goal
+
+Study whether three apparently different problems share lower-dimensional latent structure:
+
+1. Local Task Momentum / Global Reassessment Omission
+2. Cross-chat answer variance
+3. Hallucination / unsupported factualization
+
+The core idea is to separate three layers:
+
+- **Layer 1 — Observed:** what was actually seen
+- **Layer 2 — Latent Structure:** which hidden dimensions or mixtures may explain recurring observed patterns
+- **Layer 3 — Causal Test:** whether manipulating a candidate latent factor changes outcomes
+
+v0.1 is **Layer 1 + Layer 2 only**. It does not claim causality.
+
+## Methods
+
+Three complementary lenses are supported:
+
+- structured observed-feature matrix -> SVD/PCA-style low-dimensional decomposition
+- precomputed semantic embeddings -> SVD of semantic space
+- case text -> optional LDA topic-mixture analysis
+
+No single decomposition is treated as ground truth. A latent factor is only a hypothesis generator until replicated prospectively and, if appropriate, tested causally.
+
+## Prospective boundary
+
+- No synthetic cases count as research observations.
+- Unit-test fixtures may be synthetic but are excluded from datasets and results.
+- The frozen STGR six episodes may be mapped later as **historical calibration only** and never added to the new prospective count.
+- Natural cases are captured during ordinary development, research, administrative, and business work.
+- No case is created merely to improve ratios or make a factor look stable.
+
+## Files
+
+- `PROTOCOL.md` — prospective research protocol
+- `CASE_SCHEMA.json` — machine-readable case schema
+- `cases/README.md` — storage rules
+- `scripts/analyze_latent_structure.py` — exploratory decomposition
+- `scripts/test_analyze_latent_structure.py` — synthetic unit tests only
+- `HISTORICAL_BOUNDARY.md` — separation from STGR confirmatory evidence

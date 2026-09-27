@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Latent State Reliability Case v0.1",
+  "type": "object",
+  "required": [
+    "case_id",
+    "captured_at",
+    "project",
+    "track",
+    "natural_case",
+    "summary",
+    "observed_features",
+    "claim_state",
+    "evidence_refs"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string"
+    },
+    "captured_at": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "track": {
+      "enum": [
+        "LTM",
+        "ANSWER_VARIANCE",
+        "HALLUCINATION",
+        "MULTI_TRACK"
+      ]
+    },
+    "natural_case": {
+      "const": true
+    },
+    "parent_case_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "question_or_task_fingerprint": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "context_delta": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_set_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "core_claim_or_action_diff": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "classification": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "epistemic_failure_views": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "claim_state": {
+      "enum": [
+        "VERIFIED",
+        "SUPPORTED_INFERENCE",
+        "UNVERIFIED",
+        "CONFLICTED",
+        "UNKNOWN"
+      ]
+    },
+    "impact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "intervention": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "outcome": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hypothesis_status": {
+      "enum": [
+        "ACTIVE",
+        "INSUFFICIENT_EVIDENCE",
+        "REFUTED",
+        "CORRECTED",
+        "NOT_APPLICABLE",
+        "UNKNOWN"
+      ]
+    },
+    "observed_features": {
+      "type": "object",
+      "additionalProperties": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "enum": [
+          0,
+          1,
+          null
+        ]
+      }
+    },
+    "embedding": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "number"
+      }
+    },
+    "embedding_model": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "embedding_generated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "text_for_topic_model": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
