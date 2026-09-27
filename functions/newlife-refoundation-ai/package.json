@@ -1,0 +1,14 @@
+{
+  "name": "thinking-game-newlife-refoundation-ai-function",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated live provider for the NEW LIFE refoundation vertical slice (V13-V24 turn ontology, V27 ending vector, V31 NPC generation contract). One stateless HTTP Cloud Function, two operations (interpret_turn / generate_npc_line). Separate from functions/dialogue/ (CASE1) and functions/newlife-dialogue/ (legacy NEW LIFE) -- does not reuse their response ontology or character set. Holds no secret material -- authenticates to Vertex AI via the function's own Cloud Run service account (Application Default Credentials), never a hardcoded API key. Never persists anything, never logs request bodies or player free text.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.0",
+    "@google/genai": "^0.3.0"
+  }
+}
