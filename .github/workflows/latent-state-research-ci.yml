@@ -42,6 +42,10 @@ jobs:
         run: |
           python research/latent-state-v01/scripts/test_capture_case.py
 
+      - name: Run answer-variance comparator tests
+        run: |
+          python research/latent-state-v01/scripts/test_compare_answer_pair.py
+
       - name: Validate historical calibration boundary
         run: |
           python research/latent-state-v01/scripts/analyze_latent_structure.py             research/latent-state-v01/historical/STGR6_FEATURE_MAPPING.jsonl             --dataset-role HISTORICAL_NOT_PROSPECTIVE             --output /tmp/historical.json
@@ -56,13 +60,22 @@ jobs:
           print("PASS historical boundary")
           PY
 
-      - name: Assert prospective dataset is empty at v0.2 baseline
+      - name: Validate prospective dataset when present
         run: |
           python - <<'PY'
+          import json
           from pathlib import Path
           p=Path("research/latent-state-v01/cases/prospective.jsonl")
-          if p.exists():
-              rows=[x for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
-              assert len(rows)==0, f"unexpected prospective cases at baseline: {len(rows)}"
-          print("PASS prospective baseline empty")
+          if not p.exists():
+              print("PASS no prospective dataset yet")
+              raise SystemExit(0)
+          rows=[json.loads(x) for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
+          ids=[r["case_id"] for r in rows]
+          assert len(ids)==len(set(ids)), "duplicate prospective case_id"
+          assert all(r.get("dataset_role")=="PROSPECTIVE" for r in rows)
+          assert all(r.get("natural_case") is True for r in rows)
+          print(f"PASS prospective dataset structure: {len(rows)} cases")
           PY
+          if [ -f research/latent-state-v01/cases/prospective.jsonl ]; then
+            python research/latent-state-v01/scripts/analyze_latent_structure.py               research/latent-state-v01/cases/prospective.jsonl               --dataset-role PROSPECTIVE               --output /tmp/prospective.json
+          fi
