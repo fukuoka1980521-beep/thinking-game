@@ -1,4 +1,5 @@
 import type { NpcId } from "./types";
+import { postDialogueJson } from "./semantic/httpInterpreter";
 
 export const REFOUNDATION_ENDPOINT = "https://newlife-refoundation-ai-zqtk74q2ra-an.a.run.app";
 
@@ -22,16 +23,9 @@ function localNpc(api: unknown): NpcId | null {
   return e ? e[0] as NpcId : null;
 }
 async function post(body: unknown): Promise<any> {
-  const controller = new AbortController();
-  const timer = window.setTimeout(() => controller.abort(), 45000);
-  try {
-    const res = await fetch(REFOUNDATION_ENDPOINT, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body), signal: controller.signal,
-    });
-    if (!res.ok) throw new Error("refoundation_" + res.status);
-    return await res.json();
-  } finally { window.clearTimeout(timer); }
+  const result = await postDialogueJson(REFOUNDATION_ENDPOINT, body, 45_000);
+  if (!result.ok) throw new Error("refoundation_" + result.status);
+  return result.data;
 }
 export function supportsRefoundation(npc: NpcId): boolean {
   return Boolean(CASE_BY_NPC[npc] && API_NPC[npc]);
