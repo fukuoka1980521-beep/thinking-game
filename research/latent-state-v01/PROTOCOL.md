@@ -183,14 +183,27 @@ LDA may be run over joined case text only as an exploratory mixture model.
 
 Topic proportions do not prove causes. Topic numbers and labels are analyst conveniences, not ontological truths.
 
-### 10.4 Cross-method convergence
+### 10.4 Categorical-data sensitivity and permutation null
 
-A candidate latent factor becomes more interesting when:
-- a similar pattern appears in structured-feature SVD and semantic/text analysis, or
-- it recurs in later natural cases, or
+**Current rule after Protocol Amendment 002:** structured-feature SVD is an engineering exploration lens, not the sole latent-structure method.
+
+Where data coverage permits:
+- apply a binary/categorical MCA sensitivity lens using a complete indicator matrix;
+- compare the observed structured singular values with a column-wise permutation null preserving feature marginals;
+- inspect leave-one-out component stability.
+
+These checks are deliberately redundant because binary/categorical latent structure can be sensitive to method and sample size.
+
+### 10.5 Cross-method convergence
+
+A candidate operational latent factor becomes more interesting when:
+- structured SVD remains stable under leave-one-out perturbation;
+- the first structured component exceeds the exploratory permutation null;
+- a similar top-feature pattern appears in MCA;
+- it recurs in later natural cases;
 - it spans more than one project / track.
 
-Cross-method agreement is supporting evidence, not proof.
+Cross-method agreement is supporting evidence, not proof. SVD and MCA on the same cases are sensitivity analyses, not independent replications.
 
 ## 11. Anti-overfit rules
 
