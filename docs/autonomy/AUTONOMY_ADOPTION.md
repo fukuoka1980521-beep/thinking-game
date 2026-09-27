@@ -1,7 +1,7 @@
 ---
 standard_id: FCC-AUTONOMY-STANDARD
-standard_version: "1.14.0"
-standard_sha256: "1274939f06f3a0c40d6152e5eb42055011f6ca18e78edabbb54ea06bd810ccde"
+standard_version: "1.15.0"
+standard_sha256: "45d7e81a2437f5c1b7d2652ff1d69b53b348b82a671bf1ce6e8e93b52a21e8cf"
 project_id: thinking-game
 risk_profile: STANDARD
 autonomy_level: STANDARD
@@ -38,7 +38,7 @@ generated_by: formation-control-center/scripts/apply_autonomy_standard.py
 
 | 参照先 | 内容 |
 |---|---|
-| `formation-control-center/docs/autonomy/AUTONOMOUS_DEVELOPMENT_STANDARD.md` | 工程・必須原則・重大停止条件（`standard_version=1.14.0`, `sha256=1274939f06f3a0c40d6152e5eb42055011f6ca18e78edabbb54ea06bd810ccde`） |
+| `formation-control-center/docs/autonomy/AUTONOMOUS_DEVELOPMENT_STANDARD.md` | 工程・必須原則・重大停止条件（`standard_version=1.15.0`, `sha256=45d7e81a2437f5c1b7d2652ff1d69b53b348b82a671bf1ce6e8e93b52a21e8cf`） |
 | `formation-control-center/config/project-registry.yaml` | 本プロジェクトの適用プロファイル |
 | `development-os/docs/08_自律完遂境界.md` | 上位由来（`DEVOS-CANON-08`） |
 
