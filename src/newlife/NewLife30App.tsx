@@ -9,8 +9,13 @@ import { getNewLifeAiDialogueConsent, setNewLifeAiDialogueConsent, type NewLifeA
 import { HttpSemanticInterpreter } from "./semantic/httpInterpreter";
 import { resolveFreeText } from "./semantic/coordinator";
 import { resolveFreeAction } from "./freeAction";
+import hinaArt from "../assets/newlife/characters/hina.png";
+import yoheiArt from "../assets/newlife/characters/yohei.png";
+import miyokoArt from "../assets/newlife/characters/miyoko.png";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
+
+const NPC_ART: Partial<Record<NpcId, string>> = { hina: hinaArt, yohei: yoheiArt, miyoko: miyokoArt };
 
 interface Props {
   onExit: () => void;
@@ -201,7 +206,7 @@ export function NewLife30App({ onExit }: Props) {
       <div className="newlife30-cast" aria-label="????????">
         {scene.npcsPresent.map((npc) => (
           <button type="button" key={npc} className={`newlife30-character ${addressee === npc ? "is-active" : ""}`} onClick={() => setAddressee(npc)} aria-pressed={addressee === npc}>
-            <span className={`newlife30-character-avatar newlife30-character-${npc}`} aria-hidden="true">{npcDisplayName(npc).slice(0, 1)}</span>
+            <span className={`newlife30-character-avatar newlife30-character-${npc}`} aria-hidden="true">{NPC_ART[npc] ? <img src={NPC_ART[npc]} alt="" /> : npcDisplayName(npc).slice(0, 1)}</span>
             <span>{npcDisplayName(npc)}</span>
           </button>
         ))}
