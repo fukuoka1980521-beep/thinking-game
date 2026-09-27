@@ -89,13 +89,13 @@ def main():
         assert out["analysis_readiness"]["factor_naming_allowed"] is False
         assert out["structured_feature_svd"]["leave_one_out_stability"]["status"] == "INSUFFICIENT_CASES"
 
-        # A deliberately stable synthetic pattern across enough projects/tracks
-        # may reach CANDIDATE_STRUCTURE_ONLY, but still cannot claim causality
-        # or Development OS promotion.
+        # A deliberately stable synthetic binary pattern across enough projects/tracks
+        # may reach CANDIDATE_STRUCTURE_ONLY only after leave-one-out stability,
+        # permutation-null separation, MCA availability, and cross-method convergence.
         stable = []
         tracks = ["LTM", "ANSWER_VARIANCE", "HALLUCINATION"]
         projects = ["P1", "P2", "P3"]
-        for i in range(12):
+        for i in range(30):
             a = i % 2
             stable.append(
                 case(
@@ -117,6 +117,13 @@ def main():
         stable_out = run(analyzer, stable_path)
         assert stable_out["structured_feature_svd"]["leave_one_out_stability"]["status"] == "OK"
         assert stable_out["structured_feature_svd"]["leave_one_out_stability"]["first_component_candidate_stable"] is True
+        perm = stable_out["structured_feature_svd"]["permutation_null"]
+        assert perm["status"] == "OK"
+        assert perm["components"][0]["exceeds_null_95"] is True
+        assert stable_out["binary_mca_lens"]["status"] == "OK"
+        assert stable_out["cross_method_convergence"]["status"] == "OK"
+        assert stable_out["cross_method_convergence"]["candidate_convergent"] is True
+        assert stable_out["analysis_readiness"]["dynamic_min_cases_for_candidate"] >= 24
         assert stable_out["analysis_readiness"]["level"] == "CANDIDATE_STRUCTURE_ONLY"
         assert stable_out["analysis_readiness"]["factor_naming_allowed"] is True
         assert stable_out["analysis_readiness"]["development_os_promotion_allowed"] is False
