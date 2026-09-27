@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Exploratory latent-structure analyzer.
+"""Exploratory latent-structure analyzer v0.2.
 
 Research rules:
-- Natural-case JSONL only.
-- Unknown structured features are represented with explicit unknown indicators.
+- Dataset roles are explicit and never pooled implicitly.
+- Unknown structured features are preserved as missingness, not encoded into the
+  same semantic feature space.
+- Semantic SVD and missingness SVD are reported separately.
 - No external embedding API calls.
 - LDA/text analysis is optional and skipped when scikit-learn is unavailable.
 - Output is descriptive/hypothesis-generating, never causal.
@@ -12,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -39,11 +42,13 @@ CORE_FEATURES = [
     "user_value_pressure",
     "goal_relation_ambiguity",
     "external_reality_gap",
-    "human_observation_signal",
+    "human_observation_signal"
 ]
 
+DATASET_ROLES = {"PROSPECTIVE", "HISTORICAL_NOT_PROSPECTIVE"}
 
-def load_jsonl(path: Path) -> list[dict[str, Any]]:
+
+def load_jsonl(path: Path, dataset_role: str) -> list[dict[str, Any]]:
     if not path.exists():
         return []
     rows: list[dict[str, Any]] = []
@@ -53,42 +58,77 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
         row = json.loads(raw)
         if row.get("natural_case") is not True:
             raise ValueError(f"line {lineno}: natural_case must be true")
-        rows.append(row)
+        role = row.get("dataset_role")
+        if role not in DATASET_ROLES:
+            raise ValueError(f"line {lineno}: invalid or missing dataset_role")
+        features = row.get("observed_features")
+        if not isinstance(features, dict):
+            raise ValueError(f"line {lineno}: observed_features must be an object")
+        missing = [f for f in CORE_FEATURES if f not in features]
+        extra = [f for f in features if f not in CORE_FEATURES]
+        if missing:
+            raise ValueError(f"line {lineno}: missing observed features: {missing}")
+        if extra:
+            raise ValueError(f"line {lineno}: unknown observed features: {extra}")
+        for feature in CORE_FEATURES:
+            if features[feature] not in (0, 1, None):
+                raise ValueError(
+                    f"line {lineno}: invalid {feature}={features[feature]!r}"
+                )
+        if role == dataset_role:
+            rows.append(row)
     return rows
 
 
-def structured_matrix(rows: list[dict[str, Any]]):
-    cols: list[str] = []
-    values = []
-    for feature in CORE_FEATURES:
-        cols.extend([feature, feature + "__UNKNOWN"])
-    for row in rows:
-        feat = row.get("observed_features") or {}
-        v = []
-        for feature in CORE_FEATURES:
-            x = feat.get(feature, None)
-            if x is None:
-                v.extend([0.0, 1.0])
-            elif x in (0, 1):
-                v.extend([float(x), 0.0])
-            else:
-                raise ValueError(f"{row.get('case_id')}: invalid {feature}={x!r}")
-        values.append(v)
-    return np.asarray(values, dtype=float), cols
+def structured_arrays(rows: list[dict[str, Any]]):
+    values = np.full((len(rows), len(CORE_FEATURES)), np.nan, dtype=float)
+    missingness = np.ones((len(rows), len(CORE_FEATURES)), dtype=float)
+    for i, row in enumerate(rows):
+        features = row["observed_features"]
+        for j, feature in enumerate(CORE_FEATURES):
+            value = features[feature]
+            if value is None:
+                continue
+            values[i, j] = float(value)
+            missingness[i, j] = 0.0
+    return values, missingness
+
+
+def coverage_summary(values: np.ndarray):
+    n = max(1, values.shape[0])
+    out = []
+    for j, feature in enumerate(CORE_FEATURES):
+        observed = ~np.isnan(values[:, j])
+        observed_count = int(observed.sum())
+        positives = int(np.nansum(values[:, j])) if observed_count else 0
+        out.append({
+            "feature": feature,
+            "observed_count": observed_count,
+            "coverage_fraction": observed_count / n,
+            "positive_count": positives,
+            "positive_fraction_among_observed":
+                (positives / observed_count) if observed_count else None,
+        })
+    return out
 
 
 def svd_summary(matrix: np.ndarray, columns: list[str], case_ids: list[str], max_components: int = 5):
     if matrix.shape[0] < 2 or matrix.shape[1] < 2:
-        return {"status": "INSUFFICIENT_ROWS"}
+        return {"status": "INSUFFICIENT_DIMENSIONS"}
     centered = matrix - matrix.mean(axis=0, keepdims=True)
-    if not np.any(np.abs(centered) > 0):
+    variable = np.std(centered, axis=0) > 0
+    if not np.any(variable):
+        return {"status": "NO_VARIANCE"}
+    centered = centered[:, variable]
+    kept_columns = [c for c, keep in zip(columns, variable) if keep]
+    if centered.shape[1] == 0:
         return {"status": "NO_VARIANCE"}
     u, s, vt = np.linalg.svd(centered, full_matrices=False)
     k = min(max_components, len(s), max(1, matrix.shape[0] - 1))
     variance = s * s
     total = float(variance.sum()) or 1.0
-    components = []
     coords = u[:, :k] * s[:k]
+    components = []
     for i in range(k):
         load = vt[i]
         order = np.argsort(np.abs(load))[::-1][:8]
@@ -97,7 +137,7 @@ def svd_summary(matrix: np.ndarray, columns: list[str], case_ids: list[str], max
             "component": i + 1,
             "variance_fraction": float(variance[i] / total),
             "top_loadings": [
-                {"feature": columns[j], "loading": float(load[j])}
+                {"feature": kept_columns[j], "loading": float(load[j])}
                 for j in order
             ],
             "extreme_cases": [
@@ -106,6 +146,47 @@ def svd_summary(matrix: np.ndarray, columns: list[str], case_ids: list[str], max
             ],
         })
     return {"status": "OK", "components": components}
+
+
+def semantic_structured_svd(values: np.ndarray, case_ids: list[str], max_components: int, min_coverage: float):
+    n = values.shape[0]
+    if n < 2:
+        return {"status": "INSUFFICIENT_ROWS"}
+    min_observed = max(2, math.ceil(min_coverage * n))
+    keep = []
+    imputed_cols = []
+    for j, feature in enumerate(CORE_FEATURES):
+        col = values[:, j]
+        observed = ~np.isnan(col)
+        if int(observed.sum()) < min_observed:
+            continue
+        observed_values = col[observed]
+        if len(np.unique(observed_values)) < 2:
+            continue
+        mean = float(observed_values.mean())
+        filled = np.where(observed, col, mean)
+        keep.append(feature)
+        imputed_cols.append(filled)
+    if len(imputed_cols) < 2:
+        return {
+            "status": "INSUFFICIENT_OBSERVED_VARIATION",
+            "min_coverage": min_coverage,
+            "min_observed": min_observed,
+            "eligible_features": keep,
+        }
+    matrix = np.column_stack(imputed_cols)
+    out = svd_summary(matrix, keep, case_ids, max_components)
+    out["min_coverage"] = min_coverage
+    out["min_observed"] = min_observed
+    out["eligible_features"] = keep
+    out["missing_value_handling"] = "feature-wise observed-mean imputation for decomposition only"
+    return out
+
+
+def missingness_svd(missingness: np.ndarray, case_ids: list[str], max_components: int):
+    out = svd_summary(missingness, [f + "__MISSING" for f in CORE_FEATURES], case_ids, max_components)
+    out["interpretation"] = "observation-coverage structure only; do not interpret as latent task semantics"
+    return out
 
 
 def embedding_groups(rows: list[dict[str, Any]]):
@@ -148,9 +229,6 @@ def topic_model(rows: list[dict[str, Any]], n_topics: int):
             ids.append(row["case_id"])
             modes.append("TOKENS")
         elif text:
-            # Raw Japanese/CJK text without a declared tokenizer is not pushed
-            # through the default whitespace/word tokenizer. That would create
-            # misleading topics. Use topic_tokens or semantic embeddings instead.
             if any("\u3040" <= ch <= "\u30ff" or "\u4e00" <= ch <= "\u9fff" for ch in text):
                 skipped_tokenization.append(row["case_id"])
                 continue
@@ -184,7 +262,6 @@ def topic_model(rows: list[dict[str, Any]], n_topics: int):
     elif all(m == "RAW_TEXT" for m in modes):
         vec = CountVectorizer(min_df=1, max_df=0.95, stop_words="english")
     else:
-        # Mixed tokenized/raw corpora are normalized into token lists.
         normalized = []
         for doc, mode in zip(docs, modes):
             normalized.append(doc if mode == "TOKENS" else str(doc).split())
@@ -228,14 +305,17 @@ def topic_model(rows: list[dict[str, Any]], n_topics: int):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("jsonl", type=Path)
+    p.add_argument("--dataset-role", choices=sorted(DATASET_ROLES), default="PROSPECTIVE")
     p.add_argument("--max-components", type=int, default=5)
+    p.add_argument("--min-coverage", type=float, default=0.60)
     p.add_argument("--topics", type=int, default=3)
     p.add_argument("--output", type=Path)
     args = p.parse_args()
 
-    rows = load_jsonl(args.jsonl)
+    rows = load_jsonl(args.jsonl, args.dataset_role)
     result: dict[str, Any] = {
-        "research_phase": "latent-state-reliability-v0.1",
+        "research_phase": "latent-state-reliability-v0.2",
+        "dataset_role": args.dataset_role,
         "causal_interpretation_allowed": False,
         "n_cases": len(rows),
     }
@@ -243,10 +323,14 @@ def main():
         result["status"] = "NO_CASES"
     else:
         ids = [r["case_id"] for r in rows]
-        matrix, columns = structured_matrix(rows)
+        values, missingness = structured_arrays(rows)
         result["status"] = "OK"
-        result["structured_feature_svd"] = svd_summary(
-            matrix, columns, ids, args.max_components
+        result["feature_coverage"] = coverage_summary(values)
+        result["structured_feature_svd"] = semantic_structured_svd(
+            values, ids, args.max_components, args.min_coverage
+        )
+        result["missingness_svd"] = missingness_svd(
+            missingness, ids, args.max_components
         )
         result["embedding_svd_by_model"] = embedding_summaries(
             rows, args.max_components
