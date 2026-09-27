@@ -198,6 +198,14 @@ export function NewLife30App({ onExit }: Props) {
           {state.day >= 24 ? <span>&#x5171;&#x540C;&#x6848;&#x306E;&#x6E96;&#x5099;&#xFF1A;{state.pickupPlan === "time_split_owned_by_hina" && state.fEditor === "named" && state.jWork !== "extra_declined" && state.mSeats === "bounded" && state.hyFactCheck === "direct" && state.signVersion !== "vague_uncorrected" ? "\u5f79\u5272\u3068\u6761\u4ef6\u304c\u5177\u4f53\u5316\u3057\u3066\u3044\u308b" : "\u307e\u3060\u57cb\u307e\u3063\u3066\u3044\u306a\u3044\u5f79\u5272\u3084\u6761\u4ef6\u304c\u3042\u308b"}</span> : null}
         </div>
       ) : null}
+      <div className="newlife30-cast" aria-label="????????">
+        {scene.npcsPresent.map((npc) => (
+          <button type="button" key={npc} className={`newlife30-character ${addressee === npc ? "is-active" : ""}`} onClick={() => setAddressee(npc)} aria-pressed={addressee === npc}>
+            <span className={`newlife30-character-avatar newlife30-character-${npc}`} aria-hidden="true">{npcDisplayName(npc).slice(0, 1)}</span>
+            <span>{npcDisplayName(npc)}</span>
+          </button>
+        ))}
+      </div>
       <div className="newlife30-scene">
         {scene.text}
         {scene.lowEngagementHook ? <p className="newlife30-hook">{scene.lowEngagementHook}</p> : null}
