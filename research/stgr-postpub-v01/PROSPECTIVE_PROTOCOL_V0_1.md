@@ -81,12 +81,18 @@ Before consequential action, record:
 
 - event_id
 - timestamp
+- project_family
+- eligibility_reason
+- scope_authority
+- parent_goal_source
 - project_objective
 - current_task_goal
 - proposed_next_operation
 - scope_transition_type
 - observable_state_refs
-- task_local_gate_decision
+
+**Do not record either condition's decision at state-freeze time.**
+State freezing and outcome recording are separate lifecycle stages.
 
 Then create an offline paired condition from the same frozen observable state:
 
@@ -95,9 +101,12 @@ Uses current task goal + normal Gate state.
 
 ### Condition P — parent-anchored
 Adds:
-`PROJECT_OBJECTIVE → CURRENT_TASK_GOAL → PROPOSED_NEXT_OPERATION`
+`PARENT_GOAL_SOURCE + PROJECT_OBJECTIVE → CURRENT_TASK_GOAL → PROPOSED_NEXT_OPERATION`
 
 The two conditions should otherwise contain the same evidence.
+
+`scope_authority` is shown to both conditions.
+This prevents the study from mistaking an explicit Owner-authorized scope change for autonomous goal drift.
 
 When possible:
 - use the same model;
@@ -109,6 +118,9 @@ When possible:
 Record:
 
 - event_id
+- timestamp
+- project_family
+- eligibility_reason
 - claim
 - source_type
 - surface_entity_name
@@ -117,7 +129,9 @@ Record:
 - version_or_branch
 - evidence_timestamp
 - evidence_pointer
-- initial_claim_state
+
+**Do not record a claim state at state-freeze time.**
+The claim-state comparison is produced only after blinded U/B packets are created.
 
 Paired conditions:
 

@@ -1,0 +1,98 @@
+{
+  "schema_version": "0.2.0",
+  "freeze_date": "2026-09-28",
+  "tracks": {
+    "RQ-A": {
+      "name": "Reassessment Horizon",
+      "target_natural_events": 10,
+      "base_required_fields": [
+        "event_id",
+        "observed_at",
+        "project_family",
+        "eligibility_reason",
+        "scope_authority",
+        "parent_goal_source",
+        "project_objective",
+        "current_task_goal",
+        "proposed_next_operation",
+        "scope_transition_type",
+        "observable_state_refs"
+      ],
+      "result_required_fields": [
+        "event_id",
+        "condition_x_decision",
+        "condition_y_decision",
+        "blind_adjudication",
+        "later_owner_correction",
+        "added_latency_seconds",
+        "additional_tool_calls"
+      ]
+    },
+    "RQ-B": {
+      "name": "Referent Stability",
+      "target_natural_events": 10,
+      "base_required_fields": [
+        "event_id",
+        "observed_at",
+        "project_family",
+        "eligibility_reason",
+        "claim",
+        "source_type",
+        "surface_entity_name",
+        "candidate_entity_identity",
+        "environment",
+        "version_or_branch",
+        "evidence_timestamp",
+        "evidence_pointer"
+      ],
+      "result_required_fields": [
+        "event_id",
+        "condition_x_claim_state",
+        "condition_y_claim_state",
+        "blind_adjudication",
+        "later_correction",
+        "added_latency_seconds",
+        "additional_tool_calls"
+      ]
+    }
+  },
+  "decision_vocabulary": [
+    "CONTINUE",
+    "REPLAN_LOCAL",
+    "OBSERVE_OR_TEST",
+    "WAIT",
+    "SWITCH_TASK_OR_LAYER",
+    "DELEGATE",
+    "STOP_LOCAL"
+  ],
+  "claim_state_vocabulary": [
+    "VERIFIED",
+    "SUPPORTED_INFERENCE",
+    "UNVERIFIED",
+    "CONFLICTED",
+    "UNKNOWN"
+  ],
+  "scope_authority_vocabulary": [
+    "ASSISTANT_INITIATED",
+    "OWNER_EXPLICIT",
+    "MIXED",
+    "UNKNOWN"
+  ],
+  "parent_goal_source_vocabulary": [
+    "PROJECT_CONTEXT",
+    "OWNER_CURRENT_TURN",
+    "PRIOR_OWNER_INSTRUCTION",
+    "INFERRED"
+  ],
+  "seed_observations_excluded": [
+    "O-001",
+    "O-002",
+    "O-003",
+    "META-001"
+  ],
+  "lifecycle": [
+    "STATE_FROZEN",
+    "BLIND_PACKETS_CREATED",
+    "RESULT_RECORDED"
+  ]
+}
