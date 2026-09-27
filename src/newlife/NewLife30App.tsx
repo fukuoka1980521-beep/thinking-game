@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./newlife30.css";
 import { advanceDay, applyAction, createInitialState, day11PhaseLabel } from "./state";
 import { getScene, TOTAL_DAYS } from "./content";
@@ -9,8 +9,13 @@ import { getNewLifeAiDialogueConsent, setNewLifeAiDialogueConsent, type NewLifeA
 import { HttpSemanticInterpreter } from "./semantic/httpInterpreter";
 import { resolveFreeText } from "./semantic/coordinator";
 import { resolveFreeAction } from "./freeAction";
+import hinaArt from "../assets/newlife/characters/hina.png";
+import yoheiArt from "../assets/newlife/characters/yohei.png";
+import miyokoArt from "../assets/newlife/characters/miyoko.png";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
+
+const NPC_ART: Partial<Record<NpcId, string>> = { hina: hinaArt, yohei: yoheiArt, miyoko: miyokoArt };
 
 interface Props {
   onExit: () => void;
@@ -51,6 +56,7 @@ export function NewLife30App({ onExit }: Props) {
   const [thinking, setThinking] = useState({ important: "", unknown: "", next: "" });
   const [thinkingNote, setThinkingNote] = useState<string | null>(null);
   const [previousDayTrace, setPreviousDayTrace] = useState<string | null>(null);
+  const immediateActionTrace = useRef<string | null>(null);
   const [pending, setPending] = useState(false);
   // Phase 25.2: compact who-said/did/offered/permitted/owns ledger carried across turns
   // (short attributed facts, never a transcript). Re-synced with canonical state each turn.
@@ -91,7 +97,8 @@ export function NewLife30App({ onExit }: Props) {
     const lastPlayerLine = [...transcript].reverse().find((line) => line.speaker === "あなた");
     const latestAction = state.log[state.log.length - 1];
     const actionTrace = latestAction ? scene.options.find((o) => latestAction.endsWith(`:${o.id}`))?.label : undefined;
-    setPreviousDayTrace(lastPlayerLine?.text ?? actionTrace ?? null);
+    setPreviousDayTrace(lastPlayerLine?.text ?? immediateActionTrace.current ?? actionTrace ?? null);
+    immediateActionTrace.current = null;
     resetTranscriptFor(advanceDay(state));
   }
 
@@ -198,10 +205,10 @@ export function NewLife30App({ onExit }: Props) {
           {state.day >= 24 ? <span>&#x5171;&#x540C;&#x6848;&#x306E;&#x6E96;&#x5099;&#xFF1A;{state.pickupPlan === "time_split_owned_by_hina" && state.fEditor === "named" && state.jWork !== "extra_declined" && state.mSeats === "bounded" && state.hyFactCheck === "direct" && state.signVersion !== "vague_uncorrected" ? "\u5f79\u5272\u3068\u6761\u4ef6\u304c\u5177\u4f53\u5316\u3057\u3066\u3044\u308b" : "\u307e\u3060\u57cb\u307e\u3063\u3066\u3044\u306a\u3044\u5f79\u5272\u3084\u6761\u4ef6\u304c\u3042\u308b"}</span> : null}
         </div>
       ) : null}
-      <div className="newlife30-cast" aria-label="????????">
+      <div className="newlife30-cast" aria-label={"\u3053\u306e\u5834\u306b\u3044\u308b\u4eba\u7269"}>
         {scene.npcsPresent.map((npc) => (
           <button type="button" key={npc} className={`newlife30-character ${addressee === npc ? "is-active" : ""}`} onClick={() => setAddressee(npc)} aria-pressed={addressee === npc}>
-            <span className={`newlife30-character-avatar newlife30-character-${npc}`} aria-hidden="true">{npcDisplayName(npc).slice(0, 1)}</span>
+            <span className={`newlife30-character-avatar newlife30-character-${npc}`} aria-hidden="true">{NPC_ART[npc] ? <img src={NPC_ART[npc]} alt="" /> : npcDisplayName(npc).slice(0, 1)}</span>
             <span>{npcDisplayName(npc)}</span>
           </button>
         ))}
