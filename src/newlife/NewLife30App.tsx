@@ -89,7 +89,9 @@ export function NewLife30App({ onExit }: Props) {
 
   function handleAdvance() {
     const lastPlayerLine = [...transcript].reverse().find((line) => line.speaker === "あなた");
-    setPreviousDayTrace(lastPlayerLine?.text ?? null);
+    const latestAction = state.log[state.log.length - 1];
+    const actionTrace = latestAction ? scene.options.find((o) => latestAction.endsWith(`:${o.id}`))?.label : undefined;
+    setPreviousDayTrace(lastPlayerLine?.text ?? actionTrace ?? null);
     resetTranscriptFor(advanceDay(state));
   }
 
