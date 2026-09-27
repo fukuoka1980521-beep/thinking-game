@@ -138,21 +138,64 @@ def embedding_summaries(rows: list[dict[str, Any]], max_components: int):
 
 
 def topic_model(rows: list[dict[str, Any]], n_topics: int):
-    docs, ids = [], []
+    docs, ids, modes = [], [], []
+    skipped_tokenization = []
     for row in rows:
+        tokens = row.get("topic_tokens")
         text = row.get("text_for_topic_model")
-        if text:
+        if tokens:
+            docs.append([str(t) for t in tokens if str(t).strip()])
+            ids.append(row["case_id"])
+            modes.append("TOKENS")
+        elif text:
+            # Raw Japanese/CJK text without a declared tokenizer is not pushed
+            # through the default whitespace/word tokenizer. That would create
+            # misleading topics. Use topic_tokens or semantic embeddings instead.
+            if any("\u3040" <= ch <= "\u30ff" or "\u4e00" <= ch <= "\u9fff" for ch in text):
+                skipped_tokenization.append(row["case_id"])
+                continue
             docs.append(text)
             ids.append(row["case_id"])
+            modes.append("RAW_TEXT")
     if len(docs) < max(3, n_topics):
-        return {"status": "INSUFFICIENT_TEXT_CASES", "n_cases": len(docs)}
+        return {
+            "status": "INSUFFICIENT_TOPIC_CASES",
+            "n_cases": len(docs),
+            "skipped_tokenization_required": skipped_tokenization,
+        }
     try:
         from sklearn.feature_extraction.text import CountVectorizer
         from sklearn.decomposition import LatentDirichletAllocation
     except Exception:
-        return {"status": "SKIPPED_SKLEARN_UNAVAILABLE", "n_cases": len(docs)}
+        return {
+            "status": "SKIPPED_SKLEARN_UNAVAILABLE",
+            "n_cases": len(docs),
+            "skipped_tokenization_required": skipped_tokenization,
+        }
 
-    vec = CountVectorizer(min_df=1, max_df=0.95, stop_words="english")
+    if all(m == "TOKENS" for m in modes):
+        vec = CountVectorizer(
+            analyzer=lambda x: x,
+            lowercase=False,
+            token_pattern=None,
+            min_df=1,
+            max_df=0.95,
+        )
+    elif all(m == "RAW_TEXT" for m in modes):
+        vec = CountVectorizer(min_df=1, max_df=0.95, stop_words="english")
+    else:
+        # Mixed tokenized/raw corpora are normalized into token lists.
+        normalized = []
+        for doc, mode in zip(docs, modes):
+            normalized.append(doc if mode == "TOKENS" else str(doc).split())
+        docs = normalized
+        vec = CountVectorizer(
+            analyzer=lambda x: x,
+            lowercase=False,
+            token_pattern=None,
+            min_df=1,
+            max_df=0.95,
+        )
     x = vec.fit_transform(docs)
     if x.shape[1] < 2:
         return {"status": "INSUFFICIENT_VOCABULARY", "n_cases": len(docs)}
@@ -174,7 +217,12 @@ def topic_model(rows: list[dict[str, Any]], n_topics: int):
             "case_id": case_id,
             "topic_mixture": [float(v) for v in mix[i]],
         })
-    return {"status": "OK", "topics": topics, "cases": case_mix}
+    return {
+        "status": "OK",
+        "topics": topics,
+        "cases": case_mix,
+        "skipped_tokenization_required": skipped_tokenization,
+    }
 
 
 def main():
