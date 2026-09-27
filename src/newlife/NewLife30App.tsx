@@ -12,10 +12,13 @@ import { resolveFreeAction } from "./freeAction";
 import hinaArt from "../assets/newlife/characters/hina.png";
 import yoheiArt from "../assets/newlife/characters/yohei.png";
 import miyokoArt from "../assets/newlife/characters/miyoko.png";
+import tempHomeArt from "../assets/newlife/locations/temp-home.png";
+import cafeInteriorArt from "../assets/newlife/locations/cafe-interior.png";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
 
 const NPC_ART: Partial<Record<NpcId, string>> = { hina: hinaArt, yohei: yoheiArt, miyoko: miyokoArt };
+const SCENE_ART: Partial<Record<number, string>> = { 1: tempHomeArt, 2: cafeInteriorArt, 5: cafeInteriorArt, 9: cafeInteriorArt };
 
 interface Props {
   onExit: () => void;
@@ -213,6 +216,7 @@ export function NewLife30App({ onExit }: Props) {
           </button>
         ))}
       </div>
+      {SCENE_ART[state.day] ? <div className="newlife30-scene-art"><img src={SCENE_ART[state.day]} alt="" /></div> : null}
       <div className="newlife30-scene">
         {scene.text}
         {scene.lowEngagementHook ? <p className="newlife30-hook">{scene.lowEngagementHook}</p> : null}
