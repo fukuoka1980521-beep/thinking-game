@@ -46,6 +46,14 @@ jobs:
         run: |
           python research/latent-state-v01/scripts/test_compare_answer_pair.py
 
+      - name: Run natural-event triage tests
+        run: |
+          python research/latent-state-v01/scripts/test_triage_natural_event.py
+
+      - name: Run matched-control selector tests
+        run: |
+          python research/latent-state-v01/scripts/test_select_matched_control.py
+
       - name: Validate historical calibration boundary
         run: |
           python research/latent-state-v01/scripts/analyze_latent_structure.py             research/latent-state-v01/historical/STGR6_FEATURE_MAPPING.jsonl             --dataset-role HISTORICAL_NOT_PROSPECTIVE             --output /tmp/historical.json
