@@ -148,12 +148,11 @@ def svd_summary(matrix: np.ndarray, columns: list[str], case_ids: list[str], max
     return {"status": "OK", "components": components}
 
 
-def semantic_structured_svd(values: np.ndarray, case_ids: list[str], max_components: int, min_coverage: float):
+def prepare_semantic_matrix(values: np.ndarray, min_coverage: float):
     n = values.shape[0]
-    if n < 2:
-        return {"status": "INSUFFICIENT_ROWS"}
-    min_observed = max(2, math.ceil(min_coverage * n))
+    min_observed = max(2, math.ceil(min_coverage * max(1, n)))
     keep = []
+    source_indices = []
     imputed_cols = []
     for j, feature in enumerate(CORE_FEATURES):
         col = values[:, j]
@@ -166,20 +165,150 @@ def semantic_structured_svd(values: np.ndarray, case_ids: list[str], max_compone
         mean = float(observed_values.mean())
         filled = np.where(observed, col, mean)
         keep.append(feature)
+        source_indices.append(j)
         imputed_cols.append(filled)
     if len(imputed_cols) < 2:
+        return None, keep, source_indices, min_observed
+    return np.column_stack(imputed_cols), keep, source_indices, min_observed
+
+
+def loading_matrix(matrix: np.ndarray, max_components: int):
+    centered = matrix - matrix.mean(axis=0, keepdims=True)
+    variable = np.std(centered, axis=0) > 0
+    if np.count_nonzero(variable) < 2:
+        return None
+    reduced = centered[:, variable]
+    _, s, vt = np.linalg.svd(reduced, full_matrices=False)
+    k = min(max_components, len(s), max(1, matrix.shape[0] - 1))
+    padded = np.zeros((k, matrix.shape[1]), dtype=float)
+    padded[:, variable] = vt[:k]
+    return padded, variable
+
+
+def leave_one_out_component_stability(
+    values: np.ndarray,
+    source_indices: list[int],
+    full_matrix: np.ndarray,
+    max_components: int,
+):
+    n = values.shape[0]
+    if n < 5:
+        return {
+            "status": "INSUFFICIENT_CASES",
+            "n_cases": n,
+            "minimum_cases_for_check": 5,
+        }
+
+    full = loading_matrix(full_matrix, max_components)
+    if full is None:
+        return {"status": "NO_STABLE_FULL_COMPONENT_SPACE"}
+    full_vt, full_variable = full
+    if not np.all(full_variable):
+        full_vt = full_vt[:, full_variable]
+        active_source_indices = [
+            idx for idx, keep in zip(source_indices, full_variable) if keep
+        ]
+    else:
+        active_source_indices = list(source_indices)
+
+    per_component = [[] for _ in range(full_vt.shape[0])]
+    valid_runs = 0
+
+    for drop in range(n):
+        subset = np.delete(values[:, active_source_indices], drop, axis=0)
+        cols = []
+        usable = True
+        for j in range(subset.shape[1]):
+            col = subset[:, j]
+            observed = ~np.isnan(col)
+            if int(observed.sum()) < 2:
+                usable = False
+                break
+            observed_values = col[observed]
+            if len(np.unique(observed_values)) < 2:
+                usable = False
+                break
+            mean = float(observed_values.mean())
+            cols.append(np.where(observed, col, mean))
+        if not usable or len(cols) < 2:
+            continue
+        loo_matrix = np.column_stack(cols)
+        loo = loading_matrix(loo_matrix, max_components)
+        if loo is None:
+            continue
+        loo_vt, loo_variable = loo
+        if not np.all(loo_variable):
+            continue
+
+        valid_runs += 1
+        for i, full_vec in enumerate(full_vt):
+            best = 0.0
+            for loo_vec in loo_vt:
+                denom = float(np.linalg.norm(full_vec) * np.linalg.norm(loo_vec))
+                if denom == 0:
+                    continue
+                similarity = abs(float(np.dot(full_vec, loo_vec) / denom))
+                best = max(best, similarity)
+            per_component[i].append(best)
+
+    if valid_runs == 0:
+        return {"status": "NO_VALID_LEAVE_ONE_OUT_RUNS", "n_cases": n}
+
+    components = []
+    for i, sims in enumerate(per_component):
+        if not sims:
+            components.append({
+                "component": i + 1,
+                "median_abs_cosine": None,
+                "minimum_abs_cosine": None,
+            })
+            continue
+        components.append({
+            "component": i + 1,
+            "median_abs_cosine": float(np.median(sims)),
+            "minimum_abs_cosine": float(np.min(sims)),
+        })
+
+    first = components[0]
+    candidate_stable = (
+        first["median_abs_cosine"] is not None
+        and first["median_abs_cosine"] >= 0.75
+        and first["minimum_abs_cosine"] >= 0.50
+    )
+    return {
+        "status": "OK",
+        "valid_runs": valid_runs,
+        "components": components,
+        "first_component_candidate_stable": candidate_stable,
+        "threshold_note": (
+            "0.75 median / 0.50 minimum absolute cosine are operational "
+            "anti-overfit heuristics, not inferential guarantees"
+        ),
+    }
+
+
+def semantic_structured_svd(values: np.ndarray, case_ids: list[str], max_components: int, min_coverage: float):
+    n = values.shape[0]
+    if n < 2:
+        return {"status": "INSUFFICIENT_ROWS"}
+    matrix, keep, source_indices, min_observed = prepare_semantic_matrix(
+        values, min_coverage
+    )
+    if matrix is None:
         return {
             "status": "INSUFFICIENT_OBSERVED_VARIATION",
             "min_coverage": min_coverage,
             "min_observed": min_observed,
             "eligible_features": keep,
         }
-    matrix = np.column_stack(imputed_cols)
     out = svd_summary(matrix, keep, case_ids, max_components)
     out["min_coverage"] = min_coverage
     out["min_observed"] = min_observed
     out["eligible_features"] = keep
     out["missing_value_handling"] = "feature-wise observed-mean imputation for decomposition only"
+    out["leave_one_out_stability"] = leave_one_out_component_stability(
+        values, source_indices, matrix, max_components
+    )
     return out
 
 
@@ -302,6 +431,35 @@ def topic_model(rows: list[dict[str, Any]], n_topics: int):
     }
 
 
+def analysis_readiness(rows: list[dict[str, Any]], structured: dict[str, Any]):
+    n = len(rows)
+    projects = len({r.get("project") for r in rows if r.get("project")})
+    tracks = len({r.get("track") for r in rows if r.get("track")})
+
+    if n < 8 or projects < 2 or tracks < 2:
+        level = "ACCUMULATE_ONLY"
+    else:
+        stability = structured.get("leave_one_out_stability", {})
+        stable = stability.get("first_component_candidate_stable") is True
+        if n >= 12 and projects >= 3 and tracks >= 2 and stable:
+            level = "CANDIDATE_STRUCTURE_ONLY"
+        else:
+            level = "EXPLORATORY_ONLY"
+
+    return {
+        "level": level,
+        "n_cases": n,
+        "n_projects": projects,
+        "n_tracks": tracks,
+        "policy": (
+            "Operational anti-overfit gate only. It does not establish statistical "
+            "power, validity, prevalence, or causality."
+        ),
+        "factor_naming_allowed": level == "CANDIDATE_STRUCTURE_ONLY",
+        "development_os_promotion_allowed": False,
+    }
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("jsonl", type=Path)
@@ -328,6 +486,9 @@ def main():
         result["feature_coverage"] = coverage_summary(values)
         result["structured_feature_svd"] = semantic_structured_svd(
             values, ids, args.max_components, args.min_coverage
+        )
+        result["analysis_readiness"] = analysis_readiness(
+            rows, result["structured_feature_svd"]
         )
         result["missingness_svd"] = missingness_svd(
             missingness, ids, args.max_components
