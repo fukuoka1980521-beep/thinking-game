@@ -133,7 +133,7 @@ function menuAnswer(npc: NpcId): string {
     case "hina":
       return `${MENU_FACT}値段は試しに決めたもので、利益はまだ分かりません。`;
     case "yohei":
-      return "十二と十八だ。合わせて三十。品物が付いてこりゃ話は別だがな。";
+      return "\u304a\u3059\u3059\u3081\u306a\u3089\u3001\u30b9\u30b3\u30fc\u30f3\u304b\u30af\u30c3\u30ad\u30fc\u3060\u3002\u30b9\u30b3\u30fc\u30f3\u306f280\u5186\u3001\u30af\u30c3\u30ad\u30fc\u306f240\u5186\u3002\u967d\u83dc\u304c\u713c\u3044\u3066\u308b\u3002";
     default:
       return "それは陽菜に聞くのが早いわ。私が知ってるのは十二が予約、十八が店頭という数だけ。";
   }
@@ -526,6 +526,12 @@ export function answerFreeText(npc: NpcId, text: string, state: NewLife30State, 
   if (intent === "workshop") return workshopAnswer(npc, state, state.day);
   if (intent === "yesterday") return yesterdayAnswer(npc, state, state.day);
   if (intent === "profit") return profitAnswer(npc, state.day);
+
+  // Owner playtest: a supportive wish is a social turn, not a request for inventory math.
+  if (t && /(\u5168\u90e8|\u307f\u3093\u306a|\u305f\u304f\u3055\u3093).*(\u58f2\u308c|\u58f2\u308c\u308b).*(\u3044\u3044|\u9858|\u7948)/.test(t)) {
+    if (npc === "hina") return "\u3042\u308a\u304c\u3068\u3046\u3054\u3056\u3044\u307e\u3059\u3002\u2026\u2026\u5168\u90e8\u58f2\u308c\u305f\u3089\u3001\u3046\u308c\u3057\u3044\u3067\u3059\u3002\u307e\u305a\u306f\u6765\u3066\u304f\u308c\u305f\u4eba\u306b\u3061\u3083\u3093\u3068\u6e21\u305b\u308b\u3088\u3046\u306b\u3057\u307e\u3059\u3002";
+    return "\u305d\u3046\u306a\u308b\u3068\u3044\u3044\u306a\u3002\u307e\u305a\u306f\u76ee\u306e\u524d\u306e\u6bb5\u53d6\u308a\u304b\u3089\u3060\u3002";
+  }
 
   // Priority 2b (Phase 25.2): the player offering help. Checked after the fact
   // domains (a fact question still wins) and before the social acts so
