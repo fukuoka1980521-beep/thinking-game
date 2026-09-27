@@ -633,6 +633,66 @@ def topic_model(rows: list[dict[str, Any]], n_topics: int):
     }
 
 
+def matched_control_contrast(rows: list[dict[str, Any]]):
+    by_id = {r.get("case_id"): r for r in rows}
+    controls = [
+        r for r in rows
+        if r.get("case_role") == "MATCHED_ORDINARY_CONTROL"
+    ]
+    pairs = []
+    stats = {
+        f: {
+            "n_pairs_observed": 0,
+            "event_positive": 0,
+            "control_positive": 0,
+            "discordant_event_only": 0,
+            "discordant_control_only": 0,
+        }
+        for f in CORE_FEATURES
+    }
+
+    for control in controls:
+        event_id = control.get("matched_case_id")
+        event = by_id.get(event_id)
+        if not event or event.get("case_role", "TARGET_EVENT") != "TARGET_EVENT":
+            continue
+        if event.get("project") != control.get("project"):
+            continue
+        pairs.append({
+            "event_case_id": event_id,
+            "control_case_id": control.get("case_id"),
+            "project": event.get("project"),
+            "selection_rule": control.get("selection_rule"),
+        })
+        ef = event.get("observed_features") or {}
+        cf = control.get("observed_features") or {}
+        for feature in CORE_FEATURES:
+            a, b = ef.get(feature), cf.get(feature)
+            if a not in (0, 1) or b not in (0, 1):
+                continue
+            st = stats[feature]
+            st["n_pairs_observed"] += 1
+            st["event_positive"] += int(a == 1)
+            st["control_positive"] += int(b == 1)
+            st["discordant_event_only"] += int(a == 1 and b == 0)
+            st["discordant_control_only"] += int(a == 0 and b == 1)
+
+    return {
+        "status": "OK" if pairs else "NO_MATCHED_CONTROLS",
+        "n_pairs": len(pairs),
+        "pairs": pairs,
+        "feature_contrasts": [
+            {"feature": f, **stats[f]}
+            for f in CORE_FEATURES
+            if stats[f]["n_pairs_observed"] > 0
+        ],
+        "interpretation": (
+            "Descriptive matched contrast only. Controls help assess specificity; "
+            "they do not establish causality."
+        ),
+    }
+
+
 def analysis_readiness(
     rows: list[dict[str, Any]],
     structured: dict[str, Any],
@@ -706,17 +766,28 @@ def main():
     args = p.parse_args()
 
     rows = load_jsonl(args.jsonl, args.dataset_role)
+    event_rows = [
+        r for r in rows
+        if r.get("case_role", "TARGET_EVENT") != "MATCHED_ORDINARY_CONTROL"
+    ]
+    control_rows = [
+        r for r in rows
+        if r.get("case_role") == "MATCHED_ORDINARY_CONTROL"
+    ]
     result: dict[str, Any] = {
-        "research_phase": "operational-latent-state-reliability-v0.3",
+        "research_phase": "operational-latent-state-reliability-v0.4",
         "dataset_role": args.dataset_role,
         "causal_interpretation_allowed": False,
-        "n_cases": len(rows),
+        "n_cases_total": len(rows),
+        "n_event_cases": len(event_rows),
+        "n_matched_controls": len(control_rows),
     }
-    if not rows:
-        result["status"] = "NO_CASES"
+    if not event_rows:
+        result["status"] = "NO_EVENT_CASES"
+        result["matched_control_contrast"] = matched_control_contrast(rows)
     else:
-        ids = [r["case_id"] for r in rows]
-        values, missingness = structured_arrays(rows)
+        ids = [r["case_id"] for r in event_rows]
+        values, missingness = structured_arrays(event_rows)
         result["status"] = "OK"
         result["feature_coverage"] = coverage_summary(values)
         result["structured_feature_svd"] = semantic_structured_svd(
@@ -729,7 +800,7 @@ def main():
             result["structured_feature_svd"], result["binary_mca_lens"]
         )
         result["analysis_readiness"] = analysis_readiness(
-            rows,
+            event_rows,
             result["structured_feature_svd"],
             result["binary_mca_lens"],
             result["cross_method_convergence"],
@@ -738,11 +809,12 @@ def main():
             missingness, ids, args.max_components
         )
         result["embedding_svd_by_model"] = embedding_summaries(
-            rows, args.max_components
+            event_rows, args.max_components
         )
-        result["lda_topic_mixture"] = topic_model(rows, args.topics)
+        result["lda_topic_mixture"] = topic_model(event_rows, args.topics)
+        result["matched_control_contrast"] = matched_control_contrast(rows)
         result["track_counts"] = {
-            track: sum(r.get("track") == track for r in rows)
+            track: sum(r.get("track") == track for r in event_rows)
             for track in ["LTM", "ANSWER_VARIANCE", "HALLUCINATION", "MULTI_TRACK"]
         }
 

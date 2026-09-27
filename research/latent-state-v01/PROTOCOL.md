@@ -53,11 +53,20 @@ A case is eligible when it arises naturally during ordinary authorized work and 
 
 Do not capture trivial wording changes.
 
-## 4. Case identity and duplication
+## 4. Case identity, duplication, and ordinary controls
 
 One case represents one decision/claim boundary. Repeated messages from the same unresolved boundary remain one case unless new independent evidence creates a materially new state.
 
 Duplicate or derivative cases are linked using `parent_case_id` rather than counted as independent.
+
+**Current rule after Protocol Amendment 003:** target-event latent analysis must not use ordinary controls as extra failure cases. When trace evidence permits, each natural target event should be paired with at most one deterministic matched ordinary control from the same project.
+
+Preferred selection rule:
+`NEAREST_PRIOR_ORDINARY_SAME_PROJECT`
+
+The control must be an already-existing ordinary decision boundary, not a task created for research. If no suitable ordinary trace exists, leave the event unmatched rather than manufacture one.
+
+Target events drive latent-structure analysis. Matched controls are analyzed separately to ask whether candidate features are specific to target events or common in ordinary work.
 
 ## 5. Observed feature vocabulary
 
