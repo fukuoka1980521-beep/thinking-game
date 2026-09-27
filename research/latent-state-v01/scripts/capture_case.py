@@ -14,6 +14,8 @@ CLAIM_STATES = {"VERIFIED", "SUPPORTED_INFERENCE", "UNVERIFIED", "CONFLICTED", "
 REQUIRED = {
     "case_id", "captured_at", "project", "track", "dataset_role", "natural_case",
     "summary", "observed_features", "claim_state", "evidence_refs",
+    "case_role", "matched_case_id", "eligibility_basis", "materiality_reason",
+    "selection_rule", "privacy_review",
 }
 
 
@@ -32,6 +34,22 @@ def validate(case):
         raise ValueError("natural_case must be true; synthetic fixtures are not research cases")
     if case["track"] not in TRACKS:
         raise ValueError("invalid track")
+    if case["case_role"] not in {"TARGET_EVENT", "MATCHED_ORDINARY_CONTROL"}:
+        raise ValueError("invalid case_role")
+    if case["privacy_review"] != "PASS_NO_SECRET_OR_IDENTIFYING_RAW_CONTENT":
+        raise ValueError("privacy_review must pass before capture")
+    if not str(case["eligibility_basis"]).strip():
+        raise ValueError("eligibility_basis is required")
+    if not str(case["selection_rule"]).strip():
+        raise ValueError("selection_rule is required")
+    if case["case_role"] == "TARGET_EVENT":
+        if not str(case.get("materiality_reason") or "").strip():
+            raise ValueError("TARGET_EVENT requires materiality_reason")
+    else:
+        if not str(case.get("matched_case_id") or "").strip():
+            raise ValueError("MATCHED_ORDINARY_CONTROL requires matched_case_id")
+        if case.get("materiality_reason") not in (None, ""):
+            raise ValueError("MATCHED_ORDINARY_CONTROL must not invent materiality_reason")
     if case["claim_state"] not in CLAIM_STATES:
         raise ValueError("invalid claim_state")
     features = case["observed_features"]
