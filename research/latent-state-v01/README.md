@@ -74,3 +74,15 @@ See `PROTOCOL_AMENDMENT_001.md`.
 The project does not claim novelty for answer inconsistency, hallucination taxonomy, hidden-state factuality signals, or generic agent metacognition.
 
 See `LITERATURE_POSITIONING_20260927.md` for the current boundary and the narrower open question.
+
+
+## Operational intake
+
+Natural prospective intake is now executable without manufacturing research work:
+
+- `scripts/triage_natural_event.py` — source-backed target-event eligibility
+- `scripts/select_matched_control.py` — deterministic nearest-prior ordinary control selection
+- `scripts/capture_case.py` — final append-time validation
+- `OPERATIONAL_INTAKE.md` — intake boundary and flow
+
+These tools generate/validate drafts only. They do not create work, fabricate cases, or infer truth automatically.
