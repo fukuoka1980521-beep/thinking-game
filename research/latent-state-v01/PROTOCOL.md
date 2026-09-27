@@ -1,4 +1,4 @@
-# Prospective Protocol — Latent State Reliability v0.1
+# Prospective Protocol — Operational Latent State Reliability (OLSR) v0.1
 
 **Status:** ACTIVE / PROSPECTIVE / EXPLORATORY  
 **Started:** 2026-09-27  
@@ -7,7 +7,7 @@
 
 ## 1. Research question
 
-Do Local Task Momentum, cross-chat answer variance, and hallucination cases share recurring lower-dimensional latent structure that is not obvious from hand-written labels alone?
+Do Local Task Momentum, cross-chat answer variance, and hallucination cases share recurring lower-dimensional **operational latent structure** that is not obvious from hand-written labels alone? Here, operational latent structure is inferred from observable workflow evidence and must not be conflated with model-internal neural hidden states.
 
 This phase does not ask whether one latent factor causes another. It asks whether useful hidden axes or mixtures can be discovered from naturally occurring evidence.
 
@@ -157,7 +157,7 @@ UNKNOWN is a valid state and must not be filled merely to complete an answer.
 
 ### 10.1 Structured-feature SVD
 
-For each feature, unknownness is retained as an explicit indicator rather than silently imputed as factual absence.
+**Current rule after Protocol Amendment 001:** unknownness is not encoded in the same semantic feature space. Semantic feature structure and missingness structure are analyzed separately. The semantic decomposition uses observed-feature coverage rules and bounded decomposition-time imputation; missingness receives its own diagnostic analysis.
 
 Interpret components using:
 - strongest positive/negative loadings
