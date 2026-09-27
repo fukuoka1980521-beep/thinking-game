@@ -40,11 +40,11 @@ def feature_row(**overrides):
     return out
 
 
-def case(case_id, track, features, text=None, role="PROSPECTIVE"):
+def case(case_id, track, features, text=None, role="PROSPECTIVE", project="SYNTHETIC_UNIT_TEST"):
     return {
         "case_id": case_id,
         "captured_at": "TEST_ONLY",
-        "project": "SYNTHETIC_UNIT_TEST",
+        "project": project,
         "track": track,
         "dataset_role": role,
         "natural_case": True,
@@ -85,6 +85,42 @@ def main():
         assert out["structured_feature_svd"]["status"] == "OK"
         assert out["missingness_svd"]["status"] in {"OK", "NO_VARIANCE"}
         assert out["causal_interpretation_allowed"] is False
+        assert out["analysis_readiness"]["level"] == "ACCUMULATE_ONLY"
+        assert out["analysis_readiness"]["factor_naming_allowed"] is False
+        assert out["structured_feature_svd"]["leave_one_out_stability"]["status"] == "INSUFFICIENT_CASES"
+
+        # A deliberately stable synthetic pattern across enough projects/tracks
+        # may reach CANDIDATE_STRUCTURE_ONLY, but still cannot claim causality
+        # or Development OS promotion.
+        stable = []
+        tracks = ["LTM", "ANSWER_VARIANCE", "HALLUCINATION"]
+        projects = ["P1", "P2", "P3"]
+        for i in range(12):
+            a = i % 2
+            stable.append(
+                case(
+                    f"S{i+1:02d}",
+                    tracks[i % len(tracks)],
+                    feature_row(
+                        repeated_repair=a,
+                        closure_pressure=a,
+                        evidence_gap=1-a,
+                    ),
+                    project=projects[i % len(projects)],
+                )
+            )
+        stable_path = td / "stable.jsonl"
+        stable_path.write_text(
+            "\n".join(json.dumps(r) for r in stable) + "\n",
+            encoding="utf-8",
+        )
+        stable_out = run(analyzer, stable_path)
+        assert stable_out["structured_feature_svd"]["leave_one_out_stability"]["status"] == "OK"
+        assert stable_out["structured_feature_svd"]["leave_one_out_stability"]["first_component_candidate_stable"] is True
+        assert stable_out["analysis_readiness"]["level"] == "CANDIDATE_STRUCTURE_ONLY"
+        assert stable_out["analysis_readiness"]["factor_naming_allowed"] is True
+        assert stable_out["analysis_readiness"]["development_os_promotion_allowed"] is False
+        assert stable_out["causal_interpretation_allowed"] is False
 
         # Historical rows must not silently enter the default prospective analysis.
         hist = case(
