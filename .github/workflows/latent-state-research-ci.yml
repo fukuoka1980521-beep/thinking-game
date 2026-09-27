@@ -1,0 +1,68 @@
+name: Latent State Research CI
+
+on:
+  pull_request:
+    branches:
+      - research/stgr-lscb-v20
+    paths:
+      - "research/latent-state-v01/**"
+      - ".github/workflows/latent-state-research-ci.yml"
+  push:
+    branches:
+      - "research/latent-state-*"
+    paths:
+      - "research/latent-state-v01/**"
+      - ".github/workflows/latent-state-research-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  latent-state-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install analysis dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy scikit-learn
+
+      - name: Run latent-state analyzer tests
+        run: |
+          python research/latent-state-v01/scripts/test_analyze_latent_structure.py
+
+      - name: Run latent-state capture tests
+        run: |
+          python research/latent-state-v01/scripts/test_capture_case.py
+
+      - name: Validate historical calibration boundary
+        run: |
+          python research/latent-state-v01/scripts/analyze_latent_structure.py             research/latent-state-v01/historical/STGR6_FEATURE_MAPPING.jsonl             --dataset-role HISTORICAL_NOT_PROSPECTIVE             --output /tmp/historical.json
+          python - <<'PY'
+          import json
+          p="/tmp/historical.json"
+          d=json.load(open(p,encoding="utf-8"))
+          assert d["dataset_role"]=="HISTORICAL_NOT_PROSPECTIVE"
+          assert d["n_cases"]==6
+          assert d["causal_interpretation_allowed"] is False
+          assert d["structured_feature_svd"]["status"]=="INSUFFICIENT_OBSERVED_VARIATION"
+          print("PASS historical boundary")
+          PY
+
+      - name: Assert prospective dataset is empty at v0.2 baseline
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path("research/latent-state-v01/cases/prospective.jsonl")
+          if p.exists():
+              rows=[x for x in p.read_text(encoding="utf-8").splitlines() if x.strip()]
+              assert len(rows)==0, f"unexpected prospective cases at baseline: {len(rows)}"
+          print("PASS prospective baseline empty")
+          PY
