@@ -8,6 +8,7 @@ import { NEWLIFE_DIALOGUE_ENDPOINT_URL } from "./semantic/config";
 import { getNewLifeAiDialogueConsent, setNewLifeAiDialogueConsent, type NewLifeAiDialogueConsentStatus } from "./semantic/consent";
 import { HttpSemanticInterpreter } from "./semantic/httpInterpreter";
 import { resolveFreeText } from "./semantic/coordinator";
+import { resolveFreeAction } from "./freeAction";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
 
@@ -97,6 +98,8 @@ export function NewLife30App({ onExit }: Props) {
     try {
       const result = await resolveFreeText(npc, text, state, { interpreter, consentAccepted, ledger });
       if (result.ledger) setLedger(result.ledger);
+      const freeAction = resolveFreeAction(state, npc, text);
+      if (freeAction) setState((current) => applyAction(current, freeAction));
       setTranscript((prev) => [...prev, { speaker: "あなた", text }, { speaker: npcDisplayName(npc), text: result.text }]);
     } finally {
       setPending(false);
