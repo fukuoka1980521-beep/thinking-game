@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Latent State Reliability Case v0.2",
+  "title": "Operational Latent State Reliability Case v0.4",
   "type": "object",
   "required": [
     "case_id",
@@ -12,7 +12,13 @@
     "summary",
     "observed_features",
     "claim_state",
-    "evidence_refs"
+    "evidence_refs",
+    "case_role",
+    "matched_case_id",
+    "eligibility_basis",
+    "materiality_reason",
+    "selection_rule",
+    "privacy_review"
   ],
   "properties": {
     "case_id": {
@@ -444,6 +450,35 @@
       "enum": [
         "PROSPECTIVE",
         "HISTORICAL_NOT_PROSPECTIVE"
+      ]
+    },
+    "case_role": {
+      "enum": [
+        "TARGET_EVENT",
+        "MATCHED_ORDINARY_CONTROL"
+      ]
+    },
+    "matched_case_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "eligibility_basis": {
+      "type": "string"
+    },
+    "materiality_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "selection_rule": {
+      "type": "string"
+    },
+    "privacy_review": {
+      "enum": [
+        "PASS_NO_SECRET_OR_IDENTIFYING_RAW_CONTENT"
       ]
     }
   },
