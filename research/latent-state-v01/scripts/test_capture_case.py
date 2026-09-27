@@ -8,6 +8,35 @@ import sys
 import tempfile
 from pathlib import Path
 
+CORE_FEATURES = [
+    "local_success_signal",
+    "local_failure_signal",
+    "completion_signal",
+    "repeated_repair",
+    "evidence_gap",
+    "measurement_conflict",
+    "source_identity_divergence",
+    "temporal_freshness_mismatch",
+    "context_delta",
+    "memory_context_contamination",
+    "unsupported_inference_as_fact",
+    "tool_result_partiality_or_misread",
+    "source_hierarchy_conflict",
+    "entity_disambiguation_failure",
+    "confidence_calibration_failure",
+    "destructive_operation_candidate",
+    "scope_switch_pressure",
+    "closure_pressure",
+    "user_value_pressure",
+    "goal_relation_ambiguity",
+    "external_reality_gap",
+    "human_observation_signal"
+]
+
+
+def full_features():
+    return {k: None for k in CORE_FEATURES}
+
 
 def main():
     here = Path(__file__).resolve().parent
@@ -15,14 +44,18 @@ def main():
     with tempfile.TemporaryDirectory() as td:
         td = Path(td)
         target = td / "prospective.jsonl"
+        features = full_features()
+        features["evidence_gap"] = 1
+        features["closure_pressure"] = 0
         payload = {
             "case_id": "TEST-001",
             "captured_at": "TEST_ONLY",
             "project": "SYNTHETIC_UNIT_TEST",
             "track": "HALLUCINATION",
+            "dataset_role": "PROSPECTIVE",
             "natural_case": True,
             "summary": "synthetic test only",
-            "observed_features": {"evidence_gap": 1, "closure_pressure": None},
+            "observed_features": features,
             "claim_state": "UNKNOWN",
             "evidence_refs": ["SYNTHETIC_TEST_FIXTURE"],
             "topic_tokens": ["証拠", "不足", "結論"],
@@ -44,6 +77,32 @@ def main():
         )
         assert dup.returncode != 0
         assert "duplicate case_id" in (dup.stderr + dup.stdout)
+
+        # Sparse feature dictionaries are rejected so omission cannot masquerade as UNKNOWN.
+        sparse = dict(payload)
+        sparse["case_id"] = "TEST-002"
+        sparse["observed_features"] = {"evidence_gap": 1}
+        sparse_path = td / "sparse.json"
+        sparse_path.write_text(json.dumps(sparse), encoding="utf-8")
+        bad = subprocess.run(
+            [sys.executable, str(capture), "--input", str(sparse_path), "--target", str(target)],
+            capture_output=True, text=True,
+        )
+        assert bad.returncode != 0
+        assert "all core features must be explicitly" in (bad.stderr + bad.stdout)
+
+        # Historical calibration cannot be appended through the prospective capture path.
+        hist = dict(payload)
+        hist["case_id"] = "HIST-001"
+        hist["dataset_role"] = "HISTORICAL_NOT_PROSPECTIVE"
+        hist_path = td / "hist.json"
+        hist_path.write_text(json.dumps(hist), encoding="utf-8")
+        bad2 = subprocess.run(
+            [sys.executable, str(capture), "--input", str(hist_path), "--target", str(target)],
+            capture_output=True, text=True,
+        )
+        assert bad2.returncode != 0
+        assert "only appends PROSPECTIVE" in (bad2.stderr + bad2.stdout)
 
     print("PASS: capture-case synthetic unit tests")
 

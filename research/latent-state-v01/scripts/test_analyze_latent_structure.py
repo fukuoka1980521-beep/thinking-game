@@ -8,13 +8,45 @@ import sys
 import tempfile
 from pathlib import Path
 
+CORE_FEATURES = [
+    "local_success_signal",
+    "local_failure_signal",
+    "completion_signal",
+    "repeated_repair",
+    "evidence_gap",
+    "measurement_conflict",
+    "source_identity_divergence",
+    "temporal_freshness_mismatch",
+    "context_delta",
+    "memory_context_contamination",
+    "unsupported_inference_as_fact",
+    "tool_result_partiality_or_misread",
+    "source_hierarchy_conflict",
+    "entity_disambiguation_failure",
+    "confidence_calibration_failure",
+    "destructive_operation_candidate",
+    "scope_switch_pressure",
+    "closure_pressure",
+    "user_value_pressure",
+    "goal_relation_ambiguity",
+    "external_reality_gap",
+    "human_observation_signal"
+]
 
-def case(case_id, track, features, text):
+
+def feature_row(**overrides):
+    out = {k: None for k in CORE_FEATURES}
+    out.update(overrides)
+    return out
+
+
+def case(case_id, track, features, text=None, role="PROSPECTIVE"):
     return {
         "case_id": case_id,
         "captured_at": "TEST_ONLY",
         "project": "SYNTHETIC_UNIT_TEST",
         "track": track,
+        "dataset_role": role,
         "natural_case": True,
         "summary": "synthetic unit test only",
         "observed_features": features,
@@ -25,59 +57,76 @@ def case(case_id, track, features, text):
     }
 
 
+def run(analyzer, path, *extra):
+    cp = subprocess.run(
+        [sys.executable, str(analyzer), str(path), *extra],
+        check=True, capture_output=True, text=True,
+    )
+    return json.loads(cp.stdout)
+
+
 def main():
     here = Path(__file__).resolve().parent
     analyzer = here / "analyze_latent_structure.py"
     rows = [
-        case("T1", "LTM", {"repeated_repair": 1, "closure_pressure": 1}, "repair patch close"),
-        case("T2", "ANSWER_VARIANCE", {"context_delta": 1, "evidence_gap": 0}, "answer context evidence"),
-        case("T3", "HALLUCINATION", {"evidence_gap": 1, "unsupported_inference_as_fact": 1}, "unsupported evidence claim"),
-        case("T4", "MULTI_TRACK", {"source_identity_divergence": 1, "closure_pressure": 1}, "source identity close"),
+        case("T1", "LTM", feature_row(repeated_repair=1, closure_pressure=1, evidence_gap=0), "repair patch close"),
+        case("T2", "ANSWER_VARIANCE", feature_row(repeated_repair=0, closure_pressure=0, evidence_gap=0, context_delta=1), "answer context evidence"),
+        case("T3", "HALLUCINATION", feature_row(repeated_repair=0, closure_pressure=1, evidence_gap=1, unsupported_inference_as_fact=1), "unsupported evidence claim"),
+        case("T4", "MULTI_TRACK", feature_row(repeated_repair=1, closure_pressure=0, evidence_gap=1, source_identity_divergence=1), "source identity close"),
     ]
     with tempfile.TemporaryDirectory() as td:
-        p = Path(td) / "cases.jsonl"
+        td = Path(td)
+        p = td / "cases.jsonl"
         p.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
-        cp = subprocess.run(
-            [sys.executable, str(analyzer), str(p), "--max-components", "3"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        out = json.loads(cp.stdout)
+        out = run(analyzer, p, "--max-components", "3", "--min-coverage", "0.50")
         assert out["status"] == "OK"
         assert out["n_cases"] == 4
+        assert out["dataset_role"] == "PROSPECTIVE"
         assert out["structured_feature_svd"]["status"] == "OK"
+        assert out["missingness_svd"]["status"] in {"OK", "NO_VARIANCE"}
         assert out["causal_interpretation_allowed"] is False
 
-        empty = Path(td) / "empty.jsonl"
-        empty.write_text("", encoding="utf-8")
-        cp2 = subprocess.run(
-            [sys.executable, str(analyzer), str(empty)],
-            check=True,
-            capture_output=True,
-            text=True,
+        # Historical rows must not silently enter the default prospective analysis.
+        hist = case(
+            "H1", "LTM",
+            feature_row(repeated_repair=1),
+            role="HISTORICAL_NOT_PROSPECTIVE",
         )
-        out2 = json.loads(cp2.stdout)
+        mixed = td / "mixed.jsonl"
+        mixed.write_text(
+            "\n".join(json.dumps(r) for r in rows + [hist]) + "\n",
+            encoding="utf-8",
+        )
+        default_out = run(analyzer, mixed)
+        assert default_out["n_cases"] == 4
+        hist_out = run(analyzer, mixed, "--dataset-role", "HISTORICAL_NOT_PROSPECTIVE")
+        assert hist_out["n_cases"] == 1
+
+        empty = td / "empty.jsonl"
+        empty.write_text("", encoding="utf-8")
+        out2 = run(analyzer, empty)
         assert out2["status"] == "NO_CASES"
 
         # Japanese/CJK raw text without explicit tokens must not be silently
         # pushed through the default English-oriented tokenizer.
-        jp = Path(td) / "jp.jsonl"
+        jp = td / "jp.jsonl"
         jp_rows = [
-            case("J1", "HALLUCINATION", {"evidence_gap": 1}, "証拠不足のまま結論"),
-            case("J2", "ANSWER_VARIANCE", {"context_delta": 1}, "同じ質問で回答が変わる"),
-            case("J3", "LTM", {"closure_pressure": 1}, "完了圧力で次へ進む"),
+            case("J1", "HALLUCINATION", feature_row(evidence_gap=1), "証拠不足のまま結論"),
+            case("J2", "ANSWER_VARIANCE", feature_row(context_delta=1), "同じ質問で回答が変わる"),
+            case("J3", "LTM", feature_row(closure_pressure=1), "完了圧力で次へ進む"),
         ]
         jp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in jp_rows) + "\n", encoding="utf-8")
-        cp3 = subprocess.run(
-            [sys.executable, str(analyzer), str(jp), "--topics", "3"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        out3 = json.loads(cp3.stdout)
+        out3 = run(analyzer, jp, "--topics", "3")
         assert out3["lda_topic_mixture"]["status"] == "INSUFFICIENT_TOPIC_CASES"
         assert len(out3["lda_topic_mixture"]["skipped_tokenization_required"]) == 3
+
+        # Missingness must be reported separately; it must not appear as a
+        # semantic feature name.
+        names = []
+        if out["structured_feature_svd"]["status"] == "OK":
+            for comp in out["structured_feature_svd"]["components"]:
+                names.extend(x["feature"] for x in comp["top_loadings"])
+        assert not any(name.endswith("__MISSING") for name in names)
 
     print("PASS: latent-state analyzer synthetic unit tests")
 
