@@ -60,6 +60,25 @@ def main():
         out2 = json.loads(cp2.stdout)
         assert out2["status"] == "NO_CASES"
 
+        # Japanese/CJK raw text without explicit tokens must not be silently
+        # pushed through the default English-oriented tokenizer.
+        jp = Path(td) / "jp.jsonl"
+        jp_rows = [
+            case("J1", "HALLUCINATION", {"evidence_gap": 1}, "証拠不足のまま結論"),
+            case("J2", "ANSWER_VARIANCE", {"context_delta": 1}, "同じ質問で回答が変わる"),
+            case("J3", "LTM", {"closure_pressure": 1}, "完了圧力で次へ進む"),
+        ]
+        jp.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in jp_rows) + "\n", encoding="utf-8")
+        cp3 = subprocess.run(
+            [sys.executable, str(analyzer), str(jp), "--topics", "3"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        out3 = json.loads(cp3.stdout)
+        assert out3["lda_topic_mixture"]["status"] == "INSUFFICIENT_TOPIC_CASES"
+        assert len(out3["lda_topic_mixture"]["skipped_tokenization_required"]) == 3
+
     print("PASS: latent-state analyzer synthetic unit tests")
 
 
