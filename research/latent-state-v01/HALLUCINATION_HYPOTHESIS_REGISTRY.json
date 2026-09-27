@@ -1,0 +1,95 @@
+{
+  "title": "Hallucination Multi-Lens Hypothesis Registry v0.1",
+  "status": "ACTIVE_EXPLORATORY",
+  "rule": "No hypothesis is treated as a general mechanism without prospective cross-project evidence.",
+  "hypotheses": [
+    {
+      "id": "H-HAL-00",
+      "label": "Value/cost scoring alone suppresses hallucination",
+      "status": "INSUFFICIENT_AS_GENERAL_RULE",
+      "observed_signature": "Hallucination decreases mainly when answer-value or correction-value scoring changes, independent of evidence/source controls.",
+      "falsification_or_weakening": "Material hallucinations persist despite correct value routing, or improve primarily after evidence/provenance controls rather than value scoring.",
+      "intervention_candidate": "None as a standalone truthfulness control."
+    },
+    {
+      "id": "H-HAL-01",
+      "label": "Evidence disconnect",
+      "status": "ACTIVE",
+      "observed_signature": "A material claim is produced without adequate external or source-backed evidence.",
+      "falsification_or_weakening": "Adequate relevant evidence was available, inspected correctly, and still the unsupported claim arose.",
+      "intervention_candidate": "Evidence-before-claim for load-bearing claims."
+    },
+    {
+      "id": "H-HAL-02",
+      "label": "Source identity/version mismatch",
+      "status": "ACTIVE",
+      "observed_signature": "The answer is grounded in the wrong file, branch, version, environment, entity, or record.",
+      "falsification_or_weakening": "Source identity is verified and mismatch is absent.",
+      "intervention_candidate": "Bind claim to source/version/environment identity."
+    },
+    {
+      "id": "H-HAL-03",
+      "label": "Temporal freshness mismatch",
+      "status": "ACTIVE",
+      "observed_signature": "The answer treats stale information as current or merges facts from different times.",
+      "falsification_or_weakening": "The relevant time window is verified and current.",
+      "intervention_candidate": "Explicit time anchoring and freshness check."
+    },
+    {
+      "id": "H-HAL-04",
+      "label": "Context blending or memory contamination",
+      "status": "ACTIVE",
+      "observed_signature": "Facts from another chat, project, person, or prior state enter the current answer without valid linkage.",
+      "falsification_or_weakening": "All imported context is relevant, current, and source-traceable.",
+      "intervention_candidate": "Context provenance and current-task boundary checks."
+    },
+    {
+      "id": "H-HAL-05",
+      "label": "Unsupported inference becomes fact",
+      "status": "ACTIVE",
+      "observed_signature": "A plausible inference loses its uncertainty label and is presented as directly observed.",
+      "falsification_or_weakening": "The claim is explicitly supported by evidence or remains labeled as inference/unknown.",
+      "intervention_candidate": "Claim-state discipline: VERIFIED / SUPPORTED_INFERENCE / UNVERIFIED / CONFLICTED / UNKNOWN."
+    },
+    {
+      "id": "H-HAL-06",
+      "label": "Completion/helpfulness pressure",
+      "status": "ACTIVE",
+      "observed_signature": "Missing information is filled in to produce a complete, useful-looking answer or CLOSE state.",
+      "falsification_or_weakening": "The system preserves UNKNOWN or stops at the evidence boundary despite pressure to complete.",
+      "intervention_candidate": "Permit incomplete answers and explicit UNKNOWN states."
+    },
+    {
+      "id": "H-HAL-07",
+      "label": "Tool-result partiality or misread",
+      "status": "ACTIVE",
+      "observed_signature": "A partial/truncated/ambiguous tool result is generalized beyond what it supports.",
+      "falsification_or_weakening": "The full relevant result was inspected and interpreted correctly.",
+      "intervention_candidate": "Coverage check before global claims; bind claims to exact tool evidence."
+    },
+    {
+      "id": "H-HAL-08",
+      "label": "Source-of-truth hierarchy conflict",
+      "status": "ACTIVE",
+      "observed_signature": "Two sources disagree and the answer silently chooses one or merges them.",
+      "falsification_or_weakening": "Source hierarchy is explicit and the conflict is resolved or preserved as CONFLICTED.",
+      "intervention_candidate": "Canonical-source hierarchy and SOURCE_CONFLICT state."
+    },
+    {
+      "id": "H-HAL-09",
+      "label": "Confidence/uncertainty calibration failure",
+      "status": "ACTIVE",
+      "observed_signature": "Claim confidence is materially higher than the evidence warrants.",
+      "falsification_or_weakening": "Confidence tracks evidence strength and unknowns are exposed.",
+      "intervention_candidate": "Calibrated claim-state labels and explicit uncertainty."
+    },
+    {
+      "id": "H-HAL-10",
+      "label": "Local task momentum contributes to unsupported factualization",
+      "status": "ACTIVE",
+      "observed_signature": "A local repair/answer path continues after evidence state changes or becomes ambiguous, and a claim is finalized before global reassessment.",
+      "falsification_or_weakening": "Hallucination cases show no association with continuation/closure momentum or occur despite timely reassessment.",
+      "intervention_candidate": "Trigger-based Global Reassessment Gate for qualifying states."
+    }
+  ]
+}
