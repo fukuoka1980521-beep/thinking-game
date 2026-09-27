@@ -84,7 +84,7 @@ export function isValidInterpretation(value: unknown): value is SemanticInterpre
   return true;
 }
 
-export async function postDialogueJson(endpointUrl: string, body: unknown, timeoutMs = REQUEST_TIMEOUT_MS): Promise<{ ok: boolean; status: number; data?: unknown }> {
+export async function postDialogueJson(endpointUrl: string, body: unknown, timeoutMs = REQUEST_TIMEOUT_MS): Promise<{ ok: boolean; status: number; data?: unknown; reason?: "timeout" | "network_error" }> {
   if (!endpointUrl) return { ok: false, status: 0 };
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -97,8 +97,9 @@ export async function postDialogueJson(endpointUrl: string, body: unknown, timeo
     });
     if (!response.ok) return { ok: false, status: response.status };
     return { ok: true, status: response.status, data: await response.json() };
-  } catch {
-    return { ok: false, status: 0 };
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") return { ok: false, status: 0, reason: "timeout" };
+    return { ok: false, status: 0, reason: "network_error" };
   } finally {
     clearTimeout(timeout);
   }
@@ -122,7 +123,7 @@ export class HttpSemanticInterpreter implements SemanticInterpreter {
       ...(feedback && feedback.length > 0 ? { feedback: feedback.slice(0, 4) } : {}),
     });
     if (!posted.ok) {
-      return { status: "unavailable", reason: posted.status ? "http_" + posted.status : "network_error" };
+      return { status: "unavailable", reason: posted.status ? "http_" + posted.status : (posted.reason ?? "network_error") };
     }
     if (!isValidInterpretation(posted.data)) {
       return { status: "unavailable", reason: "malformed_response" };
