@@ -54,7 +54,7 @@ jobs:
           p="/tmp/historical.json"
           d=json.load(open(p,encoding="utf-8"))
           assert d["dataset_role"]=="HISTORICAL_NOT_PROSPECTIVE"
-          assert d["n_cases"]==6
+          assert d["n_cases_total"]==6\n          assert d["n_event_cases"]==6\n          assert d["n_matched_controls"]==0
           assert d["causal_interpretation_allowed"] is False
           assert d["structured_feature_svd"]["status"]=="INSUFFICIENT_OBSERVED_VARIATION"
           print("PASS historical boundary")
