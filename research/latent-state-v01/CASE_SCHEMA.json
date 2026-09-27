@@ -1,12 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Latent State Reliability Case v0.1",
+  "title": "Latent State Reliability Case v0.2",
   "type": "object",
   "required": [
     "case_id",
     "captured_at",
     "project",
     "track",
+    "dataset_role",
     "natural_case",
     "summary",
     "observed_features",
@@ -119,17 +120,276 @@
     },
     "observed_features": {
       "type": "object",
-      "additionalProperties": {
-        "type": [
-          "integer",
-          "null"
-        ],
-        "enum": [
-          0,
-          1,
-          null
-        ]
-      }
+      "required": [
+        "local_success_signal",
+        "local_failure_signal",
+        "completion_signal",
+        "repeated_repair",
+        "evidence_gap",
+        "measurement_conflict",
+        "source_identity_divergence",
+        "temporal_freshness_mismatch",
+        "context_delta",
+        "memory_context_contamination",
+        "unsupported_inference_as_fact",
+        "tool_result_partiality_or_misread",
+        "source_hierarchy_conflict",
+        "entity_disambiguation_failure",
+        "confidence_calibration_failure",
+        "destructive_operation_candidate",
+        "scope_switch_pressure",
+        "closure_pressure",
+        "user_value_pressure",
+        "goal_relation_ambiguity",
+        "external_reality_gap",
+        "human_observation_signal"
+      ],
+      "properties": {
+        "local_success_signal": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "local_failure_signal": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "completion_signal": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "repeated_repair": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "evidence_gap": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "measurement_conflict": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "source_identity_divergence": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "temporal_freshness_mismatch": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "context_delta": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "memory_context_contamination": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "unsupported_inference_as_fact": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "tool_result_partiality_or_misread": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "source_hierarchy_conflict": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "entity_disambiguation_failure": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "confidence_calibration_failure": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "destructive_operation_candidate": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "scope_switch_pressure": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "closure_pressure": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "user_value_pressure": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "goal_relation_ambiguity": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "external_reality_gap": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        },
+        "human_observation_signal": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "enum": [
+            0,
+            1,
+            null
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "description": "Complete tri-state assessment: 1 observed, 0 explicitly assessed absent, null unknown/not assessed."
     },
     "embedding": {
       "type": [
@@ -179,6 +439,12 @@
         "type": "string"
       },
       "description": "Pre-tokenized terms for LDA/topic-mixture analysis. Recommended for Japanese or other text without whitespace tokenization."
+    },
+    "dataset_role": {
+      "enum": [
+        "PROSPECTIVE",
+        "HISTORICAL_NOT_PROSPECTIVE"
+      ]
     }
   },
   "additionalProperties": false
