@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Append one prospective natural case with lightweight deterministic validation."""
+"""Append one prospective natural case with deterministic tri-state validation."""
 from __future__ import annotations
 
 import argparse
@@ -7,10 +7,12 @@ import json
 import sys
 from pathlib import Path
 
+from analyze_latent_structure import CORE_FEATURES
+
 TRACKS = {"LTM", "ANSWER_VARIANCE", "HALLUCINATION", "MULTI_TRACK"}
 CLAIM_STATES = {"VERIFIED", "SUPPORTED_INFERENCE", "UNVERIFIED", "CONFLICTED", "UNKNOWN"}
 REQUIRED = {
-    "case_id", "captured_at", "project", "track", "natural_case",
+    "case_id", "captured_at", "project", "track", "dataset_role", "natural_case",
     "summary", "observed_features", "claim_state", "evidence_refs",
 }
 
@@ -24,15 +26,25 @@ def validate(case):
     missing = sorted(REQUIRED - set(case))
     if missing:
         raise ValueError("missing required fields: " + ", ".join(missing))
+    if case["dataset_role"] != "PROSPECTIVE":
+        raise ValueError("capture_case.py only appends PROSPECTIVE cases")
     if case["natural_case"] is not True:
         raise ValueError("natural_case must be true; synthetic fixtures are not research cases")
     if case["track"] not in TRACKS:
         raise ValueError("invalid track")
     if case["claim_state"] not in CLAIM_STATES:
         raise ValueError("invalid claim_state")
-    if not isinstance(case["observed_features"], dict):
+    features = case["observed_features"]
+    if not isinstance(features, dict):
         raise ValueError("observed_features must be an object")
-    for key, value in case["observed_features"].items():
+    missing_features = sorted(set(CORE_FEATURES) - set(features))
+    extra_features = sorted(set(features) - set(CORE_FEATURES))
+    if missing_features:
+        raise ValueError("all core features must be explicitly 0/1/null; missing: " + ", ".join(missing_features))
+    if extra_features:
+        raise ValueError("unknown observed features: " + ", ".join(extra_features))
+    for key in CORE_FEATURES:
+        value = features[key]
         if value not in (0, 1, None):
             raise ValueError(f"feature {key}: value must be 0, 1, or null")
     if not isinstance(case["evidence_refs"], list):
