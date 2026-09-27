@@ -9,8 +9,8 @@ describe("validated refoundation dialogue bridge", () => {
     expect(supportsRefoundation("yohei")).toBe(true);
     expect(supportsRefoundation("miyoko")).toBe(true);
     expect(supportsRefoundation("fumiko")).toBe(true);
-    expect(supportsRefoundation("jin")).toBe(false);
-    expect(supportsRefoundation("daisuke")).toBe(false);
+    expect(supportsRefoundation("jin")).toBe(true);
+    expect(supportsRefoundation("daisuke")).toBe(true);
   });
 
   it("sends recent conversation context instead of phrase-routing the new utterance", async () => {
@@ -22,10 +22,12 @@ describe("validated refoundation dialogue bridge", () => {
     const reply = await converseWithRefoundation("hina", "\u5168\u90e8\u58f2\u308c\u308b\u3068\u3044\u3044\u3067\u3059\u306d", [
       { speaker: "\u967d\u83dc", text: "\u4eca\u5ea6\u3001\u713c\u304d\u83d3\u5b50\u3092\u58f2\u308b\u3093\u3067\u3059\u3002" },
       { speaker: "\u3042\u306a\u305f", text: "\u4f55\u3092\u58f2\u308b\u3093\u3067\u3059\u304b\uff1f" },
-    ]);
+    ], { day: 2, title: "trial", text: "street trial", canonicalState: {} });
     const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
     expect(body.operation).toBe("converse_turn");
-    expect(body.caseId).toBe("STREET_TRIAL_V1");
+    expect(body.caseId).toBe("NEWLIFE_30DAY_V1");
+    expect(body.dynamicState.day).toBe(2);
+    expect(body.dynamicState.sceneText).toBe("street trial");
     expect(body.recentDialogue).toEqual([
       { speaker: "HINA", text: "\u4eca\u5ea6\u3001\u713c\u304d\u83d3\u5b50\u3092\u58f2\u308b\u3093\u3067\u3059\u3002" },
       { speaker: "PLAYER", text: "\u4f55\u3092\u58f2\u308b\u3093\u3067\u3059\u304b\uff1f" },
