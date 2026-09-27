@@ -1,6 +1,6 @@
-# Latent State Reliability Research v0.1 / analysis amendment v0.2
+# Operational Latent State Reliability (OLSR) Research v0.1 / analysis amendment v0.2
 
-This phase extends the STGR / LSCB program without modifying the frozen six-episode confirmatory dataset.
+This phase extends the STGR / LSCB program without modifying the frozen six-episode confirmatory dataset. **Operational latent state** means a factor inferred from observable workflow evidence; it does not mean transformer/model-internal hidden states. See `TERMINOLOGY_NOTE.md`.
 
 ## Goal
 
@@ -67,3 +67,10 @@ v0.2 therefore:
 - requires explicit dataset roles so historical calibration cannot be pooled into prospective analysis by default.
 
 See `PROTOCOL_AMENDMENT_001.md`.
+
+
+## External literature positioning
+
+The project does not claim novelty for answer inconsistency, hallucination taxonomy, hidden-state factuality signals, or generic agent metacognition.
+
+See `LITERATURE_POSITIONING_20260927.md` for the current boundary and the narrower open question.
