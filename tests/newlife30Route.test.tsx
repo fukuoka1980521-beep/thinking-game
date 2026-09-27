@@ -103,11 +103,11 @@ describe("NEW LIFE 30-day route isolation", () => {
     const user = userEvent.setup();
     const details = screen.getByText(/\u8ff7\u3063\u305f\u3068\u304d\u306e\u884c\u52d5\u5019\u88dc/);
     await user.click(details);
-    const options = screen.getAllByRole("button").filter((button) => !/\u6b21\u306e\u65e5\u3078|\u30db\u30fc\u30e0/.test(button.textContent ?? ""));
+    const options = Array.from(details.parentElement?.querySelectorAll("button") ?? []);
     const chosen = options[0].textContent ?? "";
     await user.click(options[0]);
     await user.click(screen.getByRole("button", { name: /\u6b21\u306e\u65e5\u3078/ }));
-    expect(screen.getByLabelText(/\u524d\u65e5\u306e\u3042\u306a\u305f\u306e\u884c\u52d5/)).toHaveTextContent(chosen);
+    expect(document.querySelector(".newlife30-yesterday")).toHaveTextContent(chosen);
   });
 
 });
