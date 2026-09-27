@@ -115,7 +115,21 @@ export function NewLife30App({ onExit }: Props) {
 
       if (consentAccepted && supportsRefoundation(npc)) {
         try {
-          const live = await converseWithRefoundation(npc, text, transcript);
+          const live = await converseWithRefoundation(npc, text, transcript, {
+            day: responseState.day,
+            title: scene.title,
+            text: scene.text,
+            canonicalState: {
+              signVersion: responseState.signVersion,
+              pickupPlan: responseState.pickupPlan,
+              mSeats: responseState.mSeats,
+              jWork: responseState.jWork,
+              dWorkshop: responseState.dWorkshop,
+              fEditor: responseState.fEditor,
+              hyFactCheck: responseState.hyFactCheck,
+              day24Outcome: responseState.day24Outcome,
+            },
+          });
           if (freeAction) setState(responseState);
           setTranscript((prev) => [
             ...prev,

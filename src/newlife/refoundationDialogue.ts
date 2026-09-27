@@ -3,15 +3,13 @@ import { postDialogueJson } from "./semantic/httpInterpreter";
 
 export const REFOUNDATION_ENDPOINT = "https://newlife-refoundation-ai-zqtk74q2ra-an.a.run.app";
 
-const CASE_BY_NPC: Partial<Record<NpcId, string>> = {
-  hina: "STREET_TRIAL_V1", yohei: "STREET_TRIAL_V1",
-  miyoko: "CAFE_BOUNDARY_V1", fumiko: "CAFE_BOUNDARY_V1",
-};
-const API_NPC: Partial<Record<NpcId, string>> = {
-  hina: "HINA", yohei: "YOHEI", miyoko: "MIYOKO", fumiko: "FUMIKO",
+const CASE_ID = "NEWLIFE_30DAY_V1";
+const API_NPC: Record<NpcId, string> = {
+  hina: "HINA", yohei: "YOHEI", daisuke: "DAISUKE", jin: "JIN", miyoko: "MIYOKO", fumiko: "FUMIKO",
 };
 const DISPLAY_TO_API: Record<string, string> = {
-  "\u967d\u83dc": "HINA", "\u6d0b\u5e73": "YOHEI", "\u7f8e\u4ee3\u5b50": "MIYOKO", "\u6587\u5b50": "FUMIKO", "\u3042\u306a\u305f": "PLAYER",
+  "\u967d\u83dc": "HINA", "\u6d0b\u5e73": "YOHEI", "\u5927\u8f14": "DAISUKE", "\u4ec1": "JIN",
+  "\u7f8e\u4ee3\u5b50": "MIYOKO", "\u6587\u5b50": "FUMIKO", "\u3042\u306a\u305f": "PLAYER",
 };
 
 export interface DialogueLine { speaker: string; text: string }
@@ -27,21 +25,32 @@ async function post(body: unknown): Promise<any> {
   if (!result.ok) throw new Error("refoundation_" + result.status);
   return result.data;
 }
-export function supportsRefoundation(npc: NpcId): boolean {
-  return Boolean(CASE_BY_NPC[npc] && API_NPC[npc]);
+export interface LiveSceneContext {
+  day: number;
+  title: string;
+  text: string;
+  canonicalState: Record<string, unknown>;
 }
-export async function converseWithRefoundation(npc: NpcId, utterance: string, transcript: DialogueLine[]): Promise<RefoundationReply> {
-  const caseId = CASE_BY_NPC[npc], targetNpc = API_NPC[npc];
-  if (!caseId || !targetNpc) throw new Error("unsupported_refoundation_npc");
+export function supportsRefoundation(npc: NpcId): boolean {
+  return Boolean(API_NPC[npc]);
+}
+export async function converseWithRefoundation(
+  npc: NpcId, utterance: string, transcript: DialogueLine[], scene: LiveSceneContext,
+): Promise<RefoundationReply> {
+  const caseId = CASE_ID, targetNpc = API_NPC[npc];
   const recentDialogue = transcript.slice(-8).map((line) => ({
     speaker: DISPLAY_TO_API[line.speaker] ?? "SYSTEM", text: line.text,
   }));
-  const dynamicState = { relationshipState: "NEUTRAL", boundaryStatus: "UNKNOWN", remainingMinutes: 30, activeCommitment: null, sceneRevisionText: null };
+  const dynamicState = {
+    relationshipState: "NEUTRAL", boundaryStatus: "UNKNOWN", remainingMinutes: 30,
+    activeCommitment: null, sceneRevisionText: null,
+    day: scene.day, sceneTitle: scene.title, sceneText: scene.text, canonicalState: scene.canonicalState,
+  };
   const first = await post({ operation: "converse_turn", caseId, targetNpc, rawPlayerUtterance: utterance, recentDialogue, dynamicState });
   if (!first || first.npc !== targetNpc || typeof first.npcLine !== "string" || !first.npcLine.trim()) throw new Error("invalid_refoundation_reply");
 
   const nextLocal = localNpc(first.nextNpc);
-  if (first.sceneStatus !== "NPC_EXCHANGE" || !nextLocal || CASE_BY_NPC[nextLocal] !== caseId) {
+  if (first.sceneStatus !== "NPC_EXCHANGE" || !nextLocal) {
     return { text: first.npcLine.trim(), nextNpc: null, nextText: null };
   }
   const continuedDialogue = [...recentDialogue, { speaker: "PLAYER", text: utterance }, { speaker: targetNpc, text: first.npcLine }];
