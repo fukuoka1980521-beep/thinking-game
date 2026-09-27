@@ -177,10 +177,12 @@ def loading_matrix(matrix: np.ndarray, max_components: int):
     variable = np.std(centered, axis=0) > 0
     if np.count_nonzero(variable) < 2:
         return None
-    centered = centered[:, variable]
-    _, s, vt = np.linalg.svd(centered, full_matrices=False)
+    reduced = centered[:, variable]
+    _, s, vt = np.linalg.svd(reduced, full_matrices=False)
     k = min(max_components, len(s), max(1, matrix.shape[0] - 1))
-    return vt[:k], variable
+    padded = np.zeros((k, matrix.shape[1]), dtype=float)
+    padded[:, variable] = vt[:k]
+    return padded, variable
 
 
 def leave_one_out_component_stability(
