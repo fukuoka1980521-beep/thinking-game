@@ -84,6 +84,27 @@ export function isValidInterpretation(value: unknown): value is SemanticInterpre
   return true;
 }
 
+export async function postDialogueJson(endpointUrl: string, body: unknown, timeoutMs = REQUEST_TIMEOUT_MS): Promise<{ ok: boolean; status: number; data?: unknown; reason?: "timeout" | "network_error" }> {
+  if (!endpointUrl) return { ok: false, status: 0 };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(endpointUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!response.ok) return { ok: false, status: response.status };
+    return { ok: true, status: response.status, data: await response.json() };
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") return { ok: false, status: 0, reason: "timeout" };
+    return { ok: false, status: 0, reason: "network_error" };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export class HttpSemanticInterpreter implements SemanticInterpreter {
   constructor(private readonly endpointUrl: string) {}
 
@@ -96,40 +117,17 @@ export class HttpSemanticInterpreter implements SemanticInterpreter {
       return { status: "unavailable", reason: "utterance_length" };
     }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-    try {
-      const response = await fetch(this.endpointUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // Data-minimized (Phase 30 instruction 3): only this one turn's
-        // utterance plus the already-minimal FactsSnapshot — never the full
-        // `NewLife30State` (no `log`, no `playerReport`, no
-        // `publicBlame`), no other NPC's data, no device/user identifier.
-        // Phase 25.2: `snapshot.ledger` is the compact fact-ownership ledger
-        // (short attributed facts, never a transcript); `feedback` is present
-        // only on a regeneration after an attribution rejection.
-        body: JSON.stringify({ utterance: trimmed, snapshot, ...(feedback && feedback.length > 0 ? { feedback: feedback.slice(0, 4) } : {}) }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        return { status: "unavailable", reason: `http_${response.status}` };
-      }
-
-      const data: unknown = await response.json();
-      if (!isValidInterpretation(data)) {
-        return { status: "unavailable", reason: "malformed_response" };
-      }
-      return { status: "ok", interpretation: data };
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        return { status: "unavailable", reason: "timeout" };
-      }
-      return { status: "unavailable", reason: "network_error" };
-    } finally {
-      clearTimeout(timeout);
+    const posted = await postDialogueJson(this.endpointUrl, {
+      utterance: trimmed,
+      snapshot,
+      ...(feedback && feedback.length > 0 ? { feedback: feedback.slice(0, 4) } : {}),
+    });
+    if (!posted.ok) {
+      return { status: "unavailable", reason: posted.status ? "http_" + posted.status : (posted.reason ?? "network_error") };
     }
+    if (!isValidInterpretation(posted.data)) {
+      return { status: "unavailable", reason: "malformed_response" };
+    }
+    return { status: "ok", interpretation: posted.data };
   }
 }

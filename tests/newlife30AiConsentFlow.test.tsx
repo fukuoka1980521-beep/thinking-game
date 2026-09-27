@@ -15,6 +15,12 @@ import { getNewLifeAiDialogueConsent } from "../src/newlife/semantic/consent";
 vi.mock("../src/newlife/semantic/config", () => ({
   NEWLIFE_DIALOGUE_ENDPOINT_URL: "https://example.invalid/newlife-dialogue",
 }));
+// This suite isolates the Phase 30 semantic-consent adapter. The human-tested
+// refoundation bridge has its own integration contract tests.
+vi.mock("../src/newlife/refoundationDialogue", () => ({
+  supportsRefoundation: () => false,
+  converseWithRefoundation: vi.fn(),
+}));
 
 function validInterpretation(overrides: Partial<Record<string, unknown>> = {}) {
   return {
