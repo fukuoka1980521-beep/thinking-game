@@ -49,6 +49,12 @@ def case(case_id, track, features, text=None, role="PROSPECTIVE", project="SYNTH
         "dataset_role": role,
         "natural_case": True,
         "summary": "synthetic unit test only",
+        "case_role": "TARGET_EVENT",
+        "matched_case_id": None,
+        "eligibility_basis": "SYNTHETIC_TEST_FIXTURE_ONLY",
+        "materiality_reason": "synthetic validation",
+        "selection_rule": "SYNTHETIC_TEST_FIXTURE_ONLY",
+        "privacy_review": "PASS_NO_SECRET_OR_IDENTIFYING_RAW_CONTENT",
         "observed_features": features,
         "claim_state": "UNKNOWN",
         "hypothesis_status": "UNKNOWN",
@@ -80,7 +86,9 @@ def main():
         p.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
         out = run(analyzer, p, "--max-components", "3", "--min-coverage", "0.50")
         assert out["status"] == "OK"
-        assert out["n_cases"] == 4
+        assert out["n_cases_total"] == 4
+        assert out["n_event_cases"] == 4
+        assert out["n_matched_controls"] == 0
         assert out["dataset_role"] == "PROSPECTIVE"
         assert out["structured_feature_svd"]["status"] == "OK"
         assert out["missingness_svd"]["status"] in {"OK", "NO_VARIANCE"}
@@ -141,14 +149,41 @@ def main():
             encoding="utf-8",
         )
         default_out = run(analyzer, mixed)
-        assert default_out["n_cases"] == 4
+        assert default_out["n_cases_total"] == 4
         hist_out = run(analyzer, mixed, "--dataset-role", "HISTORICAL_NOT_PROSPECTIVE")
-        assert hist_out["n_cases"] == 1
+        assert hist_out["n_cases_total"] == 1
 
         empty = td / "empty.jsonl"
         empty.write_text("", encoding="utf-8")
         out2 = run(analyzer, empty)
-        assert out2["status"] == "NO_CASES"
+        assert out2["status"] == "NO_EVENT_CASES"
+
+        # Matched ordinary controls must not inflate event N/readiness.
+        event = case(
+            "E1", "HALLUCINATION",
+            feature_row(evidence_gap=1, closure_pressure=1),
+            project="P-CONTROL",
+        )
+        control = case(
+            "C1", "HALLUCINATION",
+            feature_row(evidence_gap=0, closure_pressure=0),
+            project="P-CONTROL",
+        )
+        control["case_role"] = "MATCHED_ORDINARY_CONTROL"
+        control["matched_case_id"] = "E1"
+        control["materiality_reason"] = None
+        control["selection_rule"] = "NEAREST_PRIOR_ORDINARY_SAME_PROJECT"
+        pair_path = td / "pair.jsonl"
+        pair_path.write_text(
+            "\n".join(json.dumps(r) for r in [event, control]) + "\n",
+            encoding="utf-8",
+        )
+        pair_out = run(analyzer, pair_path)
+        assert pair_out["n_cases_total"] == 2
+        assert pair_out["n_event_cases"] == 1
+        assert pair_out["n_matched_controls"] == 1
+        assert pair_out["matched_control_contrast"]["n_pairs"] == 1
+        assert pair_out["analysis_readiness"]["n_cases"] == 1
 
         # Japanese/CJK raw text without explicit tokens must not be silently
         # pushed through the default English-oriented tokenizer.
