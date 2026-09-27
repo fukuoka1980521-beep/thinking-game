@@ -1,0 +1,105 @@
+{
+  "research_program": "Operational Latent State Reliability (OLSR)",
+  "freeze_version": "v0.5-predata",
+  "freeze_date": "2026-09-27",
+  "base_branch": "research/stgr-lscb-v20",
+  "base_commit": "3f4528b6173d797d8016194ee7a52360783c55eb",
+  "prospective_target_events_at_freeze": 0,
+  "matched_controls_at_freeze": 0,
+  "frozen_boundaries": {
+    "case_roles": [
+      "TARGET_EVENT",
+      "MATCHED_ORDINARY_CONTROL"
+    ],
+    "control_selection_rule": "NEAREST_PRIOR_ORDINARY_SAME_PROJECT",
+    "dataset_roles": [
+      "PROSPECTIVE",
+      "HISTORICAL_NOT_PROSPECTIVE"
+    ],
+    "claim_states": [
+      "VERIFIED",
+      "SUPPORTED_INFERENCE",
+      "UNVERIFIED",
+      "CONFLICTED",
+      "UNKNOWN"
+    ],
+    "target_tracks": [
+      "LTM",
+      "ANSWER_VARIANCE",
+      "HALLUCINATION",
+      "MULTI_TRACK"
+    ],
+    "candidate_structure_floor": "max(24, 2 × eligible structured features)",
+    "minimum_projects": 3,
+    "minimum_tracks": 2,
+    "leave_one_out_thresholds": {
+      "median_abs_cosine": 0.75,
+      "minimum_abs_cosine": 0.5
+    },
+    "permutation_null": "column-wise permutation, 200 iterations, seed 0, first component > empirical 95th percentile",
+    "mca_required_for_candidate_structure": true,
+    "cross_method_top5_jaccard_threshold": 0.4,
+    "causal_interpretation_allowed": false,
+    "development_os_auto_promotion_allowed": false
+  },
+  "critical_files": [
+    [
+      "research/latent-state-v01/PROTOCOL.md",
+      "b849020df054e5e98bd2de0fb15e3765aa470cc1"
+    ],
+    [
+      "research/latent-state-v01/PROTOCOL_AMENDMENT_001.md",
+      "91f7bc07c139effba66b3ba97dffe80177706661"
+    ],
+    [
+      "research/latent-state-v01/PROTOCOL_AMENDMENT_002.md",
+      "875ac64306f000584a16d6c0e9c2ac2a539778a6"
+    ],
+    [
+      "research/latent-state-v01/PROTOCOL_AMENDMENT_003.md",
+      "e1ac101febcbe2c77f71ff6a0943ebe62373cf79"
+    ],
+    [
+      "research/latent-state-v01/CASE_SCHEMA.json",
+      "b23c03439178ba99e74348303f9d0b9df64af896"
+    ],
+    [
+      "research/latent-state-v01/ANALYSIS_READINESS_GATE.md",
+      "d55ca73133026953b89ce4624c2005729fe3866b"
+    ],
+    [
+      "research/latent-state-v01/OPERATIONAL_INTAKE.md",
+      "0016ff23da60995fc6cccd1f5d9f1c51039b0eff"
+    ],
+    [
+      "research/latent-state-v01/HALLUCINATION_HYPOTHESIS_REGISTRY.json",
+      "c09e8a53ab99668604526521440e6161abbfd789"
+    ],
+    [
+      "research/latent-state-v01/ANSWER_VARIANCE_PACKET.md",
+      "a15147c6165068285fdd876c94ca561ff8500ff6"
+    ],
+    [
+      "research/latent-state-v01/scripts/analyze_latent_structure.py",
+      "35d3b94a4c92adcae1ac5c714c443538235dce6d"
+    ],
+    [
+      "research/latent-state-v01/scripts/triage_natural_event.py",
+      "9f8adda577f02648e218189afe4db8e736cde9f7"
+    ],
+    [
+      "research/latent-state-v01/scripts/select_matched_control.py",
+      "f829d9d04913d2cfb3f1e13172ac5389be89386b"
+    ],
+    [
+      "research/latent-state-v01/scripts/capture_case.py",
+      "bf7dea0129f7debf6c1545b4a6bb474ad7c3be7a"
+    ],
+    [
+      ".github/workflows/latent-state-research-ci.yml",
+      "e66d4b8341e0718dbfb6261b7364617f56b3ef18"
+    ]
+  ],
+  "note": "Git blob SHAs freeze file identity at the pre-data boundary. The freeze commit created afterward records the freeze declaration itself.",
+  "freeze_finalization_note": "CI enforcement changed the workflow after the initial manifest draft; the workflow blob SHA was updated before merge. No prospective cases existed and no research decision changed."
+}

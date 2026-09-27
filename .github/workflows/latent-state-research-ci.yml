@@ -54,6 +54,14 @@ jobs:
         run: |
           python research/latent-state-v01/scripts/test_select_matched_control.py
 
+      - name: Run frozen-baseline verifier tests
+        run: |
+          python research/latent-state-v01/scripts/test_verify_frozen_baseline.py
+
+      - name: Verify OLSR frozen baseline
+        run: |
+          python research/latent-state-v01/scripts/verify_frozen_baseline.py
+
       - name: Validate historical calibration boundary
         run: |
           python research/latent-state-v01/scripts/analyze_latent_structure.py             research/latent-state-v01/historical/STGR6_FEATURE_MAPPING.jsonl             --dataset-role HISTORICAL_NOT_PROSPECTIVE             --output /tmp/historical.json
