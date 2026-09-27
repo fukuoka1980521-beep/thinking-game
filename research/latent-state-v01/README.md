@@ -1,4 +1,4 @@
-# Latent State Reliability Research v0.1
+# Latent State Reliability Research v0.1 / analysis amendment v0.2
 
 This phase extends the STGR / LSCB program without modifying the frozen six-episode confirmatory dataset.
 
@@ -53,3 +53,17 @@ Use either:
 - semantic embeddings.
 
 This prevents an English-oriented tokenizer from creating visually plausible but methodologically weak LDA topics.
+
+## Analysis Amendment 001
+
+Before the first prospective case was captured, historical STGR calibration exposed a methodological risk:
+encoding UNKNOWN as a feature in the same SVD space can make observation coverage look like task semantics.
+
+v0.2 therefore:
+- requires every core feature to be explicitly coded as 1 / 0 / null;
+- analyzes semantic feature structure separately from missingness structure;
+- uses feature-wise observed-mean imputation only inside semantic decomposition;
+- reports coverage and a separate missingness SVD;
+- requires explicit dataset roles so historical calibration cannot be pooled into prospective analysis by default.
+
+See `PROTOCOL_AMENDMENT_001.md`.
