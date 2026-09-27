@@ -96,10 +96,11 @@ export function NewLife30App({ onExit }: Props) {
   async function submitFreeText(npc: NpcId, text: string, consentAccepted: boolean) {
     setPending(true);
     try {
-      const result = await resolveFreeText(npc, text, state, { interpreter, consentAccepted, ledger });
-      if (result.ledger) setLedger(result.ledger);
       const freeAction = resolveFreeAction(state, npc, text);
-      if (freeAction) setState((current) => applyAction(current, freeAction));
+      const responseState = freeAction ? applyAction(state, freeAction) : state;
+      const result = await resolveFreeText(npc, text, responseState, { interpreter, consentAccepted, ledger });
+      if (result.ledger) setLedger(result.ledger);
+      if (freeAction) setState(responseState);
       setTranscript((prev) => [...prev, { speaker: "あなた", text }, { speaker: npcDisplayName(npc), text: result.text }]);
     } finally {
       setPending(false);
