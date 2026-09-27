@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -19,13 +19,13 @@ describe("NEW LIFE permanent isolated deploy route", () => {
     expect(page).toContain('data.service!=="newlife-refoundation-ai"');
     expect(page).toContain('typeof data.buildSha!=="string"');
     expect(page).toContain('consentCard.style.display="block"');
-    expect(page).toContain('data.contractVersion!=="V42"');
+    expect(page).toContain('data.contractVersion!=="V45"');
     expect(page).toContain('data.operations.includes("continue_npc_exchange")');
   });
 
   it("removes Cloud Shell from the normal human-test page", () => {
     expect(page).not.toContain("ssh.cloud.google.com/cloudshell");
-    expect(page).not.toContain("Google Cloud ShellでV37 LIVE AIを準備");
+    expect(page).not.toContain("Google Cloud Shell縺ｧV37 LIVE AI繧呈ｺ門ｙ");
   });
 
   it("keeps the request target immutable while the reply is in flight", () => {
@@ -69,7 +69,7 @@ describe("NEW LIFE permanent isolated deploy route", () => {
   it("smoke-tests the current product operations, not retired thin-path operations", () => {
     expect(workflow).toContain('"operation":"converse_turn"');
     expect(workflow).toContain('"operation":"continue_npc_exchange"');
-    expect(workflow).toContain('p.contractVersion!=="V42"');
+    expect(workflow).toContain('p.contractVersion!=="V45"');
     expect(workflow).toContain("scene revision proposal missing");
     expect(workflow).toContain('"operation":"organize_thought"');
     expect(workflow).not.toContain('"operation":"interpret_turn"');
@@ -83,3 +83,4 @@ describe("NEW LIFE permanent isolated deploy route", () => {
     expect(workflow).toContain("google-github-actions/auth@v2");
   });
 });
+
