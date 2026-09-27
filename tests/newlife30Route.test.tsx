@@ -97,6 +97,19 @@ describe("NEW LIFE 30-day route isolation", () => {
 
     expect(screen.getByPlaceholderText(/自由に話しかける/)).toHaveValue("陽菜に値段を聞いてみる");
   });
+  it("carries a fallback button action into the next-day trace", async () => {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+    const details = screen.getByText(/\u8ff7\u3063\u305f\u3068\u304d\u306e\u884c\u52d5\u5019\u88dc/);
+    await user.click(details);
+    const options = screen.getAllByRole("button").filter((button) => !/\u6b21\u306e\u65e5\u3078|\u30db\u30fc\u30e0/.test(button.textContent ?? ""));
+    const chosen = options[0].textContent ?? "";
+    await user.click(options[0]);
+    await user.click(screen.getByRole("button", { name: /\u6b21\u306e\u65e5\u3078/ }));
+    expect(screen.getByLabelText(/\u524d\u65e5\u306e\u3042\u306a\u305f\u306e\u884c\u52d5/)).toHaveTextContent(chosen);
+  });
+
 });
 
 // Phase 28 UI smoke test (instruction 14): drives the actual free-talk form
