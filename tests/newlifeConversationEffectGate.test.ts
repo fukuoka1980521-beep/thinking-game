@@ -24,6 +24,7 @@ function reply(overrides: Partial<RefoundationReply> = {}): RefoundationReply {
     },
     candidateFactRevealIds: [],
     candidateCommitments: [],
+    candidateWorldEffects: ["MIYOKO_WAITING_CAPACITY_STATED"],
     uncertainty: "LOW",
     ...overrides,
   };
@@ -73,14 +74,24 @@ describe("NEW LIFE chat-first conversation effect gate", () => {
     expect(decision.reason).toBe("no_authorized_mapping");
   });
 
-  it("does not infer a state change from unrelated semantic actions", () => {
+  it("does not infer a state change when the model proposed no authorized world effect", () => {
     const before = day9State();
-    const base = reply();
     const decision = applyConversationEffectGate(before, "miyoko", reply({
-      candidateTurn: { ...base.candidateTurn, action: "ASK_FACT" },
+      candidateWorldEffects: [],
     }));
 
     expect(decision.applied).toBe(false);
     expect(decision.state).toBe(before);
+  });
+
+  it("does not depend on a narrow candidateTurn label when the closed world effect is explicit", () => {
+    const before = day9State();
+    const base = reply();
+    const decision = applyConversationEffectGate(before, "miyoko", reply({
+      candidateTurn: { ...base.candidateTurn, action: "OBSERVE", boundaryMode: "NOT_RELEVANT" },
+    }));
+
+    expect(decision.applied).toBe(true);
+    expect(decision.state.mSeats).toBe("bounded");
   });
 });
