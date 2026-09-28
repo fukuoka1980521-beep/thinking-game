@@ -35,6 +35,26 @@ describe("validated refoundation dialogue bridge", () => {
     ]);
     expect(reply.text).toContain("\u5168\u90e8");
   });
+  it("preserves closed world-effect proposals for the deterministic state gate", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      npc: "MIYOKO",
+      npcLine: "四人くらいまでなら大丈夫ですよ。",
+      understoodPlayerMeaning: "待機できる人数を聞いている",
+      candidateTurn: { action: "OBSERVE", boundaryMode: "NOT_RELEVANT", relationalEvents: [], needsClarification: false },
+      candidateWorldEffects: ["MIYOKO_WAITING_CAPACITY_STATED"],
+      uncertainty: "LOW",
+      sceneStatus: "AWAIT_PLAYER",
+      nextNpc: null,
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+
+    const reply = await converseWithRefoundation("miyoko", "何人くらいまで待てますか？", [], {
+      day: 9, title: "待つ場所はどこか", text: "喫茶の待機場所を確認する場面。", canonicalState: { mSeats: "assumed" },
+    });
+
+    expect(reply.candidateWorldEffects).toEqual(["MIYOKO_WAITING_CAPACITY_STATED"]);
+    expect(reply.candidateTurn.action).toBe("OBSERVE");
+  });
+
   it("marks a selected game action as ACTION instead of pretending the label was spoken", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
       npc: "HINA", npcLine: "ありがとうございます。箱、こっちに置いてもらえますか。",
