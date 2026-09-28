@@ -65,8 +65,10 @@ export function resolveDay24Outcome(state: NewLife30State): Day24Outcome {
 }
 
 /**
- * Applies one player choice (a button press, never free text — see npcVoice.ts)
- * to the state. Pure: returns a new state, never mutates its argument.
+ * Applies one canonical action ID to the state. The action ID may come from
+ * a visible rescue choice or from a post-generation deterministic authority
+ * gate that has validated an equivalent free-text intent. This module still
+ * owns the actual state write. Pure: returns a new state, never mutates its argument.
  */
 export function applyAction(state: NewLife30State, actionId: string): NewLife30State {
   let next = withLog(state, `day${state.day}${state.day11Phase !== "done" && state.day === 11 ? `:${state.day11Phase}` : ""}:${actionId}`);
