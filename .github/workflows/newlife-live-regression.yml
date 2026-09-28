@@ -1,0 +1,51 @@
+name: NEW LIFE Live Conversation Regression
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - master
+    paths:
+      - "scripts/newlife-live-regression.mjs"
+      - ".github/workflows/newlife-live-regression.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: newlife-live-conversation-regression
+  cancel-in-progress: false
+
+jobs:
+  live-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run sequential live owner regression
+        id: live
+        shell: bash
+        run: |
+          set +e
+          node scripts/newlife-live-regression.mjs > newlife-live-regression.json
+          code=$?
+          cat newlife-live-regression.json
+          echo "### NEW LIFE live conversation regression" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          cat newlife-live-regression.json >> "$GITHUB_STEP_SUMMARY"
+          exit "$code"
+
+      - name: Upload live regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newlife-live-regression
+          path: newlife-live-regression.json
+          if-no-files-found: warn
