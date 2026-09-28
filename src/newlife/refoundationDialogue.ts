@@ -14,11 +14,23 @@ const DISPLAY_TO_API: Record<string, string> = {
 
 export interface DialogueLine { speaker: string; text: string }
 export interface RefoundationContinuation { npc: NpcId; text: string }
+export type RefoundationUncertainty = "LOW" | "MEDIUM" | "HIGH";
+export interface RefoundationCandidateTurn {
+  action: string;
+  boundaryMode: string;
+  relationalEvents: string[];
+  needsClarification: boolean;
+}
 export interface RefoundationReply {
   text: string;
   continuations: RefoundationContinuation[];
   nextNpc: NpcId | null;
   nextText: string | null;
+  understoodPlayerMeaning: string;
+  candidateTurn: RefoundationCandidateTurn;
+  candidateFactRevealIds: string[];
+  candidateCommitments: string[];
+  uncertainty: RefoundationUncertainty;
 }
 
 function localNpc(api: unknown): NpcId | null {
@@ -93,10 +105,37 @@ export async function converseWithRefoundation(
     current = next;
   }
 
+  const candidateTurn: RefoundationCandidateTurn =
+    first.candidateTurn && typeof first.candidateTurn === "object"
+      ? {
+          action: typeof first.candidateTurn.action === "string" ? first.candidateTurn.action : "CLARIFY",
+          boundaryMode: typeof first.candidateTurn.boundaryMode === "string" ? first.candidateTurn.boundaryMode : "UNKNOWN",
+          relationalEvents: Array.isArray(first.candidateTurn.relationalEvents)
+            ? first.candidateTurn.relationalEvents.filter((v: unknown): v is string => typeof v === "string")
+            : [],
+          needsClarification: first.candidateTurn.needsClarification === true,
+        }
+      : { action: "CLARIFY", boundaryMode: "UNKNOWN", relationalEvents: [], needsClarification: true };
+
+  const uncertainty: RefoundationUncertainty =
+    first.uncertainty === "LOW" || first.uncertainty === "MEDIUM" || first.uncertainty === "HIGH"
+      ? first.uncertainty
+      : "HIGH";
+
   return {
     text: first.npcLine.trim(),
     continuations,
     nextNpc: continuations[0]?.npc ?? null,
     nextText: continuations[0]?.text ?? null,
+    understoodPlayerMeaning:
+      typeof first.understoodPlayerMeaning === "string" ? first.understoodPlayerMeaning : "",
+    candidateTurn,
+    candidateFactRevealIds: Array.isArray(first.candidateFactRevealIds)
+      ? first.candidateFactRevealIds.filter((v: unknown): v is string => typeof v === "string")
+      : [],
+    candidateCommitments: Array.isArray(first.candidateCommitments)
+      ? first.candidateCommitments.filter((v: unknown): v is string => typeof v === "string")
+      : [],
+    uncertainty,
   };
 }
