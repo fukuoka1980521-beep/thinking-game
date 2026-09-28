@@ -216,11 +216,17 @@ export function NewLife30App({ onExit }: Props) {
   }
 
   function handleOption(optionId: string) {
+    if (pending) return;
     const label = scene.options.find((o) => o.id === optionId)?.label ?? optionId;
     const next = applyAction(state, optionId);
+    const target = scene.npcsPresent.includes(addressee) ? addressee : (scene.npcsPresent[0] ?? addressee);
     setState(next);
-    setActionNotice(`行動を記録しました：${label}`);
-    setTranscript((prev) => [...prev, { speaker: "あなた", text: `（${label}）` }]);
+    setActionNotice(`行動を実行しました：${label}`);
+    void submitFreeText(target, label, consentStatus === "accepted", {
+      stateOverride: next,
+      displayText: `（${label}）`,
+      skipFreeAction: true,
+    });
   }
 
   function handleAdvance() {
@@ -233,11 +239,18 @@ export function NewLife30App({ onExit }: Props) {
     resetTranscriptFor(advanceDay(state));
   }
 
-  async function submitFreeText(npc: NpcId, text: string, consentAccepted: boolean) {
+  async function submitFreeText(
+    npc: NpcId,
+    text: string,
+    consentAccepted: boolean,
+    options?: { stateOverride?: NewLife30State; displayText?: string; skipFreeAction?: boolean },
+  ) {
     setPending(true);
     try {
-      const freeAction = resolveFreeAction(state, npc, text);
-      const responseState = freeAction ? applyAction(state, freeAction) : state;
+      const baseState = options?.stateOverride ?? state;
+      const freeAction = options?.skipFreeAction ? null : resolveFreeAction(baseState, npc, text);
+      const responseState = freeAction ? applyAction(baseState, freeAction) : baseState;
+      const playerText = options?.displayText ?? text;
 
       if (consentAccepted && supportsRefoundation(npc)) {
         try {
@@ -258,7 +271,7 @@ export function NewLife30App({ onExit }: Props) {
           });
           if (freeAction) setState(responseState);
           const lines: TranscriptLine[] = [
-            { speaker: "\u3042\u306a\u305f", text },
+            { speaker: "\u3042\u306a\u305f", text: playerText },
             { speaker: npcDisplayName(npc), text: live.text },
             ...live.continuations.map((turn) => ({ speaker: npcDisplayName(turn.npc), text: turn.text })),
           ];
@@ -268,7 +281,7 @@ export function NewLife30App({ onExit }: Props) {
         } catch {
           // Never disguise a transient live-AI outage as an in-character deterministic answer.
           const lines: TranscriptLine[] = [
-            { speaker: "\u3042\u306a\u305f", text },
+            { speaker: "\u3042\u306a\u305f", text: playerText },
             { speaker: "システム", text: "返事の途中で通信が途切れました。入力は残してあります。少し待って、もう一度「話す」を押してください。" },
           ];
           setTranscript((prev) => [...prev, ...lines]);
@@ -280,7 +293,7 @@ export function NewLife30App({ onExit }: Props) {
       const result = await resolveFreeText(npc, text, responseState, { interpreter, consentAccepted, ledger });
       if (result.ledger) setLedger(result.ledger);
       if (freeAction) setState(responseState);
-      const lines: TranscriptLine[] = [{ speaker: "\u3042\u306a\u305f", text }, { speaker: npcDisplayName(npc), text: result.text }];
+      const lines: TranscriptLine[] = [{ speaker: "\u3042\u306a\u305f", text: playerText }, { speaker: npcDisplayName(npc), text: result.text }];
       setTranscript((prev) => [...prev, ...lines]);
       appendMemory(lines);
     } finally {
@@ -467,7 +480,7 @@ export function NewLife30App({ onExit }: Props) {
         <summary>迷ったときの行動候補</summary>
         <div className="newlife30-option-list">
           {scene.options.map((o) => (
-            <button key={o.id} onClick={() => handleOption(o.id)}>
+            <button key={o.id} onClick={() => handleOption(o.id)} disabled={pending}>
               {o.label}
             </button>
           ))}
