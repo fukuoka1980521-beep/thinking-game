@@ -49,6 +49,7 @@ export interface LiveSceneContext {
   title: string;
   text: string;
   canonicalState: Record<string, unknown>;
+  interactionKind?: "SPEECH" | "ACTION";
 }
 export function supportsRefoundation(npc: NpcId): boolean {
   return Boolean(API_NPC[npc]);
@@ -64,6 +65,7 @@ export async function converseWithRefoundation(
     relationshipState: "NEUTRAL", boundaryStatus: "UNKNOWN", remainingMinutes: 30,
     activeCommitment: null, sceneRevisionText: null,
     day: scene.day, sceneTitle: scene.title, sceneText: scene.text, canonicalState: scene.canonicalState,
+    interactionKind: scene.interactionKind ?? "SPEECH",
   };
   const first = await post({ operation: "converse_turn", caseId, targetNpc, rawPlayerUtterance: utterance, recentDialogue, dynamicState });
   if (!first || first.npc !== targetNpc || typeof first.npcLine !== "string" || !first.npcLine.trim()) throw new Error("invalid_refoundation_reply");
