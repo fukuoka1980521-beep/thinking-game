@@ -146,6 +146,18 @@ function validCafeConverseBody(overrides: Partial<Record<string, unknown>> = {})
   };
 }
 
+function validThirtyDayConverseBody(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    operation: "converse_turn",
+    caseId: "NEWLIFE_30DAY_V1",
+    targetNpc: "DAISUKE",
+    rawPlayerUtterance: "今日は何を直してるんですか？",
+    recentDialogue: [{ speaker: "PLAYER", text: "こんにちは" }],
+    dynamicState: validDynamicState({ day: 4, sceneTitle: "仮止めの椅子", sceneText: "大輔の工房。" }),
+    ...overrides,
+  };
+}
+
 function validOrganizeThoughtBody(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     operation: "organize_thought",
@@ -492,6 +504,37 @@ describe("functions/newlife-refoundation-ai/lib.js — V45 ambiguous relationshi
     expect(normalized.sceneStatus).toBe("AWAIT_PLAYER");
     expect(normalized.nextNpc).toBeNull();
     expect(normalized.sceneRevisionProposal).toEqual({ hasProposal: false, revisedText: "", changeSummary: "" });
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — NEWLIFE_30DAY_V1 six-NPC backend contract", () => {
+  it("accepts every canonical 30-day NPC, including Daisuke and Jin", () => {
+    for (const npc of ["HINA", "YOHEI", "DAISUKE", "JIN", "MIYOKO", "FUMIKO"]) {
+      expect(lib.validateInput(validThirtyDayConverseBody({ targetNpc: npc }))).toBeNull();
+    }
+  });
+
+  it("exposes correct canonical display names for all six characters", () => {
+    const dossiers = lib.getCaseDossiers("NEWLIFE_30DAY_V1");
+    expect(dossiers.HINA.displayName).toBe("陽菜");
+    expect(dossiers.YOHEI.displayName).toBe("洋平");
+    expect(dossiers.DAISUKE.displayName).toBe("大輔");
+    expect(dossiers.JIN.displayName).toBe("仁");
+    expect(dossiers.MIYOKO.displayName).toBe("美代子");
+    expect(dossiers.FUMIKO.displayName).toBe("文子");
+  });
+
+  it("keeps Daisuke canonical as furniture repair with no unresolved barber contradiction", () => {
+    const model = lib.getCaseDossiers("NEWLIFE_30DAY_V1").DAISUKE.canonicalCharacterModel;
+    expect(model).toContain("furniture and chair repair");
+    expect(model).not.toMatch(/old GM calls him a barber|contradiction must be resolved/i);
+  });
+
+  it("buildConversePrompt can build a real Daisuke/Jin 30-day prompt", () => {
+    const daisuke = lib.buildConversePrompt(validThirtyDayConverseBody({ targetNpc: "DAISUKE" }));
+    const jin = lib.buildConversePrompt(validThirtyDayConverseBody({ targetNpc: "JIN", rawPlayerUtterance: "手伝えることありますか？" }));
+    expect(daisuke).toContain("大輔");
+    expect(jin).toContain("仁");
   });
 });
 
