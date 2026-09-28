@@ -1,0 +1,31 @@
+name: NEW LIFE Owner Regression Live
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - test/newlife-live-regression-v1
+    paths:
+      - "scripts/newlife-owner-regression-live.mjs"
+      - ".github/workflows/newlife-owner-regression-live.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: newlife-owner-regression-live
+  cancel-in-progress: true
+
+jobs:
+  live-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run sequential owner regression corpus against production dialogue
+        env:
+          NEW_LIFE_ENDPOINT: https://newlife-refoundation-ai-zqtk74q2ra-an.a.run.app
+        run: node scripts/newlife-owner-regression-live.mjs
