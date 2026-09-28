@@ -322,3 +322,34 @@ source/version・freshness・context contamination・unsupported inference・com
 tool-result misread 等を複数視点で継続観測する。
 
 <!-- END AUTONOMY-MANAGED-BLOCK v1 -->
+
+## NEW LIFE product integrity
+
+For any change touching `src/newlife/**`, `functions/newlife-*/**`, `public/newlife-*`,
+`tests/newlife*`, or NEW LIFE design/evaluation documents:
+
+1. Read `docs/newlife/NEWLIFE_PRODUCT_CONSTITUTION_V1.md` first.
+2. Apply `docs/newlife/GOAL_INTEGRITY_GATE_V1.md` before implementation and before CLOSE.
+3. Preserve the root architecture unless the owner explicitly changes the product goal:
+   - free conversation is primary;
+   - choices are rescue/support;
+   - story creates situations/events, not ordinary reply scripts;
+   - generative conversation owns meaning/expression;
+   - deterministic code owns truth, authority, and canonical state.
+4. Do not add phrase-specific regexes or exact reply tables to repair ordinary-language failures.
+   A new natural-language failure must first be classified as context/memory/persona/model/fallback/
+   state-authority/story/UI failure before any patch is selected.
+5. A technical PASS is not a product PASS. Preserve raw human-play evidence and require a human
+   play gate for claims about naturalness, immersion, agency, or character quality.
+6. Human-accepted V42/V45 behavior is regression evidence. Do not casually rewrite it.
+7. Accepted character image assets under `src/assets/newlife/characters/` are canonical visual
+   identity. Do not regenerate/restyle/replace them without an explicit owner-review reason.
+8. When a free-text turn should have the same world consequence as a rescue choice, route it:
+   chat-first semantic proposal -> deterministic authority gate -> canonical state transition.
+   Do not run phrase routing before the normal consented live conversation path.
+9. Research claims about Intent Decomposition Drift must distinguish observed repository evidence
+   from hypotheses. Follow
+   `docs/research/intent-decomposition-drift/INTENT_DECOMPOSITION_DRIFT_PROTOCOL_V1.md`.
+
+NEW_LIFE_ROOT_DECISION = CHAT_FIRST
+
