@@ -11,6 +11,19 @@ import { setNewLifeAiDialogueConsent } from "../src/newlife/semantic/consent";
 beforeEach(() => {
   localStorage.clear();
   setNewLifeAiDialogueConsent("declined");
+
+  it("treats 帰る as ending the current scene instead of asking an NPC to answer it", async () => {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Day 1から始める" }));
+    await user.click(screen.getByText("迷ったときの行動候補"));
+    await user.click(screen.getByRole("button", { name: "帰る" }));
+    expect(screen.getByText("四つの席")).toBeInTheDocument();
+    expect(screen.getByText("（帰る）")).toBeInTheDocument();
+    expect(screen.queryByText("行動を実行しました：帰る")).not.toBeInTheDocument();
+  });
+
 });
 
 function runToDay24(actions: Record<number, string[]>): NewLife30State {

@@ -226,10 +226,21 @@ export function NewLife30App({ onExit }: Props) {
     if (pending) return;
     const label = scene.options.find((o) => o.id === optionId)?.label ?? optionId;
     const next = applyAction(state, optionId);
+    optionDetailsRef.current?.removeAttribute("open");
+
+    if (optionId === "leave") {
+      const trace = `（${label}）`;
+      appendMemory([{ speaker: "あなた", text: trace }]);
+      setPreviousDayTrace(trace);
+      setActionNotice(null);
+      immediateActionTrace.current = null;
+      resetTranscriptFor(advanceDay(next));
+      return;
+    }
+
     const target = scene.npcsPresent.includes(addressee) ? addressee : (scene.npcsPresent[0] ?? addressee);
     setState(next);
     setActionNotice(`行動を実行しました：${label}`);
-    optionDetailsRef.current?.removeAttribute("open");
     void submitFreeText(target, label, consentStatus === "accepted", {
       stateOverride: next,
       displayText: `（${label}）`,
