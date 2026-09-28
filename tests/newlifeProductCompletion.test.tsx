@@ -97,8 +97,9 @@ describe("NEW LIFE product-completion coverage", () => {
     expect(screen.getByText(/陽菜・洋平 がこの場にいます/)).toBeInTheDocument();
 
     await user.click(screen.getByText("迷ったときの行動候補"));
-    await user.click(screen.getByRole("button", { name: "手を貸す" }));
-    expect(screen.getByRole("status")).toHaveTextContent("行動を記録しました：手を貸す");
-    expect(screen.getByText("（手を貸す）")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "何をいくらで売るか聞く" }));
+    expect(screen.getByRole("status")).toHaveTextContent("行動を実行しました：何をいくらで売るか聞く");
+    expect(screen.getByText("（何をいくらで売るか聞く）")).toBeInTheDocument();
+    expect(await screen.findByText(/スコーン.*280円|280円.*スコーン/)).toBeInTheDocument();
   });
 });
