@@ -21,9 +21,17 @@ import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./seman
 import { converseWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
 
 const NPC_ART: Partial<Record<NpcId, string>> = { hina: hinaArt, yohei: yoheiArt, miyoko: miyokoArt };
+const NPC_ROLE: Record<NpcId, string> = {
+  hina: "焼き菓子の試売を始める人",
+  yohei: "数字と事実を確かめる店主",
+  daisuke: "家具修理の職人",
+  jin: "設営と家具仕事を引き受ける人",
+  miyoko: "喫茶の店主",
+  fumiko: "会館と掲示を見ている人",
+};
 const SAVE_KEY = "newlife30_save_v1";
-const CAFE_DAYS = new Set([2, 5, 9, 12, 13, 16, 18, 20, 21]);
-const SHOP_DAYS = new Set([4, 6, 8, 14, 15, 17, 22, 23]);
+const CAFE_DAYS = new Set([2, 5, 9, 12, 13, 16, 18, 20, 21, 26, 28]);
+const SHOP_DAYS = new Set([4, 6, 8, 14, 15, 17, 22, 23, 27, 29]);
 
 function sceneArtFor(day: number): string {
   if (day === 1) return tempHomeArt;
@@ -37,6 +45,15 @@ function sceneLocationFor(day: number): string {
   if (CAFE_DAYS.has(day)) return "美代子の喫茶";
   if (SHOP_DAYS.has(day)) return "店先・工房";
   return "商店街・会館前";
+}
+
+function sceneMomentFor(state: NewLife30State): string {
+  if (state.day === 11) return state.day11Phase === "afternoon" ? "午後" : "朝";
+  if (state.day <= 5) return "午前";
+  if (state.day <= 10) return "昼前";
+  if (state.day <= 18) return "午後";
+  if (state.day <= 24) return "夕方";
+  return "それぞれの一日";
 }
 
 function speakerNpc(speaker: string): NpcId | null {
@@ -155,7 +172,15 @@ export function NewLife30App({ onExit }: Props) {
     setAddressee("hina");
     setPreviousDayTrace(null);
     setThinking({ important: "", unknown: "", next: "" });
+    setThinkingNote(null);
+    setLedger(syncLedgerWithState(createEmptyLedger(), fresh));
     immediateActionTrace.current = null;
+    setSavedSession(null);
+    try {
+      localStorage.removeItem(SAVE_KEY);
+    } catch {
+      // A fresh run still works if storage is unavailable.
+    }
     setShowIntro(false);
   }
 
@@ -280,6 +305,10 @@ export function NewLife30App({ onExit }: Props) {
       <div className="newlife30">
         <span className="newlife30-badge">NEW LIFE</span>
         <h1 className="newlife30-title">{"\u0033\u0030\u65e5\u3092\u7d42\u3048\u3066"}</h1>
+        <div className="newlife30-ending-art">
+          <img src={sceneArtFor(30)} alt="30日後の町" />
+          <span>30 DAYS LATER</span>
+        </div>
         <div className="newlife30-scene">
           <strong>{state.day24Outcome === "JOINT_RETRY" ? "\u5171\u540c\u3067\u3001\u3082\u3046\u4e00\u5ea6\u8a66\u305b\u308b\u5f62\u304c\u6b8b\u3063\u305f\u3002" : state.day24Outcome === "SOLO_TRIAL" ? "\u967d\u83dc\u306f\u3001\u81ea\u5206\u3067\u6c7a\u3081\u3089\u308c\u308b\u5c0f\u3055\u306a\u8a66\u884c\u3092\u9078\u3093\u3060\u3002" : state.day24Outcome === "PAUSE" ? "\u6025\u3044\u3067\u7b54\u3048\u3092\u4f5c\u3089\u305a\u3001\u3044\u3063\u305f\u3093\u6b62\u307e\u308b\u4f59\u5730\u3092\u6b8b\u3057\u305f\u3002" : "\u5171\u540c\u6848\u306f\u7d42\u308f\u3063\u305f\u3002\u305d\u308c\u3067\u3082\u753a\u3067\u306e\u95a2\u4fc2\u3068\u6b21\u306e\u884c\u52d5\u306f\u6b8b\u3063\u3066\u3044\u308b\u3002"}</strong>
           <p>{"\u0033\u0030\u65e5\u524d\u3001\u3042\u306a\u305f\u306f\u3053\u306e\u753a\u3067\u4f55\u304c\u8d77\u304d\u308b\u304b\u77e5\u308a\u307e\u305b\u3093\u3067\u3057\u305f\u3002\u4eca\u306f\u3001\u8ab0\u306b\u78ba\u8a8d\u3059\u308b\u304b\u3001\u4f55\u3092\u4e8b\u5b9f\u3068\u3057\u3066\u6271\u3046\u304b\u3001\u3069\u3053\u307e\u3067\u5f15\u304d\u53d7\u3051\u308b\u304b\u3092\u81ea\u5206\u3067\u9078\u3093\u3067\u304d\u307e\u3057\u305f\u3002"}</p>
@@ -293,9 +322,12 @@ export function NewLife30App({ onExit }: Props) {
           <span>{"\u6700\u7d42\u78ba\u8a8d\uff1a"}{state.fEditor === "named" ? "\u62c5\u5f53\u8005\u3092\u6c7a\u3081\u305f" : "\u62c5\u5f53\u304c\u66d6\u6627\u306a\u307e\u307e\u6b8b\u3063\u305f"}</span>
         </div>
         <p className="newlife30-footer">{"\u3053\u3053\u307e\u3067\u306e\u9078\u629e\u3068\u4f1a\u8a71\u304c\u3001\u3042\u306a\u305f\u306e\u0033\u0030\u65e5\u3067\u3057\u305f\u3002\u6210\u529f\u30fb\u5931\u6557\u3067\u306f\u306a\u304f\u3001\u3042\u306a\u305f\u304c\u4f5c\u3063\u305f\u7d4c\u8def\u3067\u3059\u3002"}</p>
-        <button className="newlife30-exit" onClick={onExit}>
-          {"\u30db\u30fc\u30e0\u3078\u623b\u308b"}
-        </button>
+        <div className="newlife30-ending-actions">
+          <button className="newlife30-advance" onClick={startFresh}>もう一度 Day 1 から始める</button>
+          <button className="newlife30-exit" onClick={onExit}>
+            {"\u30db\u30fc\u30e0\u3078\u623b\u308b"}
+          </button>
+        </div>
       </div>
     );
   }
@@ -321,7 +353,10 @@ export function NewLife30App({ onExit }: Props) {
           <span className="newlife30-daylabel">{dayLabel(state)} ／ 全{TOTAL_DAYS}日</span>
           <strong>{sceneLocationFor(state.day)}</strong>
         </div>
-        <div className="newlife30-progress" aria-label={"30日間の進行度"}><span style={{ width: Math.min(100, (state.day / TOTAL_DAYS) * 100) + "%" }} /></div>
+        <div className="newlife30-status-progress">
+          <div className="newlife30-progress" aria-label={"30日間の進行度"}><span style={{ width: Math.min(100, (state.day / TOTAL_DAYS) * 100) + "%" }} /></div>
+          <small>{sceneMomentFor(state)} ・ 自動保存</small>
+        </div>
       </header>
       <h1 className="newlife30-title">{scene.title}</h1>
       {previousDayTrace && state.day >= 2 ? (
@@ -354,9 +389,27 @@ export function NewLife30App({ onExit }: Props) {
           </button>
         ))}
       </div>
-      <div className="newlife30-scene-art">
-        <img src={sceneArtFor(state.day)} alt={sceneLocationFor(state.day) + "の場面"} />
-        <span>{sceneLocationFor(state.day)}</span>
+      <div className="newlife30-stage">
+        <div className="newlife30-scene-art">
+          <img src={sceneArtFor(state.day)} alt={sceneLocationFor(state.day) + "の場面"} />
+          <div className="newlife30-scene-art-meta">
+            <span>{sceneMomentFor(state)}</span>
+            <strong>{sceneLocationFor(state.day)}</strong>
+          </div>
+        </div>
+        <aside className="newlife30-focus-card" aria-label="いま話している相手">
+          <span className="newlife30-focus-kicker">いま話している相手</span>
+          <div className="newlife30-focus-person">
+            <span className={"newlife30-focus-avatar newlife30-character-" + addressee} aria-hidden="true">
+              {NPC_ART[addressee] ? <img src={NPC_ART[addressee]} alt="" /> : npcDisplayName(addressee).slice(0, 1)}
+            </span>
+            <div>
+              <strong>{npcDisplayName(addressee)}</strong>
+              <small>{NPC_ROLE[addressee]}</small>
+            </div>
+          </div>
+          <p>人物を選び直しても、直近の会話と今日の状況を引き継いで話します。</p>
+        </aside>
       </div>
       <div className="newlife30-scene">
         {scene.text}
