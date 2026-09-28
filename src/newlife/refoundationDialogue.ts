@@ -13,17 +13,36 @@ const DISPLAY_TO_API: Record<string, string> = {
 };
 
 export interface DialogueLine { speaker: string; text: string }
-export interface RefoundationReply { text: string; nextNpc: NpcId | null; nextText: string | null }
+export interface RefoundationContinuation { npc: NpcId; text: string }
+export interface RefoundationReply {
+  text: string;
+  continuations: RefoundationContinuation[];
+  nextNpc: NpcId | null;
+  nextText: string | null;
+}
 
 function localNpc(api: unknown): NpcId | null {
   if (typeof api !== "string") return null;
   const e = Object.entries(API_NPC).find(([, v]) => v === api);
   return e ? e[0] as NpcId : null;
 }
+const RETRYABLE_STATUSES = new Set([0, 429, 502, 503, 504]);
+const RETRY_DELAYS_MS = [500, 1400];
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function post(body: unknown): Promise<any> {
-  const result = await postDialogueJson(REFOUNDATION_ENDPOINT, body, 45_000);
-  if (!result.ok) throw new Error("refoundation_" + result.status);
-  return result.data;
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
+    const result = await postDialogueJson(REFOUNDATION_ENDPOINT, body, 45_000);
+    if (result.ok) return result.data;
+    if (!RETRYABLE_STATUSES.has(result.status) || attempt === RETRY_DELAYS_MS.length) {
+      throw new Error("refoundation_" + (result.status || result.reason || "unavailable"));
+    }
+    await wait(RETRY_DELAYS_MS[attempt]);
+  }
+  throw new Error("refoundation_unavailable");
 }
 export interface LiveSceneContext {
   day: number;
@@ -38,7 +57,7 @@ export async function converseWithRefoundation(
   npc: NpcId, utterance: string, transcript: DialogueLine[], scene: LiveSceneContext,
 ): Promise<RefoundationReply> {
   const caseId = CASE_ID, targetNpc = API_NPC[npc];
-  const recentDialogue = transcript.slice(-8).map((line) => ({
+  const recentDialogue = transcript.slice(-12).map((line) => ({
     speaker: DISPLAY_TO_API[line.speaker] ?? "SYSTEM", text: line.text,
   }));
   const dynamicState = {
@@ -49,11 +68,33 @@ export async function converseWithRefoundation(
   const first = await post({ operation: "converse_turn", caseId, targetNpc, rawPlayerUtterance: utterance, recentDialogue, dynamicState });
   if (!first || first.npc !== targetNpc || typeof first.npcLine !== "string" || !first.npcLine.trim()) throw new Error("invalid_refoundation_reply");
 
-  const nextLocal = localNpc(first.nextNpc);
-  if (first.sceneStatus !== "NPC_EXCHANGE" || !nextLocal) {
-    return { text: first.npcLine.trim(), nextNpc: null, nextText: null };
+  const continuations: RefoundationContinuation[] = [];
+  let current = first;
+  let continuedDialogue = [...recentDialogue, { speaker: "PLAYER", text: utterance }, { speaker: targetNpc, text: first.npcLine }];
+
+  for (let depth = 1; depth <= 3; depth += 1) {
+    const nextLocal = localNpc(current.nextNpc);
+    if (current.sceneStatus !== "NPC_EXCHANGE" || !nextLocal) break;
+    const nextApi = current.nextNpc;
+    const next = await post({
+      operation: "continue_npc_exchange",
+      caseId,
+      targetNpc: nextApi,
+      recentDialogue: continuedDialogue.slice(-12),
+      continuationDepth: depth,
+      dynamicState,
+    });
+    if (!next || next.npc !== nextApi || typeof next.npcLine !== "string" || !next.npcLine.trim()) break;
+    const text = next.npcLine.trim();
+    continuations.push({ npc: nextLocal, text });
+    continuedDialogue = [...continuedDialogue, { speaker: nextApi, text }].slice(-12);
+    current = next;
   }
-  const continuedDialogue = [...recentDialogue, { speaker: "PLAYER", text: utterance }, { speaker: targetNpc, text: first.npcLine }];
-  const second = await post({ operation: "continue_npc_exchange", caseId, targetNpc: first.nextNpc, recentDialogue: continuedDialogue.slice(-8), continuationDepth: 1, dynamicState });
-  return { text: first.npcLine.trim(), nextNpc: nextLocal, nextText: second && typeof second.npcLine === "string" ? second.npcLine.trim() : null };
+
+  return {
+    text: first.npcLine.trim(),
+    continuations,
+    nextNpc: continuations[0]?.npc ?? null,
+    nextText: continuations[0]?.text ?? null,
+  };
 }

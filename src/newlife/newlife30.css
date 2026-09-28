@@ -206,3 +206,259 @@
 .newlife30-intro p { margin:7px 0; line-height:1.65; }
 .newlife30-intro small { display:block; margin:10px 0; line-height:1.55; }
 .newlife30-intro button { border:0; border-radius:999px; padding:10px 16px; font-weight:700; cursor:pointer; }
+
+
+/* Phase 34: near-product game shell. Keeps the original scoped selectors but
+   turns the text prototype into a readable visual-novel/life-sim surface. */
+.newlife30 {
+  max-width: 900px;
+  min-height: 100vh;
+  padding: 18px 18px 64px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 223, 170, .20), transparent 34rem),
+    linear-gradient(180deg, #f8f4ec 0%, #f4f0e8 46%, #eef2f4 100%);
+}
+
+.newlife30-statusbar {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(160px, 280px);
+  gap: 14px;
+  align-items: center;
+  margin: 0 -6px 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(53, 60, 72, .12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 8px 28px rgba(46, 42, 34, .08);
+  backdrop-filter: blur(12px);
+}
+.newlife30-statusbar > div:first-child { display: grid; gap: 1px; }
+.newlife30-statusbar strong { font-size: 13px; color: #263548; }
+.newlife30-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e7e9ec;
+}
+.newlife30-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c28546, #e1ad62);
+  transition: width .35s ease;
+}
+
+.newlife30-title {
+  font-size: clamp(22px, 4vw, 30px);
+  letter-spacing: .02em;
+  color: #202c3a;
+}
+.newlife30-scene-art {
+  position: relative;
+  aspect-ratio: 16 / 7.6;
+  margin: 12px 0 14px;
+  border-radius: 20px;
+  box-shadow: 0 16px 42px rgba(37, 42, 48, .16);
+}
+.newlife30-scene-art::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 0;
+  background: linear-gradient(transparent, rgba(7, 15, 24, .52));
+  pointer-events: none;
+}
+.newlife30-scene-art span {
+  position: absolute;
+  z-index: 1;
+  left: 14px;
+  bottom: 11px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(8, 15, 24, .72);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: .04em;
+}
+.newlife30-scene {
+  border: 0;
+  border-radius: 16px;
+  padding: 17px 18px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 8px 28px rgba(42, 46, 52, .07);
+  color: #28313d;
+}
+.newlife30-hook {
+  margin: 12px -4px -3px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eef5fa;
+  color: #355f7b;
+}
+
+.newlife30-cast {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 3px 2px 7px;
+  scrollbar-width: thin;
+}
+.newlife30-character {
+  flex: 0 0 auto;
+  min-width: 106px;
+  border-color: rgba(71, 76, 86, .14);
+  box-shadow: 0 4px 16px rgba(49, 47, 42, .06);
+}
+.newlife30-character.is-active {
+  border-color: #c18445;
+  background: #fffaf1;
+  box-shadow: 0 0 0 2px rgba(193, 132, 69, .14), 0 7px 20px rgba(49, 47, 42, .08);
+}
+
+.newlife30-transcript {
+  min-height: 84px;
+  margin: 16px 0 10px;
+  padding: 12px;
+  gap: 10px;
+  border-radius: 16px;
+  background: rgba(25, 33, 44, .055);
+}
+.newlife30-transcript-empty {
+  margin: 0;
+  padding: 12px;
+  color: #6c7480;
+  font-size: 13px;
+  text-align: center;
+}
+.newlife30-line {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  font-size: 14px;
+}
+.newlife30-line.is-player { justify-content: flex-end; }
+.newlife30-line.is-system { justify-content: center; }
+.newlife30-line-avatar {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  color: white;
+  font-weight: 700;
+}
+.newlife30-line-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.newlife30-bubble {
+  max-width: min(78%, 570px);
+  display: grid;
+  gap: 4px;
+  padding: 9px 12px 10px;
+  border-radius: 14px 14px 14px 4px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(37, 43, 51, .07);
+}
+.newlife30-bubble strong { font-size: 11px; color: #6b7482; }
+.newlife30-bubble span { line-height: 1.65; }
+.newlife30-line.is-player .newlife30-bubble {
+  border-radius: 14px 14px 4px 14px;
+  background: #2f506f;
+  color: #fff;
+}
+.newlife30-line.is-player .newlife30-bubble strong { color: #dbe9f5; }
+.newlife30-line.is-system .newlife30-bubble {
+  max-width: 92%;
+  border-radius: 10px;
+  background: #fff4df;
+  color: #72501e;
+  font-size: 12px;
+}
+
+.newlife30-freetalk {
+  position: sticky;
+  bottom: 8px;
+  z-index: 7;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid rgba(45, 56, 69, .13);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 12px 36px rgba(28, 33, 39, .14);
+  backdrop-filter: blur(14px);
+}
+.newlife30-freetalk-row { flex-wrap: nowrap; }
+.newlife30-freetalk select {
+  max-width: 126px;
+  background: #f5f2eb;
+  font-weight: 700;
+}
+.newlife30-freetalk input[type="text"] {
+  min-height: 44px;
+  background: #fff;
+}
+.newlife30-freetalk button[type="submit"] {
+  min-width: 74px;
+  border: 0;
+  border-radius: 10px;
+  background: #203d5b;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+.newlife30-freetalk button[type="submit"]:disabled { opacity: .48; }
+
+.newlife30-primary-guide {
+  border: 0;
+  border-radius: 14px;
+  background: #f7f1e5;
+  box-shadow: inset 3px 0 0 #bd8245;
+}
+.newlife30-options {
+  display: block;
+  padding: 0 12px 10px;
+  border: 1px solid #e0ddd6;
+  border-radius: 12px;
+  background: rgba(255,255,255,.72);
+}
+.newlife30-option-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.newlife30-options button { min-height: 44px; background: #fff; }
+
+.newlife30-intro {
+  padding: 22px;
+  border: 0;
+  background:
+    linear-gradient(145deg, rgba(255,252,245,.98), rgba(239,231,215,.98)),
+    linear-gradient(90deg, #fff, #eee);
+}
+.newlife30-intro-kicker {
+  display: block;
+  margin-bottom: 7px;
+  color: #a16a32;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+.newlife30-intro-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 13px; }
+.newlife30-intro-actions button { min-height: 44px; background: #223c57; color: #fff; }
+.newlife30-intro-actions button.is-secondary { background: #fff; color: #223c57; border: 1px solid #b8c3cf; }
+
+.newlife30-advance {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1e3b59, #315c7d);
+  font-weight: 800;
+}
+.newlife30-thinking, .newlife30-world-state, .newlife30-yesterday { box-shadow: 0 5px 18px rgba(38, 42, 48, .05); }
+
+@media (max-width: 640px) {
+  .newlife30 { padding: 12px 10px 72px; }
+  .newlife30-statusbar { grid-template-columns: 1fr; gap: 7px; }
+  .newlife30-scene-art { aspect-ratio: 16 / 9; border-radius: 15px; }
+  .newlife30-option-list { grid-template-columns: 1fr; }
+  .newlife30-bubble { max-width: 84%; }
+  .newlife30-freetalk-row { display: grid; grid-template-columns: 96px 1fr 64px; }
+  .newlife30-freetalk select, .newlife30-freetalk input[type="text"] { min-width: 0; width: 100%; }
+}

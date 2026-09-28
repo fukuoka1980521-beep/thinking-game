@@ -14,12 +14,34 @@ import yoheiArt from "../assets/newlife/characters/yohei.png";
 import miyokoArt from "../assets/newlife/characters/miyoko.png";
 import tempHomeArt from "../assets/newlife/locations/temp-home.png";
 import cafeInteriorArt from "../assets/newlife/locations/cafe-interior.png";
+import shoppingStreetArt from "../assets/newlife/locations/shopping-street.png";
+import yoheiShopArt from "../assets/newlife/locations/yohei-shop.png";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
 import { converseWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
 
 const NPC_ART: Partial<Record<NpcId, string>> = { hina: hinaArt, yohei: yoheiArt, miyoko: miyokoArt };
-const SCENE_ART: Partial<Record<number, string>> = { 1: tempHomeArt, 2: cafeInteriorArt, 5: cafeInteriorArt, 9: cafeInteriorArt };
+const SAVE_KEY = "newlife30_save_v1";
+const CAFE_DAYS = new Set([2, 5, 9, 12, 13, 16, 18, 20, 21]);
+const SHOP_DAYS = new Set([4, 6, 8, 14, 15, 17, 22, 23]);
+
+function sceneArtFor(day: number): string {
+  if (day === 1) return tempHomeArt;
+  if (CAFE_DAYS.has(day)) return cafeInteriorArt;
+  if (SHOP_DAYS.has(day)) return yoheiShopArt;
+  return shoppingStreetArt;
+}
+
+function sceneLocationFor(day: number): string {
+  if (day === 1) return "仮住まい";
+  if (CAFE_DAYS.has(day)) return "美代子の喫茶";
+  if (SHOP_DAYS.has(day)) return "店先・工房";
+  return "商店街・会館前";
+}
+
+function speakerNpc(speaker: string): NpcId | null {
+  return NPC_IDS.find((npc) => npcDisplayName(npc) === speaker) ?? null;
+}
 
 interface Props {
   onExit: () => void;
@@ -28,6 +50,15 @@ interface Props {
 interface TranscriptLine {
   speaker: string;
   text: string;
+}
+
+interface SavedSession {
+  state: NewLife30State;
+  transcript: TranscriptLine[];
+  memory: TranscriptLine[];
+  addressee: NpcId;
+  previousDayTrace: string | null;
+  thinking: { important: string; unknown: string; next: string };
 }
 
 function dayLabel(state: NewLife30State): string {
@@ -54,6 +85,7 @@ function dayLabel(state: NewLife30State): string {
 export function NewLife30App({ onExit }: Props) {
   const [state, setState] = useState<NewLife30State>(createInitialState);
   const [transcript, setTranscript] = useState<TranscriptLine[]>([]);
+  const [memory, setMemory] = useState<TranscriptLine[]>([]);
   const [addressee, setAddressee] = useState<NpcId>("hina");
   const [freeText, setFreeText] = useState("");
   const [thinkingOpen, setThinkingOpen] = useState(false);
@@ -63,6 +95,14 @@ export function NewLife30App({ onExit }: Props) {
   const immediateActionTrace = useRef<string | null>(null);
   const [pending, setPending] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [savedSession, setSavedSession] = useState<SavedSession | null>(() => {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      return raw ? JSON.parse(raw) as SavedSession : null;
+    } catch {
+      return null;
+    }
+  });
   // Phase 25.2: compact who-said/did/offered/permitted/owns ledger carried across turns
   // (short attributed facts, never a transcript). Re-synced with canonical state each turn.
   const [ledger, setLedger] = useState<FactLedger>(() => syncLedgerWithState(createEmptyLedger(), createInitialState()));
@@ -87,9 +127,47 @@ export function NewLife30App({ onExit }: Props) {
     }
   }, [scene, addressee]);
 
+  useEffect(() => {
+    if (showIntro) return;
+    const save: SavedSession = { state, transcript, memory, addressee, previousDayTrace, thinking };
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+      setSavedSession(save);
+    } catch {
+      // Saving is convenience only; gameplay must continue if storage is unavailable.
+    }
+  }, [state, transcript, memory, addressee, previousDayTrace, thinking, showIntro]);
+
   function resetTranscriptFor(nextState: NewLife30State) {
     setTranscript([]);
     setState(nextState);
+  }
+
+  function appendMemory(lines: TranscriptLine[]) {
+    setMemory((prev) => [...prev, ...lines].slice(-12));
+  }
+
+  function startFresh() {
+    const fresh = createInitialState();
+    setState(fresh);
+    setTranscript([]);
+    setMemory([]);
+    setAddressee("hina");
+    setPreviousDayTrace(null);
+    setThinking({ important: "", unknown: "", next: "" });
+    immediateActionTrace.current = null;
+    setShowIntro(false);
+  }
+
+  function continueSaved() {
+    if (!savedSession) return startFresh();
+    setState(savedSession.state);
+    setTranscript(savedSession.transcript ?? []);
+    setMemory(savedSession.memory ?? []);
+    setAddressee(savedSession.addressee ?? "hina");
+    setPreviousDayTrace(savedSession.previousDayTrace ?? null);
+    setThinking(savedSession.thinking ?? { important: "", unknown: "", next: "" });
+    setShowIntro(false);
   }
 
   function handleOption(optionId: string) {
@@ -115,7 +193,7 @@ export function NewLife30App({ onExit }: Props) {
 
       if (consentAccepted && supportsRefoundation(npc)) {
         try {
-          const live = await converseWithRefoundation(npc, text, transcript, {
+          const live = await converseWithRefoundation(npc, text, [...memory, ...transcript].slice(-12), {
             day: responseState.day,
             title: scene.title,
             text: scene.text,
@@ -131,22 +209,32 @@ export function NewLife30App({ onExit }: Props) {
             },
           });
           if (freeAction) setState(responseState);
-          setTranscript((prev) => [
-            ...prev,
+          const lines: TranscriptLine[] = [
             { speaker: "\u3042\u306a\u305f", text },
             { speaker: npcDisplayName(npc), text: live.text },
-            ...(live.nextNpc && live.nextText ? [{ speaker: npcDisplayName(live.nextNpc), text: live.nextText }] : []),
-          ]);
+            ...live.continuations.map((turn) => ({ speaker: npcDisplayName(turn.npc), text: turn.text })),
+          ];
+          setTranscript((prev) => [...prev, ...lines]);
+          appendMemory(lines);
           return;
         } catch {
-          // The validated live engine is primary; deterministic dialogue is outage fallback only.
+          // Never disguise a transient live-AI outage as an in-character deterministic answer.
+          const lines: TranscriptLine[] = [
+            { speaker: "\u3042\u306a\u305f", text },
+            { speaker: "システム", text: "返事の途中で通信が途切れました。入力は残してあります。少し待って、もう一度「話す」を押してください。" },
+          ];
+          setTranscript((prev) => [...prev, ...lines]);
+          setFreeText(text);
+          return;
         }
       }
 
       const result = await resolveFreeText(npc, text, responseState, { interpreter, consentAccepted, ledger });
       if (result.ledger) setLedger(result.ledger);
       if (freeAction) setState(responseState);
-      setTranscript((prev) => [...prev, { speaker: "\u3042\u306a\u305f", text }, { speaker: npcDisplayName(npc), text: result.text }]);
+      const lines: TranscriptLine[] = [{ speaker: "\u3042\u306a\u305f", text }, { speaker: npcDisplayName(npc), text: result.text }];
+      setTranscript((prev) => [...prev, ...lines]);
+      appendMemory(lines);
     } finally {
       setPending(false);
     }
@@ -217,16 +305,24 @@ export function NewLife30App({ onExit }: Props) {
       <span className="newlife30-badge">NEW LIFE</span>
       {showIntro ? (
         <section className="newlife30-intro" aria-label={"\u30b2\u30fc\u30e0\u306e\u59cb\u3081\u65b9"}>
+          <span className="newlife30-intro-kicker">30 DAYS LIFE SIMULATION</span>
           <strong>{"\u3053\u306e\u753a\u306b\u8d8a\u3057\u3066\u304d\u3066\u300130\u65e5\u3002"}</strong>
           <p>{"6\u4eba\u306e\u96a3\u4eba\u3068\u4e00\u304b\u6708\u3092\u904e\u3054\u3057\u307e\u3059\u3002\u4f1a\u8a71\u3059\u308b\u3001\u624b\u4f1d\u3046\u3001\u65ad\u308b\u3001\u4f55\u3082\u3057\u306a\u3044\u3002\u3069\u3046\u904e\u3054\u3059\u304b\u306f\u81ea\u7531\u3067\u3059\u3002"}</p>
           <p>{"\u3042\u306a\u305f\u304c\u4f55\u3082\u3057\u306a\u304f\u3066\u3082\u3001\u753a\u306e\u4e2d\u3067\u51fa\u6765\u4e8b\u306f\u9032\u307f\u307e\u3059\u3002\u6b63\u89e3\u3092\u63a2\u3059\u5fc5\u8981\u306f\u3042\u308a\u307e\u305b\u3093\u3002"}</p>
           <small>{"\u666e\u901a\u306e\u8a00\u8449\u3067\u3001\u305d\u306e\u307e\u307e\u4eba\u7269\u306b\u8a71\u3057\u304b\u3051\u3066\u304f\u3060\u3055\u3044\u3002"}</small>
-          <button type="button" onClick={() => setShowIntro(false)}>{"Day 1\u3092\u59cb\u3081\u308b"}</button>
+          <div className="newlife30-intro-actions">
+            <button type="button" onClick={startFresh}>Day 1から始める</button>
+            {savedSession && savedSession.state.day > 1 ? <button type="button" className="is-secondary" onClick={continueSaved}>Day {savedSession.state.day}から続ける</button> : null}
+          </div>
         </section>
       ) : null}
-      <p className="newlife30-daylabel">
-        {dayLabel(state)} ／ 全{TOTAL_DAYS}日
-      </p>
+      <header className="newlife30-statusbar">
+        <div>
+          <span className="newlife30-daylabel">{dayLabel(state)} ／ 全{TOTAL_DAYS}日</span>
+          <strong>{sceneLocationFor(state.day)}</strong>
+        </div>
+        <div className="newlife30-progress" aria-label={"30日間の進行度"}><span style={{ width: Math.min(100, (state.day / TOTAL_DAYS) * 100) + "%" }} /></div>
+      </header>
       <h1 className="newlife30-title">{scene.title}</h1>
       {previousDayTrace && state.day >= 2 ? (
         <div className="newlife30-yesterday" aria-label="&#x524D;&#x65E5;&#x306E;&#x3042;&#x306A;&#x305F;&#x306E;&#x884C;&#x52D5;">
@@ -258,7 +354,10 @@ export function NewLife30App({ onExit }: Props) {
           </button>
         ))}
       </div>
-      {SCENE_ART[state.day] ? <div className="newlife30-scene-art"><img src={SCENE_ART[state.day]} alt="" /></div> : null}
+      <div className="newlife30-scene-art">
+        <img src={sceneArtFor(state.day)} alt={sceneLocationFor(state.day) + "の場面"} />
+        <span>{sceneLocationFor(state.day)}</span>
+      </div>
       <div className="newlife30-scene">
         {scene.text}
         {scene.lowEngagementHook ? <p className="newlife30-hook">{scene.lowEngagementHook}</p> : null}
@@ -280,13 +379,24 @@ export function NewLife30App({ onExit }: Props) {
         </div>
       </details>
 
-      <div className="newlife30-transcript">
-        {transcript.map((line, i) => (
-          <div className="newlife30-line" key={i}>
-            <strong>{line.speaker}：</strong>
-            {line.text}
-          </div>
-        ))}
+      <div className="newlife30-transcript" aria-live="polite">
+        {transcript.length === 0 ? <p className="newlife30-transcript-empty">まだ会話はありません。人物を選んで、普通の言葉で話しかけてください。</p> : null}
+        {transcript.map((line, i) => {
+          const lineNpc = speakerNpc(line.speaker);
+          const isPlayer = line.speaker === "あなた";
+          const isSystem = line.speaker === "システム";
+          return (
+            <div className={"newlife30-line " + (isPlayer ? "is-player" : isSystem ? "is-system" : "is-npc")} key={i}>
+              {!isPlayer && !isSystem ? <span className={"newlife30-line-avatar newlife30-character-" + lineNpc} aria-hidden="true">
+                {lineNpc && NPC_ART[lineNpc] ? <img src={NPC_ART[lineNpc]} alt="" /> : line.speaker.slice(0, 1)}
+              </span> : null}
+              <div className="newlife30-bubble">
+                <strong>{line.speaker}</strong>
+                <span>{line.text}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {showConsentPrompt ? (
