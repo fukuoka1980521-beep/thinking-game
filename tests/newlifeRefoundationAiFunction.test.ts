@@ -538,6 +538,22 @@ describe("functions/newlife-refoundation-ai/lib.js — NEWLIFE_30DAY_V1 six-NPC 
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — player action semantics", () => {
+  it("tells the model when a UI choice is an observed action rather than spoken dialogue", () => {
+    const body = validThirtyDayConverseBody({
+      targetNpc: "HINA",
+      rawPlayerUtterance: "手を貸す",
+      dynamicState: validDynamicState({ interactionKind: "ACTION", day: 1, sceneTitle: "値段がついた箱" }),
+    });
+    expect(lib.validateInput(body)).toBeNull();
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).toContain("今回の入力種別");
+    expect(prompt).toContain("ACTION");
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toContain('interactionKind="ACTION"');
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toContain("行動の説明");
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — validateInput (organize_thought, V37 §5)", () => {
   it("accepts a well-formed request", () => {
     expect(lib.validateInput(validOrganizeThoughtBody())).toBeNull();

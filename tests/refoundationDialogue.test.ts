@@ -28,12 +28,28 @@ describe("validated refoundation dialogue bridge", () => {
     expect(body.caseId).toBe("NEWLIFE_30DAY_V1");
     expect(body.dynamicState.day).toBe(2);
     expect(body.dynamicState.sceneText).toBe("street trial");
+    expect(body.dynamicState.interactionKind).toBe("SPEECH");
     expect(body.recentDialogue).toEqual([
       { speaker: "HINA", text: "\u4eca\u5ea6\u3001\u713c\u304d\u83d3\u5b50\u3092\u58f2\u308b\u3093\u3067\u3059\u3002" },
       { speaker: "PLAYER", text: "\u4f55\u3092\u58f2\u308b\u3093\u3067\u3059\u304b\uff1f" },
     ]);
     expect(reply.text).toContain("\u5168\u90e8");
   });
+  it("marks a selected game action as ACTION instead of pretending the label was spoken", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({
+      npc: "HINA", npcLine: "ありがとうございます。箱、こっちに置いてもらえますか。",
+      sceneStatus: "AWAIT_PLAYER", nextNpc: null,
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+
+    await converseWithRefoundation("hina", "手を貸す", [], {
+      day: 1, title: "値段がついた箱", text: "陽菜が箱を持て余している。", canonicalState: {}, interactionKind: "ACTION",
+    });
+
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body.dynamicState.interactionKind).toBe("ACTION");
+    expect(body.rawPlayerUtterance).toBe("手を貸す");
+  });
+
   it("retries a transient 429 instead of dropping into canned dialogue", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(new Response("rate limited", { status: 429 }))

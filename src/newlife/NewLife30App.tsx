@@ -276,6 +276,7 @@ export function NewLife30App({ onExit }: Props) {
               hyFactCheck: responseState.hyFactCheck,
               day24Outcome: responseState.day24Outcome,
             },
+            interactionKind: options?.skipFreeAction ? "ACTION" : "SPEECH",
           });
           if (freeAction) setState(responseState);
           const lines: TranscriptLine[] = [
