@@ -11,7 +11,10 @@ import { resolveFreeText } from "./semantic/coordinator";
 import { resolveFreeAction } from "./freeAction";
 import hinaArt from "../assets/newlife/characters/hina.png";
 import yoheiArt from "../assets/newlife/characters/yohei.png";
+import daisukeArt from "../assets/newlife/characters/daisuke.jpg";
+import jinArt from "../assets/newlife/characters/jin.jpg";
 import miyokoArt from "../assets/newlife/characters/miyoko.png";
+import fumikoArt from "../assets/newlife/characters/fumiko.jpg";
 import tempHomeArt from "../assets/newlife/locations/temp-home.png";
 import cafeInteriorArt from "../assets/newlife/locations/cafe-interior.png";
 import shoppingStreetArt from "../assets/newlife/locations/shopping-street.png";
@@ -20,7 +23,14 @@ import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
 import { converseWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
 
-const NPC_ART: Partial<Record<NpcId, string>> = { hina: hinaArt, yohei: yoheiArt, miyoko: miyokoArt };
+const NPC_ART: Partial<Record<NpcId, string>> = {
+  hina: hinaArt,
+  yohei: yoheiArt,
+  daisuke: daisukeArt,
+  jin: jinArt,
+  miyoko: miyokoArt,
+  fumiko: fumikoArt,
+};
 const NPC_ROLE: Record<NpcId, string> = {
   hina: "焼き菓子の試売を始める人",
   yohei: "数字と事実を確かめる店主",
