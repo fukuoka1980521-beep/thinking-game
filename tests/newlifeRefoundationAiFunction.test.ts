@@ -806,6 +806,60 @@ describe("functions/newlife-refoundation-ai/lib.js — converse_turn / organize_
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — 30-day structured world effects", () => {
+  const FakeType = { OBJECT: "OBJECT", STRING: "STRING", ARRAY: "ARRAY", BOOLEAN: "BOOLEAN" };
+
+  it("exposes a closed world-effect enum only for the 30-day case", () => {
+    const thirty = lib.buildConverseResponseSchema(FakeType, "NEWLIFE_30DAY_V1");
+    const cafe = lib.buildConverseResponseSchema(FakeType, "CAFE_BOUNDARY_V1");
+    expect(thirty.properties.candidateWorldEffects.items.enum).toEqual(["MIYOKO_WAITING_CAPACITY_STATED"]);
+    expect(cafe.properties.candidateWorldEffects).toBeUndefined();
+    expect(lib.worldEffectsForCase("NEWLIFE_30DAY_V1")).toEqual(["MIYOKO_WAITING_CAPACITY_STATED"]);
+  });
+
+  it("puts the Day 9 authority rule in server-owned prompt guidance instead of an utterance lookup", () => {
+    const body = validThirtyDayConverseBody({
+      targetNpc: "MIYOKO",
+      rawPlayerUtterance: "喫茶店で待っていいのは何人くらいまで？",
+      dynamicState: validDynamicState({ day: 9, sceneTitle: "待つ場所はどこか", sceneText: "喫茶の待機場所を確認する。" }),
+    });
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).toContain("MIYOKO_WAITING_CAPACITY_STATED");
+    expect(prompt).toContain("質問された・提案されたというだけでは返さない");
+    expect(prompt).toContain("美代子自身の返答");
+  });
+
+  it("normalizes only allowlisted world effects for the 30-day case", () => {
+    const parsed = {
+      npcLine: "四人くらいまでなら大丈夫ですよ。",
+      understoodPlayerMeaning: "待機できる人数を尋ねている。",
+      candidateTurn: { action: "OBSERVE", boundaryMode: "NOT_RELEVANT", relationalEvents: [], needsClarification: false },
+      candidateFactRevealIds: [],
+      candidateCommitments: [],
+      candidateWorldEffects: ["MIYOKO_WAITING_CAPACITY_STATED", "INVENTED_EFFECT"],
+      uncertainty: "LOW",
+      thoughtSupportSignal: false,
+      sceneStatus: "AWAIT_PLAYER",
+      nextNpc: null,
+    };
+    const result = lib.normalizeConverseResponse(parsed, "MIYOKO", "NEWLIFE_30DAY_V1");
+    expect(result.candidateWorldEffects).toEqual(["MIYOKO_WAITING_CAPACITY_STATED"]);
+    expect(result.candidateTurn.action).toBe("OBSERVE");
+  });
+
+  it("drops world effects if structured metadata falls back to conservative clarification", () => {
+    const parsed = {
+      npcLine: "四人くらいまでなら大丈夫ですよ。",
+      candidateTurn: { action: "BROKEN", boundaryMode: "NOT_RELEVANT", relationalEvents: [], needsClarification: false },
+      candidateWorldEffects: ["MIYOKO_WAITING_CAPACITY_STATED"],
+      uncertainty: "LOW",
+    };
+    const result = lib.normalizeConverseResponse(parsed, "MIYOKO", "NEWLIFE_30DAY_V1");
+    expect(result.candidateWorldEffects).toEqual([]);
+    expect(result.uncertainty).toBe("HIGH");
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — applyCors", () => {
   it("echoes the origin and sets Vary when the origin is on the allowlist", () => {
     const { res, calls } = mockRes();
