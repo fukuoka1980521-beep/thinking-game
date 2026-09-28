@@ -168,7 +168,7 @@ export function NewLife30App({ onExit }: Props) {
 
   useEffect(() => {
     if (transcript.length === 0) return;
-    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    transcriptEndRef.current?.scrollIntoView?.({ behavior: "smooth", block: "nearest" });
   }, [transcript]);
 
   useEffect(() => {
