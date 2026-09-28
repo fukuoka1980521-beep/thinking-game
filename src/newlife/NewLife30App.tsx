@@ -519,10 +519,10 @@ export function NewLife30App({ onExit }: Props) {
             disabled={pending}
           />
           <button type="submit" disabled={pending}>
-            {pending ? "…" : "話す"}
+            話す
           </button>
         </div>
-        {pending ? <p className="newlife30-pending"><span className="newlife30-thinking-dot" aria-hidden="true" />返事を考えています…</p> : null}
+        {pending ? <p className="newlife30-pending"><span className="newlife30-thinking-dot" aria-hidden="true" />考え中…</p> : null}
       </form>
 
       <section className="newlife30-thinking">
