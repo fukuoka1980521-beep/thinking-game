@@ -4,7 +4,7 @@ import { converseWithRefoundation, supportsRefoundation } from "../src/newlife/r
 afterEach(() => vi.restoreAllMocks());
 
 describe("validated refoundation dialogue bridge", () => {
-  it("routes the four human-tested characters to the live conversational architecture", () => {
+  it("routes all six canonical characters to the live conversational architecture", () => {
     expect(supportsRefoundation("hina")).toBe(true);
     expect(supportsRefoundation("yohei")).toBe(true);
     expect(supportsRefoundation("miyoko")).toBe(true);
@@ -34,4 +34,41 @@ describe("validated refoundation dialogue bridge", () => {
     ]);
     expect(reply.text).toContain("\u5168\u90e8");
   });
+  it("retries a transient 429 instead of dropping into canned dialogue", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response("rate limited", { status: 429 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        npc: "HINA", npcLine: "はい、今のところは大丈夫です。少しぎりぎりですけど。",
+        sceneStatus: "AWAIT_PLAYER", nextNpc: null,
+      }), { status: 200, headers: { "Content-Type": "application/json" } }));
+
+    const reply = await converseWithRefoundation("hina", "当日人手足りてますか", [], {
+      day: 1, title: "trial", text: "street trial", canonicalState: {},
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(reply.text).toContain("大丈夫");
+    expect(reply.continuations).toEqual([]);
+  });
+
+  it("keeps bounded NPC-to-NPC continuation turns in conversational order", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        npc: "HINA", npcLine: "私はこの数で一度やってみたいです。",
+        sceneStatus: "NPC_EXCHANGE", nextNpc: "YOHEI",
+      }), { status: 200, headers: { "Content-Type": "application/json" } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        npc: "YOHEI", npcLine: "なら、予約分だけは先に分けとけ。",
+        sceneStatus: "AWAIT_PLAYER", nextNpc: null,
+      }), { status: 200, headers: { "Content-Type": "application/json" } }));
+
+    const reply = await converseWithRefoundation("hina", "二人で確認してみたら？", [], {
+      day: 6, title: "数のメモ", text: "二人が店先で話している。", canonicalState: {},
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(reply.continuations).toEqual([{ npc: "yohei", text: "なら、予約分だけは先に分けとけ。" }]);
+    expect(reply.nextNpc).toBe("yohei");
+  });
+
 });
