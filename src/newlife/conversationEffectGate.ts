@@ -40,10 +40,10 @@ export function applyConversationEffectGate(
    *
    * Existing canon already treats "press_miyoko_for_boundary" as a legitimate
    * state transition. Previously the free-text path reached it through a
-   * Japanese regex before conversation generation. In chat-first mode, a
-   * semantically understood ASK_BOUNDARY proposal reaches the same
-   * deterministic transition only after the NPC reply has been generated and
-   * normalized by the server.
+   * Japanese regex before conversation generation. In chat-first mode, the
+   * server may propose MIYOKO_WAITING_CAPACITY_STATED only when Miyoko's reply
+   * itself establishes a concrete seating/waiting boundary. The client then
+   * maps that closed proposal to the existing canonical transition.
    *
    * This changes knowledge/state about a boundary Miyoko owns; it does not
    * invent consent for another actor.
@@ -51,7 +51,7 @@ export function applyConversationEffectGate(
   if (
     state.day === 9 &&
     npc === "miyoko" &&
-    reply.candidateTurn.action === "ASK_BOUNDARY"
+    reply.candidateWorldEffects.includes("MIYOKO_WAITING_CAPACITY_STATED")
   ) {
     return {
       applied: true,
