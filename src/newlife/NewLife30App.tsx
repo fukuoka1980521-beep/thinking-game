@@ -39,6 +39,15 @@ const NPC_ROLE: Record<NpcId, string> = {
   miyoko: "喫茶の店主",
   fumiko: "会館と掲示を見ている人",
 };
+
+const NPC_SHORT: Record<NpcId, string> = {
+  hina: "作る人",
+  yohei: "確かめる人",
+  daisuke: "直す人",
+  jin: "支える人",
+  miyoko: "迎える人",
+  fumiko: "整える人",
+};
 const SAVE_KEY = "newlife30_save_v1";
 const CAFE_DAYS = new Set([2, 5, 9, 12, 13, 16, 18, 20, 21, 26, 28]);
 const SHOP_DAYS = new Set([4, 6, 8, 14, 15, 17, 22, 23, 27, 29]);
@@ -118,6 +127,7 @@ export function NewLife30App({ onExit }: Props) {
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [thinking, setThinking] = useState({ important: "", unknown: "", next: "" });
   const [thinkingNote, setThinkingNote] = useState<string | null>(null);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [previousDayTrace, setPreviousDayTrace] = useState<string | null>(null);
   const immediateActionTrace = useRef<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -206,12 +216,15 @@ export function NewLife30App({ onExit }: Props) {
   }
 
   function handleOption(optionId: string) {
+    const label = scene.options.find((o) => o.id === optionId)?.label ?? optionId;
     const next = applyAction(state, optionId);
     setState(next);
-    setTranscript((prev) => [...prev, { speaker: "あなた", text: `（${scene.options.find((o) => o.id === optionId)?.label ?? optionId}）` }]);
+    setActionNotice(`行動を記録しました：${label}`);
+    setTranscript((prev) => [...prev, { speaker: "あなた", text: `（${label}）` }]);
   }
 
   function handleAdvance() {
+    setActionNotice(null);
     const lastPlayerLine = [...transcript].reverse().find((line) => line.speaker === "あなた");
     const latestAction = state.log[state.log.length - 1];
     const actionTrace = latestAction ? scene.options.find((o) => latestAction.endsWith(`:${o.id}`))?.label : undefined;
@@ -347,11 +360,28 @@ export function NewLife30App({ onExit }: Props) {
       <span className="newlife30-badge">NEW LIFE</span>
       {showIntro ? (
         <section className="newlife30-intro" aria-label={"\u30b2\u30fc\u30e0\u306e\u59cb\u3081\u65b9"}>
-          <span className="newlife30-intro-kicker">30 DAYS LIFE SIMULATION</span>
+          <div className="newlife30-intro-hero">
+            <img src={shoppingStreetArt} alt="これから30日を過ごす町" />
+            <div className="newlife30-intro-hero-copy">
+              <span className="newlife30-intro-kicker">30 DAYS LIFE SIMULATION</span>
+              <strong>この町で、もう一度。</strong>
+              <small>話す・手伝う・断る・何もしない。町は、あなたの選び方を覚えていきます。</small>
+            </div>
+          </div>
           <strong>{"\u3053\u306e\u753a\u306b\u8d8a\u3057\u3066\u304d\u3066\u300130\u65e5\u3002"}</strong>
           <p>{"6\u4eba\u306e\u96a3\u4eba\u3068\u4e00\u304b\u6708\u3092\u904e\u3054\u3057\u307e\u3059\u3002\u4f1a\u8a71\u3059\u308b\u3001\u624b\u4f1d\u3046\u3001\u65ad\u308b\u3001\u4f55\u3082\u3057\u306a\u3044\u3002\u3069\u3046\u904e\u3054\u3059\u304b\u306f\u81ea\u7531\u3067\u3059\u3002"}</p>
           <p>{"\u3042\u306a\u305f\u304c\u4f55\u3082\u3057\u306a\u304f\u3066\u3082\u3001\u753a\u306e\u4e2d\u3067\u51fa\u6765\u4e8b\u306f\u9032\u307f\u307e\u3059\u3002\u6b63\u89e3\u3092\u63a2\u3059\u5fc5\u8981\u306f\u3042\u308a\u307e\u305b\u3093\u3002"}</p>
           <small>{"\u666e\u901a\u306e\u8a00\u8449\u3067\u3001\u305d\u306e\u307e\u307e\u4eba\u7269\u306b\u8a71\u3057\u304b\u3051\u3066\u304f\u3060\u3055\u3044\u3002"}</small>
+          <div className="newlife30-intro-cast" aria-label="この町の6人">
+            {NPC_IDS.map((npc) => (
+              <div key={npc} className="newlife30-intro-cast-person">
+                <span className={"newlife30-intro-cast-avatar newlife30-character-" + npc}>
+                  {NPC_ART[npc] ? <img src={NPC_ART[npc]} alt="" /> : npcDisplayName(npc).slice(0, 1)}
+                </span>
+                <span><strong>{npcDisplayName(npc)}</strong><small>{NPC_SHORT[npc]}</small></span>
+              </div>
+            ))}
+          </div>
           <div className="newlife30-intro-actions">
             <button type="button" onClick={startFresh}>Day 1から始める</button>
             {savedSession && savedSession.state.day > 1 ? <button type="button" className="is-secondary" onClick={continueSaved}>Day {savedSession.state.day}から続ける</button> : null}
@@ -431,6 +461,8 @@ export function NewLife30App({ onExit }: Props) {
         <span>下の入力欄から自由に話してください。決めにくい時だけ候補や「思考を整理する」を使えます。</span>
       </div>
 
+      {actionNotice ? <div className="newlife30-action-notice" role="status">{actionNotice}</div> : null}
+
       <details className="newlife30-options">
         <summary>迷ったときの行動候補</summary>
         <div className="newlife30-option-list">
@@ -442,6 +474,10 @@ export function NewLife30App({ onExit }: Props) {
         </div>
       </details>
 
+      <div className="newlife30-conversation-heading">
+        <span>会話</span>
+        <small>{scene.npcsPresent.map((npc) => npcDisplayName(npc)).join("・")} がこの場にいます</small>
+      </div>
       <div className="newlife30-transcript" aria-live="polite">
         {transcript.length === 0 ? <p className="newlife30-transcript-empty">まだ会話はありません。人物を選んで、普通の言葉で話しかけてください。</p> : null}
         {transcript.map((line, i) => {
@@ -486,7 +522,7 @@ export function NewLife30App({ onExit }: Props) {
             話す
           </button>
         </div>
-        {pending ? <p className="newlife30-pending">考え中…</p> : null}
+        {pending ? <p className="newlife30-pending"><span className="newlife30-thinking-dot" aria-hidden="true" />考え中…</p> : null}
       </form>
 
       <section className="newlife30-thinking">

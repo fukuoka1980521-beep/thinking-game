@@ -1,15 +1,26 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import App from "../src/App";
 import { getScene, TOTAL_DAYS } from "../src/newlife/content";
+import { advanceDay, applyAction, createInitialState, resolveDay24Outcome } from "../src/newlife/state";
 import { supportsRefoundation } from "../src/newlife/refoundationDialogue";
-import { NPC_IDS, type Day24Outcome } from "../src/newlife/types";
+import { NPC_IDS, type Day24Outcome, type NewLife30State } from "../src/newlife/types";
 import { setNewLifeAiDialogueConsent } from "../src/newlife/semantic/consent";
 
 beforeEach(() => {
   localStorage.clear();
   setNewLifeAiDialogueConsent("declined");
 });
+
+function runToDay24(actions: Record<number, string[]>): NewLife30State {
+  let state = createInitialState();
+  while (state.day < 24) {
+    for (const action of actions[state.day] ?? []) state = applyAction(state, action);
+    state = advanceDay(state);
+  }
+  return state;
+}
 
 describe("NEW LIFE product-completion coverage", () => {
   it("has a playable authored scene for every day and both Day 11 phases", () => {
@@ -25,6 +36,20 @@ describe("NEW LIFE product-completion coverage", () => {
         expect(scene.options.length).toBeGreaterThan(0);
       }
     }
+  });
+
+  it("can reach all four ending families through legal state transitions", () => {
+    const joint = runToDay24({
+      10: ["suggest_time_split"],
+      11: ["fix_sign_before_posting"],
+      14: ["broker_direct_fact_check"],
+      16: ["arrange_paid_task_with_consent"],
+      19: ["confirm_editor_role"],
+    });
+    expect(resolveDay24Outcome(joint)).toBe("JOINT_RETRY");
+    expect(resolveDay24Outcome(runToDay24({}))).toBe("SOLO_TRIAL");
+    expect(resolveDay24Outcome(runToDay24({ 21: ["cheer_her_on"] }))).toBe("PAUSE");
+    expect(resolveDay24Outcome(runToDay24({ 11: ["publicly_blame_hina"] }))).toBe("SPLIT");
   });
 
   it("keeps all six canonical NPCs on the same chat-first path", () => {
@@ -49,13 +74,31 @@ describe("NEW LIFE product-completion coverage", () => {
     }
   });
 
-  it("renders the near-product stage, scene image, focused speaker and autosave feedback", () => {
+  it("renders the near-product opening with world art and all six neighbors", () => {
     window.history.pushState({}, "", "/?newlife30=1");
     render(<App />);
     expect(screen.getByText(/^NEW LIFE$/)).toBeInTheDocument();
+    expect(screen.getByText("この町で、もう一度。")).toBeInTheDocument();
+    expect(screen.getByAltText("これから30日を過ごす町")).toBeInTheDocument();
+    for (const name of ["陽菜", "洋平", "大輔", "仁", "美代子", "文子"]) {
+      expect(screen.getAllByText(name).length).toBeGreaterThan(0);
+    }
+  });
+
+  it("renders the playable stage and gives immediate feedback for a chosen action", async () => {
+    window.history.pushState({}, "", "/?newlife30=1");
+    render(<App />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Day 1から始める" }));
     expect(screen.getByText("自動保存", { exact: false })).toBeInTheDocument();
     expect(screen.getByLabelText("いま話している相手")).toBeInTheDocument();
     expect(screen.getByAltText("仮住まいの場面")).toBeInTheDocument();
     expect(screen.getByText("焼き菓子の試売を始める人")).toBeInTheDocument();
+    expect(screen.getByText(/陽菜・洋平 がこの場にいます/)).toBeInTheDocument();
+
+    await user.click(screen.getByText("迷ったときの行動候補"));
+    await user.click(screen.getByRole("button", { name: "手を貸す" }));
+    expect(screen.getByRole("status")).toHaveTextContent("行動を記録しました：手を貸す");
+    expect(screen.getByText("（手を貸す）")).toBeInTheDocument();
   });
 });
