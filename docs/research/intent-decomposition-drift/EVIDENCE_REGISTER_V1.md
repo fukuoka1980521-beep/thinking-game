@@ -16,6 +16,8 @@ Rule: evidence register only. Do not promote interpretations into facts.
 | IDD-E09 | `docs/newlife/NEW_LIFE_PRODUCT_CONCEPT_V1.md` | Product promise states that free input moves people/relationships/situations and choices are support. | A direct mismatch can be tested between declared product promise and implementation behavior. | Whether the product concept is the only authoritative specification at every historical phase. |
 | IDD-E10 | `docs/newlife/evaluation/OWNER_REGRESSION_CORPUS_V1.md` | Real owner-observed failures are defined as semantic, non-exact-string regressions. | The project already recognized that evaluation should target meaning/context/persona rather than exact wording. | A causal explanation for why the failures occurred. |
 
+| IDD-E11 | `docs/newlife/evaluation/CHATFIRST_DAY9_LIVE_INTEGRATION_EVIDENCE_20260929.md` | A real model correctly answered an unconstrained Day 9 capacity question, but the legacy `candidateTurn` ontology labeled the turn `OBSERVE / NOT_RELEVANT`; state remained unchanged until a separate closed `candidateWorldEffects` channel was introduced. The same utterance then produced `MIYOKO_WAITING_CAPACITY_STATED` and the deterministic gate changed `mSeats` to `bounded`. | A narrow action taxonomy can be semantically adequate for dialogue yet insufficient as the sole bridge to world-state consequence; separating conversational act from canonical world effect is a concrete architecture improvement in this case. | That every action taxonomy will fail, or that the new effect channel generalizes beyond this bounded scenario. |
+
 ## Intervention evidence added in PR #113
 
 The current intervention is deliberately small:
