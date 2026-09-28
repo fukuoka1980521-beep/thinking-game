@@ -30,6 +30,7 @@ export interface RefoundationReply {
   candidateTurn: RefoundationCandidateTurn;
   candidateFactRevealIds: string[];
   candidateCommitments: string[];
+  candidateWorldEffects: string[];
   uncertainty: RefoundationUncertainty;
 }
 
@@ -135,6 +136,9 @@ export async function converseWithRefoundation(
       : [],
     candidateCommitments: Array.isArray(first.candidateCommitments)
       ? first.candidateCommitments.filter((v: unknown): v is string => typeof v === "string")
+      : [],
+    candidateWorldEffects: Array.isArray(first.candidateWorldEffects)
+      ? first.candidateWorldEffects.filter((v: unknown): v is string => typeof v === "string")
       : [],
     uncertainty,
   };
