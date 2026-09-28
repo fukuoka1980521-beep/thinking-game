@@ -22,6 +22,7 @@ import yoheiShopArt from "../assets/newlife/locations/yohei-shop.png";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
 import { converseWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
+import { applyConversationEffectGate } from "./conversationEffectGate";
 
 const NPC_ART: Partial<Record<NpcId, string>> = {
   hina: hinaArt,
@@ -148,10 +149,10 @@ export function NewLife30App({ onExit }: Props) {
   const [consentStatus, setConsentStatus] = useState<NewLifeAiDialogueConsentStatus | null>(() => getNewLifeAiDialogueConsent());
   const [pendingSubmission, setPendingSubmission] = useState<{ npc: NpcId; text: string } | null>(null);
 
-  // With the shipped empty endpoint (`config.ts`), this is always `null` and
-  // `resolveFreeText` never attempts a network call -- byte-identical to
-  // calling `answerFreeText` directly, matching Phase 27/28/28B's existing
-  // deterministic router unchanged.
+  // Legacy semantic interpreter remains available only for the explicit
+  // fallback path. Normal consented conversation uses the refoundation
+  // chat-first engine first; deterministic phrase routing no longer runs
+  // before that live conversation path.
   const interpreter = useMemo(
     () => (NEWLIFE_DIALOGUE_ENDPOINT_URL ? new HttpSemanticInterpreter(NEWLIFE_DIALOGUE_ENDPOINT_URL) : null),
     [],
@@ -256,29 +257,39 @@ export function NewLife30App({ onExit }: Props) {
     setPending(true);
     try {
       const baseState = options?.stateOverride ?? state;
-      const freeAction = options?.skipFreeAction ? null : resolveFreeAction(baseState, npc, text);
-      const responseState = freeAction ? applyAction(baseState, freeAction) : baseState;
       const playerText = options?.displayText ?? text;
 
+      // CHAT-FIRST normal path:
+      // understand/respond first, then let a deterministic authority gate
+      // decide whether the semantic proposal may change canonical state.
+      // No keyword/regex free-action routing runs before this model call.
       if (consentAccepted && supportsRefoundation(npc)) {
         try {
           const live = await converseWithRefoundation(npc, text, [...memory, ...transcript].slice(-12), {
-            day: responseState.day,
+            day: baseState.day,
             title: scene.title,
             text: scene.text,
             canonicalState: {
-              signVersion: responseState.signVersion,
-              pickupPlan: responseState.pickupPlan,
-              mSeats: responseState.mSeats,
-              jWork: responseState.jWork,
-              dWorkshop: responseState.dWorkshop,
-              fEditor: responseState.fEditor,
-              hyFactCheck: responseState.hyFactCheck,
-              day24Outcome: responseState.day24Outcome,
+              signVersion: baseState.signVersion,
+              pickupPlan: baseState.pickupPlan,
+              mSeats: baseState.mSeats,
+              jWork: baseState.jWork,
+              dWorkshop: baseState.dWorkshop,
+              fEditor: baseState.fEditor,
+              hyFactCheck: baseState.hyFactCheck,
+              playerReport: baseState.playerReport,
+              publicBlame: baseState.publicBlame,
+              encouragementOnly: baseState.encouragementOnly,
+              day24Outcome: baseState.day24Outcome,
             },
             interactionKind: options?.skipFreeAction ? "ACTION" : "SPEECH",
           });
-          if (freeAction) setState(responseState);
+
+          if (!options?.skipFreeAction) {
+            const effect = applyConversationEffectGate(baseState, npc, live);
+            if (effect.applied) setState(effect.state);
+          }
+
           const lines: TranscriptLine[] = [
             { speaker: "\u3042\u306a\u305f", text: playerText },
             { speaker: npcDisplayName(npc), text: live.text },
@@ -299,10 +310,18 @@ export function NewLife30App({ onExit }: Props) {
         }
       }
 
+      // Explicit fallback / no-consent path only. Phrase routing remains here
+      // for continuity and offline resilience, but it is no longer the owner
+      // of normal live conversation.
+      const freeAction = options?.skipFreeAction ? null : resolveFreeAction(baseState, npc, text);
+      const responseState = freeAction ? applyAction(baseState, freeAction) : baseState;
       const result = await resolveFreeText(npc, text, responseState, { interpreter, consentAccepted, ledger });
       if (result.ledger) setLedger(result.ledger);
       if (freeAction) setState(responseState);
-      const lines: TranscriptLine[] = [{ speaker: "\u3042\u306a\u305f", text: playerText }, { speaker: npcDisplayName(npc), text: result.text }];
+      const lines: TranscriptLine[] = [
+        { speaker: "\u3042\u306a\u305f", text: playerText },
+        { speaker: npcDisplayName(npc), text: result.text },
+      ];
       setTranscript((prev) => [...prev, ...lines]);
       appendMemory(lines);
     } finally {
