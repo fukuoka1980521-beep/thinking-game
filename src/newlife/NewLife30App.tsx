@@ -111,13 +111,16 @@ function dayLabel(state: NewLife30State): string {
  * Text-first isolated feature slice: reachable only via `?newlife30=1`
  * (see App.tsx), not linked from HomeScreen or any other screen. This
  * component renders state produced by the deterministic engine in
- * state.ts and never itself decides a canonical fact — it only calls
- * applyAction/advanceDay and displays their result, plus free-text lines
- * answered by the read-only npcVoice layer.
+ * state.ts and never itself decides a canonical fact. Consented ordinary
+ * free conversation is generation-first; structured proposals then pass
+ * through conversationEffectGate.ts before any canonical state mutation.
+ * No-consent/offline continuity may still use the legacy deterministic
+ * fallback path.
  *
- * HUMAN_VALIDATION_STATUS = PENDING. This candidate is not a claim of
- * product/human validation; see docs/newlife/evaluation/
- * PHASE_27_PLAYABLE_IMPLEMENTATION_REPORT_V1.md.
+ * HUMAN_VALIDATION_STATUS = PARTIAL. V42/V45 are preserved human-accepted
+ * scene evidence, but the 30-day chat-first + free-text-consequence loop
+ * still requires the no-choice human product gate defined by the current
+ * Product Constitution.
  */
 export function NewLife30App({ onExit }: Props) {
   const [state, setState] = useState<NewLife30State>(createInitialState);
