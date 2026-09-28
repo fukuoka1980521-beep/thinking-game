@@ -96,8 +96,12 @@ describe("NEW LIFE product-completion coverage", () => {
     expect(screen.getByText("焼き菓子の試売を始める人")).toBeInTheDocument();
     expect(screen.getByText(/陽菜・洋平 がこの場にいます/)).toBeInTheDocument();
 
-    await user.click(screen.getByText("迷ったときの行動候補"));
+    const candidateSummary = screen.getByText("迷ったときの行動候補");
+    await user.click(candidateSummary);
+    const candidateDetails = candidateSummary.closest("details");
+    expect(candidateDetails).toHaveAttribute("open");
     await user.click(screen.getByRole("button", { name: "何をいくらで売るか聞く" }));
+    expect(candidateDetails).not.toHaveAttribute("open");
     expect(screen.getByRole("status")).toHaveTextContent("行動を実行しました：何をいくらで売るか聞く");
     expect(screen.getByText("（何をいくらで売るか聞く）")).toBeInTheDocument();
     expect(await screen.findByText(/スコーン.*280円|280円.*スコーン/)).toBeInTheDocument();

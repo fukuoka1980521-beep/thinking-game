@@ -130,6 +130,8 @@ export function NewLife30App({ onExit }: Props) {
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [previousDayTrace, setPreviousDayTrace] = useState<string | null>(null);
   const immediateActionTrace = useRef<string | null>(null);
+  const optionDetailsRef = useRef<HTMLDetailsElement | null>(null);
+  const transcriptEndRef = useRef<HTMLDivElement | null>(null);
   const [pending, setPending] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [savedSession, setSavedSession] = useState<SavedSession | null>(() => {
@@ -163,6 +165,11 @@ export function NewLife30App({ onExit }: Props) {
       setAddressee(scene.npcsPresent[0]);
     }
   }, [scene, addressee]);
+
+  useEffect(() => {
+    if (transcript.length === 0) return;
+    transcriptEndRef.current?.scrollIntoView?.({ behavior: "smooth", block: "nearest" });
+  }, [transcript]);
 
   useEffect(() => {
     if (showIntro) return;
@@ -222,6 +229,7 @@ export function NewLife30App({ onExit }: Props) {
     const target = scene.npcsPresent.includes(addressee) ? addressee : (scene.npcsPresent[0] ?? addressee);
     setState(next);
     setActionNotice(`行動を実行しました：${label}`);
+    optionDetailsRef.current?.removeAttribute("open");
     void submitFreeText(target, label, consentStatus === "accepted", {
       stateOverride: next,
       displayText: `（${label}）`,
@@ -476,7 +484,7 @@ export function NewLife30App({ onExit }: Props) {
 
       {actionNotice ? <div className="newlife30-action-notice" role="status">{actionNotice}</div> : null}
 
-      <details className="newlife30-options">
+      <details className="newlife30-options" ref={optionDetailsRef}>
         <summary>迷ったときの行動候補</summary>
         <div className="newlife30-option-list">
           {scene.options.map((o) => (
@@ -509,6 +517,7 @@ export function NewLife30App({ onExit }: Props) {
             </div>
           );
         })}
+        <div ref={transcriptEndRef} aria-hidden="true" />
       </div>
 
       {showConsentPrompt ? (
