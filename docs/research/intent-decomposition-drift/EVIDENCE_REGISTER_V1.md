@@ -18,6 +18,8 @@ Rule: evidence register only. Do not promote interpretations into facts.
 
 | IDD-E11 | `docs/newlife/evaluation/CHATFIRST_DAY9_LIVE_INTEGRATION_EVIDENCE_20260929.md` | A real model correctly answered an unconstrained Day 9 capacity question, but the legacy `candidateTurn` ontology labeled the turn `OBSERVE / NOT_RELEVANT`; state remained unchanged until a separate closed `candidateWorldEffects` channel was introduced. The same utterance then produced `MIYOKO_WAITING_CAPACITY_STATED` and the deterministic gate changed `mSeats` to `bounded`. | A narrow action taxonomy can be semantically adequate for dialogue yet insufficient as the sole bridge to world-state consequence; separating conversational act from canonical world effect is a concrete architecture improvement in this case. | That every action taxonomy will fail, or that the new effect channel generalizes beyond this bounded scenario. |
 
+| IDD-E12 | `docs/newlife/evaluation/human-evidence/DAY3_COMPREHENSION_FAILURE_20260929.md` + Day 3 canonical/runtime text | Owner reported the scene as 「意味が分からない会話」. Hidden Day 3 notes clearly described the intended mechanism (Miyoko's ambiguous reply vs Fumiko's inference), but the visible scene omitted the concrete waiting-place request and used a meta-sounding hook. | A hidden-design / visible-context gap can preserve internal logic while failing player comprehension. This is a distinct drift path from conversation routing. | That all compressed or indirect writing is bad, or that every scene requires explicit exposition. |
+
 ## Intervention evidence added in PR #113
 
 The current intervention is deliberately small:
