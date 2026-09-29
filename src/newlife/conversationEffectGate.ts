@@ -61,6 +61,19 @@ export function applyConversationEffectGate(
     };
   }
 
+  if (
+    state.day === 16 &&
+    npc === "jin" &&
+    reply.candidateWorldEffects.includes("DAY16_JIN_TASK_CONFIRMED")
+  ) {
+    return {
+      applied: true,
+      effectId: "arrange_paid_task_with_consent",
+      reason: "jin_explicit_bounded_task_confirmation",
+      state: applyAction(state, "arrange_paid_task_with_consent"),
+    };
+  }
+
   return {
     applied: false,
     effectId: null,
