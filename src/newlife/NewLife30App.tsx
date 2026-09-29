@@ -497,7 +497,6 @@ export function NewLife30App({ onExit }: Props) {
       </div>
       <div className="newlife30-scene">
         {scene.text}
-        {scene.lowEngagementHook ? <p className="newlife30-hook">{scene.lowEngagementHook}</p> : null}
       </div>
 
       <div className="newlife30-primary-guide">
