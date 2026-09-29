@@ -64,6 +64,15 @@ export interface DayOption {
   label: string;
 }
 
+export interface SceneFocus {
+  /** One concrete sentence: what is going wrong or may go wrong right now. */
+  issue: string;
+  /** The concrete decision/check that would move this scene forward. */
+  decision: string;
+  /** Who owns the decision or permission; never let another NPC inherit this authority. */
+  authority: string;
+}
+
 export interface DayScene {
   day: number;
   phase?: "morning" | "afternoon";
@@ -71,4 +80,5 @@ export interface DayScene {
   text: string;
   npcsPresent: NpcId[];
   options: DayOption[];
+  sceneFocus?: SceneFocus;
 }
