@@ -913,6 +913,7 @@ function buildNpcExchangePrompt(request) {
     `NPC間継続ターン番号（continuationDepth。1始まり）: ${request.continuationDepth}`,
     "",
     "今はプレイヤーから新しい発言はありません。直近の会話で、別のNPCからこのNPCへ向けられた問い・提案・確認、またはプレイヤーがNPCたちへ委譲した後の実務的な流れにだけ応答してください。プレイヤーが何か新しく言ったことにしてはいけません。",
+    "NPC間継続でも、recentDialogue にある直近の PLAYER 発言の実務的な意味を保持してください。直前NPCがその意味を一般論へ薄めていても、その抽象化だけを受け継がず、dynamicState.sceneFocus（あれば）の issue / decision / authority と具体的に照合して返してください。",
     request.continuationDepth >= MAX_NPC_EXCHANGE_DEPTH
       ? "これは許可された最後のNPC間継続ターンです。sceneStatus を NPC_EXCHANGE にせず、AWAIT_PLAYER / RESOLVED / STALLED のいずれかで止めてください。"
       : "もう一方のNPCが追加で一度だけ答えることで具体的に前進する場合に限り、sceneStatus=NPC_EXCHANGE と nextNpc を使えます。",
