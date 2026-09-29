@@ -71,11 +71,4 @@ export interface DayScene {
   text: string;
   npcsPresent: NpcId[];
   options: DayOption[];
-  /**
-   * Days 2/3/7/9 low-engagement mitigation (Phase 26 audit finding, §5): a short,
-   * optional, single-word-answerable line addressed directly to a silent player,
-   * so a brief/quiet playthrough still gets one concrete hook on these days
-   * without forcing engagement or turning the NPC into a customer-service bot.
-   */
-  lowEngagementHook?: string;
 }
