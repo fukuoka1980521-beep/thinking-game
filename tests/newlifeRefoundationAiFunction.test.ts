@@ -981,7 +981,8 @@ describe("functions/newlife-refoundation-ai/lib.js — V39 conversation progress
   });
 
   it("NPC handoff keeps the player's practical meaning and scene authority anchor", () => {
-    const body = validThirtyDayNpcExchangeBody({
+    const body = validNpcExchangeBody({
+      caseId: "NEWLIFE_30DAY_V1",
       targetNpc: "FUMIKO",
       recentDialogue: [
         { speaker: "PLAYER", text: "商売ですから、できることとできないことは先に決めておいた方が良いですよ" },
