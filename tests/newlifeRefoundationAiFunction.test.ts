@@ -980,6 +980,32 @@ describe("functions/newlife-refoundation-ai/lib.js — V39 conversation progress
     expect(prompt).toContain(JSON.stringify(lib.CHARACTER_DOSSIERS.MIKA.resolutionPolicy));
   });
 
+  it("NPC handoff keeps the player's practical meaning and scene authority anchor", () => {
+    const body = validThirtyDayNpcExchangeBody({
+      targetNpc: "FUMIKO",
+      recentDialogue: [
+        { speaker: "PLAYER", text: "商売ですから、できることとできないことは先に決めておいた方が良いですよ" },
+        { speaker: "MIYOKO", text: "そうですね、できる範囲は決めておいた方がいいですね。" },
+      ],
+      dynamicState: validDynamicState({
+        day: 3,
+        sceneTitle: "担当という言葉",
+        sceneText: "会館前が混んだ場合の待機場所を相談している。",
+        sceneFocus: {
+          issue: "客がどこで待つかまだ決まっていない。",
+          decision: "喫茶の席を何人まで使えるか事前に確認する。",
+          authority: "席を決めるのは美代子。文子は掲示を担当する。",
+        },
+      }),
+    });
+    const prompt = lib.buildNpcExchangePrompt(body);
+    expect(prompt).toContain("直近の PLAYER 発言の実務的な意味を保持");
+    expect(prompt).toContain("その抽象化だけを受け継がず");
+    expect(prompt).toContain("sceneFocus");
+    expect(prompt).toContain("何人まで");
+    expect(prompt).toContain("席を決めるのは美代子");
+  });
+
   it("V41 NPC handoff policy is general, bounded, and does not fabricate a new player utterance", () => {
     const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
     expect(instruction).toMatch(/NPC_EXCHANGE/);
