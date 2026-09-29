@@ -20,6 +20,8 @@ Rule: evidence register only. Do not promote interpretations into facts.
 
 | IDD-E12 | `docs/newlife/evaluation/human-evidence/DAY3_COMPREHENSION_FAILURE_20260929.md` + Day 3 canonical/runtime text | Owner reported the scene as 「意味が分からない会話」. Hidden Day 3 notes clearly described the intended mechanism (Miyoko's ambiguous reply vs Fumiko's inference), but the visible scene omitted the concrete waiting-place request and used a meta-sounding hook. | A hidden-design / visible-context gap can preserve internal logic while failing player comprehension. This is a distinct drift path from conversation routing. | That all compressed or indirect writing is bad, or that every scene requires explicit exposition. |
 
+| IDD-E13 | `docs/newlife/evaluation/COLD_READER_SCENE_AUDIT_DAYS_1_10_20260929.md` + `docs/newlife/evaluation/COLD_READER_SCENE_AUDIT_DAYS_11_24_20260929.md` | After the Day 3 owner failure, the same cold-reader gate found two more independent examples: Day 6 compressed "reservation 12 / walk-in 18" into the opaque phrase "買える方", and Day 14 compressed the waiting/communication problem into "別の話"; Day 16 similarly replaced the concrete paid setup task with generic "help". | The visible-context loss is reproducible across multiple authored scenes, making Context Compression Loss a stronger candidate submechanism of IDD than a one-off wording mistake. | That every concise scene will fail, or that context compression alone explains all prior NEW LIFE drift. |
+
 ## Intervention evidence added in PR #113
 
 The current intervention is deliberately small:
