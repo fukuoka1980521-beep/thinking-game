@@ -108,7 +108,7 @@ const RELATIONSHIP_STATES = ["OPEN", "NEUTRAL", "GUARDED", "WITHDRAWN"];
 const BOUNDARY_STATUSES = ["UNKNOWN", "STATED", "RESPECTED", "OVERRIDDEN"];
 const NPC_IDS = ["MIKA", "RYO", "HINA", "YOHEI", "DAISUKE", "JIN", "MIYOKO", "FUMIKO"];
 const SCENE_STATUSES = ["AWAIT_PLAYER", "NPC_EXCHANGE", "RESOLVED", "STALLED"];
-const THIRTY_DAY_WORLD_EFFECTS = ["MIYOKO_WAITING_CAPACITY_STATED"];
+const THIRTY_DAY_WORLD_EFFECTS = ["MIYOKO_WAITING_CAPACITY_STATED", "DAY16_JIN_TASK_CONFIRMED"];
 
 const MAX_UTTERANCE_LENGTH = 400;
 const MAX_CASE_CONTEXT_LENGTH = 2000;
@@ -619,6 +619,7 @@ function worldEffectGuidanceForCase(caseId) {
     "candidateWorldEffects は canonical state 変更の候補提案であり、会話上それが実際に成立した場合だけ返すこと。質問された・提案されたというだけでは返さないこと。",
     "許可されている effect:",
     "- MIYOKO_WAITING_CAPACITY_STATED: targetNpc=MIYOKO かつ Day 9 で、美代子自身の返答が喫茶の席を待機に使える具体的な上限・範囲・条件を明示したときだけ返す。単にプレイヤーが人数や席について質問しただけでは返さない。",
+    "- DAY16_JIN_TASK_CONFIRMED: Day 16 / JIN only. Return only when Jin's own reply clearly accepts the extra task and both the work content and time scope are concrete.",
     "該当しなければ candidateWorldEffects=[] とすること。",
   ].join("\n");
 }
