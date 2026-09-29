@@ -812,9 +812,27 @@ describe("functions/newlife-refoundation-ai/lib.js — 30-day structured world e
   it("exposes a closed world-effect enum only for the 30-day case", () => {
     const thirty = lib.buildConverseResponseSchema(FakeType, "NEWLIFE_30DAY_V1");
     const cafe = lib.buildConverseResponseSchema(FakeType, "CAFE_BOUNDARY_V1");
-    expect(thirty.properties.candidateWorldEffects.items.enum).toEqual(["MIYOKO_WAITING_CAPACITY_STATED"]);
+    expect(thirty.properties.candidateWorldEffects.items.enum).toEqual([
+      "MIYOKO_WAITING_CAPACITY_STATED",
+      "DAY16_JIN_TASK_CONFIRMED",
+    ]);
     expect(cafe.properties.candidateWorldEffects).toBeUndefined();
-    expect(lib.worldEffectsForCase("NEWLIFE_30DAY_V1")).toEqual(["MIYOKO_WAITING_CAPACITY_STATED"]);
+    expect(lib.worldEffectsForCase("NEWLIFE_30DAY_V1")).toEqual([
+      "MIYOKO_WAITING_CAPACITY_STATED",
+      "DAY16_JIN_TASK_CONFIRMED",
+    ]);
+  });
+
+  it("keeps the Day 16 task confirmation rule server-owned and response-based", () => {
+    const body = validThirtyDayConverseBody({
+      targetNpc: "JIN",
+      rawPlayerUtterance: "会館前の設営、二時間でお願いできますか？",
+      dynamicState: validDynamicState({ day: 16, sceneTitle: "二時間の仕事", sceneText: "仁に具体的な作業を相談する。" }),
+    });
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).toContain("DAY16_JIN_TASK_CONFIRMED");
+    expect(prompt).toContain("Jin's own reply");
+    expect(prompt).toContain("work content and time scope");
   });
 
   it("puts the Day 9 authority rule in server-owned prompt guidance instead of an utterance lookup", () => {
