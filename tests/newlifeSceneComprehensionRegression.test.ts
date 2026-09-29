@@ -24,4 +24,13 @@ describe("NEW LIFE scene comprehension regressions", () => {
     expect(scene.text).not.toContain("人が待つなら助かる");
     expect(scene.lowEngagementHook).not.toContain("見ているだけでも記録にはなる");
   });
+
+  it("Day 6 says what the 12 and 18 mean instead of using the opaque phrase '買える方'", () => {
+    const scene = getScene(6, "done", null);
+
+    expect(scene.text).toContain("予約12");
+    expect(scene.text).toContain("店頭18");
+    expect(scene.text).toContain("当日来た人が買えるのは18点");
+    expect(scene.text).not.toContain("俺が聞いてるのは、買える方だ");
+  });
 });
