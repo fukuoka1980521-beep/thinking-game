@@ -60,6 +60,11 @@ const DAYS_1_10: DayScene[] = [
       { id: "ask_miyoko_intent", label: "美代子に席の意向を聞く" },
       { id: "say_nothing", label: "何も言わない" },
     ],
+    sceneFocus: {
+      issue: "試売の日、会館前が混んだ時に、客がどこで待つかまだ決まっていません。",
+      decision: "喫茶の席を待機場所に使うなら、何人まで・どんな条件ならよいかを事前に確認する必要があります。",
+      authority: "喫茶の席を使わせるか、何人まで受けるかを決めるのは美代子です。文子は掲示と案内を担当します。",
+    },
   }),
   scene({
     day: 4,
@@ -99,6 +104,11 @@ const DAYS_1_10: DayScene[] = [
       { id: "confirm_numbers_together", label: "数を一緒に確認する" },
       { id: "stay_quiet", label: "口を挟まない" },
     ],
+    sceneFocus: {
+      issue: "予約12点と店頭18点の違いが、客にどう見えるかが曖昧なままです。",
+      decision: "合計30点ではなく、当日客が買える店頭分18点をどう伝えるかを確認します。",
+      authority: "販売内容を決めるのは陽菜。洋平は数字と表示の食い違いを指摘できますが、商売の決定は代行できません。",
+    },
   }),
   scene({
     day: 7,
@@ -227,6 +237,11 @@ const DAYS_12_23: DayScene[] = [
       { id: "talk_to_one_side", label: "片方とだけ話す" },
       { id: "pass_by", label: "通り過ぎる" },
     ],
+    sceneFocus: {
+      issue: "販売数そのものは合っていますが、客がどこでどう待つかという説明の不足が残っています。",
+      decision: "陽菜と洋平が、数の正しさと客への説明の問題を分けて直接確認できるかが焦点です。",
+      authority: "陽菜は自分の販売を決め、洋平は確認した数字を示せます。互いの意図を相手の代わりに決めることはできません。",
+    },
   }),
   scene({
     day: 15,
@@ -253,6 +268,11 @@ const DAYS_12_23: DayScene[] = [
       { id: "assume_free_help", label: "好意で無償の追加をお願いする" },
       { id: "talk_about_something_else", label: "別の話をする" },
     ],
+    sceneFocus: {
+      issue: "前回の二時間の設営は終わっています。次回の仕事は自動では続きません。",
+      decision: "次の設営を頼むなら、仕事内容・時間・報酬を具体的に決めて、仁本人が引き受けるか確認します。",
+      authority: "追加の仕事を引き受けるか、その範囲を決めるのは仁です。美代子やプレイヤーが善意だけで決めることはできません。",
+    },
   }),
   scene({
     day: 17,
