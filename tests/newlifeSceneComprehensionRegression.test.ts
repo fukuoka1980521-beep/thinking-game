@@ -49,4 +49,13 @@ describe("NEW LIFE scene comprehension regressions", () => {
     expect(scene.text).toContain("時間を先に決めて");
     expect(scene.text).not.toContain("また手伝ってくれる？");
   });
+
+  it("Day 3 exposes the concrete issue, decision, and authority as a scene focus", () => {
+    const scene = getScene(3, "done", null);
+
+    expect(scene.sceneFocus?.issue).toContain("客がどこで待つか");
+    expect(scene.sceneFocus?.decision).toContain("何人まで");
+    expect(scene.sceneFocus?.authority).toContain("決めるのは美代子");
+    expect(scene.sceneFocus?.authority).toContain("文子は掲示");
+  });
 });
