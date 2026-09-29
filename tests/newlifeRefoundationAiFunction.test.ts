@@ -538,6 +538,39 @@ describe("functions/newlife-refoundation-ai/lib.js — NEWLIFE_30DAY_V1 six-NPC 
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — concrete scene anchoring", () => {
+  it("shared instruction maps abstract player advice back to issue / decision / authority", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toContain("プレイヤーが今回言いたい実務上の意味");
+    expect(instruction).toContain("まだ決まっていない一点");
+    expect(instruction).toContain("その判断権を持つ人物");
+    expect(instruction).toContain("一般論のまま返さないこと");
+    expect(instruction).toContain("現在の場面に存在する具体物へ結び直すこと");
+  });
+
+  it("buildConversePrompt carries Day 3 sceneFocus into the 30-day model context", () => {
+    const sceneFocus = {
+      issue: "試売の日、会館前が混んだ時に、客がどこで待つかまだ決まっていません。",
+      decision: "喫茶の席を待機場所に使うなら、何人までかを事前に確認します。",
+      authority: "喫茶の席を決めるのは美代子です。",
+    };
+    const body = validThirtyDayConverseBody({
+      targetNpc: "MIYOKO",
+      rawPlayerUtterance: "商売ですから、できることとできないことは決めておいた方が良いですよ",
+      dynamicState: validDynamicState({
+        day: 3,
+        sceneTitle: "担当という言葉",
+        sceneText: "会館前が混んだ場合の待機場所を相談している。",
+        sceneFocus,
+      }),
+    });
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).toContain("sceneFocus");
+    expect(prompt).toContain("客がどこで待つか");
+    expect(prompt).toContain("喫茶の席を決めるのは美代子");
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — player action semantics", () => {
   it("tells the model when a UI choice is an observed action rather than spoken dialogue", () => {
     const body = validThirtyDayConverseBody({
