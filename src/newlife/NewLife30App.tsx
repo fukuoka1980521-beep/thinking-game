@@ -272,6 +272,7 @@ export function NewLife30App({ onExit }: Props) {
             day: baseState.day,
             title: scene.title,
             text: scene.text,
+            sceneFocus: scene.sceneFocus,
             canonicalState: {
               signVersion: baseState.signVersion,
               pickupPlan: baseState.pickupPlan,
@@ -495,6 +496,17 @@ export function NewLife30App({ onExit }: Props) {
           <p>人物を選び直しても、直近の会話と今日の状況を引き継いで話します。</p>
         </aside>
       </div>
+      {scene.sceneFocus ? (
+        <section className="newlife30-situation-guide" aria-label="いまの状況">
+          <strong>いま何が問題？</strong>
+          <span>{scene.sceneFocus.issue}</span>
+          <strong>今ここで決めたいこと</strong>
+          <span>{scene.sceneFocus.decision}</span>
+          <strong>誰が決める？</strong>
+          <span>{scene.sceneFocus.authority}</span>
+        </section>
+      ) : null}
+
       <div className="newlife30-scene">
         {scene.text}
       </div>
