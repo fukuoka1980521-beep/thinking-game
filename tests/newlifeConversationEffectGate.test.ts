@@ -95,3 +95,49 @@ describe("NEW LIFE chat-first conversation effect gate", () => {
     expect(decision.state.mSeats).toBe("bounded");
   });
 });
+
+
+describe("NEW LIFE chat-first Day 16 task confirmation", () => {
+  function stateAtDay16() {
+    let state = createInitialState();
+    for (let i = 1; i < 16; i += 1) state = advanceDay(state);
+    return state;
+  }
+
+  it("applies Jin's explicit bounded task confirmation through the deterministic state gate", () => {
+    const before = stateAtDay16();
+    const decision = applyConversationEffectGate(before, "jin", reply({
+      text: "二時間ならやる。先に場所を決めよう。",
+      understoodPlayerMeaning: "二時間の追加作業を具体的に頼んでいる",
+      candidateWorldEffects: ["DAY16_JIN_TASK_CONFIRMED"],
+      uncertainty: "LOW",
+    }));
+
+    expect(decision.applied).toBe(true);
+    expect(decision.effectId).toBe("arrange_paid_task_with_consent");
+    expect(decision.state.jWork).toBe("extra_with_specific_consent");
+  });
+
+  it("does not convert a mere request into Jin's consent", () => {
+    const before = stateAtDay16();
+    const decision = applyConversationEffectGate(before, "jin", reply({
+      text: "内容と時間次第だな。",
+      candidateWorldEffects: [],
+      uncertainty: "LOW",
+    }));
+
+    expect(decision.applied).toBe(false);
+    expect(decision.state).toBe(before);
+  });
+
+  it("does not let another NPC confirm Jin's task", () => {
+    const before = stateAtDay16();
+    const decision = applyConversationEffectGate(before, "miyoko", reply({
+      candidateWorldEffects: ["DAY16_JIN_TASK_CONFIRMED"],
+      uncertainty: "LOW",
+    }));
+
+    expect(decision.applied).toBe(false);
+    expect(decision.state).toBe(before);
+  });
+});
