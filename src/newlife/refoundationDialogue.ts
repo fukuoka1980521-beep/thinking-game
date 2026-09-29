@@ -1,4 +1,4 @@
-import type { NpcId } from "./types";
+import type { NpcId, SceneFocus } from "./types";
 import { postDialogueJson } from "./semantic/httpInterpreter";
 
 export const REFOUNDATION_ENDPOINT = "https://newlife-refoundation-ai-zqtk74q2ra-an.a.run.app";
@@ -61,6 +61,7 @@ export interface LiveSceneContext {
   day: number;
   title: string;
   text: string;
+  sceneFocus?: SceneFocus;
   canonicalState: Record<string, unknown>;
   interactionKind?: "SPEECH" | "ACTION";
 }
@@ -77,7 +78,7 @@ export async function converseWithRefoundation(
   const dynamicState = {
     relationshipState: "NEUTRAL", boundaryStatus: "UNKNOWN", remainingMinutes: 30,
     activeCommitment: null, sceneRevisionText: null,
-    day: scene.day, sceneTitle: scene.title, sceneText: scene.text, canonicalState: scene.canonicalState,
+    day: scene.day, sceneTitle: scene.title, sceneText: scene.text, sceneFocus: scene.sceneFocus ?? null, canonicalState: scene.canonicalState,
     interactionKind: scene.interactionKind ?? "SPEECH",
   };
   const first = await post({ operation: "converse_turn", caseId, targetNpc, rawPlayerUtterance: utterance, recentDialogue, dynamicState });
