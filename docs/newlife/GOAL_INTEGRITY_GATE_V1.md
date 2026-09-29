@@ -38,6 +38,7 @@ LOCAL-OPTIMIZATION is not automatically rejected, but it must not outrank GOAL-D
 8. Are we turning a generative problem into a deterministic parser only because deterministic code is easier to control?
 9. Are we replacing observed human evidence with developer preference?
 10. Can the change be removed without the player noticing? If yes, why is it priority work?
+11. For any authored scene, can a cold player understand from visible text alone: who wants what, what concrete thing/place/task is being discussed, what was actually said/done, what remains unresolved, and why speaking now matters? Do not rely on hidden GM/design notes to supply missing context.
 
 ## D. GOAL DELTA
 
