@@ -45,7 +45,6 @@ const DAYS_1_10: DayScene[] = [
       { id: "watch_jin", label: "仁の仕事を眺める" },
       LEAVE,
     ],
-    lowEngagementHook: "美代子がふと目を上げ、「あなたも今日は静かね。座ってるだけでいいのよ」と短く言う。",
   }),
   scene({
     day: 3,
@@ -61,7 +60,6 @@ const DAYS_1_10: DayScene[] = [
       { id: "ask_miyoko_intent", label: "美代子に席の意向を聞く" },
       { id: "say_nothing", label: "何も言わない" },
     ],
-    lowEngagementHook: "文子がペンを止めてこちらを見る。「今の返事、お願いを受けてもらったって書いていいのかしら」",
   }),
   scene({
     day: 4,
@@ -114,7 +112,6 @@ const DAYS_1_10: DayScene[] = [
       { id: "offer_one_time_help", label: "必要なら一回だけ持つと申し出る" },
       { id: "do_nothing", label: "何もしない" },
     ],
-    lowEngagementHook: "仁が作業の手を止めずに、「そこ、邪魔じゃないなら見てていい」とだけ言う。",
   }),
   scene({
     day: 8,
@@ -141,7 +138,6 @@ const DAYS_1_10: DayScene[] = [
       { id: "confirm_waiting_area", label: "並ぶ場所を確認する" },
       { id: "stay_out_of_it", label: "静観する" },
     ],
-    lowEngagementHook: "美代子がこちらに気づいて、「あなたはどう思う？ でなくてもいいのよ」と軽く聞く。",
   }),
   scene({
     day: 10,
