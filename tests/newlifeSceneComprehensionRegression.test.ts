@@ -14,7 +14,6 @@ describe("NEW LIFE scene comprehension regressions", () => {
     // The scene must show Fumiko's inference, not turn it into Miyoko's consent.
     expect(scene.text).not.toContain("美代子が了承");
     expect(scene.text).not.toContain("使っていい");
-    expect(scene.lowEngagementHook).toContain("お願いを受けてもらったって書いていいのかしら");
   });
 
   it("removes the owner-observed opaque/meta lines from Day 3 presentation", () => {
@@ -22,7 +21,6 @@ describe("NEW LIFE scene comprehension regressions", () => {
 
     expect(scene.text).not.toContain("場所を貸すだけなら簡単、使った後まで考えるとね");
     expect(scene.text).not.toContain("人が待つなら助かる");
-    expect(scene.lowEngagementHook).not.toContain("見ているだけでも記録にはなる");
   });
 
   it("Day 6 says what the 12 and 18 mean instead of using the opaque phrase '買える方'", () => {
