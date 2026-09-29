@@ -101,6 +101,7 @@ describe("NEW LIFE chat-first Day 16 task confirmation", () => {
   function stateAtDay16() {
     let state = createInitialState();
     for (let i = 1; i < 16; i += 1) state = advanceDay(state);
+    state = advanceDay(state);
     return state;
   }
 
