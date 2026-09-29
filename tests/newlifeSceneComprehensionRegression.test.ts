@@ -33,4 +33,22 @@ describe("NEW LIFE scene comprehension regressions", () => {
     expect(scene.text).toContain("当日来た人が買えるのは18点");
     expect(scene.text).not.toContain("俺が聞いてるのは、買える方だ");
   });
+
+  it("Day 14 names the actual communication problem instead of saying only '別の話'", () => {
+    const scene = getScene(14, "done", null);
+
+    expect(scene.text).toContain("店頭十八");
+    expect(scene.text).toContain("予約十二");
+    expect(scene.text).toContain("客がどこでどう待つのか伝わってなかった");
+    expect(scene.text).not.toContain("昨日の説明は別の話だ");
+  });
+
+  it("Day 16 states the concrete work request and Jin's scope condition", () => {
+    const scene = getScene(16, "done", null);
+
+    expect(scene.text).toContain("会館前の台を据える仕事");
+    expect(scene.text).toContain("何をどこまでやるか");
+    expect(scene.text).toContain("時間を先に決めて");
+    expect(scene.text).not.toContain("また手伝ってくれる？");
+  });
 });
