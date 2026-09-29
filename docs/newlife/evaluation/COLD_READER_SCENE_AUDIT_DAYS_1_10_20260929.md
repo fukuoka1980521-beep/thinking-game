@@ -31,9 +31,9 @@ The audit judges only whether the visible scene gives a cold player enough conte
 That means a "silent player nudge" became part of the normal authored scene even when the player had not been silent. This directly amplified the Day 3 confusion.
 
 Current decision:
-- preserve the hook data for possible future use;
-- do not render it at scene start;
-- only reintroduce such nudges if a real inactivity/low-engagement trigger exists and human testing supports it.
+- remove the obsolete hook field and authored hook copy rather than keep dead data that an old test could re-enable;
+- do not render a silence nudge at scene start;
+- only design a new nudge if a real inactivity/low-engagement trigger exists and human testing supports it.
 
 ## Result
 
