@@ -22,6 +22,8 @@ Rule: evidence register only. Do not promote interpretations into facts.
 
 | IDD-E13 | `docs/newlife/evaluation/COLD_READER_SCENE_AUDIT_DAYS_1_10_20260929.md` + `docs/newlife/evaluation/COLD_READER_SCENE_AUDIT_DAYS_11_24_20260929.md` | After the Day 3 owner failure, the same cold-reader gate found two more independent examples: Day 6 compressed "reservation 12 / walk-in 18" into the opaque phrase "買える方", and Day 14 compressed the waiting/communication problem into "別の話"; Day 16 similarly replaced the concrete paid setup task with generic "help". | The visible-context loss is reproducible across multiple authored scenes, making Context Compression Loss a stronger candidate submechanism of IDD than a one-off wording mistake. | That every concise scene will fail, or that context compression alone explains all prior NEW LIFE drift. |
 
+| IDD-E14 | `tests/newlife30Paths.test.ts` + `src/newlife/types.ts` + `src/newlife/NewLife30App.tsx` before the 2026-09-29 cleanup | An automated test explicitly required Days 2/3/7/9 to contain `lowEngagementHook`; the UI then rendered that hook unconditionally, so a test-backed implementation produced dialogue the owner called confusing. After the human failure, the unconditional rendering, hook field/copy, and hook-presence test were removed. | Strong internal evidence for surrogate-objective capture: "hook exists" became a locally testable success condition even though the user-visible requirement was "help a genuinely quiet player without harming normal conversation." | That automated tests are generally harmful, or that the original hook idea itself was invalid if triggered by real inactivity. |
+
 ## Intervention evidence added in PR #113
 
 The current intervention is deliberately small:
