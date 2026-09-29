@@ -832,7 +832,8 @@ describe("functions/newlife-refoundation-ai/lib.js — 30-day structured world e
     const prompt = lib.buildConversePrompt(body);
     expect(prompt).toContain("DAY16_JIN_TASK_CONFIRMED");
     expect(prompt).toContain("Jin's own reply");
-    expect(prompt).toContain("work content and time scope");
+    expect(prompt).toContain("paid extra task");
+    expect(prompt).toContain("work content plus time scope");
   });
 
   it("puts the Day 9 authority rule in server-owned prompt guidance instead of an utterance lookup", () => {
