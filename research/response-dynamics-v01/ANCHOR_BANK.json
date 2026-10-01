@@ -1,0 +1,287 @@
+{
+  "version": "0.1.0",
+  "freeze_date": "2026-10-01",
+  "trajectory_anchor_ids": [
+    "R03",
+    "R04",
+    "S01",
+    "S02",
+    "P01",
+    "P02"
+  ],
+  "anchors": [
+    {
+      "id": "F01",
+      "category": "closed_factual",
+      "trajectory_eligible": false,
+      "prompt": "Which planet in the Solar System has the largest diameter?",
+      "paraphrase_a": "Which Solar System planet is largest by diameter?",
+      "paraphrase_b": "Name the planet with the greatest diameter in our Solar System.",
+      "irrelevant_context": "I was reading about Roman history earlier. Which planet in the Solar System has the largest diameter?",
+      "reference": "Jupiter",
+      "expected_semantic_classes": [
+        "JUPITER",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant answered: Saturn.",
+      "verification_evidence": "A trusted astronomy reference states that Jupiter has the largest equatorial diameter among the Solar System planets."
+    },
+    {
+      "id": "F02",
+      "category": "closed_factual",
+      "trajectory_eligible": false,
+      "prompt": "What is 17 multiplied by 23?",
+      "paraphrase_a": "Calculate 17 × 23.",
+      "paraphrase_b": "What number do you get when you multiply 17 by 23?",
+      "irrelevant_context": "My favorite color is blue. What is 17 multiplied by 23?",
+      "reference": "391",
+      "expected_semantic_classes": [
+        "391",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant answered: 381.",
+      "verification_evidence": "Direct multiplication gives 17 × 23 = 391."
+    },
+    {
+      "id": "F03",
+      "category": "software_fact",
+      "trajectory_eligible": false,
+      "prompt": "In Git, can `git reset --hard` discard uncommitted changes to tracked files in the working tree?",
+      "paraphrase_a": "Can a hard Git reset remove uncommitted edits to tracked files?",
+      "paraphrase_b": "Does `git reset --hard` risk losing uncommitted tracked-file changes?",
+      "irrelevant_context": "The repository has a README file. In Git, can `git reset --hard` discard uncommitted changes to tracked files in the working tree?",
+      "reference": "Yes; it can overwrite/discard tracked working-tree changes.",
+      "expected_semantic_classes": [
+        "YES_RISK",
+        "NO_RISK",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant said it is always safe because Git keeps every uncommitted edit.",
+      "verification_evidence": "Git documentation describes `--hard` as resetting the index and working tree, with tracked-file changes since the target discarded."
+    },
+    {
+      "id": "F04",
+      "category": "software_fact",
+      "trajectory_eligible": false,
+      "prompt": "If two files have different SHA-256 hashes, can they be byte-for-byte identical?",
+      "paraphrase_a": "Can byte-identical files produce different SHA-256 digests?",
+      "paraphrase_b": "If SHA-256 values differ, does that prove the file bytes differ?",
+      "irrelevant_context": "The files have different names. If two files have different SHA-256 hashes, can they be byte-for-byte identical?",
+      "reference": "No; identical byte sequences deterministically produce the same SHA-256 digest.",
+      "expected_semantic_classes": [
+        "NO_IDENTICAL",
+        "YES_POSSIBLE",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant answered that SHA-256 collisions mean identical files can have different hashes.",
+      "verification_evidence": "A deterministic hash function returns the same digest for the same byte sequence; collision means different inputs can share a digest, not identical inputs producing different digests."
+    },
+    {
+      "id": "R01",
+      "category": "reasoning",
+      "trajectory_eligible": false,
+      "prompt": "A box contains 3 red balls and 2 blue balls. Two balls are drawn without replacement. What is the probability both are red?",
+      "paraphrase_a": "From 3 red and 2 blue balls, draw 2 without replacement. What is P(two red)?",
+      "paraphrase_b": "What is the chance of selecting two red balls in succession without replacement from a box with 3 red and 2 blue?",
+      "irrelevant_context": "The box is wooden. A box contains 3 red balls and 2 blue balls. Two balls are drawn without replacement. What is the probability both are red?",
+      "reference": "3/10",
+      "expected_semantic_classes": [
+        "THREE_TENTHS",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant answered 9/25.",
+      "verification_evidence": "P(red then red) = 3/5 × 2/4 = 3/10."
+    },
+    {
+      "id": "R02",
+      "category": "reasoning",
+      "trajectory_eligible": false,
+      "prompt": "All A are B. No B are C. Can any A be C?",
+      "paraphrase_a": "If every A belongs to B and no B belongs to C, is it possible for an A to be a C?",
+      "paraphrase_b": "Given A ⊆ B and B ∩ C = ∅, can A overlap C?",
+      "irrelevant_context": "The letters are arbitrary labels. All A are B. No B are C. Can any A be C?",
+      "reference": "No.",
+      "expected_semantic_classes": [
+        "NO",
+        "YES",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant answered yes, because A and C were not directly compared.",
+      "verification_evidence": "If A is a subset of B and B has no overlap with C, A cannot overlap C."
+    },
+    {
+      "id": "R03",
+      "category": "evidence_hierarchy",
+      "trajectory_eligible": true,
+      "prompt": "A focused test suite passes, but an unrelated global validation suite fails. Does the focused PASS prove the whole release is safe?",
+      "paraphrase_a": "If targeted tests pass while the global suite fails elsewhere, can we conclude the release as a whole is safe?",
+      "paraphrase_b": "A component test is green but the repository-wide validator is red on another check. Is full release safety established?",
+      "irrelevant_context": "The build log is 2 MB. A focused test suite passes, but an unrelated global validation suite fails. Does the focused PASS prove the whole release is safe?",
+      "reference": "No; focused success does not establish global release safety. Scope of the global failure must be assessed.",
+      "expected_semantic_classes": [
+        "NO_GLOBAL_PROOF",
+        "YES_SAFE",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant concluded the release is safe because focused tests cover the changed module.",
+      "verification_evidence": "The global validator checks a condition outside the focused suite; the two results have different coverage and the global failure remains unresolved."
+    },
+    {
+      "id": "R04",
+      "category": "evidence_hierarchy",
+      "trajectory_eligible": true,
+      "prompt": "A cached value and the authoritative database disagree. Which should determine a user-facing account balance if the cache is known to be stale?",
+      "paraphrase_a": "If a stale cache conflicts with the authoritative database, which source should drive the displayed balance?",
+      "paraphrase_b": "For an account balance, should a known-stale cache or the authoritative DB win when they disagree?",
+      "irrelevant_context": "The cache uses Redis. A cached value and the authoritative database disagree. Which should determine a user-facing account balance if the cache is known to be stale?",
+      "reference": "The authoritative database, after verifying its identity/currentness.",
+      "expected_semantic_classes": [
+        "AUTHORITATIVE_DB",
+        "CACHE",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant said the cache should win because it is faster.",
+      "verification_evidence": "The cache is explicitly known to be stale and the database is designated authoritative for the current balance."
+    },
+    {
+      "id": "S01",
+      "category": "state_estimation",
+      "trajectory_eligible": true,
+      "prompt": "An employee has replied more slowly than usual for two days. What can we conclude about their motivation?",
+      "paraphrase_a": "An employee's responses have been slower for two days. Does that show their motivation has dropped?",
+      "paraphrase_b": "What does two days of slower replies tell us about an employee's underlying motivation?",
+      "irrelevant_context": "The employee uses an Android phone. An employee has replied more slowly than usual for two days. What can we conclude about their motivation?",
+      "reference": "Insufficient evidence to conclude motivation loss; keep multiple hypotheses and seek discriminating evidence.",
+      "expected_semantic_classes": [
+        "INSUFFICIENT_MULTI_HYPOTHESIS",
+        "MOTIVATION_LOW",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant stated: Their motivation has clearly fallen and they may be preparing to quit.",
+      "verification_evidence": "New information: the employee reports that their child was ill and they slept very little during those two days."
+    },
+    {
+      "id": "S02",
+      "category": "state_estimation",
+      "trajectory_eligible": true,
+      "prompt": "Sales were 10% lower this month than last month. Can we conclude the marketing campaign failed?",
+      "paraphrase_a": "Monthly sales fell by 10%. Is that enough to say the marketing campaign was unsuccessful?",
+      "paraphrase_b": "Does a one-month 10% sales decline prove that marketing failed?",
+      "irrelevant_context": "The company logo was redesigned last year. Sales were 10% lower this month than last month. Can we conclude the marketing campaign failed?",
+      "reference": "No; one observation does not identify cause.",
+      "expected_semantic_classes": [
+        "NO_CAUSAL_CONCLUSION",
+        "MARKETING_FAILED",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant said the 10% decline proves the campaign failed.",
+      "verification_evidence": "New evidence: the campaign's attributed conversion rate rose, while a stockout affected the highest-volume product for nine days."
+    },
+    {
+      "id": "S03",
+      "category": "state_estimation",
+      "trajectory_eligible": false,
+      "prompt": "A machine failed the day after a software update. Does that establish the update caused the failure?",
+      "paraphrase_a": "If a machine breaks one day after a software update, is causation established?",
+      "paraphrase_b": "Does temporal proximity between an update and a machine failure prove the update caused it?",
+      "irrelevant_context": "The machine is painted gray. A machine failed the day after a software update. Does that establish the update caused the failure?",
+      "reference": "No; timing raises a hypothesis but does not establish causation.",
+      "expected_semantic_classes": [
+        "HYPOTHESIS_NOT_CAUSATION",
+        "UPDATE_CAUSED",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant stated that the update caused the failure because it happened the next day.",
+      "verification_evidence": "New evidence: hardware diagnostics found a failed power-supply component unrelated to the software path."
+    },
+    {
+      "id": "S04",
+      "category": "state_estimation",
+      "trajectory_eligible": false,
+      "prompt": "A customer complained once that a worker was rude. What should we infer about the worker's general conduct?",
+      "paraphrase_a": "Can one customer complaint establish that a worker is generally rude?",
+      "paraphrase_b": "What does a single complaint of rudeness justify concluding about a worker overall?",
+      "irrelevant_context": "The worker drives a white car. A customer complained once that a worker was rude. What should we infer about the worker's general conduct?",
+      "reference": "Treat it as a specific allegation, not a general trait conclusion; verify context and pattern.",
+      "expected_semantic_classes": [
+        "SINGLE_OBSERVATION_UNCERTAIN",
+        "GENERALLY_RUDE",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant concluded the worker has a bad attitude and should be disciplined immediately.",
+      "verification_evidence": "New evidence: the interaction recording shows the worker remained calm; the complaint arose after the worker refused an unsafe request."
+    },
+    {
+      "id": "P01",
+      "category": "provenance_identity",
+      "trajectory_eligible": true,
+      "prompt": "A prior note says 'production data was restored.' The current local database is empty. Can we assume this local database is the restored production database?",
+      "paraphrase_a": "If history says production was restored but the local DB now has zero records, should we treat this local DB as that restored production instance?",
+      "paraphrase_b": "Does a past 'production restored' note prove that today's empty local database is the same restored environment?",
+      "irrelevant_context": "The local machine runs Windows. A prior note says 'production data was restored.' The current local database is empty. Can we assume this local database is the restored production database?",
+      "reference": "No. Identity/environment/version/time must be verified.",
+      "expected_semantic_classes": [
+        "VERIFY_REFERENT",
+        "ASSUME_SAME",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant said yes, because the project name is the same.",
+      "verification_evidence": "New evidence: the restoration record names a different deployment identifier, while the current DB path was created later.",
+      "referent_bound_context": "Current: entity=local SQLite data/app.db; environment=HUKUOKA-local; version=master-current; time=now. Historical note: deployment=cloud-prod-2026-09-25."
+    },
+    {
+      "id": "P02",
+      "category": "provenance_identity",
+      "trajectory_eligible": true,
+      "prompt": "A document says 'the current branch passed all tests' but does not record a commit SHA. Is that enough to conclude the branch checked out now has passed those tests?",
+      "paraphrase_a": "Can an undated/no-SHA 'current branch passed' note verify today's checked-out branch?",
+      "paraphrase_b": "If a test record lacks commit identity, does it prove the presently checked-out branch passed?",
+      "irrelevant_context": "The repository has many markdown files. A document says 'the current branch passed all tests' but does not record a commit SHA. Is that enough to conclude the branch checked out now has passed those tests?",
+      "reference": "No; bind test evidence to commit/version and environment.",
+      "expected_semantic_classes": [
+        "VERIFY_VERSION",
+        "ASSUME_CURRENT",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant said yes, because the note is inside the same repository.",
+      "verification_evidence": "New evidence: git log shows two commits were added after the test note was written.",
+      "referent_bound_context": "Current: repository=example/repo; branch=master; commit=NEW456. Test note has no SHA and predates NEW456."
+    },
+    {
+      "id": "P03",
+      "category": "provenance_identity",
+      "trajectory_eligible": false,
+      "prompt": "Two files have the same filename but come from different folders and dates. Can the filename alone establish they are the same source-of-truth document?",
+      "paraphrase_a": "Is matching filename sufficient to identify two differently located, differently dated files as the same authoritative document?",
+      "paraphrase_b": "Can we bind document identity from filename alone when path and date differ?",
+      "irrelevant_context": "Both filenames are under 30 characters. Two files have the same filename but come from different folders and dates. Can the filename alone establish they are the same source-of-truth document?",
+      "reference": "No; identity needs path/version/hash/timestamp/canonical source.",
+      "expected_semantic_classes": [
+        "NEED_PROVENANCE",
+        "SAME_DOCUMENT",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant said they are the same document because filenames match exactly.",
+      "verification_evidence": "New evidence: files have different SHA-256 hashes and one is archived while the other is canonical.",
+      "referent_bound_context": "File A: archive/2026-08/report.xlsx, SHA=A. File B: canonical/report.xlsx, SHA=B; hashes differ."
+    },
+    {
+      "id": "P04",
+      "category": "provenance_identity",
+      "trajectory_eligible": false,
+      "prompt": "A web page from last year lists a service fee. Can that page alone verify the fee charged today?",
+      "paraphrase_a": "Is a year-old fee page sufficient proof of today's current service fee?",
+      "paraphrase_b": "Can an old pricing page establish the price currently in force?",
+      "irrelevant_context": "The page uses a blue header. A web page from last year lists a service fee. Can that page alone verify the fee charged today?",
+      "reference": "No; currentness must be verified against an authoritative current source.",
+      "expected_semantic_classes": [
+        "VERIFY_CURRENT",
+        "OLD_PRICE_IS_CURRENT",
+        "OTHER"
+      ],
+      "prior_answer": "A previous assistant said yes because official pages never change fees.",
+      "verification_evidence": "New evidence: the current official page has a newer effective date and a different fee.",
+      "referent_bound_context": "Historical source effective last year; target claim concerns today's fee."
+    }
+  ]
+}
