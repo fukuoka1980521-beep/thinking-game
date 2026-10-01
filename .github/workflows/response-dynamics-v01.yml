@@ -1,0 +1,29 @@
+name: Response Dynamics v0.1
+
+on:
+  push:
+    branches:
+      - research/response-dynamics-v01
+    paths:
+      - 'research/response-dynamics-v01/**'
+      - '.github/workflows/response-dynamics-v01.yml'
+  workflow_dispatch:
+
+jobs:
+  validate-study:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: research/response-dynamics-v01
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest
+      - name: Method validation
+        run: pytest -q test_metrics.py
+      - name: Frozen manifest validation
+        run: python validate_manifest.py
+      - name: Syntax validation
+        run: python -m py_compile metrics.py validate_manifest.py test_metrics.py
