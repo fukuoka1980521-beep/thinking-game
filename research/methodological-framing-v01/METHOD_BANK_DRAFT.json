@@ -1,0 +1,41 @@
+{
+  "version": "pilot-draft-0.1",
+  "objective_constant": "Design a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.",
+  "conditions": [
+    {
+      "id": "CONTROL",
+      "label": "No additional methodological frame",
+      "instruction": "Use your best methodological judgment. Do not assume any specific named framework."
+    },
+    {
+      "id": "DIFFERENTIAL",
+      "label": "Local perturbation / finite-difference",
+      "instruction": "Use a local perturbation perspective. Identify state variables, hold relevant factors fixed, vary one input factor at a time, and measure which output components change relative to a baseline noise floor."
+    },
+    {
+      "id": "BAYESIAN",
+      "label": "Bayesian",
+      "instruction": "Use a Bayesian research perspective. State competing hypotheses, prior uncertainty, what observations would update those beliefs, and how posterior uncertainty would affect conclusions and stopping decisions."
+    },
+    {
+      "id": "FALSIFICATION",
+      "label": "Falsificationist",
+      "instruction": "Use a falsification-first research perspective. Define claims so they can fail, prioritize severe tests and counterexamples, and specify in advance what observations would refute each central hypothesis."
+    },
+    {
+      "id": "CAUSAL",
+      "label": "Causal inference",
+      "instruction": "Use a causal-inference perspective. Define treatments, outcomes, confounders, controls and counterfactual comparisons, and separate causal effects of prompt changes from stochastic variation and measurement error."
+    },
+    {
+      "id": "STATE_SPACE",
+      "label": "State-space / dynamical systems",
+      "instruction": "Use a state-space perspective. Define an observable state vector, distinguish independent variability from sequential transitions, and specify transition, stability, path-dependence, and perturbation measurements without claiming unobserved internal states."
+    },
+    {
+      "id": "SOFTWARE_TESTING",
+      "label": "Software / metamorphic testing",
+      "instruction": "Use a software-testing perspective. Define invariants, metamorphic relations, test oracles, boundary cases, regression tests, failure classes, and a reproducible test harness for the research question."
+    }
+  ]
+}
