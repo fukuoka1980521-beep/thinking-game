@@ -1,65 +1,52 @@
 {
   "project": "METHODOLOGICAL_FRAMING_V0_1",
   "branch": "research/methodological-framing-v01",
-  "status": "V07_DETERMINISTIC_MEASUREMENT_FROZEN_PENDING_ANALYSIS",
+  "status": "STUDY_A_FROZEN_READY_TO_COLLECT",
   "counted_empirical_runs": 0,
-  "preregistered": false,
-  "claim_ceiling": "black-box research behavior; no internal neural-state claim",
+  "preregistered": true,
+  "claim_ceiling": "black-box observable research-plan behavior; no hidden reasoning-state claim",
   "acting_model": "gpt-5.6-sol",
-  "primary_scorer": "gpt-6-sol",
-  "secondary_scorer": "gpt-5.6-terra",
-  "original_pilot": "INVALID_FOR_CALIBRATION_TRUNCATED_21_OF_21",
-  "v03": "INVALID_TRUNCATED_AND_PRESERVED",
-  "v04": {
-    "raw": 42,
-    "primary_scores": 42,
-    "secondary_scores": 42,
-    "validation": "PASS",
-    "structural_separation": 0.130511,
-    "gate": "NO_GO",
-    "green_binary_fields": 6,
-    "usable_method_families": 3
+  "calibration_history": {
+    "v04": {
+      "gate": "NO_GO",
+      "structural_separation": 0.130511
+    },
+    "v05": {
+      "gate": "NO_GO",
+      "structural_separation": 0.095238
+    },
+    "v06": {
+      "gate": "NO_GO",
+      "green_artifacts": 1,
+      "usable_method_families": 0,
+      "structural_separation": -0.031746031746031744
+    },
+    "v07": {
+      "gate": "GO",
+      "measurement": "judge-free broad-lexicon-masked unigram+bigram TF-IDF cross-task nearest centroid",
+      "T1_to_T2": "8/21",
+      "T2_to_T1": "14/21",
+      "combined": "22/42",
+      "combined_accuracy": 0.5238095238095238,
+      "permutation_p": 0.0001,
+      "distance_excess": 0.006940709953
+    }
   },
-  "v05": {
-    "raw": 42,
-    "primary_scores": 42,
-    "secondary_scores": 42,
-    "validation": "PASS",
-    "structural_separation": 0.095238,
-    "gate": "NO_GO",
-    "green_binary_fields": 3,
-    "usable_method_families": 2
+  "study_A": {
+    "status": "FROZEN_BEFORE_COUNTED_COLLECTION",
+    "denominator": 336,
+    "label_only": 252,
+    "operational": 84,
+    "manifest_seed": 20261002,
+    "counted_runs_at_freeze": 0,
+    "primary_success_rule": "LABEL_ONLY combined permutation p <= 0.01 and both cross-task directional accuracies > 1/7",
+    "raw_first_writer": true,
+    "max_output_tokens": 8000,
+    "max_workers": 8
   },
-  "v06": {
-    "raw": 42,
-    "raw_validation": "PASS",
-    "blind": 42,
-    "primary_scores": 42,
-    "secondary_scores": 42,
-    "validation": "PASS",
-    "green_artifacts": 1,
-    "usable_method_families": 0,
-    "structural_separation": -0.031746031746031744,
-    "gate": "NO_GO",
-    "interpretation": "LLM-judge semantic artifact coding remains the measurement bottleneck"
-  },
-  "api_credit": {
-    "previous_gate": "credit_balance_exhausted",
-    "restored": true,
-    "consequence": "v06 double scoring completed successfully after credit restoration"
-  },
-  "v07": {
-    "design": "judge-free masked TF-IDF cross-task nearest-centroid measurement",
-    "design_frozen": true,
-    "gate_frozen": true,
-    "calibration_source": "v06 42-plan non-counted blind package",
-    "analysis_run": false
-  },
-  "study_A": "NOT_FROZEN",
-  "study_A_candidate_counted_denominator": 336,
   "study_B": "DRAFT",
   "study_C": "DRAFT",
-  "next_gate": "RUN_FROZEN_V07_DETERMINISTIC_ANALYSIS_THEN_FREEZE_STUDY_A_OR_REDESIGN",
+  "next_gate": "COMMIT_AND_PUSH_FREEZE_THEN_COLLECT_EXACTLY_336",
   "common_index": "\\\\192.168.11.2\\share\\共有\\AI_COMMON\\REMOTE_DESKTOP_COMMON_INDEX.md",
   "t2_reality_grounding": "PASS_READ_ONLY_NO_PERSONAL_DATA_COPIED"
 }

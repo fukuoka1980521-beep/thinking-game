@@ -1,0 +1,45 @@
+{
+  "version": "Study-A-v1.0-frozen",
+  "status": "FROZEN_BEFORE_COUNTED_COLLECTION",
+  "claim_ceiling": "observable black-box research-plan behavior only",
+  "acting_model": "gpt-5.6-sol",
+  "generation": {
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning_effort": "none",
+    "max_workers": 8
+  },
+  "primary": {
+    "subset": "LABEL_ONLY",
+    "n": 252,
+    "cell_repetitions": 18,
+    "algorithm": "broad-method-lexicon-masked word unigram+bigram TF-IDF; cross-task nearest centroid",
+    "directions": [
+      "train T1 -> test T2",
+      "train T2 -> test T1"
+    ],
+    "chance_accuracy": 0.14285714285714285,
+    "permutations": 10000,
+    "permutation_seed": 20261002,
+    "success_rule": "combined permutation p <= 0.01 and both directional accuracies > 1/7"
+  },
+  "secondary": {
+    "subset": "OPERATIONAL",
+    "n": 84,
+    "cell_repetitions": 6,
+    "analyses": [
+      "same cross-task classification and permutation procedure",
+      "cross-task same-method versus different-method cosine distance",
+      "OPERATIONAL minus LABEL_ONLY accuracy difference"
+    ]
+  },
+  "calibration": {
+    "source": "calibration_v06 42-plan non-counted set analyzed with frozen v0.7 deterministic instrument",
+    "v07_gate": "GO",
+    "v07_combined_accuracy": 0.5238095238095238,
+    "v07_permutation_p": 9.999000099990002e-05,
+    "v07_distance_excess": 0.006940709953470958
+  }
+}
