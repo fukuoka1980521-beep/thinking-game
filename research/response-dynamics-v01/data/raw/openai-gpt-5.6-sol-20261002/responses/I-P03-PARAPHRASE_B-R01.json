@@ -1,0 +1,144 @@
+{
+  "run_id": "I-P03-PARAPHRASE_B-R01",
+  "anchor_id": "P03",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "INDEPENDENT",
+  "condition": "PARAPHRASE_B",
+  "replicate": 1,
+  "turn": 1,
+  "fresh_context": true,
+  "timestamp_utc": "2026-10-01T15:59:10.032418+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Can we bind document identity from filename alone when path and date differ?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "31b759ec20708eb1573345e940da9e43b5bcd71e770ce052750ed1eb1438ca87",
+  "raw_text": "Not reliably. A filename alone is usually a weak identifier: different documents may share it, and the same document may be renamed.\n\nIf path and date differ, bind identity using stronger evidence, such as:\n\n- **Content hash** (e.g., SHA-256): same bytes → same file.\n- **Canonicalized-content hash**: useful when metadata or formatting changes but substantive content remains.\n- **Embedded document ID**: UUID, database key, DOI, invoice number, etc.\n- **Content similarity/fingerprinting**: for revised or converted versions.\n- **Filename plus additional attributes**: size, author, title, checksum, or repository ID.\n\nUse filename-only matching as a heuristic, not a definitive identity rule. If exact identity matters, require a stable embedded ID or cryptographic hash.",
+  "response_id": "resp_0ef6bd8607901d86016abe83491efc87d09e3b81e7536dfb37",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 20,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 166,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 186
+  },
+  "raw_response": {
+    "id": "resp_0ef6bd8607901d86016abe83491efc87d09e3b81e7536dfb37",
+    "object": "response",
+    "created_at": 1790870345,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870349,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0ef6bd8607901d86016abe8349e52087d088df2d32c45f5718",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "Not reliably. A filename alone is usually a weak identifier: different documents may share it, and the same document may be renamed.\n\nIf path and date differ, bind identity using stronger evidence, such as:\n\n- **Content hash** (e.g., SHA-256): same bytes → same file.\n- **Canonicalized-content hash**: useful when metadata or formatting changes but substantive content remains.\n- **Embedded document ID**: UUID, database key, DOI, invoice number, etc.\n- **Content similarity/fingerprinting**: for revised or converted versions.\n- **Filename plus additional attributes**: size, author, title, checksum, or repository ID.\n\nUse filename-only matching as a heuristic, not a definitive identity rule. If exact identity matters, require a stable embedded ID or cryptographic hash."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 20,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 166,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 186
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

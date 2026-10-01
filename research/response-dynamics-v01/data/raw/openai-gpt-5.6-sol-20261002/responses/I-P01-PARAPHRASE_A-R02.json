@@ -1,0 +1,144 @@
+{
+  "run_id": "I-P01-PARAPHRASE_A-R02",
+  "anchor_id": "P01",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "INDEPENDENT",
+  "condition": "PARAPHRASE_A",
+  "replicate": 2,
+  "turn": 1,
+  "fresh_context": true,
+  "timestamp_utc": "2026-10-01T15:57:32.192326+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "If history says production was restored but the local DB now has zero records, should we treat this local DB as that restored production instance?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "97271eee9557b0fa1871897e9af1d80f9b01b596e5e63662ef7a67ba3e06e1d3",
+  "raw_text": "No. Historical notes alone are insufficient to identify the current local DB as the restored production instance—especially if it now contains zero records.\n\nTreat it as a separate or reset database unless you can verify continuity using evidence such as:\n\n- Database instance/host identifiers\n- Restore logs and timestamps\n- Backup IDs or checksums\n- Migration history\n- Audit logs or snapshots\n- Record counts immediately after restoration\n- Evidence of a later truncation/reset\n\nDocument the discrepancy and avoid making production-related conclusions from the local DB until its provenance is confirmed.",
+  "response_id": "resp_044fb52fac2a381f016abe82e8775887d0822ba4adde26138b",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 33,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 114,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 147
+  },
+  "raw_response": {
+    "id": "resp_044fb52fac2a381f016abe82e8775887d0822ba4adde26138b",
+    "object": "response",
+    "created_at": 1790870248,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870251,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_044fb52fac2a381f016abe82e97fd887d0a22f6e734a57e85a",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "No. Historical notes alone are insufficient to identify the current local DB as the restored production instance—especially if it now contains zero records.\n\nTreat it as a separate or reset database unless you can verify continuity using evidence such as:\n\n- Database instance/host identifiers\n- Restore logs and timestamps\n- Backup IDs or checksums\n- Migration history\n- Audit logs or snapshots\n- Record counts immediately after restoration\n- Evidence of a later truncation/reset\n\nDocument the discrepancy and avoid making production-related conclusions from the local DB until its provenance is confirmed."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 33,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 114,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 147
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

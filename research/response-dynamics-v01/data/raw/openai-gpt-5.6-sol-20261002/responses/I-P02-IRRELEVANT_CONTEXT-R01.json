@@ -1,0 +1,144 @@
+{
+  "run_id": "I-P02-IRRELEVANT_CONTEXT-R01",
+  "anchor_id": "P02",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "INDEPENDENT",
+  "condition": "IRRELEVANT_CONTEXT",
+  "replicate": 1,
+  "turn": 1,
+  "fresh_context": true,
+  "timestamp_utc": "2026-10-01T15:58:26.679472+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "The repository has many markdown files. A document says 'the current branch passed all tests' but does not record a commit SHA. Is that enough to conclude the branch checked out now has passed those tests?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "50d5cdac8881a1a039485a5126c81bdc0002be447da50834c1fbd7cdf44171a4",
+  "raw_text": "No. “The current branch” identifies a movable branch state, not an immutable revision. The branch may have advanced, been rebased, force-pushed, or changed locally since the tests ran.\n\nTo conclude that the currently checked-out code passed, the record should include at least the tested commit SHA—plus any relevant uncommitted changes, test configuration, environment, and test command/results. Then verify that `HEAD` matches that SHA and the working tree is clean.",
+  "response_id": "resp_018204442d1850d6016abe831f438487d0882af339cdf825ff",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 47,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 99,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 146
+  },
+  "raw_response": {
+    "id": "resp_018204442d1850d6016abe831f438487d0882af339cdf825ff",
+    "object": "response",
+    "created_at": 1790870303,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870305,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_018204442d1850d6016abe83200f6087d094d22214ba9f6189",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "No. “The current branch” identifies a movable branch state, not an immutable revision. The branch may have advanced, been rebased, force-pushed, or changed locally since the tests ran.\n\nTo conclude that the currently checked-out code passed, the record should include at least the tested commit SHA—plus any relevant uncommitted changes, test configuration, environment, and test command/results. Then verify that `HEAD` matches that SHA and the working tree is clean."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 47,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 99,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 146
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

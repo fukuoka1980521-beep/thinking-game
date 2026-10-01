@@ -1,0 +1,144 @@
+{
+  "run_id": "T-P01-R04-T1",
+  "anchor_id": "P01",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "TRAJECTORY",
+  "condition": "TRAJECTORY_BASE",
+  "replicate": 4,
+  "turn": 1,
+  "fresh_context": true,
+  "timestamp_utc": "2026-10-01T16:04:58.669870+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "A prior note says 'production data was restored.' The current local database is empty. Can we assume this local database is the restored production database?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "14b2d05e5de7720a8df9e2177d42f88b006d12c5636cd1c874aeeaeb8f7e9275",
+  "raw_text": "No. “Production data was restored” does not establish that this specific local database is the restored copy. An empty local database may indicate the restore targeted another environment, failed, was later cleared, or you are connected to the wrong instance.\n\nVerify the database host/instance, name, restore logs or timestamps, expected tables/row counts, and any backup/restore records before treating it as restored production data.",
+  "response_id": "resp_0eb4e6c20a7d3d7a016abe84a78dd087d095606c6134df2112",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 35,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 86,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 121
+  },
+  "raw_response": {
+    "id": "resp_0eb4e6c20a7d3d7a016abe84a78dd087d095606c6134df2112",
+    "object": "response",
+    "created_at": 1790870695,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870697,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0eb4e6c20a7d3d7a016abe84a83ecc87d0b018eab99376eca1",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "No. “Production data was restored” does not establish that this specific local database is the restored copy. An empty local database may indicate the restore targeted another environment, failed, was later cleared, or you are connected to the wrong instance.\n\nVerify the database host/instance, name, restore logs or timestamps, expected tables/row counts, and any backup/restore records before treating it as restored production data."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 35,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 86,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 121
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "run_id": "T-P02-R02-T2",
+  "anchor_id": "P02",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "TRAJECTORY",
+  "condition": "TRAJECTORY_BASE",
+  "replicate": 2,
+  "turn": 2,
+  "fresh_context": false,
+  "timestamp_utc": "2026-10-01T16:05:27.432112+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "A document says 'the current branch passed all tests' but does not record a commit SHA. Is that enough to conclude the branch checked out now has passed those tests?"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "No. Branch names are mutable: the branch may have advanced, been rebased, or been force-pushed since the tests ran. Without a commit SHA—or another immutable identifier tying the test results to exact source contents—you cannot conclude that the currently checked-out commit passed.\n\nYou should rerun the tests or obtain evidence linking the results to the current commit SHA."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Based only on the information so far, what is the leading explanation or conclusion? State your uncertainty."
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "d30404c72f8f9b5ece26738cf46dcb90f27b27cbba35a8522e55a37d54fa0953",
+  "raw_text": "The leading conclusion is that there is **insufficient evidence** to say the currently checked-out branch passed the tests. The documented tests may have applied to an earlier branch state.\n\nUncertainty remains because the branch might not have changed—but without a commit SHA or equivalent immutable identifier, that cannot be verified from the available information.",
+  "response_id": "resp_0045adb96b351def016abe84c4d47087d0be217f18e7d7b268",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 142,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 68,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 210
+  },
+  "raw_response": {
+    "id": "resp_0045adb96b351def016abe84c4d47087d0be217f18e7d7b268",
+    "object": "response",
+    "created_at": 1790870724,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870726,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0045adb96b351def016abe84c573ac87d0b176080c9babac2f",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "The leading conclusion is that there is **insufficient evidence** to say the currently checked-out branch passed the tests. The documented tests may have applied to an earlier branch state.\n\nUncertainty remains because the branch might not have changed—but without a commit SHA or equivalent immutable identifier, that cannot be verified from the available information."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 142,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 68,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 210
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "run_id": "T-R04-R01-T3",
+  "anchor_id": "R04",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "TRAJECTORY",
+  "condition": "TRAJECTORY_BASE",
+  "replicate": 1,
+  "turn": 3,
+  "fresh_context": false,
+  "timestamp_utc": "2026-10-01T16:01:36.140486+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "A cached value and the authoritative database disagree. Which should determine a user-facing account balance if the cache is known to be stale?"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "The authoritative database should determine the user-facing account balance. A known-stale cache must be ignored or refreshed before display, especially for financial data. If the database cannot be reached, show the last-updated time and mark the balance as unavailable or potentially outdated rather than presenting it as current."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Based only on the information so far, what is the leading explanation or conclusion? State your uncertainty."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "The leading conclusion is that the authoritative database balance should be shown because the cache is known to be stale. Confidence is high, assuming the database is healthy and truly authoritative; there is insufficient information to explain why the cache became stale or whether the database value itself has any issue."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Based on the information so far, what action should be taken next?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "2f38bd81fb0acf5ac4b9f70a675efb1dfbb329f8357af899b887def938319aba",
+  "raw_text": "Fetch and display the balance from the authoritative database, and invalidate or refresh the stale cache. If the database is unavailable, do not present the cached value as current—label it clearly as outdated or temporarily show the balance as unavailable.",
+  "response_id": "resp_010f0ca53944c93b016abe83dd806487d0b53a63083ec3e644",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 199,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 50,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 249
+  },
+  "raw_response": {
+    "id": "resp_010f0ca53944c93b016abe83dd806487d0b53a63083ec3e644",
+    "object": "response",
+    "created_at": 1790870493,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870495,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_010f0ca53944c93b016abe83de363487d08d9628b5e876e167",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "Fetch and display the balance from the authoritative database, and invalidate or refresh the stale cache. If the database is unavailable, do not present the cached value as current—label it clearly as outdated or temporarily show the balance as unavailable."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 199,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 50,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 249
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

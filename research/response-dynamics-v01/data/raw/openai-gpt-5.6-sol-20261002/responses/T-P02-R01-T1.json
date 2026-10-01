@@ -1,0 +1,144 @@
+{
+  "run_id": "T-P02-R01-T1",
+  "anchor_id": "P02",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "TRAJECTORY",
+  "condition": "TRAJECTORY_BASE",
+  "replicate": 1,
+  "turn": 1,
+  "fresh_context": true,
+  "timestamp_utc": "2026-10-01T16:05:12.256845+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "A document says 'the current branch passed all tests' but does not record a commit SHA. Is that enough to conclude the branch checked out now has passed those tests?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "98399f18f2333b150dc07ad13d1de91c663d9ab2783a0123a9f75e3895b33b86",
+  "raw_text": "No. “Current branch” is time-dependent and mutable: the branch may have advanced, been rebased, or been force-pushed since the tests ran.\n\nTo make the result traceable, record the exact commit SHA tested, along with relevant context such as the test suite/version, environment, and timestamp. Then verify that the currently checked-out commit matches that SHA—or rerun the tests.",
+  "response_id": "resp_068ea4fb65f92f2c016abe84b5095087d08fe65fc57df2e68f",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 40,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 83,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 123
+  },
+  "raw_response": {
+    "id": "resp_068ea4fb65f92f2c016abe84b5095087d08fe65fc57df2e68f",
+    "object": "response",
+    "created_at": 1790870709,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870711,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_068ea4fb65f92f2c016abe84b5d4c887d08117fc5a59f8060e",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "No. “Current branch” is time-dependent and mutable: the branch may have advanced, been rebased, or been force-pushed since the tests ran.\n\nTo make the result traceable, record the exact commit SHA tested, along with relevant context such as the test suite/version, environment, and timestamp. Then verify that the currently checked-out commit matches that SHA—or rerun the tests."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 40,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 83,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 123
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "run_id": "I-P02-PARAPHRASE_B-R02",
+  "anchor_id": "P02",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "INDEPENDENT",
+  "condition": "PARAPHRASE_B",
+  "replicate": 2,
+  "turn": 1,
+  "fresh_context": true,
+  "timestamp_utc": "2026-10-01T15:58:23.683605+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "If a test record lacks commit identity, does it prove the presently checked-out branch passed?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "1cd6e2312758e84c33547b1fa6114cde94f615a4f8e1ad70665a2fd7817c9f0e",
+  "raw_text": "No. Without a commit hash or equivalent immutable source identity, the test record cannot prove which code was tested. Branch names and checkouts can change, so it only shows that *some* checkout passed at that time—not necessarily the branch’s current commit.\n\nTo support that claim, record the commit SHA (and ideally repository, dirty-working-tree status, test configuration, and environment).",
+  "response_id": "resp_03f1ce18b4cab715016abe831c559487d086a97f124b2255f3",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 24,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 80,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 104
+  },
+  "raw_response": {
+    "id": "resp_03f1ce18b4cab715016abe831c559487d086a97f124b2255f3",
+    "object": "response",
+    "created_at": 1790870300,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870302,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_03f1ce18b4cab715016abe831d159087d0832cad8c65bec1a1",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "No. Without a commit hash or equivalent immutable source identity, the test record cannot prove which code was tested. Branch names and checkouts can change, so it only shows that *some* checkout passed at that time—not necessarily the branch’s current commit.\n\nTo support that claim, record the commit SHA (and ideally repository, dirty-working-tree status, test configuration, and environment)."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 24,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 80,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 104
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "run_id": "I-P01-IRRELEVANT_CONTEXT-R01",
+  "anchor_id": "P01",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "INDEPENDENT",
+  "condition": "IRRELEVANT_CONTEXT",
+  "replicate": 1,
+  "turn": 1,
+  "fresh_context": true,
+  "timestamp_utc": "2026-10-01T15:57:41.765174+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "The local machine runs Windows. A prior note says 'production data was restored.' The current local database is empty. Can we assume this local database is the restored production database?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "9e717d89221175dc4f72363cdb62d63322dcaae64c591558ef367c84d8c82638",
+  "raw_text": "No. “Production data was restored” does not establish that the current local database is the restored database—especially if it is empty.\n\nVerify before proceeding:\n\n- Which machine/environment was restored\n- The database server, instance, and database name\n- The connection string currently in use\n- Restore timestamps and logs\n- Expected tables/row counts\n- Whether the restore was later overwritten, deleted, or restored to another location\n\nTreat the local database as unverified until those details match.",
+  "response_id": "resp_08c7793863a48108016abe82f24bb087d0b261751b6404ef80",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 41,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 102,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 143
+  },
+  "raw_response": {
+    "id": "resp_08c7793863a48108016abe82f24bb087d0b261751b6404ef80",
+    "object": "response",
+    "created_at": 1790870258,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870260,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_08c7793863a48108016abe82f2e3f487d0a990d77c3d19e36e",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "No. “Production data was restored” does not establish that the current local database is the restored database—especially if it is empty.\n\nVerify before proceeding:\n\n- Which machine/environment was restored\n- The database server, instance, and database name\n- The connection string currently in use\n- Restore timestamps and logs\n- Expected tables/row counts\n- Whether the restore was later overwritten, deleted, or restored to another location\n\nTreat the local database as unverified until those details match."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 41,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 102,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 143
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

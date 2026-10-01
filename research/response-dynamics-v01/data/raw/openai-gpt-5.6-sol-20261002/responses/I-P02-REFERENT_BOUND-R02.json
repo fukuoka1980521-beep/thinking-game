@@ -1,0 +1,144 @@
+{
+  "run_id": "I-P02-REFERENT_BOUND-R02",
+  "anchor_id": "P02",
+  "cohort": "OPENAI_CONTROLLED_ENDPOINT",
+  "run_type": "INDEPENDENT",
+  "condition": "REFERENT_BOUND",
+  "replicate": 2,
+  "turn": 1,
+  "fresh_context": true,
+  "timestamp_utc": "2026-10-01T15:58:39.960720+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "store": false,
+  "max_output_tokens": 4096,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "seed": "UNKNOWN",
+  "tools": [],
+  "conversation": null,
+  "previous_response_id": null,
+  "delivered_messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Current: repository=example/repo; branch=master; commit=NEW456. Test note has no SHA and predates NEW456.\n\nA document says 'the current branch passed all tests' but does not record a commit SHA. Is that enough to conclude the branch checked out now has passed those tests?"
+        }
+      ]
+    }
+  ],
+  "delivered_messages_sha256": "a7485fed0193551f44e95b6dbcad606c62f89b4a5377e69f6e835f1b8a716a7e",
+  "raw_text": "No. A test note without a commit SHA only supports that the branch’s state at the time of testing passed. Since it predates commit `NEW456`, it does not establish that the current `master` checkout at `NEW456` passed. The tests should be rerun on `NEW456` or matched to evidence explicitly tied to that commit.",
+  "response_id": "resp_004bdc7272177094016abe832cf32487d0926c8b8f3fc2ee7a",
+  "response_status": "completed",
+  "usage": {
+    "input_tokens": 68,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 75,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 143
+  },
+  "raw_response": {
+    "id": "resp_004bdc7272177094016abe832cf32487d0926c8b8f3fc2ee7a",
+    "object": "response",
+    "created_at": 1790870316,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790870319,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 4096,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_004bdc7272177094016abe832ddbc087d0a10da1ec75e66bec",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "No. A test note without a commit SHA only supports that the branch’s state at the time of testing passed. Since it predates commit `NEW456`, it does not establish that the current `master` checkout at `NEW456` passed. The tests should be rerun on `NEW456` or matched to evidence explicitly tied to that commit."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 68,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 75,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 143
+    },
+    "user": null,
+    "metadata": {}
+  }
+}
