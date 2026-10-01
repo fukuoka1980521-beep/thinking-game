@@ -1,0 +1,236 @@
+{
+  "calibration_only": true,
+  "reliability": {
+    "primary_endpoint_explicit": {
+      "raw_agreement": 1.0,
+      "kappa": null,
+      "primary_prevalence": 1,
+      "gate": "DEGENERATE"
+    },
+    "sample_size_or_precision_rationale_present": {
+      "raw_agreement": 0.8809523809523809,
+      "kappa": 0.48275862068965525,
+      "primary_prevalence": 0.9047619047619048,
+      "gate": "AMBER"
+    },
+    "explicit_null_hypothesis_present": {
+      "raw_agreement": 0.9285714285714286,
+      "kappa": 0.6272189349112429,
+      "primary_prevalence": 0.09523809523809523,
+      "gate": "AMBER"
+    },
+    "concrete_decision_or_stop_rule_present": {
+      "raw_agreement": 1.0,
+      "kappa": null,
+      "primary_prevalence": 1,
+      "gate": "DEGENERATE"
+    },
+    "baseline_noise_floor_explicit": {
+      "raw_agreement": 0.8571428571428571,
+      "kappa": 0.7,
+      "primary_prevalence": 0.42857142857142855,
+      "gate": "GREEN"
+    },
+    "graded_single_factor_perturbation_explicit": {
+      "raw_agreement": 0.9047619047619048,
+      "kappa": 0.5555555555555556,
+      "primary_prevalence": 0.07142857142857142,
+      "gate": "AMBER"
+    },
+    "quantified_prior_or_prior_distribution_explicit": {
+      "raw_agreement": 1.0,
+      "kappa": 1.0,
+      "primary_prevalence": 0.023809523809523808,
+      "gate": "GREEN"
+    },
+    "posterior_or_quantified_belief_update_explicit": {
+      "raw_agreement": 1.0,
+      "kappa": 1.0,
+      "primary_prevalence": 0.19047619047619047,
+      "gate": "GREEN"
+    },
+    "claim_observation_rejection_pair_explicit": {
+      "raw_agreement": 0.6904761904761905,
+      "kappa": 0.3157894736842104,
+      "primary_prevalence": 0.6428571428571429,
+      "gate": "RED"
+    },
+    "active_disconfirmation_search_explicit": {
+      "raw_agreement": 0.7857142857142857,
+      "kappa": 0.5809312638580931,
+      "primary_prevalence": 0.6190476190476191,
+      "gate": "AMBER"
+    },
+    "causal_estimand_explicit": {
+      "raw_agreement": 0.8333333333333334,
+      "kappa": 0.6636155606407323,
+      "primary_prevalence": 0.5952380952380952,
+      "gate": "AMBER"
+    },
+    "identification_strategy_assumption_pair_explicit": {
+      "raw_agreement": 0.8095238095238095,
+      "kappa": 0.6129032258064516,
+      "primary_prevalence": 0.6666666666666666,
+      "gate": "AMBER"
+    },
+    "time_indexed_observable_state_components_explicit": {
+      "raw_agreement": 0.7142857142857143,
+      "kappa": 0.39568345323741005,
+      "primary_prevalence": 0.7857142857142857,
+      "gate": "RED"
+    },
+    "transition_relation_explicit": {
+      "raw_agreement": 0.8333333333333334,
+      "kappa": 0.6370370370370371,
+      "primary_prevalence": 0.40476190476190477,
+      "gate": "AMBER"
+    },
+    "concrete_test_case_expected_relation_pair_explicit": {
+      "raw_agreement": 0.7142857142857143,
+      "kappa": 0.4285714285714286,
+      "primary_prevalence": 0.40476190476190477,
+      "gate": "RED"
+    },
+    "repeatable_regression_harness_explicit": {
+      "raw_agreement": 0.6428571428571429,
+      "kappa": 0.25882352941176484,
+      "primary_prevalence": 0.47619047619047616,
+      "gate": "RED"
+    }
+  },
+  "green_binary_fields": [
+    "baseline_noise_floor_explicit",
+    "quantified_prior_or_prior_distribution_explicit",
+    "posterior_or_quantified_belief_update_explicit"
+  ],
+  "separation": {
+    "T1": {
+      "within_mean": 0.15873015873015872,
+      "between_mean": 0.25396825396825395,
+      "between_minus_within": 0.09523809523809523
+    },
+    "T2": {
+      "within_mean": 0.0,
+      "between_mean": 0.09523809523809523,
+      "between_minus_within": 0.09523809523809523
+    },
+    "combined": {
+      "within_mean": 0.07936507936507936,
+      "between_mean": 0.1746031746031746,
+      "between_minus_within": 0.09523809523809523
+    }
+  },
+  "signature_result": {
+    "DIFFERENTIAL": {
+      "candidate_fields": [
+        "baseline_noise_floor_explicit",
+        "graded_single_factor_perturbation_explicit"
+      ],
+      "green_fields": [
+        "baseline_noise_floor_explicit"
+      ],
+      "target_minus_generic": {
+        "baseline_noise_floor_explicit": {
+          "T1": 0.33333333333333337,
+          "T2": 0
+        }
+      },
+      "activated": [
+        {
+          "field": "baseline_noise_floor_explicit",
+          "task": "T1",
+          "difference": 0.33333333333333337
+        }
+      ],
+      "usable": true
+    },
+    "BAYESIAN": {
+      "candidate_fields": [
+        "quantified_prior_or_prior_distribution_explicit",
+        "posterior_or_quantified_belief_update_explicit"
+      ],
+      "green_fields": [
+        "quantified_prior_or_prior_distribution_explicit",
+        "posterior_or_quantified_belief_update_explicit"
+      ],
+      "target_minus_generic": {
+        "quantified_prior_or_prior_distribution_explicit": {
+          "T1": 0.3333333333333333,
+          "T2": 0
+        },
+        "posterior_or_quantified_belief_update_explicit": {
+          "T1": 1,
+          "T2": 1
+        }
+      },
+      "activated": [
+        {
+          "field": "quantified_prior_or_prior_distribution_explicit",
+          "task": "T1",
+          "difference": 0.3333333333333333
+        },
+        {
+          "field": "posterior_or_quantified_belief_update_explicit",
+          "task": "T1",
+          "difference": 1
+        },
+        {
+          "field": "posterior_or_quantified_belief_update_explicit",
+          "task": "T2",
+          "difference": 1
+        }
+      ],
+      "usable": true
+    },
+    "FALSIFICATION": {
+      "candidate_fields": [
+        "claim_observation_rejection_pair_explicit",
+        "active_disconfirmation_search_explicit"
+      ],
+      "green_fields": [],
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    },
+    "CAUSAL": {
+      "candidate_fields": [
+        "causal_estimand_explicit",
+        "identification_strategy_assumption_pair_explicit"
+      ],
+      "green_fields": [],
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    },
+    "STATE_SPACE": {
+      "candidate_fields": [
+        "time_indexed_observable_state_components_explicit",
+        "transition_relation_explicit"
+      ],
+      "green_fields": [],
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    },
+    "SOFTWARE_TESTING": {
+      "candidate_fields": [
+        "concrete_test_case_expected_relation_pair_explicit",
+        "repeatable_regression_harness_explicit"
+      ],
+      "green_fields": [],
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    }
+  },
+  "usable_families": [
+    "DIFFERENTIAL",
+    "BAYESIAN"
+  ],
+  "gate": {
+    "green_binary_n": 3,
+    "structural_separability_pass": true,
+    "usable_method_families_n": 2,
+    "study_A_freeze": "NO_GO"
+  }
+}
