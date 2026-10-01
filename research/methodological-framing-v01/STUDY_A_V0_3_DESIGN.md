@@ -1,4 +1,4 @@
-﻿# Study A v0.3 窶・Methodological Framing and Research-Plan Structure
+# Study A v0.3 — Methodological Framing and Research-Plan Structure
 
 Status: design candidate; not preregistered; counted runs = 0.
 
@@ -19,7 +19,7 @@ The primary study is therefore not an operational-prompt benchmark. It is a rand
 
 ## 2. Why LABEL_ONLY is primary
 
-Operational prompts explicitly name procedures. If the instruction says 窶彭efine priors and update them,窶・observing priors and updates is partly tautological.
+Operational prompts explicitly name procedures. If the instruction says “define priors and update them,” observing priors and updates is partly tautological.
 
 LABEL_ONLY prompts name only the methodological frame, such as:
 - use a Bayesian approach;
@@ -36,7 +36,7 @@ OPERATIONAL conditions remain useful but are secondary.
 
 They estimate:
 1. amplification beyond label-only framing;
-2. whether procedural instructions alter *unmentioned downstream choices*;
+2. whether procedural instructions alter unmentioned downstream choices;
 3. whether method-specific workflows spill over into general design discipline.
 
 The primary publication claim must not depend on operational-condition target features alone.
@@ -70,25 +70,32 @@ Total cells:
 
 T1 is retained for continuity with Response Dynamics v0.1.
 
-## 6. T2 objective 窶・revised to reduce causal ceiling effects
+## 6. T2 objective — revised to reduce causal ceiling effects
 
 > Design a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations.
 
-T2 deliberately avoids words such as 窶彡ause,窶・窶徼reatment,窶・窶彡onfounder,窶・窶徭tate-space,窶・窶廝ayesian,窶・or 窶徭oftware test.窶・
+T2 deliberately avoids words such as “cause,” “treatment,” “confounder,” “state-space,” “Bayesian,” or “software test.”
+
 It remains rich enough for every method family to propose a legitimate research strategy.
 
-## 7. Replication
+## 7. Replication and denominator
 
-Candidate minimum:
-- 6 fresh independent runs per cell.
+The original 6-per-cell proposal was rejected after a pre-freeze power/precision audit.
 
-Total:
+### Primary LABEL_ONLY cells
+- 18 fresh independent runs per method x task cell.
+- 7 method families x 2 tasks x 18 = **252 plans**.
 
-28 x 6 = 168 plans.
+### Secondary OPERATIONAL cells
+- 6 fresh independent runs per method x task cell.
+- 7 method families x 2 tasks x 6 = **84 plans**.
 
-This is large enough to estimate within-cell stochastic variability while remaining operationally manageable.
+### Counted denominator
+- **336 plans total**.
 
-If a power/precision simulation before freeze shows 6 is insufficient for the preregistered primary effect size, increase before collection; never increase after observing counted outcomes.
+This unequal allocation is intentional: precision is concentrated on the non-tautological LABEL_ONLY treatment.
+
+No denominator increase is permitted after counted outcomes are inspected.
 
 ## 8. Fixed generation constraints
 
@@ -101,60 +108,88 @@ All conditions share:
 - same neutral output headings;
 - same maximum output tokens;
 - same reasoning effort;
-- randomized execution order within task blocks;
+- randomized execution order;
 - exact prompt text frozen before first counted run.
 
 Scorers see no method-family or depth labels.
 
 ## 9. Primary outcome families
 
+Final field membership is determined only by the predeclared v0.3 calibration gate.
+
 ### General design
+Candidate:
 - problem_decomposition_count
 - explicit_primary_endpoint_count
 - falsification_criterion_count
 - sample_size_or_power_rationale_present
 
-### Method signatures
-
-DIFFERENTIAL:
+### DIFFERENTIAL
+Candidate:
 - baseline_noise_floor_explicit
 - ordered_perturbation_axis_explicit
 
-BAYESIAN:
+### BAYESIAN
+Candidate:
 - prior_uncertainty_explicit
 - evidence_to_belief_update_explicit
 
-FALSIFICATION:
+### FALSIFICATION
+Candidate:
 - refutable_central_claim_explicit
 - refuting_observation_predeclared
 
-STATE_SPACE:
+### CAUSAL
+Calibration candidates:
+- causal_estimand_explicit
+- identification_threat_or_assumption_explicit
+- intervention_or_quasi_experimental_contrast_explicit
+
+At least two must pass the frozen calibration reliability gate for a confirmatory causal signature.
+
+### STATE_SPACE
+Candidate:
 - observable_state_vector_explicit
 - transition_relation_explicit
 
-SOFTWARE_TESTING:
+### SOFTWARE_TESTING
+Candidate:
 - replay_regression_or_boundary_harness_explicit
+- concrete_metamorphic_relation_explicit
+- operational_test_or_failure_oracle_explicit
 
-CAUSAL:
-- no T1-only primary signature;
-- causal signature will be recalibrated on T2 before freeze.
+Only GREEN/non-degenerate fields survive into confirmatory scoring.
 
 ## 10. Primary tests
 
-### A1 窶・label-only method signature
-For each non-generic method, test whether its preregistered operational signature is more prevalent under that LABEL_ONLY condition than GENERIC_LABEL_ONLY within the same task.
+### A1 — label-only method signature
 
-### A2 窶・structural separability above stochastic baseline
+For each non-generic method, estimate whether its retained operational signature is more prevalent under that LABEL_ONLY condition than GENERIC_LABEL_ONLY within the same task.
+
+Primary reporting emphasizes effect sizes and uncertainty, not only binary significance.
+
+### A2 — structural separability above stochastic baseline
+
 Compare:
 - within-condition plan distance;
 - between-method LABEL_ONLY plan distance.
 
 Primary claim requires between-method separation above within-method stochastic variability.
 
-### A3 窶・task replication
-A framing effect is stronger if its sign/direction replicates across T1 and T2.
+### A3 — task replication
 
-Effects that appear only on the method-aligned task are reported as method-by-task interaction, not generalized framing effects.
+A framing effect is stronger if its direction replicates across T1 and T2.
+
+Effects that appear only on a method-aligned task are reported as method-by-task interaction, not generalized framing effects.
+
+### Multiplicity
+
+Use:
+1. a preregistered global/randomization or permutation test for overall LABEL_ONLY plan-structure dependence on method assignment;
+2. multiplicity-controlled method-specific follow-ups;
+3. exact or bootstrap confidence intervals for effect sizes.
+
+The exact procedure is frozen in the preregistration before counted collection.
 
 ## 11. Secondary tests
 
