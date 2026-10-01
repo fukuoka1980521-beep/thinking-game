@@ -154,7 +154,7 @@ Primary statistic:
 mean between-method Hamming distance minus mean within-method Hamming distance.
 
 Inference:
-permutation/randomization test by permuting method labels within task while preserving cell sizes.
+10,000-draw permutation/randomization test. Method labels are permuted within each task while preserving cell sizes. The primary P1 statistic is the mean of the T1 and T2 between-minus-within excess distances.
 
 ### P2 — Method-specific operational signatures
 For each method family with a non-empty frozen signature field set, define each plan's signature score as the mean of its binary signature fields.
@@ -164,8 +164,8 @@ difference in mean signature score between that method's LABEL_ONLY condition an
 
 Report:
 - effect size;
-- bootstrap confidence interval;
-- permutation p-value.
+- 95% percentile bootstrap confidence interval from 10,000 resamples;
+- one-sided 10,000-draw permutation p-value for the preregistered directional hypothesis that the target method increases its own operational signature.
 
 Multiplicity:
 Holm correction across all confirmatory method x task signature tests.
