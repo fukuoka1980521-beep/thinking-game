@@ -1,7 +1,7 @@
 {
   "project": "METHODOLOGICAL_FRAMING_V0_1",
   "branch": "research/methodological-framing-v01",
-  "status": "V06_COLLECTION_COMPLETE_SCORING_GATED_BY_API_CREDITS",
+  "status": "V07_DETERMINISTIC_MEASUREMENT_FROZEN_PENDING_ANALYSIS",
   "counted_empirical_runs": 0,
   "preregistered": false,
   "claim_ceiling": "black-box research behavior; no internal neural-state claim",
@@ -31,21 +31,35 @@
     "usable_method_families": 2
   },
   "v06": {
-    "design": "evidence-backed six-method-artifact ontology",
     "raw": 42,
     "raw_validation": "PASS",
     "blind": 42,
-    "primary_scores": 0,
-    "secondary_scores": 0,
-    "scoring_status": "BLOCKED_BEFORE_FIRST_SCORE",
-    "api_gate": "credit_balance_exhausted",
-    "max_output_tokens": 8000
+    "primary_scores": 42,
+    "secondary_scores": 42,
+    "validation": "PASS",
+    "green_artifacts": 1,
+    "usable_method_families": 0,
+    "structural_separation": -0.031746031746031744,
+    "gate": "NO_GO",
+    "interpretation": "LLM-judge semantic artifact coding remains the measurement bottleneck"
+  },
+  "api_credit": {
+    "previous_gate": "credit_balance_exhausted",
+    "restored": true,
+    "consequence": "v06 double scoring completed successfully after credit restoration"
+  },
+  "v07": {
+    "design": "judge-free masked TF-IDF cross-task nearest-centroid measurement",
+    "design_frozen": true,
+    "gate_frozen": true,
+    "calibration_source": "v06 42-plan non-counted blind package",
+    "analysis_run": false
   },
   "study_A": "NOT_FROZEN",
   "study_A_candidate_counted_denominator": 336,
   "study_B": "DRAFT",
   "study_C": "DRAFT",
-  "next_gate": "ADD_API_CREDITS_THEN_SCORE_V06_PRIMARY_SECONDARY_VALIDATE_ANALYZE",
+  "next_gate": "RUN_FROZEN_V07_DETERMINISTIC_ANALYSIS_THEN_FREEZE_STUDY_A_OR_REDESIGN",
   "common_index": "\\\\192.168.11.2\\share\\共有\\AI_COMMON\\REMOTE_DESKTOP_COMMON_INDEX.md",
   "t2_reality_grounding": "PASS_READ_ONLY_NO_PERSONAL_DATA_COPIED"
 }

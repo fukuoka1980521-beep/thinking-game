@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import argparse, json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -6,7 +6,7 @@ import score_calibration_v06 as base
 
 BASE = Path(__file__).resolve().parent
 ROOT = BASE / "calibration_v06"
-WORKERS = 2
+WORKERS = 4
 
 def run(label: str):
     key = base.get_api_key()
@@ -60,3 +60,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

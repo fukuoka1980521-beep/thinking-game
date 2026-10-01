@@ -1,0 +1,115 @@
+{
+  "calibration_only": true,
+  "reliability": {
+    "differential_baseline_gradient_artifact": {
+      "raw_agreement": 0.9523809523809523,
+      "kappa": 0.7236842105263153,
+      "primary_prevalence": 0.09523809523809523,
+      "gate": "GREEN"
+    },
+    "bayesian_prior_update_artifact": {
+      "raw_agreement": 1.0,
+      "kappa": null,
+      "primary_prevalence": 0,
+      "gate": "DEGENERATE"
+    },
+    "falsification_rejection_rule_artifact": {
+      "raw_agreement": 0.7619047619047619,
+      "kappa": 0.527027027027027,
+      "primary_prevalence": 0.5714285714285714,
+      "gate": "AMBER"
+    },
+    "causal_identification_artifact": {
+      "raw_agreement": 0.8809523809523809,
+      "kappa": 0.40000000000000013,
+      "primary_prevalence": 0.9523809523809523,
+      "gate": "AMBER"
+    },
+    "state_transition_artifact": {
+      "raw_agreement": 0.8333333333333334,
+      "kappa": 0.4948453608247423,
+      "primary_prevalence": 0.14285714285714285,
+      "gate": "AMBER"
+    },
+    "test_oracle_artifact": {
+      "raw_agreement": 0.8333333333333334,
+      "kappa": 0.28985507246376807,
+      "primary_prevalence": 0.19047619047619047,
+      "gate": "RED"
+    }
+  },
+  "green_artifacts": [
+    "differential_baseline_gradient_artifact"
+  ],
+  "separation": {
+    "T1": {
+      "within_mean": 0.38095238095238093,
+      "between_mean": 0.31746031746031744,
+      "between_minus_within": -0.06349206349206349
+    },
+    "T2": {
+      "within_mean": 0.0,
+      "between_mean": 0.0,
+      "between_minus_within": 0.0
+    },
+    "combined": {
+      "within_mean": 0.19047619047619047,
+      "between_mean": 0.15873015873015872,
+      "between_minus_within": -0.031746031746031744
+    }
+  },
+  "signature_result": {
+    "DIFFERENTIAL": {
+      "field": "differential_baseline_gradient_artifact",
+      "gate": "GREEN",
+      "target_minus_generic": {
+        "T1": 0.0,
+        "T2": 0
+      },
+      "activated": [],
+      "usable": false
+    },
+    "BAYESIAN": {
+      "field": "bayesian_prior_update_artifact",
+      "gate": "DEGENERATE",
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    },
+    "FALSIFICATION": {
+      "field": "falsification_rejection_rule_artifact",
+      "gate": "AMBER",
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    },
+    "CAUSAL": {
+      "field": "causal_identification_artifact",
+      "gate": "AMBER",
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    },
+    "STATE_SPACE": {
+      "field": "state_transition_artifact",
+      "gate": "AMBER",
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    },
+    "SOFTWARE_TESTING": {
+      "field": "test_oracle_artifact",
+      "gate": "RED",
+      "target_minus_generic": {},
+      "activated": [],
+      "usable": false
+    }
+  },
+  "usable_families": [],
+  "gate": {
+    "green_artifact_n": 1,
+    "structural_separability_pass": false,
+    "usable_method_families_n": 0,
+    "study_A_freeze": "NO_GO"
+  }
+}
