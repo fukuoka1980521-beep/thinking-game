@@ -70,26 +70,35 @@ Each trajectory has four turns:
 4. evidence update.
 
 For each anchor:
-- 4 replicate trajectories with relevant verification at turn 4;
-- 4 matched replicate trajectories with irrelevant evidence at turn 4.
+- 4 replicate base trajectories through turns 1–3;
+- after turn 3, freeze the exact transcript;
+- branch that same transcript into two turn-4 continuations:
+  - relevant verification evidence;
+  - irrelevant evidence control.
+
+Per replicate:
+- turns 1–3: 3 responses;
+- relevant turn 4: 1 response;
+- irrelevant-control turn 4: 1 response;
+- total 5 responses.
 
 Total:
-- 6 anchors × 8 trajectories × 4 turns = **192 responses**.
+- 6 anchors × 4 replicates × 5 responses = **120 responses**.
 
 ## Frozen denominator
 
 Primary cohort total:
 - independent: 216;
-- sequential: 192;
-- **408 responses per model/cohort**.
+- sequential: 120;
+- **336 responses per model/cohort**.
 
 The generated manifest is the denominator. Do not add repetitions because early results are noisy or interesting.
 
 ## Sequential prompt rule
 
-Turns 1–3 are identical between the relevant and irrelevant verification arms for a given anchor/replicate pair, as far as the endpoint permits. Only turn 4 evidence differs.
+For each anchor/replicate, turns 1–3 are run once. Their exact transcript is then replayed/cloned into two branches. Only the turn-4 evidence differs. This prevents stochastic divergence in turns 1–3 from contaminating the verification comparison.
 
-No context reset within a trajectory.
+No context reset inside turns 1–3. The two turn-4 branches must receive an identical frozen turn1–3 transcript.
 
 ## Scoring
 
@@ -137,9 +146,9 @@ Do not exclude surprising/inconvenient responses.
 
 ## Stopping
 
-Version 0.1 completes when the frozen 408-response manifest for the selected model/cohort is executed and scored.
+Version 0.1 completes when the frozen 336-response manifest for the selected model/cohort is executed and scored.
 
-If operational limits prevent completion, report partial completion against 408; do not redefine the denominator.
+If operational limits prevent completion, report partial completion against 336; do not redefine the denominator.
 
 ## Claim hierarchy
 
