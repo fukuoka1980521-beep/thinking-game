@@ -1,0 +1,95 @@
+{
+  "calibration_only": true,
+  "measurement": "delexicalized hashed unigram/bigram cosine nearest-centroid cross-task discriminability",
+  "feature_dim": 8192,
+  "direct_label_redaction": [
+    "\\bgeneric\\b",
+    "\\bdifferential\\b",
+    "\\blocal[- ]sensitivity\\b",
+    "\\bbayesian\\b",
+    "\\bfalsification[- ]first\\b",
+    "\\bfalsification\\b",
+    "\\bcausal[- ]inference\\b",
+    "\\bstate[- ]space\\b",
+    "\\bsoftware[- ]testing\\b"
+  ],
+  "T1_train_T2_test": {
+    "accuracy": 0.3333333333333333,
+    "macro_f1": 0.24149659863945577
+  },
+  "T2_train_T1_test": {
+    "accuracy": 0.6666666666666666,
+    "macro_f1": 0.6136363636363635
+  },
+  "combined_accuracy": 0.5,
+  "combined_macro_f1": 0.4275664811379096,
+  "chance_accuracy": 0.14285714285714285,
+  "permutation_n": 10000,
+  "permutation_p": 9.999000099990002e-05,
+  "null_mean": 0.14278809523809208,
+  "confusion": {
+    "GENERIC": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 1,
+      "CAUSAL": 3,
+      "STATE_SPACE": 0,
+      "SOFTWARE_TESTING": 2
+    },
+    "DIFFERENTIAL": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 1,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 0,
+      "CAUSAL": 3,
+      "STATE_SPACE": 0,
+      "SOFTWARE_TESTING": 2
+    },
+    "BAYESIAN": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 3,
+      "FALSIFICATION": 0,
+      "CAUSAL": 2,
+      "STATE_SPACE": 1,
+      "SOFTWARE_TESTING": 0
+    },
+    "FALSIFICATION": {
+      "GENERIC": 1,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 3,
+      "CAUSAL": 2,
+      "STATE_SPACE": 0,
+      "SOFTWARE_TESTING": 0
+    },
+    "CAUSAL": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 1,
+      "CAUSAL": 4,
+      "STATE_SPACE": 0,
+      "SOFTWARE_TESTING": 1
+    },
+    "STATE_SPACE": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 0,
+      "CAUSAL": 0,
+      "STATE_SPACE": 6,
+      "SOFTWARE_TESTING": 0
+    },
+    "SOFTWARE_TESTING": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 0,
+      "CAUSAL": 2,
+      "STATE_SPACE": 0,
+      "SOFTWARE_TESTING": 4
+    }
+  }
+}

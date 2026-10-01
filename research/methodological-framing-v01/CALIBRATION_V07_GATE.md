@@ -1,25 +1,43 @@
-# Calibration v0.7 Gate — Frozen Before v0.6 Text Analysis
+# Calibration v0.7 Gate — Frozen Before Fresh Validation
 
-Status: NON-COUNTED INSTRUMENT VALIDATION.
+Status: NON-COUNTED INSTRUMENT VALIDATION ONLY.
 
 ## Integrity
 
-- exactly 42 v0.6 blind plans;
-- exactly 7 conditions x 3 replicates x 2 tasks;
-- no counted Study A plans;
-- frozen masking lexicon and algorithm used unchanged;
-- no external model or LLM judge used for the primary measurement.
+1. 42/42 fresh plans.
+2. 42 unique run IDs and API response IDs.
+3. all responses completed, incomplete_details=null, max_output_tokens=8000.
+4. acting model fixed to gpt-5.6-sol.
+5. direct method labels redacted before feature extraction.
+6. feature hashing, normalization, classifier, seed, and permutation count fixed before results.
 
-## GO rule
+## Primary validation metrics
 
-Study A measurement instrument may freeze only if ALL are true:
+Let chance accuracy = 1/7 = 0.142857.
 
-1. train T1 -> test T2 accuracy >= 7/21;
-2. train T2 -> test T1 accuracy >= 7/21;
-3. combined correct >= 14/42;
-4. 10,000-permutation one-sided p <= 0.01;
-5. cross-task between-minus-within cosine distance > 0.
+GO requires all of:
+- combined cross-task accuracy >= 0.40;
+- T1->T2 accuracy >= 0.25;
+- T2->T1 accuracy >= 0.25;
+- combined macro-F1 >= 0.30;
+- 10,000-permutation p <= 0.01;
+- at least 4 of the 6 non-generic method classes have pooled cross-task recall >= 1/3.
 
-Otherwise: NO_GO and counted Study A remains 0.
+These thresholds are deliberately below the v0.6 exploratory calibration values but remain materially above chance.
 
-These thresholds are engineering validation gates, not claimed scientific effects.
+## Consequence
+
+GO:
+- freeze Study A using this discriminability measure as the primary planning-effect endpoint;
+- preserve 336-plan design: 252 LABEL_ONLY primary + 84 OPERATIONAL secondary.
+
+NO_GO:
+- Study A remains unfrozen;
+- counted runs remain 0;
+- do not increase N merely to force significance; reconsider the measurement or hypothesis.
+
+## Claim ceiling
+
+A GO supports only that methodological framing induces reproducible observable plan signatures across tasks.
+It does not show that one methodology is better, nor does it reveal hidden internal reasoning trajectories.
+
