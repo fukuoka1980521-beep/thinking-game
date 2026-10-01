@@ -1,0 +1,58 @@
+{
+  "schema_version": "0.1.0",
+  "freeze_date": "2026-10-01",
+  "claim_states": [
+    "VERIFIED",
+    "SUPPORTED_INFERENCE",
+    "UNVERIFIED",
+    "CONFLICTED",
+    "UNKNOWN"
+  ],
+  "run_types": [
+    "INDEPENDENT",
+    "TRAJECTORY"
+  ],
+  "independent_conditions": [
+    "BASELINE_EXACT",
+    "PARAPHRASE_A",
+    "PARAPHRASE_B",
+    "IRRELEVANT_CONTEXT",
+    "PRIOR_ANSWER",
+    "REFERENT_BOUND"
+  ],
+  "trajectory_conditions": [
+    "TRAJECTORY_BASE",
+    "VERIFICATION_RELEVANT",
+    "VERIFICATION_IRRELEVANT"
+  ],
+  "response_state": {
+    "semantic_answer_class": "string",
+    "claim_state": "enum",
+    "decision_or_action": "string",
+    "evidence_set": "list[string]",
+    "referent_tuple": {
+      "entity": "string|null",
+      "environment": "string|null",
+      "version": "string|null",
+      "time": "string|null"
+    },
+    "uncertainty_level": "int 0..4",
+    "assertion_strength": "int 0..4",
+    "error_level": "int 0..2|null",
+    "abstention_or_request": "bool",
+    "new_supporting_evidence": "bool"
+  },
+  "metadata_required": [
+    "run_id",
+    "anchor_id",
+    "cohort",
+    "run_type",
+    "condition",
+    "replicate",
+    "turn",
+    "fresh_context",
+    "timestamp",
+    "raw_response_ref",
+    "scored_blind_to_condition"
+  ]
+}
