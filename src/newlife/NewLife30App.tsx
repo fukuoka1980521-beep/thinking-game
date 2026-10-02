@@ -438,6 +438,8 @@ export function NewLife30App({ onExit }: Props) {
               }),
               importance: worldEffectApplied ? 8 : 5,
               source: worldEffectApplied ? "WORLD_EFFECT" : "NPC_SPEECH",
+              focusSnapshot: scene.sceneFocus,
+              playerMeaning: live.understoodPlayerMeaning,
             });
           }
           setAgentMemory(nextAgentMemory);
