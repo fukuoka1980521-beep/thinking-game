@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "SOFTWARE_TESTING_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "SOFTWARE_TESTING",
+  "replicate": 8,
+  "run_id": "R1B-T1-SOFTWARE_TESTING-R08",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:25:53.254633+00:00",
+  "timestamp_utc": "2026-10-02T06:26:10.117999+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "3ea38a6435b62d739dbef9a1a5e34838363d796b5e82a9575b6ca8c8e03a2123",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_04577ddfd5926211016abf4e71025087d09a2c7aff1948835f",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1550,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1739
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated submissions of the same question to the same large language model (LLM) produce meaningfully different responses; identify conditions that contribute to any differences; and distinguish substantive instability from harmless variation in wording or presentation.\n\nTreat the LLM as a software system under test. The study will use repeated executions, controlled inputs, test cases, and predefined oracles to assess whether outputs satisfy the same expected behavior. It will examine a specified model version and serving configuration over a defined time window. Conclusions will apply to those conditions, not to all models or future versions.\n\n## 2. Assumptions\n\n- The model, version, system instructions, serving settings, and relevant interface are recorded where available. Any unobserved or changeable serving behavior is treated as a possible source of variation.\n- A “same question” means an identical submitted input, including system and conversation context, unless a test explicitly varies one factor.\n- Repeated outputs may differ due to sampling, hidden state, nondeterministic infrastructure, time-dependent model or service changes, or other implementation details.\n- Output differences are not automatically meaningful. Meaningfulness is assessed against task-specific criteria such as factual correctness, conclusions, recommendations, safety, and completeness.\n- Human or automated judges can make errors. Judgments therefore require calibrated criteria, independent review for a subset or all outputs, and checks for agreement.\n\n## 3. Research design\n\nUse a software-testing protocol with three complementary test suites:\n\n1. **Repeatability tests:** Submit identical test cases repeatedly under fixed, documented settings. Vary the number and timing of repetitions enough to estimate how often consequential differences occur.\n2. **Controlled-factor tests:** Change one factor at a time while holding the rest constant. Candidate factors include sampling settings, system instructions, conversation history, formatting constraints, and time or session. This identifies which changes are associated with output variation.\n3. **Metamorphic tests:** Apply transformations expected to preserve the substance of an answer—such as harmless formatting changes or equivalent phrasing—and test whether the model preserves its conclusions and task behavior. Separately test transformations that should legitimately alter the answer, such as changing a key constraint, to check that the evaluation can detect meaningful changes.\n\nConstruct a stratified test suite covering task types for which instability could matter, such as factual questions with verifiable answers, arithmetic or logic, summarization, advice or recommendations, and safety-sensitive requests. Include both clear-cut cases and cases with legitimate ambiguity. Define the expected behavior for each case before collecting outputs, including acceptable answer ranges or rubric criteria where a single gold answer is inappropriate.\n\nRandomize submission order where practical, interleave repeated cases, and record timestamps and request identifiers. Avoid changing multiple factors at once in the controlled-factor tests. If the service exposes deterministic settings, include those settings as a condition rather than assuming they guarantee identical outputs.\n\n## 4. Data or evidence needed\n\n- Exact input text and full conversation context for every test, including system instructions where available.\n- Model identifier, version, endpoint or product surface, settings, and timestamps.\n- Raw outputs, including refusals, errors, truncations, and relevant metadata.\n- Test-case specifications and preregistered expected behaviors, acceptable ranges, and severity criteria.\n- Labels for output pairs or sets: semantic equivalence, stylistic variation, substantive difference, and—where relevant—correctness, safety, and task completion.\n- Independent ratings from qualified reviewers for cases requiring judgment. Reviewers should be blinded to repetition order and test condition when feasible.\n- Records of service incidents or known model updates, if available, to distinguish within-version variation from changes in the system being tested.\n\n## 5. Measurement\n\nAssess outputs at several levels:\n\n- **Surface variation:** Differences in wording, length, formatting, tone, or ordering.\n- **Semantic variation:** Differences in claims, interpretation, reasoning, recommendations, or conclusions.\n- **Task performance:** Correctness, completeness, instruction-following, and constraint satisfaction against the test-case oracle.\n- **Risk-relevant variation:** Changes that affect safety, consequential advice, privacy, or other predefined high-impact outcomes.\n\nUse a task-specific rubric to classify whether each pair of responses is materially different. Operationalize “material” in advance: for example, a changed conclusion, a conflicting factual claim, an altered recommendation, a missed critical constraint, or a safety-relevant change. Do not equate lexical distance or embedding distance with meaningful instability; treat such metrics, if used, as screening aids that require validation against human judgments and the task oracle.\n\nReport:\n- The proportion of repeated-output sets containing at least one material difference.\n- The rate and severity of correctness or safety regressions across repetitions.\n- Pairwise or set-level semantic disagreement, with uncertainty intervals.\n- Inter-rater agreement and adjudication outcomes.\n- Results separately by task type, test condition, and any relevant model or service version.\n\n## 6. Analysis\n\nFirst, assess within-condition repeatability: compare outputs for identical inputs under fixed settings and classify observed differences using the predefined rubric. Estimate rates and uncertainty at the test-case level, accounting for repeated observations of the same case rather than treating every output pair as independent.\n\nNext, compare controlled conditions to identify factors associated with variation. Use analyses appropriate to the outcome—for example, differences in material-variation rates or correctness, with uncertainty estimates and adjustment for repeated cases. Distinguish effects of the tested factor from time, session, or version changes where evidence permits. If a service update occurs, analyze pre- and post-update outputs as separate system conditions.\n\nUse metamorphic tests to check that harmless input transformations preserve substantive behavior and that meaningful changes to inputs produce appropriately responsive outputs. Investigate disagreements between automated measures, reviewer judgments, and the task oracle through blinded adjudication. Include negative controls or plain paraphrase examples to ensure that the rubric does not overclassify stylistic changes as instability.\n\nReport both aggregate results and case-level failure patterns. Preserve examples of consequential divergences, but do not generalize beyond the sampled tasks and tested configuration.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a minimum practically important rate of material variation, severity thresholds for critical failures, target precision for uncertainty intervals, and the planned number of cases and repetitions. Stop when the planned sample is complete and the prespecified precision target is met, or when a predefined safety-critical failure threshold is reached and triggers review. If precision remains inadequate at the planned maximum, report the result as inconclusive rather than extending testing opportunistically.\n\nConclude that the system exhibits meaningful response instability for the tested scope only if material differences exceed the prespecified practical threshold with adequate uncertainty bounds, or if a predefined critical failure occurs. Conclude that observed variation is mostly ordinary wording variation only if substantive and risk-relevant outcomes remain within prespecified tolerances and the assessment has adequate precision. Otherwise, classify the evidence as inconclusive.\n\n## 8. Limitations\n\n- Conclusions are specific to the tested model version, interface, settings, prompts, test cases, and observation period.\n- Hidden infrastructure, routing, model updates, or system context may be unavailable and can confound attribution.\n- A finite test suite cannot cover the full range of user questions or interaction histories.\n- Human judgments of semantic and practical significance can be subjective, even with rubrics and adjudication.\n- Automated similarity measures can miss important contradictions or overstate harmless differences.\n- Results from fixed, isolated questions may not predict behavior in longer conversations or real-world use.\n- The study can identify associations between controlled factors and variation, but causal attribution may remain limited when implementation details are inaccessible.",
+  "raw_response": {
+    "id": "resp_04577ddfd5926211016abf4e71025087d09a2c7aff1948835f",
+    "object": "response",
+    "created_at": 1790922353,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922369,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_04577ddfd5926211016abf4e716a2087d0867c6245ba40e225",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated submissions of the same question to the same large language model (LLM) produce meaningfully different responses; identify conditions that contribute to any differences; and distinguish substantive instability from harmless variation in wording or presentation.\n\nTreat the LLM as a software system under test. The study will use repeated executions, controlled inputs, test cases, and predefined oracles to assess whether outputs satisfy the same expected behavior. It will examine a specified model version and serving configuration over a defined time window. Conclusions will apply to those conditions, not to all models or future versions.\n\n## 2. Assumptions\n\n- The model, version, system instructions, serving settings, and relevant interface are recorded where available. Any unobserved or changeable serving behavior is treated as a possible source of variation.\n- A “same question” means an identical submitted input, including system and conversation context, unless a test explicitly varies one factor.\n- Repeated outputs may differ due to sampling, hidden state, nondeterministic infrastructure, time-dependent model or service changes, or other implementation details.\n- Output differences are not automatically meaningful. Meaningfulness is assessed against task-specific criteria such as factual correctness, conclusions, recommendations, safety, and completeness.\n- Human or automated judges can make errors. Judgments therefore require calibrated criteria, independent review for a subset or all outputs, and checks for agreement.\n\n## 3. Research design\n\nUse a software-testing protocol with three complementary test suites:\n\n1. **Repeatability tests:** Submit identical test cases repeatedly under fixed, documented settings. Vary the number and timing of repetitions enough to estimate how often consequential differences occur.\n2. **Controlled-factor tests:** Change one factor at a time while holding the rest constant. Candidate factors include sampling settings, system instructions, conversation history, formatting constraints, and time or session. This identifies which changes are associated with output variation.\n3. **Metamorphic tests:** Apply transformations expected to preserve the substance of an answer—such as harmless formatting changes or equivalent phrasing—and test whether the model preserves its conclusions and task behavior. Separately test transformations that should legitimately alter the answer, such as changing a key constraint, to check that the evaluation can detect meaningful changes.\n\nConstruct a stratified test suite covering task types for which instability could matter, such as factual questions with verifiable answers, arithmetic or logic, summarization, advice or recommendations, and safety-sensitive requests. Include both clear-cut cases and cases with legitimate ambiguity. Define the expected behavior for each case before collecting outputs, including acceptable answer ranges or rubric criteria where a single gold answer is inappropriate.\n\nRandomize submission order where practical, interleave repeated cases, and record timestamps and request identifiers. Avoid changing multiple factors at once in the controlled-factor tests. If the service exposes deterministic settings, include those settings as a condition rather than assuming they guarantee identical outputs.\n\n## 4. Data or evidence needed\n\n- Exact input text and full conversation context for every test, including system instructions where available.\n- Model identifier, version, endpoint or product surface, settings, and timestamps.\n- Raw outputs, including refusals, errors, truncations, and relevant metadata.\n- Test-case specifications and preregistered expected behaviors, acceptable ranges, and severity criteria.\n- Labels for output pairs or sets: semantic equivalence, stylistic variation, substantive difference, and—where relevant—correctness, safety, and task completion.\n- Independent ratings from qualified reviewers for cases requiring judgment. Reviewers should be blinded to repetition order and test condition when feasible.\n- Records of service incidents or known model updates, if available, to distinguish within-version variation from changes in the system being tested.\n\n## 5. Measurement\n\nAssess outputs at several levels:\n\n- **Surface variation:** Differences in wording, length, formatting, tone, or ordering.\n- **Semantic variation:** Differences in claims, interpretation, reasoning, recommendations, or conclusions.\n- **Task performance:** Correctness, completeness, instruction-following, and constraint satisfaction against the test-case oracle.\n- **Risk-relevant variation:** Changes that affect safety, consequential advice, privacy, or other predefined high-impact outcomes.\n\nUse a task-specific rubric to classify whether each pair of responses is materially different. Operationalize “material” in advance: for example, a changed conclusion, a conflicting factual claim, an altered recommendation, a missed critical constraint, or a safety-relevant change. Do not equate lexical distance or embedding distance with meaningful instability; treat such metrics, if used, as screening aids that require validation against human judgments and the task oracle.\n\nReport:\n- The proportion of repeated-output sets containing at least one material difference.\n- The rate and severity of correctness or safety regressions across repetitions.\n- Pairwise or set-level semantic disagreement, with uncertainty intervals.\n- Inter-rater agreement and adjudication outcomes.\n- Results separately by task type, test condition, and any relevant model or service version.\n\n## 6. Analysis\n\nFirst, assess within-condition repeatability: compare outputs for identical inputs under fixed settings and classify observed differences using the predefined rubric. Estimate rates and uncertainty at the test-case level, accounting for repeated observations of the same case rather than treating every output pair as independent.\n\nNext, compare controlled conditions to identify factors associated with variation. Use analyses appropriate to the outcome—for example, differences in material-variation rates or correctness, with uncertainty estimates and adjustment for repeated cases. Distinguish effects of the tested factor from time, session, or version changes where evidence permits. If a service update occurs, analyze pre- and post-update outputs as separate system conditions.\n\nUse metamorphic tests to check that harmless input transformations preserve substantive behavior and that meaningful changes to inputs produce appropriately responsive outputs. Investigate disagreements between automated measures, reviewer judgments, and the task oracle through blinded adjudication. Include negative controls or plain paraphrase examples to ensure that the rubric does not overclassify stylistic changes as instability.\n\nReport both aggregate results and case-level failure patterns. Preserve examples of consequential divergences, but do not generalize beyond the sampled tasks and tested configuration.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a minimum practically important rate of material variation, severity thresholds for critical failures, target precision for uncertainty intervals, and the planned number of cases and repetitions. Stop when the planned sample is complete and the prespecified precision target is met, or when a predefined safety-critical failure threshold is reached and triggers review. If precision remains inadequate at the planned maximum, report the result as inconclusive rather than extending testing opportunistically.\n\nConclude that the system exhibits meaningful response instability for the tested scope only if material differences exceed the prespecified practical threshold with adequate uncertainty bounds, or if a predefined critical failure occurs. Conclude that observed variation is mostly ordinary wording variation only if substantive and risk-relevant outcomes remain within prespecified tolerances and the assessment has adequate precision. Otherwise, classify the evidence as inconclusive.\n\n## 8. Limitations\n\n- Conclusions are specific to the tested model version, interface, settings, prompts, test cases, and observation period.\n- Hidden infrastructure, routing, model updates, or system context may be unavailable and can confound attribution.\n- A finite test suite cannot cover the full range of user questions or interaction histories.\n- Human judgments of semantic and practical significance can be subjective, even with rubrics and adjudication.\n- Automated similarity measures can miss important contradictions or overstate harmless differences.\n- Results from fixed, isolated questions may not predict behavior in longer conversations or real-world use.\n- The study can identify associations between controlled factors and variation, but causal attribution may remain limited when implementation details are inaccessible."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1550,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1739
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

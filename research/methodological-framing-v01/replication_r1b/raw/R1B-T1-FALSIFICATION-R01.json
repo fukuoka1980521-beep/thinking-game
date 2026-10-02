@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "FALSIFICATION_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "FALSIFICATION",
+  "replicate": 1,
+  "run_id": "R1B-T1-FALSIFICATION-R01",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:27:44.040747+00:00",
+  "timestamp_utc": "2026-10-02T06:28:04.876140+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a falsification-first approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "fcc276f44d441b6ce78d2ac14b5763fc0eb84b32ae48944ccf45b0a0f4dec4d4",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a falsification-first approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_02482b1f1ffe0b89016abf4edfdf0c87d0a953252ca6c1c59c",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 190,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1894,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2084
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated presentations of the same question to the same large language model (LLM) produce **meaningfully different answers**, identify plausible causes of any differences, and distinguish substantive instability from ordinary variation in wording, formatting, or emphasis.\n\nThe primary approach is falsification-first: specify in advance what would count as meaningful instability, then seek evidence that challenges that claim. The study concerns a defined model version, interface, and deployment period; conclusions should not be generalized to other versions or settings without further evidence.\n\n## 2. Assumptions\n\n- “Same question” means identical user-visible text and identical conversation context, unless a condition deliberately varies one of these factors.\n- Model version, system instructions, tools, decoding settings, and other interface settings can be documented or held constant. Any unavailable settings are recorded as unknown.\n- Responses can differ in style without differing in meaning. Conversely, small textual differences can alter a consequential claim.\n- No single reference answer is assumed to be correct for every question. For answerable questions, external factual evidence or expert adjudication can establish accuracy; for open-ended questions, assessment focuses on consistency with the prompt and material implications.\n- Random seeds, if available, are useful controls, but seed control alone does not establish the source of variation.\n\n## 3. Research design\n\n**Preregister** the sampling scheme, response conditions, outcome measures, exclusion rules, analysis, and stopping criteria before collecting responses.\n\n### Question set\n\nConstruct a stratified set of questions covering:\n\n1. Questions with determinate, verifiable answers.\n2. Questions involving interpretation or ambiguity.\n3. Recommendations or judgments with multiple defensible answers.\n4. Questions where a small factual or logical change could materially affect the answer.\n5. Questions with different response demands, such as brief answers, explanations, and structured outputs.\n\nInclude neutral, non-leading wording and a separate set of deliberately underspecified questions. Pilot questions only to assess clarity and measurement feasibility, not to select for observed instability. Record the rationale and stratum for every item.\n\n### Repeated-response conditions\n\nFor each question, collect multiple independent responses under:\n\n- **Exact-repeat condition:** identical prompt, context, model version, and documented settings, submitted in fresh sessions. This estimates end-to-end repeatability under the specified interface.\n- **Same-session condition:** repeat the question within a conversation, with prior turns held constant. This tests whether conversational context contributes to variation.\n- **Controlled-variation conditions:** change one factor at a time, such as sampling settings, system instruction, prompt wording, or session context. These diagnose sensitivity; they are not treated as exact repeats.\n- **Time/version audit:** repeat a subset on later dates or after a documented model or interface update, when feasible. Treat these as deployment changes, not as evidence about stochastic variation alone.\n\nUse balanced assignment and randomize collection order where practical. Keep the number of repeats per item and condition fixed in advance or govern it by the preregistered stopping rule. Preserve raw prompts, responses, timestamps, model identifiers, settings, and session metadata.\n\n### Falsification targets\n\nThe primary instability claim is challenged if exact-repeat responses are substantively equivalent at rates meeting the prespecified equivalence criterion, including for question strata expected to be sensitive. It is also challenged if apparent differences disappear when evaluators compare normalized meanings rather than surface text, or if differences are attributable to documented changes in prompt, context, settings, or model version.\n\n## 4. Data or evidence needed\n\n- Exact prompt text, surrounding conversation, system instructions where available, model and interface identifiers, settings, timestamps, and session boundaries.\n- Raw, unedited responses, including refusals, tool calls, and formatting.\n- A question-level coding guide specifying which claims or decision-relevant elements matter for each item.\n- For factual questions, independently sourced reference evidence assembled without using the model’s response as the sole basis.\n- For open-ended or judgment questions, a prespecified rubric describing acceptable alternatives and material consequences.\n- Multiple independent human ratings, with raters blinded to condition and response order where feasible. Use adjudication for disagreements and retain the original ratings.\n- A record of missing responses, collection failures, exclusions, and any deviations from the protocol.\n\n## 5. Measurement\n\nSeparate **surface variation** from **semantic and practical variation**.\n\n### Primary outcome: meaningful instability\n\nFor each pair of responses to the same question in the exact-repeat condition, rate whether they differ in at least one material respect:\n\n- A factual claim, conclusion, recommendation, or implied action changes.\n- A required constraint, caveat, uncertainty statement, refusal, or safety boundary appears or disappears in a way that changes how the answer should be used.\n- One answer contradicts another on a point that matters to the question.\n- The answers would reasonably support different user decisions or beliefs.\n\nSpecify item-level materiality criteria before rating. Classify differences as **equivalent**, **minor**, **material**, or **unresolvable**. The primary instability rate is the proportion of eligible exact-repeat pairs classified as material, with uncertainty intervals accounting for repeated observations from the same question.\n\n### Secondary outcomes\n\n- Factual accuracy and contradiction rate against independent evidence, where applicable.\n- Agreement on key claims, recommendations, and constraints.\n- Refusal and uncertainty-expression consistency.\n- Surface-form measures such as length, organization, vocabulary, and formatting, reported separately from meaning.\n- Response-pair similarity using automated methods only as a screening or descriptive aid, not as the decisive measure of semantic equivalence.\n- Between-question, between-session, time, and controlled-factor variance.\n\nAssess inter-rater reliability and report it with uncertainty. Resolve disagreement under the prespecified adjudication procedure. Do not infer semantic stability solely from high text similarity or instability solely from low text similarity.\n\n## 6. Analysis\n\n1. **Primary test:** Estimate exact-repeat material-difference rates overall and by question stratum. Report confidence or credible intervals and question-level distributions, not only pooled averages.\n2. **Equivalence test:** Define in advance the largest acceptable material-instability rate. Test whether the data are sufficiently precise to rule out rates above that margin; failure to detect differences is not by itself evidence of equivalence.\n3. **Variance decomposition:** Use a hierarchical model or equivalent clustered analysis to separate variation attributable to question, session, time, and controlled factors, while respecting the repeated-response structure. Report assumptions and sensitivity to alternative specifications.\n4. **Factor diagnosis:** Compare controlled-variation conditions with exact repeats to estimate how prompt wording, settings, context, or time relate to observed changes. Interpret these contrasts causally only when assignment and controls justify it.\n5. **Robustness checks:** Repeat the primary analysis under conservative coding of disputed pairs, alternative reasonable materiality definitions, and exclusion of responses affected by documented operational failures. Report all prespecified checks.\n6. **Error analysis:** Inspect material disagreements by type—such as factual inconsistency, changed recommendation, omitted caveat, or refusal variation—and identify whether they cluster in particular question types or conditions.\n7. **Sensitivity and power:** Before collection, use plausible ranges for baseline instability and clustering to determine the number of questions and repeats needed to estimate the primary rate with useful precision. If feasible sample sizes cannot distinguish the preregistered equivalence margin, label the study inconclusive rather than interpreting a null result as stability.\n\n## 7. Decision / stopping rule\n\nSet a material-instability threshold and an acceptable upper bound in advance. For example, the investigators may define a study-specific maximum tolerable rate of materially different exact-repeat pairs, justified by the intended use and question set.\n\n- Conclude **evidence of meaningful instability** if the lower bound of the prespecified interval for the exact-repeat material-difference rate exceeds the threshold, with the result robust to the preregistered sensitivity analyses.\n- Conclude **evidence consistent with practical stability for the tested scope** only if the upper bound falls below the prespecified acceptable rate and semantic-equivalence ratings meet the reliability criteria.\n- Otherwise conclude **inconclusive**, including when intervals are too wide, ratings are unreliable, or materiality judgments remain unresolved.\n- Stop collection at the preregistered sample size or decision boundary. If sequential monitoring is used, specify error control and boundaries in advance. Do not stop because interim results appear favorable.\n- Report deviations, model changes, and failed or incomplete runs rather than silently excluding them.\n\n## 8. Limitations\n\n- Results apply to the tested questions, model version, interface, settings, and collection period; deployment changes may alter behavior.\n- Hidden system instructions, infrastructure variation, or unavailable sampling controls may prevent precise attribution of causes.\n- Human judgments of semantic equivalence and materiality can be subjective, even with blinding, rubrics, and adjudication.\n- A finite question set cannot represent every domain, language, user context, or risk level.\n- Automated similarity metrics can miss consequential shifts or overstate differences in phrasing; they should not replace substantive review.\n- Repeated generations are not necessarily independent, and uncontrolled operational changes may confound comparisons.\n- A finding of stability does not establish correctness; consistent answers can be consistently wrong. A finding of instability does not by itself establish harm; practical consequences depend on context.",
+  "raw_response": {
+    "id": "resp_02482b1f1ffe0b89016abf4edfdf0c87d0a953252ca6c1c59c",
+    "object": "response",
+    "created_at": 1790922463,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922484,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_02482b1f1ffe0b89016abf4ee0456087d089a20e397f6b218f",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated presentations of the same question to the same large language model (LLM) produce **meaningfully different answers**, identify plausible causes of any differences, and distinguish substantive instability from ordinary variation in wording, formatting, or emphasis.\n\nThe primary approach is falsification-first: specify in advance what would count as meaningful instability, then seek evidence that challenges that claim. The study concerns a defined model version, interface, and deployment period; conclusions should not be generalized to other versions or settings without further evidence.\n\n## 2. Assumptions\n\n- “Same question” means identical user-visible text and identical conversation context, unless a condition deliberately varies one of these factors.\n- Model version, system instructions, tools, decoding settings, and other interface settings can be documented or held constant. Any unavailable settings are recorded as unknown.\n- Responses can differ in style without differing in meaning. Conversely, small textual differences can alter a consequential claim.\n- No single reference answer is assumed to be correct for every question. For answerable questions, external factual evidence or expert adjudication can establish accuracy; for open-ended questions, assessment focuses on consistency with the prompt and material implications.\n- Random seeds, if available, are useful controls, but seed control alone does not establish the source of variation.\n\n## 3. Research design\n\n**Preregister** the sampling scheme, response conditions, outcome measures, exclusion rules, analysis, and stopping criteria before collecting responses.\n\n### Question set\n\nConstruct a stratified set of questions covering:\n\n1. Questions with determinate, verifiable answers.\n2. Questions involving interpretation or ambiguity.\n3. Recommendations or judgments with multiple defensible answers.\n4. Questions where a small factual or logical change could materially affect the answer.\n5. Questions with different response demands, such as brief answers, explanations, and structured outputs.\n\nInclude neutral, non-leading wording and a separate set of deliberately underspecified questions. Pilot questions only to assess clarity and measurement feasibility, not to select for observed instability. Record the rationale and stratum for every item.\n\n### Repeated-response conditions\n\nFor each question, collect multiple independent responses under:\n\n- **Exact-repeat condition:** identical prompt, context, model version, and documented settings, submitted in fresh sessions. This estimates end-to-end repeatability under the specified interface.\n- **Same-session condition:** repeat the question within a conversation, with prior turns held constant. This tests whether conversational context contributes to variation.\n- **Controlled-variation conditions:** change one factor at a time, such as sampling settings, system instruction, prompt wording, or session context. These diagnose sensitivity; they are not treated as exact repeats.\n- **Time/version audit:** repeat a subset on later dates or after a documented model or interface update, when feasible. Treat these as deployment changes, not as evidence about stochastic variation alone.\n\nUse balanced assignment and randomize collection order where practical. Keep the number of repeats per item and condition fixed in advance or govern it by the preregistered stopping rule. Preserve raw prompts, responses, timestamps, model identifiers, settings, and session metadata.\n\n### Falsification targets\n\nThe primary instability claim is challenged if exact-repeat responses are substantively equivalent at rates meeting the prespecified equivalence criterion, including for question strata expected to be sensitive. It is also challenged if apparent differences disappear when evaluators compare normalized meanings rather than surface text, or if differences are attributable to documented changes in prompt, context, settings, or model version.\n\n## 4. Data or evidence needed\n\n- Exact prompt text, surrounding conversation, system instructions where available, model and interface identifiers, settings, timestamps, and session boundaries.\n- Raw, unedited responses, including refusals, tool calls, and formatting.\n- A question-level coding guide specifying which claims or decision-relevant elements matter for each item.\n- For factual questions, independently sourced reference evidence assembled without using the model’s response as the sole basis.\n- For open-ended or judgment questions, a prespecified rubric describing acceptable alternatives and material consequences.\n- Multiple independent human ratings, with raters blinded to condition and response order where feasible. Use adjudication for disagreements and retain the original ratings.\n- A record of missing responses, collection failures, exclusions, and any deviations from the protocol.\n\n## 5. Measurement\n\nSeparate **surface variation** from **semantic and practical variation**.\n\n### Primary outcome: meaningful instability\n\nFor each pair of responses to the same question in the exact-repeat condition, rate whether they differ in at least one material respect:\n\n- A factual claim, conclusion, recommendation, or implied action changes.\n- A required constraint, caveat, uncertainty statement, refusal, or safety boundary appears or disappears in a way that changes how the answer should be used.\n- One answer contradicts another on a point that matters to the question.\n- The answers would reasonably support different user decisions or beliefs.\n\nSpecify item-level materiality criteria before rating. Classify differences as **equivalent**, **minor**, **material**, or **unresolvable**. The primary instability rate is the proportion of eligible exact-repeat pairs classified as material, with uncertainty intervals accounting for repeated observations from the same question.\n\n### Secondary outcomes\n\n- Factual accuracy and contradiction rate against independent evidence, where applicable.\n- Agreement on key claims, recommendations, and constraints.\n- Refusal and uncertainty-expression consistency.\n- Surface-form measures such as length, organization, vocabulary, and formatting, reported separately from meaning.\n- Response-pair similarity using automated methods only as a screening or descriptive aid, not as the decisive measure of semantic equivalence.\n- Between-question, between-session, time, and controlled-factor variance.\n\nAssess inter-rater reliability and report it with uncertainty. Resolve disagreement under the prespecified adjudication procedure. Do not infer semantic stability solely from high text similarity or instability solely from low text similarity.\n\n## 6. Analysis\n\n1. **Primary test:** Estimate exact-repeat material-difference rates overall and by question stratum. Report confidence or credible intervals and question-level distributions, not only pooled averages.\n2. **Equivalence test:** Define in advance the largest acceptable material-instability rate. Test whether the data are sufficiently precise to rule out rates above that margin; failure to detect differences is not by itself evidence of equivalence.\n3. **Variance decomposition:** Use a hierarchical model or equivalent clustered analysis to separate variation attributable to question, session, time, and controlled factors, while respecting the repeated-response structure. Report assumptions and sensitivity to alternative specifications.\n4. **Factor diagnosis:** Compare controlled-variation conditions with exact repeats to estimate how prompt wording, settings, context, or time relate to observed changes. Interpret these contrasts causally only when assignment and controls justify it.\n5. **Robustness checks:** Repeat the primary analysis under conservative coding of disputed pairs, alternative reasonable materiality definitions, and exclusion of responses affected by documented operational failures. Report all prespecified checks.\n6. **Error analysis:** Inspect material disagreements by type—such as factual inconsistency, changed recommendation, omitted caveat, or refusal variation—and identify whether they cluster in particular question types or conditions.\n7. **Sensitivity and power:** Before collection, use plausible ranges for baseline instability and clustering to determine the number of questions and repeats needed to estimate the primary rate with useful precision. If feasible sample sizes cannot distinguish the preregistered equivalence margin, label the study inconclusive rather than interpreting a null result as stability.\n\n## 7. Decision / stopping rule\n\nSet a material-instability threshold and an acceptable upper bound in advance. For example, the investigators may define a study-specific maximum tolerable rate of materially different exact-repeat pairs, justified by the intended use and question set.\n\n- Conclude **evidence of meaningful instability** if the lower bound of the prespecified interval for the exact-repeat material-difference rate exceeds the threshold, with the result robust to the preregistered sensitivity analyses.\n- Conclude **evidence consistent with practical stability for the tested scope** only if the upper bound falls below the prespecified acceptable rate and semantic-equivalence ratings meet the reliability criteria.\n- Otherwise conclude **inconclusive**, including when intervals are too wide, ratings are unreliable, or materiality judgments remain unresolved.\n- Stop collection at the preregistered sample size or decision boundary. If sequential monitoring is used, specify error control and boundaries in advance. Do not stop because interim results appear favorable.\n- Report deviations, model changes, and failed or incomplete runs rather than silently excluding them.\n\n## 8. Limitations\n\n- Results apply to the tested questions, model version, interface, settings, and collection period; deployment changes may alter behavior.\n- Hidden system instructions, infrastructure variation, or unavailable sampling controls may prevent precise attribution of causes.\n- Human judgments of semantic equivalence and materiality can be subjective, even with blinding, rubrics, and adjudication.\n- A finite question set cannot represent every domain, language, user context, or risk level.\n- Automated similarity metrics can miss consequential shifts or overstate differences in phrasing; they should not replace substantive review.\n- Repeated generations are not necessarily independent, and uncontrolled operational changes may confound comparisons.\n- A finding of stability does not establish correctness; consistent answers can be consistently wrong. A finding of instability does not by itself establish harm; practical consequences depend on context."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 190,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1894,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2084
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

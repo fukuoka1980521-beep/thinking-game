@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "GENERIC_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "GENERIC",
+  "replicate": 8,
+  "run_id": "R1B-T1-GENERIC-R08",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:28:31.595079+00:00",
+  "timestamp_utc": "2026-10-02T06:28:47.771247+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse your own best judgment as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "7e7d5cbd66997da805fe2daeadb06b6434f6f7f56872bfb3cacb44963f3ffc40",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse your own best judgment as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0087ecb959bca7a6016abf4f0f51dc87d0a9633e6c2ef55984",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1720,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1909
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same question from a large language model (LLM) differ in ways that materially affect their meaning, factual claims, reasoning, recommendations, or practical consequences. Identify conditions associated with such differences and distinguish them from ordinary variation in wording, structure, or emphasis.\n\nThe study will examine a specified model version under controlled prompting and inference conditions. Its conclusions will apply to that model, version, interface, and set of questions—not to LLMs generally unless the design is replicated across models.\n\n## 2. Assumptions\n\n- A “same question” means identical question text, system instructions, conversation history, and other supplied context.\n- Model version, interface, inference settings, and tool access can be recorded and held fixed within each test condition.\n- Repeated calls may differ because of sampling, hidden system changes, nondeterministic infrastructure, or other variation. These possibilities should be distinguished where the available logs permit, not assumed away.\n- Meaningful instability is task-dependent. A stylistic difference may be immaterial, while a small textual change that reverses a recommendation or changes a key fact may be consequential.\n- Human judgments of semantic and practical equivalence are fallible; measurement should therefore use explicit rubrics, blinded raters, and reliability checks.\n- The study assesses response variability, not whether the model’s answers are correct in an absolute sense. Correctness requires separate ground truth or expert assessment.\n\n## 3. Research design\n\nUse a preregistered, repeated-query study with two complementary components.\n\n**Controlled repetition.** Select a stratified set of questions spanning task types and levels of consequence. For each question, submit multiple independent calls with identical inputs and fixed, documented settings. Randomize call order and interleave questions to reduce confounding from temporal or service-level changes. Where available, test both a deterministic or near-deterministic setting and one or more stochastic settings. Repeat a subset in separate sessions or days to assess temporal stability.\n\n**Mechanism probes.** For a subset of questions, vary one factor at a time while leaving the question unchanged: sampling settings, session, context placement, or a documented model-version change. These probes help assess which conditions accompany response changes; they do not by themselves establish causal mechanisms unless the factor is controlled and the relevant implementation details are available.\n\nInclude task strata such as factual question answering, summarization, advice or recommendation, classification, calculation, and open-ended generation. Within each stratum, include questions for which important answer components can be specified in advance. Include both low-consequence and higher-consequence items, with expert review where domain knowledge is needed.\n\nDetermine the number of questions and repetitions through a pilot-based power or precision analysis. The primary target should be sufficiently precise estimates of the rate of materially unstable questions within each major task stratum, rather than a large number of repetitions of only a few questions.\n\n## 4. Data or evidence needed\n\nFor every call, retain:\n\n- Exact prompt, system instructions, conversation history, and any supplied documents.\n- Model name and version identifier, interface or endpoint, date and time, tool availability, and inference settings, including seed where supported.\n- Raw response, status codes, and any available metadata on retries, truncation, or service errors.\n- Question-level attributes: task type, domain, intended use, consequence level, ambiguity, and whether an answer key or expert rubric is available.\n- Independent annotations of response content, including claims, recommendations, uncertainty, refusals, and relevant omissions.\n- Rater identity, training and calibration records, and agreement statistics.\n\nPreserve the unedited outputs and maintain a documented audit trail for exclusions, failed calls, and preprocessing. Do not treat service errors, refusals, or tool-mediated outputs as ordinary answer variation; report them separately and include them in sensitivity analyses when appropriate.\n\n## 5. Measurement\n\nDefine the response unit and instability criteria before examining results. For each response, assess:\n\n1. **Surface variation:** wording, formatting, length, and ordering.\n2. **Semantic variation:** whether responses express materially different propositions or interpretations.\n3. **Claim variation:** changes in factual claims, numerical values, cited evidence, or stated uncertainty.\n4. **Decision variation:** changes in the answer, classification, recommendation, or action a user would take.\n5. **Correctness and completeness:** judged against an answer key, rubric, or qualified expert assessment where feasible.\n6. **Safety or policy variation:** changes in refusal, risk guidance, or potentially harmful content.\n\nUse a blinded, preregistered rubric to classify each pair of responses as: wording-only variation; nonmaterial semantic variation; material variation; or consequential variation. Specify task-specific thresholds—for example, whether a changed recommendation, reversed classification, or altered critical numerical result counts as material. For open-ended tasks, define essential content and acceptable alternatives in the rubric rather than requiring identical wording.\n\nUse at least two independent trained raters for the primary human-coded outcomes, with adjudication for disagreements. Measure inter-rater reliability and report results both before and after adjudication. Automated similarity or entailment measures may supplement, but not replace, rubric-based judgments; validate them against a human-coded subset and report known failure modes.\n\n## 6. Analysis\n\nTreat the question, not each individual response, as the primary unit for estimating instability. Report:\n\n- The proportion of questions exhibiting any material or consequential variation, with uncertainty intervals, overall and by task stratum and consequence level.\n- Within-question variation in content, correctness, recommendation, and safety classifications.\n- The frequency of wording-only variation, to show how often textual differences do not correspond to meaningful differences.\n- Differences across controlled inference settings, sessions, and model versions, with appropriate uncertainty estimates.\n- The association between question features—such as ambiguity or task type—and instability, while distinguishing exploratory analyses from preregistered tests.\n\nUse hierarchical or mixed-effects models where appropriate to account for repeated responses nested within questions and questions nested within task strata. For binary instability outcomes, estimate question-level rates and relevant contrasts; for graded outcomes, report distributions and effect sizes rather than relying only on significance tests. Correct for multiple testing in secondary comparisons or clearly label them exploratory.\n\nConduct sensitivity analyses using alternative reasonable materiality thresholds, excluding failed or malformed calls, and counting refusals or omissions under different prespecified rules. Examine whether conclusions change when automated measures are omitted, when only high-agreement human judgments are used, or when results are restricted to questions with answer keys.\n\nAssess possible causes conservatively. If changing a controlled inference setting changes instability, that supports an effect of that setting under the tested conditions. Associations with ambiguity, topic, or time are descriptive unless the design supports stronger causal claims. Hidden infrastructure or undocumented system changes should be reported as unresolved sources of variation.\n\n## 7. Decision / stopping rule\n\nPreregister a minimum number of questions per stratum, repetitions per question, materiality thresholds, primary outcomes, and precision targets. Use a pilot only to estimate annotation burden, variability, and sample-size requirements; exclude pilot items from confirmatory analyses if rubrics or procedures are changed.\n\nStop data collection after the preregistered sample is completed or when the prespecified precision target for the primary instability rate is met, subject to a fixed maximum sample. Do not stop because interim results appear favorable or unfavorable.\n\nConclude that meaningful instability is present in a tested stratum only if the estimated rate of material variation exceeds the preregistered practical threshold and its uncertainty interval supports that conclusion. Conclude that evidence of instability is limited only when the data are precise enough to rule out the threshold of practical concern; a nonsignificant result alone is not evidence of stability. Report inconclusive results as such.\n\n## 8. Limitations\n\nFindings may not generalize beyond the tested model version, interface, prompt distribution, settings, languages, or time period. Repeated calls may not be independent, and undocumented backend changes can confound estimates. A finite question set cannot capture all user questions or contexts.\n\nMateriality judgments depend on intended use and domain expertise. Human raters may miss subtle factual or pragmatic differences, while automated semantic measures can confuse paraphrase with disagreement or overlook consequential changes. Answer keys may be incomplete, particularly for open-ended tasks. Finally, observing variation does not by itself explain its internal cause, and observing agreement does not establish correctness, robustness to prompt changes, or reliability in real-world use.",
+  "raw_response": {
+    "id": "resp_0087ecb959bca7a6016abf4f0f51dc87d0a9633e6c2ef55984",
+    "object": "response",
+    "created_at": 1790922511,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922527,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0087ecb959bca7a6016abf4f0fc77087d0846acbb7e18333ee",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same question from a large language model (LLM) differ in ways that materially affect their meaning, factual claims, reasoning, recommendations, or practical consequences. Identify conditions associated with such differences and distinguish them from ordinary variation in wording, structure, or emphasis.\n\nThe study will examine a specified model version under controlled prompting and inference conditions. Its conclusions will apply to that model, version, interface, and set of questions—not to LLMs generally unless the design is replicated across models.\n\n## 2. Assumptions\n\n- A “same question” means identical question text, system instructions, conversation history, and other supplied context.\n- Model version, interface, inference settings, and tool access can be recorded and held fixed within each test condition.\n- Repeated calls may differ because of sampling, hidden system changes, nondeterministic infrastructure, or other variation. These possibilities should be distinguished where the available logs permit, not assumed away.\n- Meaningful instability is task-dependent. A stylistic difference may be immaterial, while a small textual change that reverses a recommendation or changes a key fact may be consequential.\n- Human judgments of semantic and practical equivalence are fallible; measurement should therefore use explicit rubrics, blinded raters, and reliability checks.\n- The study assesses response variability, not whether the model’s answers are correct in an absolute sense. Correctness requires separate ground truth or expert assessment.\n\n## 3. Research design\n\nUse a preregistered, repeated-query study with two complementary components.\n\n**Controlled repetition.** Select a stratified set of questions spanning task types and levels of consequence. For each question, submit multiple independent calls with identical inputs and fixed, documented settings. Randomize call order and interleave questions to reduce confounding from temporal or service-level changes. Where available, test both a deterministic or near-deterministic setting and one or more stochastic settings. Repeat a subset in separate sessions or days to assess temporal stability.\n\n**Mechanism probes.** For a subset of questions, vary one factor at a time while leaving the question unchanged: sampling settings, session, context placement, or a documented model-version change. These probes help assess which conditions accompany response changes; they do not by themselves establish causal mechanisms unless the factor is controlled and the relevant implementation details are available.\n\nInclude task strata such as factual question answering, summarization, advice or recommendation, classification, calculation, and open-ended generation. Within each stratum, include questions for which important answer components can be specified in advance. Include both low-consequence and higher-consequence items, with expert review where domain knowledge is needed.\n\nDetermine the number of questions and repetitions through a pilot-based power or precision analysis. The primary target should be sufficiently precise estimates of the rate of materially unstable questions within each major task stratum, rather than a large number of repetitions of only a few questions.\n\n## 4. Data or evidence needed\n\nFor every call, retain:\n\n- Exact prompt, system instructions, conversation history, and any supplied documents.\n- Model name and version identifier, interface or endpoint, date and time, tool availability, and inference settings, including seed where supported.\n- Raw response, status codes, and any available metadata on retries, truncation, or service errors.\n- Question-level attributes: task type, domain, intended use, consequence level, ambiguity, and whether an answer key or expert rubric is available.\n- Independent annotations of response content, including claims, recommendations, uncertainty, refusals, and relevant omissions.\n- Rater identity, training and calibration records, and agreement statistics.\n\nPreserve the unedited outputs and maintain a documented audit trail for exclusions, failed calls, and preprocessing. Do not treat service errors, refusals, or tool-mediated outputs as ordinary answer variation; report them separately and include them in sensitivity analyses when appropriate.\n\n## 5. Measurement\n\nDefine the response unit and instability criteria before examining results. For each response, assess:\n\n1. **Surface variation:** wording, formatting, length, and ordering.\n2. **Semantic variation:** whether responses express materially different propositions or interpretations.\n3. **Claim variation:** changes in factual claims, numerical values, cited evidence, or stated uncertainty.\n4. **Decision variation:** changes in the answer, classification, recommendation, or action a user would take.\n5. **Correctness and completeness:** judged against an answer key, rubric, or qualified expert assessment where feasible.\n6. **Safety or policy variation:** changes in refusal, risk guidance, or potentially harmful content.\n\nUse a blinded, preregistered rubric to classify each pair of responses as: wording-only variation; nonmaterial semantic variation; material variation; or consequential variation. Specify task-specific thresholds—for example, whether a changed recommendation, reversed classification, or altered critical numerical result counts as material. For open-ended tasks, define essential content and acceptable alternatives in the rubric rather than requiring identical wording.\n\nUse at least two independent trained raters for the primary human-coded outcomes, with adjudication for disagreements. Measure inter-rater reliability and report results both before and after adjudication. Automated similarity or entailment measures may supplement, but not replace, rubric-based judgments; validate them against a human-coded subset and report known failure modes.\n\n## 6. Analysis\n\nTreat the question, not each individual response, as the primary unit for estimating instability. Report:\n\n- The proportion of questions exhibiting any material or consequential variation, with uncertainty intervals, overall and by task stratum and consequence level.\n- Within-question variation in content, correctness, recommendation, and safety classifications.\n- The frequency of wording-only variation, to show how often textual differences do not correspond to meaningful differences.\n- Differences across controlled inference settings, sessions, and model versions, with appropriate uncertainty estimates.\n- The association between question features—such as ambiguity or task type—and instability, while distinguishing exploratory analyses from preregistered tests.\n\nUse hierarchical or mixed-effects models where appropriate to account for repeated responses nested within questions and questions nested within task strata. For binary instability outcomes, estimate question-level rates and relevant contrasts; for graded outcomes, report distributions and effect sizes rather than relying only on significance tests. Correct for multiple testing in secondary comparisons or clearly label them exploratory.\n\nConduct sensitivity analyses using alternative reasonable materiality thresholds, excluding failed or malformed calls, and counting refusals or omissions under different prespecified rules. Examine whether conclusions change when automated measures are omitted, when only high-agreement human judgments are used, or when results are restricted to questions with answer keys.\n\nAssess possible causes conservatively. If changing a controlled inference setting changes instability, that supports an effect of that setting under the tested conditions. Associations with ambiguity, topic, or time are descriptive unless the design supports stronger causal claims. Hidden infrastructure or undocumented system changes should be reported as unresolved sources of variation.\n\n## 7. Decision / stopping rule\n\nPreregister a minimum number of questions per stratum, repetitions per question, materiality thresholds, primary outcomes, and precision targets. Use a pilot only to estimate annotation burden, variability, and sample-size requirements; exclude pilot items from confirmatory analyses if rubrics or procedures are changed.\n\nStop data collection after the preregistered sample is completed or when the prespecified precision target for the primary instability rate is met, subject to a fixed maximum sample. Do not stop because interim results appear favorable or unfavorable.\n\nConclude that meaningful instability is present in a tested stratum only if the estimated rate of material variation exceeds the preregistered practical threshold and its uncertainty interval supports that conclusion. Conclude that evidence of instability is limited only when the data are precise enough to rule out the threshold of practical concern; a nonsignificant result alone is not evidence of stability. Report inconclusive results as such.\n\n## 8. Limitations\n\nFindings may not generalize beyond the tested model version, interface, prompt distribution, settings, languages, or time period. Repeated calls may not be independent, and undocumented backend changes can confound estimates. A finite question set cannot capture all user questions or contexts.\n\nMateriality judgments depend on intended use and domain expertise. Human raters may miss subtle factual or pragmatic differences, while automated semantic measures can confuse paraphrase with disagreement or overlook consequential changes. Answer keys may be incomplete, particularly for open-ended tasks. Finally, observing variation does not by itself explain its internal cause, and observing agreement does not establish correctness, robustness to prompt changes, or reliability in real-world use."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1720,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1909
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

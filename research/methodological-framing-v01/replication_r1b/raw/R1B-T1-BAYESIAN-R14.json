@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "BAYESIAN_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "BAYESIAN",
+  "replicate": 14,
+  "run_id": "R1B-T1-BAYESIAN-R14",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:20:43.707637+00:00",
+  "timestamp_utc": "2026-10-02T06:21:05.066466+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "bd960c9b78dbae4b84e1a72dd7bccf72701810ed8a3acbc5b0b61f61f649af41",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_06ec1e7f9ebb6c9c016abf4d3b723087d080e53db08f27ed40",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 188,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1929,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2117
+  },
+  "raw_text": "## 1. Objective and scope\n\nEstimate how often, and under what conditions, repeated responses to the same large-language-model (LLM) question differ in ways that matter to users. Distinguish substantive response instability from harmless variation in wording, formatting, or level of detail, and assess plausible sources of change.\n\nThe study will address three questions:\n\n1. How much do responses to an identical question vary under controlled conditions?\n2. Which factors—such as sampling settings, context, session state, or model version—are associated with meaningful variation?\n3. How often does variation alter factual accuracy, reasoning, recommendations, safety, or other task-relevant outcomes?\n\nThe primary scope is repeated responses from a fixed LLM version under specified settings. Changes across versions, system instructions, or contexts will be studied separately rather than treated as repetitions of the same condition.\n\n## 2. Assumptions\n\n- The model, version, system instructions, tools, and other relevant settings can be recorded or controlled for each response.\n- Repeated responses are samples from a response-generating process, but may not be independent if they share sessions, caches, or hidden state.\n- No single text-similarity metric captures whether a difference matters. Meaningfulness must be judged relative to the question and task.\n- Human judgments are fallible; judgments will be blinded where feasible, gathered from multiple raters, and modeled with rater uncertainty.\n- “Instability” is operationalized as a non-negligible probability of a task-relevant difference under a clearly specified repetition condition. It does not imply that one response is necessarily incorrect.\n\n## 3. Research design\n\nUse a preregistered, Bayesian, repeated-measures design.\n\n**Question set.** Construct a stratified set of questions spanning task types likely to differ in their expectations and consequences: factual lookup, arithmetic, summarization, interpretation, advice, open-ended generation, and safety-sensitive requests. Include questions with externally checkable answers, questions with multiple defensible answers, and questions for which small wording or context changes may affect the correct response. Record each question’s intended answer criteria and risk level before collecting model outputs.\n\n**Repetition conditions.** For each question, obtain repeated responses under separately defined conditions:\n\n- **Fixed-condition repetitions:** identical question, model version, prompt context, settings, and session conditions as far as controllable.\n- **Sampling-setting contrasts:** vary one generation setting at a time, where available, to estimate its contribution to variation.\n- **Context contrasts:** vary specified surrounding context or conversation history while keeping the target question fixed.\n- **Version contrasts:** compare documented model versions only as a separate analysis of version change, not as within-version randomness.\n\nRandomize request order and distribute repetitions across time and sessions. Record timestamps, settings, session identifiers, model/version identifiers, system and developer instructions, tool availability, and any errors or retries. Do not silently discard unusual outputs; define in advance how failures and incomplete responses will be handled.\n\nSet the number of questions and repetitions through a prospective precision or simulation-based design calculation using plausible response variability and annotation reliability. Ensure enough observations to estimate variability by task stratum, not only overall.\n\n**Annotation.** Have multiple trained raters independently assess responses without seeing repetition condition or paired-response identity where feasible. Use a separate expert or reference process for verifiable correctness. Pilot the rubric, revise it before the main annotation, and freeze it before analysis.\n\n## 4. Data or evidence needed\n\nFor every response, retain:\n\n- The exact question and full prompt context.\n- Model and version identifiers, relevant settings, tool access, session information, timestamp, and any available sampling seed.\n- The unmodified output, including refusals, caveats, formatting, and truncation.\n- Error logs and a record of retries or missing outputs.\n- Independent annotations of answer content and quality.\n\nFor each question, prepare in advance:\n\n- Task category, difficulty, risk level, and answerability.\n- Expected answer criteria, acceptable alternative answers, and known ambiguity.\n- For verifiable questions, a reference answer or adjudication protocol based on suitable source material.\n- For open-ended questions, criteria for identifying material changes in claims, recommendations, assumptions, or conclusions.\n\nAnnotations should separately cover:\n\n1. **Semantic content:** claims, conclusions, recommendations, and stated assumptions.\n2. **Factual or procedural correctness:** correctness against the question’s criteria or reference evidence.\n3. **Task performance:** completeness, relevance, and instruction-following.\n4. **Safety and policy-relevant properties:** unsafe content, refusal, or changes in risk.\n5. **Surface form:** wording, length, organization, tone, and formatting.\n\n## 5. Measurement\n\nThe primary outcome is **meaningful response instability**: the probability that two responses to the same question, under the same defined condition, differ on at least one prespecified task-relevant dimension beyond an agreed materiality threshold.\n\nDefine meaningful differences by task-specific rubrics before annotation. Examples include a changed factual answer, altered recommendation, omitted essential qualification, changed refusal decision, materially different mathematical result, or incompatible central claim. A wording or formatting change alone does not count.\n\nMeasure outcomes at several levels:\n\n- **Pairwise meaningful-difference indicator:** whether a response pair differs materially.\n- **Per-question instability probability:** the probability of a material difference for a question under the specified condition.\n- **Content disagreement:** differences in propositions, answers, recommendations, or assumptions, coded with a structured scheme.\n- **Performance change:** whether responses differ in correctness, completeness, safety, or instruction-following.\n- **Surface variation:** lexical, stylistic, length, and formatting differences, reported separately from meaningful instability.\n\nUse automated text-similarity or semantic-comparison measures only as secondary descriptive signals. Validate them against human annotations and do not interpret low textual similarity, by itself, as meaningful instability. Report annotation agreement and model the uncertainty in judgments rather than treating adjudicated labels as error-free.\n\n## 6. Analysis\n\nUse a Bayesian hierarchical model to estimate response instability while accounting for variation among questions, task types, conditions, and raters. A basic analysis will treat pairwise material difference as a binary outcome, with varying effects for questions and task strata. Where data permit, extend the model to distinguish changes in correctness, safety, and other outcome dimensions.\n\nReport posterior distributions and credible intervals for:\n\n- Overall probability of a meaningful difference under fixed conditions.\n- Instability by task type, risk level, and question characteristics.\n- Differences between sampling, context, and version conditions.\n- The probability that a response pair has a material change in a specific outcome, such as correctness or recommendation.\n\nUse weakly informative priors unless justified by external evidence; document prior choices and conduct sensitivity analyses with reasonable alternatives. For key conclusions, report how posterior estimates change under different materiality thresholds, annotation assumptions, and dependence structures.\n\nModel rater disagreement explicitly where feasible, for example with rater-specific tendencies and uncertainty in latent response labels. Account for repeated observations per question and possible clustering by session or collection period. If exact independence cannot be defended, use a hierarchical dependence structure and compare conclusions with a conservative analysis that reduces effective sample size.\n\nAssess potential causes by comparing conditions that differ in one documented feature at a time. Treat associations as causal only when the design supports that interpretation. Version contrasts can establish that outputs differ across versions, but cannot by themselves separate effects of training changes from other concurrent changes.\n\nConduct prespecified robustness checks, including:\n\n- Strict versus lenient definitions of material difference.\n- Excluding and separately reporting technical failures.\n- Alternative pair construction or aggregation methods.\n- Separate analyses of answerable and inherently open-ended questions.\n- Comparison of human judgments with automated metrics.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a practical materiality threshold for each primary outcome and a minimum precision target for the overall instability estimate and key strata. Choose the sample size prospectively to make these targets attainable; do not stop early based on interim results unless an adaptive Bayesian stopping rule is preregistered.\n\nAt the planned analysis point, conclude that meaningful instability is supported for a condition when the posterior probability that instability exceeds the prespecified practically important threshold is sufficiently high—for example, at least 0.95. Conclude that it is practically small only when the posterior probability that it lies below that threshold is sufficiently high. Otherwise report the result as inconclusive, with the posterior uncertainty and achievable precision.\n\nApply the same logic to factor contrasts: distinguish evidence of a meaningful difference between conditions from evidence that any difference is too small to matter. Report all primary conditions and outcomes regardless of whether they meet these decision criteria.\n\n## 8. Limitations\n\n- Results may not generalize beyond the sampled questions, model versions, settings, languages, or deployment environments.\n- Hidden state, infrastructure changes, caching, or undocumented system updates may compromise control over repetitions.\n- Human judgments of materiality, correctness, and quality can be inconsistent, especially for open-ended tasks.\n- Reference answers may be incomplete or contested; “correctness” is not always well-defined.\n- Similarity metrics can miss important semantic changes or overstate differences that do not matter.\n- The study may estimate how often outputs differ without identifying the internal mechanism that caused a particular difference.\n- Version and context comparisons can conflate multiple changes unless those changes are independently controlled.\n- Bayesian conclusions depend in part on model structure and prior choices; sensitivity analyses can reveal, but not eliminate, this dependence.",
+  "raw_response": {
+    "id": "resp_06ec1e7f9ebb6c9c016abf4d3b723087d080e53db08f27ed40",
+    "object": "response",
+    "created_at": 1790922043,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922064,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_06ec1e7f9ebb6c9c016abf4d3bde4c87d08cd3326b31f73ddf",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nEstimate how often, and under what conditions, repeated responses to the same large-language-model (LLM) question differ in ways that matter to users. Distinguish substantive response instability from harmless variation in wording, formatting, or level of detail, and assess plausible sources of change.\n\nThe study will address three questions:\n\n1. How much do responses to an identical question vary under controlled conditions?\n2. Which factors—such as sampling settings, context, session state, or model version—are associated with meaningful variation?\n3. How often does variation alter factual accuracy, reasoning, recommendations, safety, or other task-relevant outcomes?\n\nThe primary scope is repeated responses from a fixed LLM version under specified settings. Changes across versions, system instructions, or contexts will be studied separately rather than treated as repetitions of the same condition.\n\n## 2. Assumptions\n\n- The model, version, system instructions, tools, and other relevant settings can be recorded or controlled for each response.\n- Repeated responses are samples from a response-generating process, but may not be independent if they share sessions, caches, or hidden state.\n- No single text-similarity metric captures whether a difference matters. Meaningfulness must be judged relative to the question and task.\n- Human judgments are fallible; judgments will be blinded where feasible, gathered from multiple raters, and modeled with rater uncertainty.\n- “Instability” is operationalized as a non-negligible probability of a task-relevant difference under a clearly specified repetition condition. It does not imply that one response is necessarily incorrect.\n\n## 3. Research design\n\nUse a preregistered, Bayesian, repeated-measures design.\n\n**Question set.** Construct a stratified set of questions spanning task types likely to differ in their expectations and consequences: factual lookup, arithmetic, summarization, interpretation, advice, open-ended generation, and safety-sensitive requests. Include questions with externally checkable answers, questions with multiple defensible answers, and questions for which small wording or context changes may affect the correct response. Record each question’s intended answer criteria and risk level before collecting model outputs.\n\n**Repetition conditions.** For each question, obtain repeated responses under separately defined conditions:\n\n- **Fixed-condition repetitions:** identical question, model version, prompt context, settings, and session conditions as far as controllable.\n- **Sampling-setting contrasts:** vary one generation setting at a time, where available, to estimate its contribution to variation.\n- **Context contrasts:** vary specified surrounding context or conversation history while keeping the target question fixed.\n- **Version contrasts:** compare documented model versions only as a separate analysis of version change, not as within-version randomness.\n\nRandomize request order and distribute repetitions across time and sessions. Record timestamps, settings, session identifiers, model/version identifiers, system and developer instructions, tool availability, and any errors or retries. Do not silently discard unusual outputs; define in advance how failures and incomplete responses will be handled.\n\nSet the number of questions and repetitions through a prospective precision or simulation-based design calculation using plausible response variability and annotation reliability. Ensure enough observations to estimate variability by task stratum, not only overall.\n\n**Annotation.** Have multiple trained raters independently assess responses without seeing repetition condition or paired-response identity where feasible. Use a separate expert or reference process for verifiable correctness. Pilot the rubric, revise it before the main annotation, and freeze it before analysis.\n\n## 4. Data or evidence needed\n\nFor every response, retain:\n\n- The exact question and full prompt context.\n- Model and version identifiers, relevant settings, tool access, session information, timestamp, and any available sampling seed.\n- The unmodified output, including refusals, caveats, formatting, and truncation.\n- Error logs and a record of retries or missing outputs.\n- Independent annotations of answer content and quality.\n\nFor each question, prepare in advance:\n\n- Task category, difficulty, risk level, and answerability.\n- Expected answer criteria, acceptable alternative answers, and known ambiguity.\n- For verifiable questions, a reference answer or adjudication protocol based on suitable source material.\n- For open-ended questions, criteria for identifying material changes in claims, recommendations, assumptions, or conclusions.\n\nAnnotations should separately cover:\n\n1. **Semantic content:** claims, conclusions, recommendations, and stated assumptions.\n2. **Factual or procedural correctness:** correctness against the question’s criteria or reference evidence.\n3. **Task performance:** completeness, relevance, and instruction-following.\n4. **Safety and policy-relevant properties:** unsafe content, refusal, or changes in risk.\n5. **Surface form:** wording, length, organization, tone, and formatting.\n\n## 5. Measurement\n\nThe primary outcome is **meaningful response instability**: the probability that two responses to the same question, under the same defined condition, differ on at least one prespecified task-relevant dimension beyond an agreed materiality threshold.\n\nDefine meaningful differences by task-specific rubrics before annotation. Examples include a changed factual answer, altered recommendation, omitted essential qualification, changed refusal decision, materially different mathematical result, or incompatible central claim. A wording or formatting change alone does not count.\n\nMeasure outcomes at several levels:\n\n- **Pairwise meaningful-difference indicator:** whether a response pair differs materially.\n- **Per-question instability probability:** the probability of a material difference for a question under the specified condition.\n- **Content disagreement:** differences in propositions, answers, recommendations, or assumptions, coded with a structured scheme.\n- **Performance change:** whether responses differ in correctness, completeness, safety, or instruction-following.\n- **Surface variation:** lexical, stylistic, length, and formatting differences, reported separately from meaningful instability.\n\nUse automated text-similarity or semantic-comparison measures only as secondary descriptive signals. Validate them against human annotations and do not interpret low textual similarity, by itself, as meaningful instability. Report annotation agreement and model the uncertainty in judgments rather than treating adjudicated labels as error-free.\n\n## 6. Analysis\n\nUse a Bayesian hierarchical model to estimate response instability while accounting for variation among questions, task types, conditions, and raters. A basic analysis will treat pairwise material difference as a binary outcome, with varying effects for questions and task strata. Where data permit, extend the model to distinguish changes in correctness, safety, and other outcome dimensions.\n\nReport posterior distributions and credible intervals for:\n\n- Overall probability of a meaningful difference under fixed conditions.\n- Instability by task type, risk level, and question characteristics.\n- Differences between sampling, context, and version conditions.\n- The probability that a response pair has a material change in a specific outcome, such as correctness or recommendation.\n\nUse weakly informative priors unless justified by external evidence; document prior choices and conduct sensitivity analyses with reasonable alternatives. For key conclusions, report how posterior estimates change under different materiality thresholds, annotation assumptions, and dependence structures.\n\nModel rater disagreement explicitly where feasible, for example with rater-specific tendencies and uncertainty in latent response labels. Account for repeated observations per question and possible clustering by session or collection period. If exact independence cannot be defended, use a hierarchical dependence structure and compare conclusions with a conservative analysis that reduces effective sample size.\n\nAssess potential causes by comparing conditions that differ in one documented feature at a time. Treat associations as causal only when the design supports that interpretation. Version contrasts can establish that outputs differ across versions, but cannot by themselves separate effects of training changes from other concurrent changes.\n\nConduct prespecified robustness checks, including:\n\n- Strict versus lenient definitions of material difference.\n- Excluding and separately reporting technical failures.\n- Alternative pair construction or aggregation methods.\n- Separate analyses of answerable and inherently open-ended questions.\n- Comparison of human judgments with automated metrics.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a practical materiality threshold for each primary outcome and a minimum precision target for the overall instability estimate and key strata. Choose the sample size prospectively to make these targets attainable; do not stop early based on interim results unless an adaptive Bayesian stopping rule is preregistered.\n\nAt the planned analysis point, conclude that meaningful instability is supported for a condition when the posterior probability that instability exceeds the prespecified practically important threshold is sufficiently high—for example, at least 0.95. Conclude that it is practically small only when the posterior probability that it lies below that threshold is sufficiently high. Otherwise report the result as inconclusive, with the posterior uncertainty and achievable precision.\n\nApply the same logic to factor contrasts: distinguish evidence of a meaningful difference between conditions from evidence that any difference is too small to matter. Report all primary conditions and outcomes regardless of whether they meet these decision criteria.\n\n## 8. Limitations\n\n- Results may not generalize beyond the sampled questions, model versions, settings, languages, or deployment environments.\n- Hidden state, infrastructure changes, caching, or undocumented system updates may compromise control over repetitions.\n- Human judgments of materiality, correctness, and quality can be inconsistent, especially for open-ended tasks.\n- Reference answers may be incomplete or contested; “correctness” is not always well-defined.\n- Similarity metrics can miss important semantic changes or overstate differences that do not matter.\n- The study may estimate how often outputs differ without identifying the internal mechanism that caused a particular difference.\n- Version and context comparisons can conflate multiple changes unless those changes are independently controlled.\n- Bayesian conclusions depend in part on model structure and prior choices; sensitivity analyses can reveal, but not eliminate, this dependence."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 188,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1929,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2117
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

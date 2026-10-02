@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 15,
+  "run_id": "R1B-T1-STATE_SPACE-R15",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:22:25.572560+00:00",
+  "timestamp_utc": "2026-10-02T06:22:47.741422+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "832fba3b7142c44efaa9be82d8332e394e2518835651985d142293c7b5394fbf",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0bc9ec1a7b5bd90e016abf4da14b0c87d0b29e9cf305d51f77",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2199,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2388
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeating the same question to the same large language model (LLM) can produce responses that differ in meaning, identify conditions associated with those differences, and distinguish substantive response instability from harmless changes in wording.\n\nThe primary frame is a **state-space model**: each response is treated as an observation generated from a partly unobserved model state. That state may reflect, for example, decoding randomness, conversational context, system conditions, or persistent model behavior. The study will estimate variation within fixed conditions, variation across controlled conditions, and the extent to which observed variation changes the answer’s substantive content.\n\nThe study will address a prespecified set of questions, model versions, and task types. It will not treat every difference in wording as instability, nor assume that different responses are necessarily inconsistent or incorrect.\n\n## 2. Assumptions\n\n- A model name alone does not fully define a reproducible system. Version, endpoint, system prompt, decoding settings, tools, and relevant service configuration should be recorded where available.\n- Repeated calls may differ because of stochastic generation or because the effective model state changes between calls. Some state variables may be unobserved.\n- Response meaning can be assessed only relative to the question, task, and relevant evidence or evaluation criteria.\n- Human judgments of meaning and correctness can be noisy. Independent assessment and explicit coding rules are therefore needed.\n- A finite set of questions and conditions supports conclusions about that sampling frame, not all prompts or all models.\n- The target is response instability under specified conditions, not a general claim about model reliability in every use context.\n\n## 3. Research design\n\n### Sampling and task strata\n\nConstruct a preregistered question set, stratified by task type, such as:\n\n- factual questions with verifiable answers;\n- questions with multiple defensible answers or recommendations;\n- summarization and extraction tasks;\n- reasoning tasks with checkable outputs;\n- ambiguous, underspecified, or context-sensitive questions.\n\nSample questions within each stratum using documented inclusion criteria. Include both ordinary user-style questions and a smaller set designed to probe likely boundary conditions, such as ambiguous wording or sensitivity to small contextual changes. Keep the exact question text fixed for the primary repeatability analysis.\n\n### Repeated-query structure\n\nFor each question, make repeated calls to the same model configuration. Distribute calls across time blocks and randomize query order to reduce confounding by time, load, or order. Use independent sessions for the primary analysis so each call starts from the same specified conversational context. Where the intended use includes multi-turn context, study that separately with a fixed, preregistered context.\n\nConduct three complementary comparisons:\n\n1. **Exact-repeat condition:** identical question, context, model version, and settings, repeated across calls.\n2. **Controlled-setting condition:** identical question while varying one prespecified generation setting at a time, such as temperature or sampling configuration, when exposed by the system.\n3. **Context or state condition:** identical question and generation settings, but calls are grouped by time block or session to test for session- or time-associated shifts.\n\nDo not change multiple factors at once in the controlled-setting condition unless a factorial design is specified in advance. Log unavailable or changing configuration details rather than inferring them.\n\n### State-space specification\n\nRepresent the response at call \\(t\\) for question \\(i\\) as an observation \\(Y_{it}\\) generated from latent response state \\(Z_{it}\\), with:\n\n- a question/task component capturing stable content requirements;\n- a condition component for recorded settings and context;\n- a time- or session-level state component that may persist across nearby calls;\n- an innovation component representing call-specific variation.\n\nFor example, a hierarchical state-space model can represent a latent semantic response profile evolving across calls or time blocks, with observed response features (such as answer choice, claim set, or recommendation) emitted from that profile. Compare models with and without a temporally persistent state component. The state-space formulation is used to separate stable question-level tendencies, persistent shifts, and call-level variation; it does not require claiming that latent states correspond to identifiable internal model mechanisms.\n\n### Blinding and quality control\n\nAssign anonymized response identifiers and conceal call order, settings, and condition from human raters where feasible. Use prespecified coding instructions and pilot them on material not included in the main analysis. Retain raw outputs and metadata. Flag refusals, truncations, tool errors, and malformed responses under predefined rules; report them rather than silently excluding them.\n\n## 4. Data or evidence needed\n\nFor every call, record:\n\n- exact question and conversation history;\n- model/provider identifier, version or snapshot where available, and endpoint;\n- date and time, session identifier, and call order;\n- system and developer instructions, tool availability, and tool-call traces;\n- decoding settings and token limits;\n- raw response, including relevant formatting and refusal behavior;\n- errors, retries, truncation, and other service events.\n\nFor evaluation, obtain:\n\n- question-specific reference answers, answer keys, authoritative sources, or explicit criteria where appropriate;\n- structured annotations of responses, including claims, conclusions, recommendations, uncertainty, and caveats;\n- independent human ratings of semantic equivalence, factual correctness, relevance, and practical implications;\n- disagreement and adjudication records.\n\nFor questions without a single correct answer, evaluation criteria should describe acceptable answer sets or dimensions of defensible variation rather than impose an artificial unique answer.\n\n## 5. Measurement\n\nMeasure variation at several levels:\n\n1. **Surface variation:** changes in wording, formatting, length, or examples.\n2. **Semantic variation:** changes in claims, conclusions, recommendations, confidence, qualifications, or omitted essential points.\n3. **Decision-relevant variation:** changes that could plausibly alter a user’s belief, decision, or action.\n4. **Quality variation:** changes in factual accuracy, completeness, relevance, or safety.\n\nFor each response, derive a structured representation appropriate to its task. Examples include a normalized answer label for closed questions, a claim set for explanatory answers, or a rubric-based profile for recommendations. Preserve the original text so that structured coding can be checked against the source.\n\nUse at least two independent raters for semantic and decision-relevance judgments. Ask raters to distinguish paraphrase from changed meaning and to identify the specific changed claims or implications. Measure inter-rater agreement, adjudicate disagreements using prespecified procedures, and report both initial and adjudicated results. Where feasible, supplement human judgments with task-specific objective checks, such as answer-key comparison, without treating automated similarity scores as a substitute for semantic evaluation.\n\nDefine a **meaningful difference** before analysis. A response pair qualifies when it differs on at least one prespecified substantive dimension—for example, incompatible factual claims, a changed answer or recommendation, altered safety guidance, or a difference likely to affect a reasonable user’s decision. Wording, order, or stylistic variation alone does not qualify.\n\n## 6. Analysis\n\n### Descriptive analysis\n\nFor each task stratum and condition, report:\n\n- the frequency of surface, semantic, and decision-relevant differences;\n- the distribution of correctness and quality scores;\n- common categories of changed claims or recommendations;\n- the proportion of responses that are equivalent under the prespecified criteria.\n\nReport uncertainty intervals and denominators, including excluded or unusable calls.\n\n### State-space analysis\n\nFit a hierarchical state-space model to task-appropriate response features. Separate:\n\n- stable between-question differences;\n- within-question variation across repeated calls;\n- persistent session- or time-associated shifts;\n- call-specific residual variation;\n- effects of recorded settings and context.\n\nAssess whether a model with temporally persistent latent state improves fit and predictive performance over a model with only question, condition, and independent call-level variation. Use posterior predictive checks or equivalent diagnostics to determine whether the model reproduces observed switching rates, run lengths, and clustering of response types. Treat latent states as statistical summaries, not evidence of a specific internal mechanism.\n\nEstimate meaningful-instability rates at both the call-pair and question levels. A question-level rate should indicate how often its repeated answers differ substantively, rather than allowing questions with more calls to dominate. Analyze task strata separately before providing any pooled estimate.\n\n### Attribution and robustness\n\nUse the controlled comparisons to assess whether observed instability is associated with decoding settings, session, time block, context, or recorded service conditions. Attribute effects only to manipulated or measured factors; unexplained variation should remain classified as unexplained rather than assigned to a mechanism.\n\nConduct sensitivity analyses for:\n\n- alternative reasonable semantic-difference thresholds;\n- rater disagreement and adjudication;\n- alternative response representations;\n- exclusions for errors, truncations, or refusals;\n- unequal numbers of repeats and missing calls.\n\nAvoid interpreting semantic similarity scores alone as proof of equivalence. Report both absolute instability and differences between conditions.\n\n## 7. Decision / stopping rule\n\nSet sample sizes and repeat counts before data collection using a power or precision analysis based on a prespecified smallest substantively important instability rate or condition effect. The study should include enough independent questions and repeats per question to estimate within-question variation and distinguish it from question-to-question variation. If no credible prior rate is available, use a staged design: a pilot to estimate variability, followed by a separately analyzed confirmatory sample with frozen criteria.\n\nConclude that meaningful instability is supported for a defined task stratum when the estimated rate or condition contrast exceeds the prespecified substantive threshold and its uncertainty interval excludes the prespecified negligible range. Conclude that evidence is insufficient when intervals include both negligible and important effects. Conclude that evidence supports practical stability only when the interval is sufficiently narrow to rule out the prespecified important rate; a nonsignificant result alone is not evidence of stability.\n\nStop data collection at the preregistered sample size, or at a predeclared precision-based maximum if sequential monitoring is used. Any interim stopping boundaries must be specified in advance. Do not stop selectively in response to observed results.\n\n## 8. Limitations\n\n- Provider-side model updates, routing, infrastructure, or hidden settings may change the effective system without being observable.\n- Latent states are statistical constructs and cannot, by themselves, identify the internal cause of a response change.\n- Human judgments of semantic and practical significance involve uncertainty, especially for open-ended or value-laden questions.\n- Reference answers may be incomplete, contested, or time-sensitive; correctness assessment may therefore be limited for some tasks.\n- Findings may not generalize beyond the sampled questions, model versions, settings, languages, or usage contexts.\n- A fixed-question repeatability study does not establish robustness to paraphrases, user adaptation, long conversations, or real-world tool use unless those conditions are separately tested.\n- Observed output instability is distinct from downstream harm: practical consequences require separate evaluation in a specified use context.",
+  "raw_response": {
+    "id": "resp_0bc9ec1a7b5bd90e016abf4da14b0c87d0b29e9cf305d51f77",
+    "object": "response",
+    "created_at": 1790922145,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922167,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0bc9ec1a7b5bd90e016abf4da1f5e887d0afeddee0bb512c4c",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeating the same question to the same large language model (LLM) can produce responses that differ in meaning, identify conditions associated with those differences, and distinguish substantive response instability from harmless changes in wording.\n\nThe primary frame is a **state-space model**: each response is treated as an observation generated from a partly unobserved model state. That state may reflect, for example, decoding randomness, conversational context, system conditions, or persistent model behavior. The study will estimate variation within fixed conditions, variation across controlled conditions, and the extent to which observed variation changes the answer’s substantive content.\n\nThe study will address a prespecified set of questions, model versions, and task types. It will not treat every difference in wording as instability, nor assume that different responses are necessarily inconsistent or incorrect.\n\n## 2. Assumptions\n\n- A model name alone does not fully define a reproducible system. Version, endpoint, system prompt, decoding settings, tools, and relevant service configuration should be recorded where available.\n- Repeated calls may differ because of stochastic generation or because the effective model state changes between calls. Some state variables may be unobserved.\n- Response meaning can be assessed only relative to the question, task, and relevant evidence or evaluation criteria.\n- Human judgments of meaning and correctness can be noisy. Independent assessment and explicit coding rules are therefore needed.\n- A finite set of questions and conditions supports conclusions about that sampling frame, not all prompts or all models.\n- The target is response instability under specified conditions, not a general claim about model reliability in every use context.\n\n## 3. Research design\n\n### Sampling and task strata\n\nConstruct a preregistered question set, stratified by task type, such as:\n\n- factual questions with verifiable answers;\n- questions with multiple defensible answers or recommendations;\n- summarization and extraction tasks;\n- reasoning tasks with checkable outputs;\n- ambiguous, underspecified, or context-sensitive questions.\n\nSample questions within each stratum using documented inclusion criteria. Include both ordinary user-style questions and a smaller set designed to probe likely boundary conditions, such as ambiguous wording or sensitivity to small contextual changes. Keep the exact question text fixed for the primary repeatability analysis.\n\n### Repeated-query structure\n\nFor each question, make repeated calls to the same model configuration. Distribute calls across time blocks and randomize query order to reduce confounding by time, load, or order. Use independent sessions for the primary analysis so each call starts from the same specified conversational context. Where the intended use includes multi-turn context, study that separately with a fixed, preregistered context.\n\nConduct three complementary comparisons:\n\n1. **Exact-repeat condition:** identical question, context, model version, and settings, repeated across calls.\n2. **Controlled-setting condition:** identical question while varying one prespecified generation setting at a time, such as temperature or sampling configuration, when exposed by the system.\n3. **Context or state condition:** identical question and generation settings, but calls are grouped by time block or session to test for session- or time-associated shifts.\n\nDo not change multiple factors at once in the controlled-setting condition unless a factorial design is specified in advance. Log unavailable or changing configuration details rather than inferring them.\n\n### State-space specification\n\nRepresent the response at call \\(t\\) for question \\(i\\) as an observation \\(Y_{it}\\) generated from latent response state \\(Z_{it}\\), with:\n\n- a question/task component capturing stable content requirements;\n- a condition component for recorded settings and context;\n- a time- or session-level state component that may persist across nearby calls;\n- an innovation component representing call-specific variation.\n\nFor example, a hierarchical state-space model can represent a latent semantic response profile evolving across calls or time blocks, with observed response features (such as answer choice, claim set, or recommendation) emitted from that profile. Compare models with and without a temporally persistent state component. The state-space formulation is used to separate stable question-level tendencies, persistent shifts, and call-level variation; it does not require claiming that latent states correspond to identifiable internal model mechanisms.\n\n### Blinding and quality control\n\nAssign anonymized response identifiers and conceal call order, settings, and condition from human raters where feasible. Use prespecified coding instructions and pilot them on material not included in the main analysis. Retain raw outputs and metadata. Flag refusals, truncations, tool errors, and malformed responses under predefined rules; report them rather than silently excluding them.\n\n## 4. Data or evidence needed\n\nFor every call, record:\n\n- exact question and conversation history;\n- model/provider identifier, version or snapshot where available, and endpoint;\n- date and time, session identifier, and call order;\n- system and developer instructions, tool availability, and tool-call traces;\n- decoding settings and token limits;\n- raw response, including relevant formatting and refusal behavior;\n- errors, retries, truncation, and other service events.\n\nFor evaluation, obtain:\n\n- question-specific reference answers, answer keys, authoritative sources, or explicit criteria where appropriate;\n- structured annotations of responses, including claims, conclusions, recommendations, uncertainty, and caveats;\n- independent human ratings of semantic equivalence, factual correctness, relevance, and practical implications;\n- disagreement and adjudication records.\n\nFor questions without a single correct answer, evaluation criteria should describe acceptable answer sets or dimensions of defensible variation rather than impose an artificial unique answer.\n\n## 5. Measurement\n\nMeasure variation at several levels:\n\n1. **Surface variation:** changes in wording, formatting, length, or examples.\n2. **Semantic variation:** changes in claims, conclusions, recommendations, confidence, qualifications, or omitted essential points.\n3. **Decision-relevant variation:** changes that could plausibly alter a user’s belief, decision, or action.\n4. **Quality variation:** changes in factual accuracy, completeness, relevance, or safety.\n\nFor each response, derive a structured representation appropriate to its task. Examples include a normalized answer label for closed questions, a claim set for explanatory answers, or a rubric-based profile for recommendations. Preserve the original text so that structured coding can be checked against the source.\n\nUse at least two independent raters for semantic and decision-relevance judgments. Ask raters to distinguish paraphrase from changed meaning and to identify the specific changed claims or implications. Measure inter-rater agreement, adjudicate disagreements using prespecified procedures, and report both initial and adjudicated results. Where feasible, supplement human judgments with task-specific objective checks, such as answer-key comparison, without treating automated similarity scores as a substitute for semantic evaluation.\n\nDefine a **meaningful difference** before analysis. A response pair qualifies when it differs on at least one prespecified substantive dimension—for example, incompatible factual claims, a changed answer or recommendation, altered safety guidance, or a difference likely to affect a reasonable user’s decision. Wording, order, or stylistic variation alone does not qualify.\n\n## 6. Analysis\n\n### Descriptive analysis\n\nFor each task stratum and condition, report:\n\n- the frequency of surface, semantic, and decision-relevant differences;\n- the distribution of correctness and quality scores;\n- common categories of changed claims or recommendations;\n- the proportion of responses that are equivalent under the prespecified criteria.\n\nReport uncertainty intervals and denominators, including excluded or unusable calls.\n\n### State-space analysis\n\nFit a hierarchical state-space model to task-appropriate response features. Separate:\n\n- stable between-question differences;\n- within-question variation across repeated calls;\n- persistent session- or time-associated shifts;\n- call-specific residual variation;\n- effects of recorded settings and context.\n\nAssess whether a model with temporally persistent latent state improves fit and predictive performance over a model with only question, condition, and independent call-level variation. Use posterior predictive checks or equivalent diagnostics to determine whether the model reproduces observed switching rates, run lengths, and clustering of response types. Treat latent states as statistical summaries, not evidence of a specific internal mechanism.\n\nEstimate meaningful-instability rates at both the call-pair and question levels. A question-level rate should indicate how often its repeated answers differ substantively, rather than allowing questions with more calls to dominate. Analyze task strata separately before providing any pooled estimate.\n\n### Attribution and robustness\n\nUse the controlled comparisons to assess whether observed instability is associated with decoding settings, session, time block, context, or recorded service conditions. Attribute effects only to manipulated or measured factors; unexplained variation should remain classified as unexplained rather than assigned to a mechanism.\n\nConduct sensitivity analyses for:\n\n- alternative reasonable semantic-difference thresholds;\n- rater disagreement and adjudication;\n- alternative response representations;\n- exclusions for errors, truncations, or refusals;\n- unequal numbers of repeats and missing calls.\n\nAvoid interpreting semantic similarity scores alone as proof of equivalence. Report both absolute instability and differences between conditions.\n\n## 7. Decision / stopping rule\n\nSet sample sizes and repeat counts before data collection using a power or precision analysis based on a prespecified smallest substantively important instability rate or condition effect. The study should include enough independent questions and repeats per question to estimate within-question variation and distinguish it from question-to-question variation. If no credible prior rate is available, use a staged design: a pilot to estimate variability, followed by a separately analyzed confirmatory sample with frozen criteria.\n\nConclude that meaningful instability is supported for a defined task stratum when the estimated rate or condition contrast exceeds the prespecified substantive threshold and its uncertainty interval excludes the prespecified negligible range. Conclude that evidence is insufficient when intervals include both negligible and important effects. Conclude that evidence supports practical stability only when the interval is sufficiently narrow to rule out the prespecified important rate; a nonsignificant result alone is not evidence of stability.\n\nStop data collection at the preregistered sample size, or at a predeclared precision-based maximum if sequential monitoring is used. Any interim stopping boundaries must be specified in advance. Do not stop selectively in response to observed results.\n\n## 8. Limitations\n\n- Provider-side model updates, routing, infrastructure, or hidden settings may change the effective system without being observable.\n- Latent states are statistical constructs and cannot, by themselves, identify the internal cause of a response change.\n- Human judgments of semantic and practical significance involve uncertainty, especially for open-ended or value-laden questions.\n- Reference answers may be incomplete, contested, or time-sensitive; correctness assessment may therefore be limited for some tasks.\n- Findings may not generalize beyond the sampled questions, model versions, settings, languages, or usage contexts.\n- A fixed-question repeatability study does not establish robustness to paraphrases, user adaptation, long conversations, or real-world tool use unless those conditions are separately tested.\n- Observed output instability is distinct from downstream harm: practical consequences require separate evaluation in a specified use context."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2199,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2388
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

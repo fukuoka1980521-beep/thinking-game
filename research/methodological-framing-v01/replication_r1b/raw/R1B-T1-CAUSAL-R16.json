@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "CAUSAL_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "CAUSAL",
+  "replicate": 16,
+  "run_id": "R1B-T1-CAUSAL-R16",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:24:00.829396+00:00",
+  "timestamp_utc": "2026-10-02T06:24:27.667224+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "f5d07da7f1f16c17ec7f1ea34613fcbd186c8dd4629db8b6758f0156658b2554",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0875360e768c5274016abf4e00a6f487d08f59a46bd7cc15ff",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 190,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2056,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2246
+  },
+  "raw_text": "## 1. Objective and scope\n\nEstimate whether, and under what conditions, repeated responses to the same large-language-model (LLM) question differ in ways that matter—not merely in phrasing. Identify causal effects of controllable generation conditions on those differences and distinguish them from run-to-run variability under fixed conditions.\n\nThe study will examine a prespecified set of model versions, questions, and generation settings. It will treat a “same question” as an identical prompt, including system and developer instructions, conversation history, formatting requirements, and any supplied context. Results will apply to the tested models, prompts, and settings, not automatically to all LLM uses.\n\n## 2. Assumptions\n\n- A model version and its serving configuration can be identified and held fixed during comparison.\n- The study can record all prompt text, generation settings, timestamps, and returned outputs; any provider-side changes or nondeterminism that cannot be controlled will be documented.\n- Model outputs can be evaluated against task-appropriate criteria, using blinded human assessment, automated checks, or both.\n- “Meaningful difference” is task-dependent and must be specified before analysis. A change is not meaningful solely because wording, sentence order, or examples differ.\n- Repeated requests do not provide independent draws if they share hidden state, caching, or other dependence. Runs will be separated or grouped as needed, and dependence will be considered in uncertainty estimates.\n- The target is observed response variability and the causal contribution of tested conditions. The study cannot infer hidden model mechanisms from output patterns alone.\n\n## 3. Research design\n\nUse a preregistered, randomized, repeated-query design with a causal-inference framework.\n\n**Sampling of questions.** Construct a stratified question set spanning prespecified task types, such as factual question answering, summarization, reasoning, advice, creative generation, and sensitive or high-stakes topics if in scope. Sample multiple questions per type. Define inclusion criteria, exclusions, and any reference answers or evaluation rubrics before collecting outputs. Include questions for which multiple responses can be valid, as well as questions with objectively checkable answers.\n\n**Baseline repeatability.** For each question, submit repeated, identical requests under a fixed model version, prompt, and generation configuration. Randomize request order and distribute repeats over time blocks. Where feasible, repeat across independent sessions and record whether responses come from the same serving route. This estimates residual variability under the tested fixed conditions.\n\n**Causal interventions.** Randomly assign requests, within question and time block, to prespecified generation conditions. Candidate factors include temperature, sampling parameters, seed (if supported), system instruction, response-format constraint, and context or conversation history. Vary one factor at a time for primary contrasts; use a randomized factorial design where interactions are substantively important. Keep other request components fixed within each contrast. Do not interpret a contrast in which multiple components change as the effect of a single component.\n\n**Model and time comparisons.** If model versions or dates are of interest, collect outputs in matched blocks and treat version or period as a defined treatment or stratum. Record version identifiers and deployment metadata where available. Avoid conflating model-version changes with changes in prompts or generation settings.\n\n**Blocking and randomization.** Block by question and, where relevant, task type, model version, and time window. Randomize treatment assignment and request order within blocks. If multiple outputs are generated per assigned condition, retain the assignment structure for analysis.\n\n**Blinding.** Remove condition labels and randomize output order before human evaluation. Evaluators should not know which outputs came from which conditions or whether a pair is a repeated-query pair, unless that information is necessary for the task.\n\n## 4. Data or evidence needed\n\nFor every request, retain:\n\n- Exact prompt and conversation history, including system and developer messages.\n- Model name, version, provider, endpoint, and available deployment or routing metadata.\n- Generation settings, seed if available, format constraints, and tool-use configuration.\n- Request and response timestamps, request order, session identifiers, and retry or error status.\n- Raw output, including refusals, truncations, and structured fields.\n- Question stratum, reference answer or rubric, and prespecified difficulty or sensitivity labels.\n- Human ratings, evaluator identifiers, disagreement records, and adjudication outcomes.\n- Automated evaluation results, validation rules, and any scoring code or version information.\n\nAlso retain a preregistration containing hypotheses, estimands, sample-size rationale, exclusions, outcomes, and analysis procedures. If outputs may contain sensitive information, apply an appropriate access, retention, and de-identification plan.\n\n## 5. Measurement\n\nMeasure differences at several levels, keeping surface variation separate from substantive variation.\n\n**Surface-form differences.** Record lexical, structural, and stylistic change using descriptive text-similarity measures, but do not treat these measures alone as evidence of meaningful instability.\n\n**Semantic and task-relevant differences.** For each output or output pair, assess:\n\n- Factual accuracy and consistency with references or sources where available.\n- Whether the response’s core conclusion, recommendation, or answer changes.\n- Completeness, omission of important qualifications, and internal consistency.\n- Compliance with requested format and instructions.\n- Safety-relevant content, including changes in refusal, risk advice, or unsupported certainty.\n- Whether both responses are acceptable alternatives under the task rubric.\n\nUse task-specific rubrics with explicit anchors. Human evaluators should rate outputs independently; assess inter-rater reliability and adjudicate material disagreements. Automated checks may supplement, but not replace, human assessment where semantic judgment is needed.\n\n**Meaningful-instability outcome.** Define a primary binary or ordinal outcome before data collection. For example, a pair may count as meaningfully different if blinded evaluators judge that the difference changes the answer’s correctness, core claim, decision-relevant recommendation, safety status, or rubric-based acceptability. Specify in advance how valid alternative answers and indeterminate cases are handled.\n\n**Severity and direction.** Record the magnitude and direction of change, such as correct-to-incorrect, safe-to-unsafe, compliant-to-noncompliant, or one acceptable answer to another. This avoids treating all disagreements as equally consequential.\n\n## 6. Analysis\n\n**Estimands.** Prespecify at least two targets:\n\n1. The probability that two independently generated responses to an identical request under fixed conditions differ meaningfully, averaged over the sampled question population.\n2. The causal effect of each randomized generation condition on that probability or on a prespecified semantic outcome, relative to the baseline condition.\n\nReport estimands separately by task type and model version where planned.\n\n**Baseline variability.** Estimate within-question differences across repeated identical requests. Use hierarchical or mixed-effects models that account for outputs nested within questions and, where applicable, sessions, time blocks, evaluators, and model versions. Report uncertainty intervals and question-level distributions, not only pooled averages.\n\n**Causal contrasts.** Compare randomized conditions within question and block. Use intention-to-treat contrasts based on assigned settings, with question fixed effects or matched comparisons where appropriate. Estimate main effects and prespecified interactions. For nonrandomized comparisons, label results associational and address confounding explicitly; do not present them as causal effects.\n\n**Separating wording from substance.** Analyze surface similarity and task-relevant outcomes separately. Test whether apparent textual divergence predicts rubric-based meaningful change; inspect cases with large wording change but equivalent meaning and cases with modest wording change but consequential content change. Conduct blinded qualitative review of disagreements and a sample of concordant outputs.\n\n**Robustness and uncertainty.** Use confidence or credible intervals appropriate to the design, account for clustering and repeated comparisons, and correct or control multiplicity for families of confirmatory tests. Conduct sensitivity analyses for evaluator disagreement, alternative reasonable thresholds for meaningful change, exclusions, and time or routing variation. Report missing, failed, and retried requests.\n\nNo single similarity score should determine instability. A finding of instability should be supported by task-relevant evaluation, with uncertainty that reflects question sampling and evaluator variation.\n\n## 7. Decision / stopping rule\n\nBefore collection, specify a minimum practically important instability rate, denoted \\(\\delta\\), for the primary outcome and a decision threshold for causal effects. Choose these with reference to task stakes and intended use. Set the sample size to provide adequate precision or power for detecting \\(\\delta\\), accounting for clustering by question and expected evaluator disagreement.\n\nConclude that meaningful response instability is evidenced for the tested population if the prespecified estimate exceeds the practical threshold and its uncertainty interval rules out rates below that threshold, with consistent task-relevant evidence. Conclude that a tested condition causally changes instability only if its randomized contrast meets the preregistered decision criterion and the result is not explained by protocol failures or differential missingness. Otherwise, report the result as inconclusive or as evidence against effects of the prespecified magnitude—not as proof of no variability.\n\nStop data collection when the preregistered sample size or precision target is reached, or when a predefined operational or safety criterion requires suspension. Do not stop early based on unplanned inspection of favorable results.\n\n## 8. Limitations\n\n- Findings may not generalize beyond the sampled prompts, task types, model versions, or serving conditions.\n- Hidden provider-side changes, routing, caching, and infrastructure nondeterminism may prevent full control of the treatment being studied.\n- “Meaningful” is partly normative and task-specific; rubrics and thresholds can misclassify valid alternatives or overlook consequential changes.\n- Human ratings are fallible and may vary across evaluators, languages, and expertise levels.\n- Text-based automated metrics can confuse paraphrase with disagreement and may miss subtle factual, safety, or reasoning differences.\n- Repeated prompts can create dependence, and observed variability can reflect both sampling behavior and unobserved deployment factors.\n- Randomized setting contrasts identify effects of the tested interventions, not the model’s underlying internal causes. Explanations of mechanism require additional evidence and should be stated cautiously.\n- Even low average instability can conceal rare but consequential failures, so pooled estimates should be accompanied by severity-focused and subgroup analyses.",
+  "raw_response": {
+    "id": "resp_0875360e768c5274016abf4e00a6f487d08f59a46bd7cc15ff",
+    "object": "response",
+    "created_at": 1790922240,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922266,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0875360e768c5274016abf4e015e0887d0aeca64f07f77bb80",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nEstimate whether, and under what conditions, repeated responses to the same large-language-model (LLM) question differ in ways that matter—not merely in phrasing. Identify causal effects of controllable generation conditions on those differences and distinguish them from run-to-run variability under fixed conditions.\n\nThe study will examine a prespecified set of model versions, questions, and generation settings. It will treat a “same question” as an identical prompt, including system and developer instructions, conversation history, formatting requirements, and any supplied context. Results will apply to the tested models, prompts, and settings, not automatically to all LLM uses.\n\n## 2. Assumptions\n\n- A model version and its serving configuration can be identified and held fixed during comparison.\n- The study can record all prompt text, generation settings, timestamps, and returned outputs; any provider-side changes or nondeterminism that cannot be controlled will be documented.\n- Model outputs can be evaluated against task-appropriate criteria, using blinded human assessment, automated checks, or both.\n- “Meaningful difference” is task-dependent and must be specified before analysis. A change is not meaningful solely because wording, sentence order, or examples differ.\n- Repeated requests do not provide independent draws if they share hidden state, caching, or other dependence. Runs will be separated or grouped as needed, and dependence will be considered in uncertainty estimates.\n- The target is observed response variability and the causal contribution of tested conditions. The study cannot infer hidden model mechanisms from output patterns alone.\n\n## 3. Research design\n\nUse a preregistered, randomized, repeated-query design with a causal-inference framework.\n\n**Sampling of questions.** Construct a stratified question set spanning prespecified task types, such as factual question answering, summarization, reasoning, advice, creative generation, and sensitive or high-stakes topics if in scope. Sample multiple questions per type. Define inclusion criteria, exclusions, and any reference answers or evaluation rubrics before collecting outputs. Include questions for which multiple responses can be valid, as well as questions with objectively checkable answers.\n\n**Baseline repeatability.** For each question, submit repeated, identical requests under a fixed model version, prompt, and generation configuration. Randomize request order and distribute repeats over time blocks. Where feasible, repeat across independent sessions and record whether responses come from the same serving route. This estimates residual variability under the tested fixed conditions.\n\n**Causal interventions.** Randomly assign requests, within question and time block, to prespecified generation conditions. Candidate factors include temperature, sampling parameters, seed (if supported), system instruction, response-format constraint, and context or conversation history. Vary one factor at a time for primary contrasts; use a randomized factorial design where interactions are substantively important. Keep other request components fixed within each contrast. Do not interpret a contrast in which multiple components change as the effect of a single component.\n\n**Model and time comparisons.** If model versions or dates are of interest, collect outputs in matched blocks and treat version or period as a defined treatment or stratum. Record version identifiers and deployment metadata where available. Avoid conflating model-version changes with changes in prompts or generation settings.\n\n**Blocking and randomization.** Block by question and, where relevant, task type, model version, and time window. Randomize treatment assignment and request order within blocks. If multiple outputs are generated per assigned condition, retain the assignment structure for analysis.\n\n**Blinding.** Remove condition labels and randomize output order before human evaluation. Evaluators should not know which outputs came from which conditions or whether a pair is a repeated-query pair, unless that information is necessary for the task.\n\n## 4. Data or evidence needed\n\nFor every request, retain:\n\n- Exact prompt and conversation history, including system and developer messages.\n- Model name, version, provider, endpoint, and available deployment or routing metadata.\n- Generation settings, seed if available, format constraints, and tool-use configuration.\n- Request and response timestamps, request order, session identifiers, and retry or error status.\n- Raw output, including refusals, truncations, and structured fields.\n- Question stratum, reference answer or rubric, and prespecified difficulty or sensitivity labels.\n- Human ratings, evaluator identifiers, disagreement records, and adjudication outcomes.\n- Automated evaluation results, validation rules, and any scoring code or version information.\n\nAlso retain a preregistration containing hypotheses, estimands, sample-size rationale, exclusions, outcomes, and analysis procedures. If outputs may contain sensitive information, apply an appropriate access, retention, and de-identification plan.\n\n## 5. Measurement\n\nMeasure differences at several levels, keeping surface variation separate from substantive variation.\n\n**Surface-form differences.** Record lexical, structural, and stylistic change using descriptive text-similarity measures, but do not treat these measures alone as evidence of meaningful instability.\n\n**Semantic and task-relevant differences.** For each output or output pair, assess:\n\n- Factual accuracy and consistency with references or sources where available.\n- Whether the response’s core conclusion, recommendation, or answer changes.\n- Completeness, omission of important qualifications, and internal consistency.\n- Compliance with requested format and instructions.\n- Safety-relevant content, including changes in refusal, risk advice, or unsupported certainty.\n- Whether both responses are acceptable alternatives under the task rubric.\n\nUse task-specific rubrics with explicit anchors. Human evaluators should rate outputs independently; assess inter-rater reliability and adjudicate material disagreements. Automated checks may supplement, but not replace, human assessment where semantic judgment is needed.\n\n**Meaningful-instability outcome.** Define a primary binary or ordinal outcome before data collection. For example, a pair may count as meaningfully different if blinded evaluators judge that the difference changes the answer’s correctness, core claim, decision-relevant recommendation, safety status, or rubric-based acceptability. Specify in advance how valid alternative answers and indeterminate cases are handled.\n\n**Severity and direction.** Record the magnitude and direction of change, such as correct-to-incorrect, safe-to-unsafe, compliant-to-noncompliant, or one acceptable answer to another. This avoids treating all disagreements as equally consequential.\n\n## 6. Analysis\n\n**Estimands.** Prespecify at least two targets:\n\n1. The probability that two independently generated responses to an identical request under fixed conditions differ meaningfully, averaged over the sampled question population.\n2. The causal effect of each randomized generation condition on that probability or on a prespecified semantic outcome, relative to the baseline condition.\n\nReport estimands separately by task type and model version where planned.\n\n**Baseline variability.** Estimate within-question differences across repeated identical requests. Use hierarchical or mixed-effects models that account for outputs nested within questions and, where applicable, sessions, time blocks, evaluators, and model versions. Report uncertainty intervals and question-level distributions, not only pooled averages.\n\n**Causal contrasts.** Compare randomized conditions within question and block. Use intention-to-treat contrasts based on assigned settings, with question fixed effects or matched comparisons where appropriate. Estimate main effects and prespecified interactions. For nonrandomized comparisons, label results associational and address confounding explicitly; do not present them as causal effects.\n\n**Separating wording from substance.** Analyze surface similarity and task-relevant outcomes separately. Test whether apparent textual divergence predicts rubric-based meaningful change; inspect cases with large wording change but equivalent meaning and cases with modest wording change but consequential content change. Conduct blinded qualitative review of disagreements and a sample of concordant outputs.\n\n**Robustness and uncertainty.** Use confidence or credible intervals appropriate to the design, account for clustering and repeated comparisons, and correct or control multiplicity for families of confirmatory tests. Conduct sensitivity analyses for evaluator disagreement, alternative reasonable thresholds for meaningful change, exclusions, and time or routing variation. Report missing, failed, and retried requests.\n\nNo single similarity score should determine instability. A finding of instability should be supported by task-relevant evaluation, with uncertainty that reflects question sampling and evaluator variation.\n\n## 7. Decision / stopping rule\n\nBefore collection, specify a minimum practically important instability rate, denoted \\(\\delta\\), for the primary outcome and a decision threshold for causal effects. Choose these with reference to task stakes and intended use. Set the sample size to provide adequate precision or power for detecting \\(\\delta\\), accounting for clustering by question and expected evaluator disagreement.\n\nConclude that meaningful response instability is evidenced for the tested population if the prespecified estimate exceeds the practical threshold and its uncertainty interval rules out rates below that threshold, with consistent task-relevant evidence. Conclude that a tested condition causally changes instability only if its randomized contrast meets the preregistered decision criterion and the result is not explained by protocol failures or differential missingness. Otherwise, report the result as inconclusive or as evidence against effects of the prespecified magnitude—not as proof of no variability.\n\nStop data collection when the preregistered sample size or precision target is reached, or when a predefined operational or safety criterion requires suspension. Do not stop early based on unplanned inspection of favorable results.\n\n## 8. Limitations\n\n- Findings may not generalize beyond the sampled prompts, task types, model versions, or serving conditions.\n- Hidden provider-side changes, routing, caching, and infrastructure nondeterminism may prevent full control of the treatment being studied.\n- “Meaningful” is partly normative and task-specific; rubrics and thresholds can misclassify valid alternatives or overlook consequential changes.\n- Human ratings are fallible and may vary across evaluators, languages, and expertise levels.\n- Text-based automated metrics can confuse paraphrase with disagreement and may miss subtle factual, safety, or reasoning differences.\n- Repeated prompts can create dependence, and observed variability can reflect both sampling behavior and unobserved deployment factors.\n- Randomized setting contrasts identify effects of the tested interventions, not the model’s underlying internal causes. Explanations of mechanism require additional evidence and should be stated cautiously.\n- Even low average instability can conceal rare but consequential failures, so pooled estimates should be accompanied by severity-focused and subgroup analyses."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 190,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2056,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2246
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

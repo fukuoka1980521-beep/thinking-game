@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "SOFTWARE_TESTING_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "SOFTWARE_TESTING",
+  "replicate": 17,
+  "run_id": "R1B-T1-SOFTWARE_TESTING-R17",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:22:56.832377+00:00",
+  "timestamp_utc": "2026-10-02T06:23:16.864795+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "3ea38a6435b62d739dbef9a1a5e34838363d796b5e82a9575b6ca8c8e03a2123",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_07e6b352965bf834016abf4dc0941887d08958ad776a2935ef",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1920,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2109
+  },
+  "raw_text": "## 1. Objective and scope\n\nDesign a reproducible software-testing study to determine:\n\n1. Whether repeated responses to the same question differ beyond ordinary wording variation.\n2. Whether any differences are consequential for the response’s meaning, factual content, reasoning, or recommendations.\n3. Which conditions cause or amplify such differences.\n\nThe study concerns a prespecified set of language models, questions, and operating conditions. It tests observable response behavior, not internal model processes. It distinguishes variation across repeated calls to one fixed model configuration from variation caused by changing prompts, settings, model versions, or serving environments.\n\n## 2. Assumptions\n\n- Each test case can be replayed with the same model identifier, system instructions, conversation history, tools, decoding settings, and other available request parameters.\n- The service may be nondeterministic even when a request is nominally unchanged. “Same configuration” therefore means the same documented inputs and settings, not necessarily identical internal execution.\n- A response can differ lexically without differing meaningfully. Conversely, semantically similar answers can differ in an important claim, qualification, refusal, or recommendation.\n- The study will not infer a cause solely from an observed difference. Causal attribution requires controlled contrasts in which the relevant condition is deliberately changed.\n- Conclusions apply to the tested questions and configurations. Broader claims require a sampling design that supports generalization.\n\n## 3. Research design\n\nUse a software-testing framework with a versioned test suite, explicit oracles, controlled test conditions, and regression testing.\n\n**Test suite and sampling**\n- Define question categories before collecting responses, such as factual, ambiguous, multi-step reasoning, advice, summarization, and safety-sensitive requests.\n- Sample questions from each category using documented inclusion criteria. Include both naturally occurring questions and carefully written test cases, and record the source and intended properties of each item.\n- For questions with a determinate expected answer, specify the answer criteria in advance. For open-ended questions, specify required content, acceptable alternatives, and critical constraints rather than a single reference response.\n- Include paired test cases designed to isolate likely drivers: for example, a minimal wording change, added context, a changed system instruction, a changed decoding setting, or a different model version. Change one factor at a time where feasible.\n\n**Baseline repeatability testing**\n- For every test case, issue repeated, identical requests under a fixed configuration. Randomize their order and interleave repeats to reduce confounding by time or service changes.\n- Repeat the baseline across multiple sessions or time windows. Log model and endpoint identifiers, request settings, timestamps, and any available serving metadata.\n- Where available and relevant, test more than one decoding setting. Do not treat a setting change as evidence of instability under the baseline condition.\n\n**Controlled fault and robustness testing**\n- Apply prespecified perturbations that represent plausible input variation: punctuation, formatting, synonymous wording, reordered nonessential context, and small changes to ambiguous phrasing.\n- Test substantive changes separately, such as adding a constraint or clarifying the intended referent. These are expected to change some answers and must not be conflated with wording robustness.\n- Use metamorphic tests when an exact reference answer is unavailable. For example, adding an irrelevant detail should not reverse a central conclusion; asking for a shorter version should preserve core claims; and equivalent paraphrases should preserve the answer’s material commitments.\n- Run regression tests after a model, prompt, parameter, or serving change using a frozen subset of the suite.\n\n**Controls and blinding**\n- Preserve raw requests and responses. Assessors should not know the repeat number, condition, or model configuration when judging response pairs, where practicable.\n- Use at least two independent assessors for consequential judgments, with a process for adjudicating disagreements.\n- Separate automated similarity measures from human judgments; neither alone establishes meaningful stability or instability.\n\n## 4. Data or evidence needed\n\nFor each test execution, retain:\n\n- Exact user message, system and developer instructions, conversation history, tool definitions, and tool outputs.\n- Model and endpoint identifiers, decoding and generation settings, request parameters, timestamp, session identifier, and available version or deployment metadata.\n- Complete raw response, including refusals, tool calls, structured fields, and termination information.\n- Test-case category, intended invariants, reference criteria or acceptable-answer rubric, and any known ambiguity.\n- Pairwise comparisons between responses, including blinded assessor ratings, rating rationales, disagreements, and adjudications.\n- Execution failures, retries, timeouts, and service errors, recorded separately from valid model responses.\n\nStore data with versioning and access controls appropriate to any sensitive material. Predefine exclusions; do not silently discard unusual, low-quality, or divergent responses.\n\n## 5. Measurement\n\nMeasure response differences at multiple levels.\n\n**Surface variation**\n- Exact-match rate and normalized lexical or character-level differences.\n- These describe wording variation and are not, by themselves, evidence of meaningful change.\n\n**Semantic and task-level variation**\n- Human ratings of whether paired responses express the same central answer, claims, qualifications, uncertainty, and recommended action.\n- Structured coding of material propositions: factual assertions, numerical values, entities, causal claims, caveats, refusals, and requested outputs.\n- Task-specific correctness against the prespecified rubric, assessed without treating one reference wording as uniquely correct.\n- For advice or safety-sensitive questions, assess whether the responses differ in actionability, risk, or safeguards.\n\n**Meaningful-difference labels**\nClassify each pair using a prespecified scheme:\n\n1. **Wording-only:** paraphrase, formatting, or stylistic variation with no material change.\n2. **Minor semantic variation:** altered emphasis or detail that does not change the central answer or likely use.\n3. **Material variation:** a changed central claim, conclusion, qualification, confidence level, or recommendation.\n4. **Critical variation:** a material difference that changes correctness, safety, refusal behavior, or likely real-world action.\n\nAssessors should rate materiality and confidence separately. Define agreement statistics and adjudication procedures in advance.\n\n**Reliability and test performance**\n- Estimate within-question response variability and the proportion of question-condition pairs exhibiting material or critical variation.\n- Measure accuracy, constraint satisfaction, refusal consistency, and metamorphic-property violations.\n- Report uncertainty intervals at the question level; treat questions, not individual response pairs, as the primary sampling units to avoid overstating precision from many repeats of a few items.\n\n## 6. Analysis\n\n- Summarize exact-match and semantic-stability results separately. Do not interpret lexical dissimilarity as instability without evidence of a material change.\n- Estimate the frequency and severity of meaningful differences for each question category and configuration, with uncertainty intervals that account for clustering by question.\n- Compare fixed-condition repeats with controlled perturbations. Use paired analyses for the same question under baseline and altered conditions.\n- For causal claims about a factor, compare conditions that differ only in that factor where feasible. Report interactions when, for example, a wording perturbation has different effects under different decoding settings.\n- Examine whether variation is associated with ambiguity, task type, response length, settings, time window, or serving/version changes. Treat unlogged or uncontrolled changes as possible confounders.\n- Report both overall results and case-level failures. Include representative examples selected by prespecified criteria, with enough context to interpret the difference.\n- Conduct sensitivity analyses for assessor disagreement, alternative materiality thresholds, and exclusion rules. If automated metrics are used, validate them against blinded human judgments on a labeled subset and report their limitations.\n- Preserve the distinction between observed instability and its explanation: repeated divergence establishes an outcome; causal attribution requires controlled evidence.\n\n## 7. Decision / stopping rule\n\nBefore data collection, set a minimum number of questions per category, repetitions per condition, and independent sessions, informed by a precision or power calculation based on the smallest material-variation rate considered practically important. Define acceptable uncertainty bounds for the primary estimates.\n\nConclude that the tested configuration shows **meaningful response instability** only if the prespecified analysis finds material or critical differences across identical-request repeats at a rate exceeding the prespecified practical threshold, with uncertainty sufficiently narrow to rule out a negligible rate. Report critical failures individually even if the aggregate threshold is not met.\n\nConclude that a controlled factor is a plausible cause only if its isolated contrast produces a prespecified, practically meaningful change with adequate uncertainty control. If these criteria are unmet because estimates remain imprecise, classify the result as inconclusive rather than stable.\n\nStop when all prespecified sampling and repetition targets are met and the primary estimates meet the precision target, or when a predefined resource limit is reached. At the resource limit, report unresolved uncertainty and do not convert it into a stability claim.\n\n## 8. Limitations\n\n- Results may not generalize beyond the tested questions, languages, model versions, settings, or service periods.\n- Hidden serving changes, infrastructure behavior, or unavailable metadata may prevent complete reproduction or causal attribution.\n- Human judgments of semantic equivalence and materiality are fallible and may vary by domain or assessor expertise.\n- Reference rubrics can encode omissions or biases; open-ended questions may not have a single correct answer.\n- Automated similarity and semantic metrics can miss reversals, subtle qualifications, or domain-specific consequences.\n- Repeated testing estimates behavior under the sampled conditions; it cannot establish that a model will never produce a divergent answer.\n- Testing itself may expose sensitive prompts or outputs and should follow appropriate privacy and security procedures.",
+  "raw_response": {
+    "id": "resp_07e6b352965bf834016abf4dc0941887d08958ad776a2935ef",
+    "object": "response",
+    "created_at": 1790922176,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922196,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_07e6b352965bf834016abf4dc14dd087d0854f2d579ac40bf7",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDesign a reproducible software-testing study to determine:\n\n1. Whether repeated responses to the same question differ beyond ordinary wording variation.\n2. Whether any differences are consequential for the response’s meaning, factual content, reasoning, or recommendations.\n3. Which conditions cause or amplify such differences.\n\nThe study concerns a prespecified set of language models, questions, and operating conditions. It tests observable response behavior, not internal model processes. It distinguishes variation across repeated calls to one fixed model configuration from variation caused by changing prompts, settings, model versions, or serving environments.\n\n## 2. Assumptions\n\n- Each test case can be replayed with the same model identifier, system instructions, conversation history, tools, decoding settings, and other available request parameters.\n- The service may be nondeterministic even when a request is nominally unchanged. “Same configuration” therefore means the same documented inputs and settings, not necessarily identical internal execution.\n- A response can differ lexically without differing meaningfully. Conversely, semantically similar answers can differ in an important claim, qualification, refusal, or recommendation.\n- The study will not infer a cause solely from an observed difference. Causal attribution requires controlled contrasts in which the relevant condition is deliberately changed.\n- Conclusions apply to the tested questions and configurations. Broader claims require a sampling design that supports generalization.\n\n## 3. Research design\n\nUse a software-testing framework with a versioned test suite, explicit oracles, controlled test conditions, and regression testing.\n\n**Test suite and sampling**\n- Define question categories before collecting responses, such as factual, ambiguous, multi-step reasoning, advice, summarization, and safety-sensitive requests.\n- Sample questions from each category using documented inclusion criteria. Include both naturally occurring questions and carefully written test cases, and record the source and intended properties of each item.\n- For questions with a determinate expected answer, specify the answer criteria in advance. For open-ended questions, specify required content, acceptable alternatives, and critical constraints rather than a single reference response.\n- Include paired test cases designed to isolate likely drivers: for example, a minimal wording change, added context, a changed system instruction, a changed decoding setting, or a different model version. Change one factor at a time where feasible.\n\n**Baseline repeatability testing**\n- For every test case, issue repeated, identical requests under a fixed configuration. Randomize their order and interleave repeats to reduce confounding by time or service changes.\n- Repeat the baseline across multiple sessions or time windows. Log model and endpoint identifiers, request settings, timestamps, and any available serving metadata.\n- Where available and relevant, test more than one decoding setting. Do not treat a setting change as evidence of instability under the baseline condition.\n\n**Controlled fault and robustness testing**\n- Apply prespecified perturbations that represent plausible input variation: punctuation, formatting, synonymous wording, reordered nonessential context, and small changes to ambiguous phrasing.\n- Test substantive changes separately, such as adding a constraint or clarifying the intended referent. These are expected to change some answers and must not be conflated with wording robustness.\n- Use metamorphic tests when an exact reference answer is unavailable. For example, adding an irrelevant detail should not reverse a central conclusion; asking for a shorter version should preserve core claims; and equivalent paraphrases should preserve the answer’s material commitments.\n- Run regression tests after a model, prompt, parameter, or serving change using a frozen subset of the suite.\n\n**Controls and blinding**\n- Preserve raw requests and responses. Assessors should not know the repeat number, condition, or model configuration when judging response pairs, where practicable.\n- Use at least two independent assessors for consequential judgments, with a process for adjudicating disagreements.\n- Separate automated similarity measures from human judgments; neither alone establishes meaningful stability or instability.\n\n## 4. Data or evidence needed\n\nFor each test execution, retain:\n\n- Exact user message, system and developer instructions, conversation history, tool definitions, and tool outputs.\n- Model and endpoint identifiers, decoding and generation settings, request parameters, timestamp, session identifier, and available version or deployment metadata.\n- Complete raw response, including refusals, tool calls, structured fields, and termination information.\n- Test-case category, intended invariants, reference criteria or acceptable-answer rubric, and any known ambiguity.\n- Pairwise comparisons between responses, including blinded assessor ratings, rating rationales, disagreements, and adjudications.\n- Execution failures, retries, timeouts, and service errors, recorded separately from valid model responses.\n\nStore data with versioning and access controls appropriate to any sensitive material. Predefine exclusions; do not silently discard unusual, low-quality, or divergent responses.\n\n## 5. Measurement\n\nMeasure response differences at multiple levels.\n\n**Surface variation**\n- Exact-match rate and normalized lexical or character-level differences.\n- These describe wording variation and are not, by themselves, evidence of meaningful change.\n\n**Semantic and task-level variation**\n- Human ratings of whether paired responses express the same central answer, claims, qualifications, uncertainty, and recommended action.\n- Structured coding of material propositions: factual assertions, numerical values, entities, causal claims, caveats, refusals, and requested outputs.\n- Task-specific correctness against the prespecified rubric, assessed without treating one reference wording as uniquely correct.\n- For advice or safety-sensitive questions, assess whether the responses differ in actionability, risk, or safeguards.\n\n**Meaningful-difference labels**\nClassify each pair using a prespecified scheme:\n\n1. **Wording-only:** paraphrase, formatting, or stylistic variation with no material change.\n2. **Minor semantic variation:** altered emphasis or detail that does not change the central answer or likely use.\n3. **Material variation:** a changed central claim, conclusion, qualification, confidence level, or recommendation.\n4. **Critical variation:** a material difference that changes correctness, safety, refusal behavior, or likely real-world action.\n\nAssessors should rate materiality and confidence separately. Define agreement statistics and adjudication procedures in advance.\n\n**Reliability and test performance**\n- Estimate within-question response variability and the proportion of question-condition pairs exhibiting material or critical variation.\n- Measure accuracy, constraint satisfaction, refusal consistency, and metamorphic-property violations.\n- Report uncertainty intervals at the question level; treat questions, not individual response pairs, as the primary sampling units to avoid overstating precision from many repeats of a few items.\n\n## 6. Analysis\n\n- Summarize exact-match and semantic-stability results separately. Do not interpret lexical dissimilarity as instability without evidence of a material change.\n- Estimate the frequency and severity of meaningful differences for each question category and configuration, with uncertainty intervals that account for clustering by question.\n- Compare fixed-condition repeats with controlled perturbations. Use paired analyses for the same question under baseline and altered conditions.\n- For causal claims about a factor, compare conditions that differ only in that factor where feasible. Report interactions when, for example, a wording perturbation has different effects under different decoding settings.\n- Examine whether variation is associated with ambiguity, task type, response length, settings, time window, or serving/version changes. Treat unlogged or uncontrolled changes as possible confounders.\n- Report both overall results and case-level failures. Include representative examples selected by prespecified criteria, with enough context to interpret the difference.\n- Conduct sensitivity analyses for assessor disagreement, alternative materiality thresholds, and exclusion rules. If automated metrics are used, validate them against blinded human judgments on a labeled subset and report their limitations.\n- Preserve the distinction between observed instability and its explanation: repeated divergence establishes an outcome; causal attribution requires controlled evidence.\n\n## 7. Decision / stopping rule\n\nBefore data collection, set a minimum number of questions per category, repetitions per condition, and independent sessions, informed by a precision or power calculation based on the smallest material-variation rate considered practically important. Define acceptable uncertainty bounds for the primary estimates.\n\nConclude that the tested configuration shows **meaningful response instability** only if the prespecified analysis finds material or critical differences across identical-request repeats at a rate exceeding the prespecified practical threshold, with uncertainty sufficiently narrow to rule out a negligible rate. Report critical failures individually even if the aggregate threshold is not met.\n\nConclude that a controlled factor is a plausible cause only if its isolated contrast produces a prespecified, practically meaningful change with adequate uncertainty control. If these criteria are unmet because estimates remain imprecise, classify the result as inconclusive rather than stable.\n\nStop when all prespecified sampling and repetition targets are met and the primary estimates meet the precision target, or when a predefined resource limit is reached. At the resource limit, report unresolved uncertainty and do not convert it into a stability claim.\n\n## 8. Limitations\n\n- Results may not generalize beyond the tested questions, languages, model versions, settings, or service periods.\n- Hidden serving changes, infrastructure behavior, or unavailable metadata may prevent complete reproduction or causal attribution.\n- Human judgments of semantic equivalence and materiality are fallible and may vary by domain or assessor expertise.\n- Reference rubrics can encode omissions or biases; open-ended questions may not have a single correct answer.\n- Automated similarity and semantic metrics can miss reversals, subtle qualifications, or domain-specific consequences.\n- Repeated testing estimates behavior under the sampled conditions; it cannot establish that a model will never produce a divergent answer.\n- Testing itself may expose sensitive prompts or outputs and should follow appropriate privacy and security procedures."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1920,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2109
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

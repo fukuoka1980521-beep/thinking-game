@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 18,
+  "run_id": "R1B-T1-STATE_SPACE-R18",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:26:43.514992+00:00",
+  "timestamp_utc": "2026-10-02T06:27:01.433107+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "832fba3b7142c44efaa9be82d8332e394e2518835651985d142293c7b5394fbf",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_06ce13c1ab6b713d016abf4ea36ab087d0ac14444ce58d51b7",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1836,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2025
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same question from a large language model (LLM) exhibit meaningful instability, identify conditions associated with that instability, and distinguish changes in substantive content from harmless wording variation.\n\nTreat the response process as a state-space system. The hidden state represents the model’s response-relevant internal condition at a given generation step; observable outputs include tokens, claims, structure, and actions such as tool calls. The study will assess output variability without claiming direct access to the model’s internal state.\n\nThe primary estimand is the distribution of substantive response differences when the question, model version, system instructions, and relevant generation settings are held fixed. Secondary estimands describe how that distribution changes with prompt framing, decoding settings, and model version.\n\nThe study concerns specified models and task domains, not all LLMs or all possible questions.\n\n## 2. Assumptions\n\n- A model is identified by a recorded version or immutable deployment snapshot. Uncontrolled provider updates make repetitions incomparable.\n- A “same question” is defined by an exact prompt and fixed conversation context. Prompt variants are separate experimental conditions.\n- When accessible, sampling parameters, system instructions, tools, and retrieval sources are held constant and recorded.\n- Repeated calls are treated as observations from a possibly stochastic output process, not as independent evidence of distinct internal states. Calls may be correlated by shared infrastructure, caches, or session context.\n- Surface differences do not by themselves establish meaningful instability. Meaning depends on task-specific criteria, including factual correctness, conclusions, recommendations, and safety.\n- Any rubric, threshold, and analysis procedure will be specified before examining comparative results.\n\n## 3. Research design\n\nUse a preregistered, repeated-measures design with the question as the principal unit and generation as the repeated observation.\n\n1. **Select questions.** Sample questions across prespecified task domains, such as factual explanation, calculation, summarization, advice, classification, and safety-sensitive requests. Include questions with objectively checkable answers as well as open-ended questions. Stratify by difficulty, ambiguity, and expected answer structure. Define inclusion criteria and sample sizes using a prospective power or precision analysis.\n2. **Specify conditions.** For each question, define a baseline condition with a fixed prompt, model version, system message, and generation settings. Add controlled perturbations to estimate potential causes of change: prompt wording, ordering or formatting, decoding settings, conversation context, and model version. Alter one factor at a time where feasible; use a factorial design if interactions are a central target.\n3. **Repeat generations.** Obtain multiple responses per question-condition using fresh, otherwise identical sessions. Randomize call order and interleave conditions to reduce confounding by time or service changes. Set the number of repetitions per condition based on the precision target for the estimated instability rate, with additional repetitions for questions where rare but consequential failures are plausible.\n4. **Track state-space observables.** Record every response and available generation metadata. Where the system permits, record token-level probabilities or other diagnostics, but do not require access to hidden activations. Treat these as auxiliary evidence, not direct measurements of mental state.\n5. **Use blinded assessment.** Remove condition labels and shuffle outputs before human rating. Have independent raters assess responses using a prespecified rubric; adjudicate disagreements under a documented procedure. Use automated similarity or entailment measures only as secondary instruments and validate them against human judgments and task-specific checks.\n6. **Separate discovery and confirmation.** Use a development subset to refine operational definitions and annotation guidance. Lock these before evaluating a held-out confirmation subset.\n\n## 4. Data or evidence needed\n\nFor each generation, retain:\n\n- Exact prompt, system instructions, conversation history, and any tool or retrieval inputs.\n- Model identifier, version, provider, endpoint, date and time, and relevant configuration.\n- Sampling settings, random seed if exposed, token limits, stop conditions, and any retry or error events.\n- Full output, including refusals, tool calls, formatting, and truncation indicators.\n- Question metadata: domain, ambiguity, answerability, stakes, and gold answer or reference sources where applicable.\n- Independent ratings for correctness, claim inclusion and omission, conclusion, recommendation, uncertainty calibration, safety, and relevance.\n- Pairwise judgments of whether two responses differ materially, with reasons linked to rubric dimensions.\n- Reliability and adjudication records, including rater agreement and unresolved cases.\n\nFor objectively answerable tasks, use reliable reference answers or independently verified sources. For open-ended tasks, specify acceptable answer ranges and task-specific criteria rather than relying on a single reference response.\n\n## 5. Measurement\n\nRepresent each response as a set of observable features and task-relevant outcomes. The primary distinction is:\n\n- **Surface variation:** changes in wording, phrasing, order, or stylistic presentation that preserve the response’s substantive claims and implications.\n- **Material variation:** changes to factual claims, answer, reasoning-relevant premises, recommendation, refusal status, safety posture, uncertainty, or actionable implications.\n\nFor each response, measure:\n\n- Semantic and lexical similarity, used descriptively rather than as the final instability criterion.\n- Claim-level agreement, including contradiction, omission, and addition of material claims.\n- Task-specific correctness or quality.\n- Agreement on the bottom-line answer, recommendation, or classification.\n- Changes in confidence, qualification, refusal, or safety-relevant content.\n- Human-rated material-difference judgments and rationale.\n\nDefine a prespecified **material instability indicator** for a response pair or question-condition. A pair qualifies when it crosses a task-specific threshold on at least one substantive dimension, such as a changed conclusion, consequential contradiction, wrong answer versus correct answer, or materially different recommendation. Cosmetic differences alone do not qualify. Report results both by this composite indicator and separately by component, so the composite does not obscure distinct failure types.\n\n## 6. Analysis\n\nUse a hierarchical state-space model to separate within-condition response variation from between-question and between-condition differences. Conceptually, let a latent response-relevant state evolve across generation steps and conditions, and let observed language and task outcomes be emitted from that state. Because internal states are generally inaccessible, estimate instability using observable features, while treating any latent-state interpretation as a statistical model rather than a direct account of neural mechanisms.\n\nPrimary analyses:\n\n- Estimate, with uncertainty intervals, the probability of material instability for repeated generations of the same question under the baseline condition.\n- Estimate question-level heterogeneity and identify domains or question properties associated with higher instability.\n- Compare baseline with controlled perturbations to estimate effects of prompt framing, decoding settings, context, and version. Test prespecified interactions where relevant.\n- Distinguish random within-condition variability from systematic shifts caused by controlled changes. Include time or batch effects when deployment changes or temporal drift are plausible.\n- Assess whether apparent semantic disagreement corresponds to meaningful differences using blinded ratings, correctness checks, and the preregistered materiality rubric.\n- Estimate inter-rater reliability and conduct sensitivity analyses for alternative reasonable thresholds, excluding ambiguous annotations, and accounting for dependence among repeated calls.\n- Report results at both question and domain levels, with uncertainty intervals and the distribution of severity. Do not treat a high average similarity score as evidence against rare consequential deviations.\n\nIf token probabilities or other diagnostics are available, examine whether they predict observed instability, but distinguish predictive association from causal explanation. Do not infer specific internal mechanisms from output variation alone.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a minimum practically important instability rate, a more consequential severity threshold, and target precision for the primary estimate. Continue repeated sampling until either:\n\n- the prespecified precision target is reached for the primary instability rate and key comparisons; or\n- the maximum planned sample size or repetition count is reached.\n\nDeclare evidence of meaningful instability for the studied model and scope if the prespecified estimate exceeds the practical threshold and its uncertainty interval supports that conclusion. If the interval includes both negligible and practically important rates, classify the result as inconclusive rather than stable. Report rare severe deviations separately; a low overall rate does not neutralize a consequential event. Stop early only under preregistered safety or futility criteria, such as replicated severe harmful outputs or clear attainment of the precision target.\n\n## 8. Limitations\n\n- Output-only observations cannot identify the model’s true internal state or establish a causal internal mechanism.\n- Provider-side nondeterminism, hidden routing, caching, updates, and infrastructure effects may remain uncontrolled.\n- Results depend on the sampled questions, languages, task domains, prompt specification, and operational definition of materiality.\n- Human judgments can be inconsistent, particularly for open-ended or value-laden tasks; automated metrics can miss contradictions or overstate differences.\n- Finite repetitions may miss rare but high-impact behavior.\n- Findings for one model version, configuration, or evaluation environment may not generalize to other versions or deployment settings.\n- A state-space representation organizes temporal and condition-dependent variation but does not, by itself, validate a particular psychological or mechanistic interpretation of the model.",
+  "raw_response": {
+    "id": "resp_06ce13c1ab6b713d016abf4ea36ab087d0ac14444ce58d51b7",
+    "object": "response",
+    "created_at": 1790922403,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922420,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_06ce13c1ab6b713d016abf4ea3eb2c87d09473d64a8fead5d3",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same question from a large language model (LLM) exhibit meaningful instability, identify conditions associated with that instability, and distinguish changes in substantive content from harmless wording variation.\n\nTreat the response process as a state-space system. The hidden state represents the model’s response-relevant internal condition at a given generation step; observable outputs include tokens, claims, structure, and actions such as tool calls. The study will assess output variability without claiming direct access to the model’s internal state.\n\nThe primary estimand is the distribution of substantive response differences when the question, model version, system instructions, and relevant generation settings are held fixed. Secondary estimands describe how that distribution changes with prompt framing, decoding settings, and model version.\n\nThe study concerns specified models and task domains, not all LLMs or all possible questions.\n\n## 2. Assumptions\n\n- A model is identified by a recorded version or immutable deployment snapshot. Uncontrolled provider updates make repetitions incomparable.\n- A “same question” is defined by an exact prompt and fixed conversation context. Prompt variants are separate experimental conditions.\n- When accessible, sampling parameters, system instructions, tools, and retrieval sources are held constant and recorded.\n- Repeated calls are treated as observations from a possibly stochastic output process, not as independent evidence of distinct internal states. Calls may be correlated by shared infrastructure, caches, or session context.\n- Surface differences do not by themselves establish meaningful instability. Meaning depends on task-specific criteria, including factual correctness, conclusions, recommendations, and safety.\n- Any rubric, threshold, and analysis procedure will be specified before examining comparative results.\n\n## 3. Research design\n\nUse a preregistered, repeated-measures design with the question as the principal unit and generation as the repeated observation.\n\n1. **Select questions.** Sample questions across prespecified task domains, such as factual explanation, calculation, summarization, advice, classification, and safety-sensitive requests. Include questions with objectively checkable answers as well as open-ended questions. Stratify by difficulty, ambiguity, and expected answer structure. Define inclusion criteria and sample sizes using a prospective power or precision analysis.\n2. **Specify conditions.** For each question, define a baseline condition with a fixed prompt, model version, system message, and generation settings. Add controlled perturbations to estimate potential causes of change: prompt wording, ordering or formatting, decoding settings, conversation context, and model version. Alter one factor at a time where feasible; use a factorial design if interactions are a central target.\n3. **Repeat generations.** Obtain multiple responses per question-condition using fresh, otherwise identical sessions. Randomize call order and interleave conditions to reduce confounding by time or service changes. Set the number of repetitions per condition based on the precision target for the estimated instability rate, with additional repetitions for questions where rare but consequential failures are plausible.\n4. **Track state-space observables.** Record every response and available generation metadata. Where the system permits, record token-level probabilities or other diagnostics, but do not require access to hidden activations. Treat these as auxiliary evidence, not direct measurements of mental state.\n5. **Use blinded assessment.** Remove condition labels and shuffle outputs before human rating. Have independent raters assess responses using a prespecified rubric; adjudicate disagreements under a documented procedure. Use automated similarity or entailment measures only as secondary instruments and validate them against human judgments and task-specific checks.\n6. **Separate discovery and confirmation.** Use a development subset to refine operational definitions and annotation guidance. Lock these before evaluating a held-out confirmation subset.\n\n## 4. Data or evidence needed\n\nFor each generation, retain:\n\n- Exact prompt, system instructions, conversation history, and any tool or retrieval inputs.\n- Model identifier, version, provider, endpoint, date and time, and relevant configuration.\n- Sampling settings, random seed if exposed, token limits, stop conditions, and any retry or error events.\n- Full output, including refusals, tool calls, formatting, and truncation indicators.\n- Question metadata: domain, ambiguity, answerability, stakes, and gold answer or reference sources where applicable.\n- Independent ratings for correctness, claim inclusion and omission, conclusion, recommendation, uncertainty calibration, safety, and relevance.\n- Pairwise judgments of whether two responses differ materially, with reasons linked to rubric dimensions.\n- Reliability and adjudication records, including rater agreement and unresolved cases.\n\nFor objectively answerable tasks, use reliable reference answers or independently verified sources. For open-ended tasks, specify acceptable answer ranges and task-specific criteria rather than relying on a single reference response.\n\n## 5. Measurement\n\nRepresent each response as a set of observable features and task-relevant outcomes. The primary distinction is:\n\n- **Surface variation:** changes in wording, phrasing, order, or stylistic presentation that preserve the response’s substantive claims and implications.\n- **Material variation:** changes to factual claims, answer, reasoning-relevant premises, recommendation, refusal status, safety posture, uncertainty, or actionable implications.\n\nFor each response, measure:\n\n- Semantic and lexical similarity, used descriptively rather than as the final instability criterion.\n- Claim-level agreement, including contradiction, omission, and addition of material claims.\n- Task-specific correctness or quality.\n- Agreement on the bottom-line answer, recommendation, or classification.\n- Changes in confidence, qualification, refusal, or safety-relevant content.\n- Human-rated material-difference judgments and rationale.\n\nDefine a prespecified **material instability indicator** for a response pair or question-condition. A pair qualifies when it crosses a task-specific threshold on at least one substantive dimension, such as a changed conclusion, consequential contradiction, wrong answer versus correct answer, or materially different recommendation. Cosmetic differences alone do not qualify. Report results both by this composite indicator and separately by component, so the composite does not obscure distinct failure types.\n\n## 6. Analysis\n\nUse a hierarchical state-space model to separate within-condition response variation from between-question and between-condition differences. Conceptually, let a latent response-relevant state evolve across generation steps and conditions, and let observed language and task outcomes be emitted from that state. Because internal states are generally inaccessible, estimate instability using observable features, while treating any latent-state interpretation as a statistical model rather than a direct account of neural mechanisms.\n\nPrimary analyses:\n\n- Estimate, with uncertainty intervals, the probability of material instability for repeated generations of the same question under the baseline condition.\n- Estimate question-level heterogeneity and identify domains or question properties associated with higher instability.\n- Compare baseline with controlled perturbations to estimate effects of prompt framing, decoding settings, context, and version. Test prespecified interactions where relevant.\n- Distinguish random within-condition variability from systematic shifts caused by controlled changes. Include time or batch effects when deployment changes or temporal drift are plausible.\n- Assess whether apparent semantic disagreement corresponds to meaningful differences using blinded ratings, correctness checks, and the preregistered materiality rubric.\n- Estimate inter-rater reliability and conduct sensitivity analyses for alternative reasonable thresholds, excluding ambiguous annotations, and accounting for dependence among repeated calls.\n- Report results at both question and domain levels, with uncertainty intervals and the distribution of severity. Do not treat a high average similarity score as evidence against rare consequential deviations.\n\nIf token probabilities or other diagnostics are available, examine whether they predict observed instability, but distinguish predictive association from causal explanation. Do not infer specific internal mechanisms from output variation alone.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a minimum practically important instability rate, a more consequential severity threshold, and target precision for the primary estimate. Continue repeated sampling until either:\n\n- the prespecified precision target is reached for the primary instability rate and key comparisons; or\n- the maximum planned sample size or repetition count is reached.\n\nDeclare evidence of meaningful instability for the studied model and scope if the prespecified estimate exceeds the practical threshold and its uncertainty interval supports that conclusion. If the interval includes both negligible and practically important rates, classify the result as inconclusive rather than stable. Report rare severe deviations separately; a low overall rate does not neutralize a consequential event. Stop early only under preregistered safety or futility criteria, such as replicated severe harmful outputs or clear attainment of the precision target.\n\n## 8. Limitations\n\n- Output-only observations cannot identify the model’s true internal state or establish a causal internal mechanism.\n- Provider-side nondeterminism, hidden routing, caching, updates, and infrastructure effects may remain uncontrolled.\n- Results depend on the sampled questions, languages, task domains, prompt specification, and operational definition of materiality.\n- Human judgments can be inconsistent, particularly for open-ended or value-laden tasks; automated metrics can miss contradictions or overstate differences.\n- Finite repetitions may miss rare but high-impact behavior.\n- Findings for one model version, configuration, or evaluation environment may not generalize to other versions or deployment settings.\n- A state-space representation organizes temporal and condition-dependent variation but does not, by itself, validate a particular psychological or mechanistic interpretation of the model."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1836,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2025
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

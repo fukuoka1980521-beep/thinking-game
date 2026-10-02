@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 6,
+  "run_id": "R1B-T1-STATE_SPACE-R06",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:23:55.015665+00:00",
+  "timestamp_utc": "2026-10-02T06:24:15.971713+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "832fba3b7142c44efaa9be82d8332e394e2518835651985d142293c7b5394fbf",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0afa48bdabe0c5f6016abf4dfb06f887d0bccd45e20d895fc6",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2041,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2230
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive response instability from ordinary wording variation.\n\nThe primary framework is a **state-space model**: responses are observations generated from potentially changing latent response states. A state may represent, for example, a factual position, recommendation, uncertainty level, safety stance, or interpretation of the question. The study will estimate whether repeated responses remain within one state, switch between states, or vary only in surface form.\n\nThe study concerns reproducibility under specified model, prompt, and decoding conditions. It does not establish that one response is true, that a model has human-like beliefs, or that observed variation generalizes to all questions or systems.\n\n## 2. Assumptions\n\n- A question’s response can be represented at two levels:\n  1. **Substantive content**, including claims, recommendations, conclusions, and qualifications.\n  2. **Surface realization**, including wording, order, formatting, and stylistic choices.\n- Repeated generations may reflect both ordinary sampling variation and changes in latent response state.\n- Model version, system instructions, conversation context, decoding settings, and tool access can affect responses and must be recorded or controlled.\n- Human judgments of substantive equivalence are fallible. Measurement will therefore combine structured annotations with independent ratings and, where suitable, automated comparisons.\n- A “same question” means identical user-question text and identical preceding context unless a planned manipulation explicitly changes one of them.\n\n## 3. Research design\n\n### Question set and sampling\n\nConstruct a preregistered question set spanning domains and response types, such as factual questions, advice, interpretation, summarization, and questions involving uncertainty or contested evidence. Include questions expected to have:\n- A relatively determinate answer.\n- Several defensible answers.\n- Ambiguous or underspecified interpretations.\n\nSample questions from defined strata rather than selecting only conspicuous examples. Record question source, domain, expected answer structure, ambiguity, and any reference materials used to assess factual claims. Avoid treating a single question as representative of a domain.\n\n### Repeated generations\n\nFor each question, generate multiple responses under a baseline condition, holding fixed the exact prompt, model snapshot, system prompt, context, decoding configuration, and tool access. Where accessible, record random seeds; do not assume that a seed guarantees identical execution. Randomize generation order and distribute repetitions across sessions or time blocks to detect session- or time-related effects.\n\nUse a staged design:\n1. A pilot on a subset of questions to estimate response diversity, annotation burden, and suitable repetition counts.\n2. A confirmatory sample with preregistered sample size, conditions, exclusions, and analysis.\n\n### Planned perturbations\n\nTo investigate causes, vary one factor at a time from the baseline in controlled comparisons. Potential factors include:\n- Sampling parameters, such as temperature or top-p.\n- System instruction or formatting constraints.\n- Added conversational context.\n- Explicit requests to state uncertainty or provide a particular kind of justification.\n- Model version or deployment period, when comparison is feasible.\n\nKeep the exact user question fixed when testing generation variability alone. Treat changes to context, instructions, or model configuration as separate conditions, not as repeats of the identical full input. Do not infer causation from uncontrolled associations.\n\n### State-space specification\n\nRepresent each response as a sequence of coded substantive features and surface features. For question \\(q\\), generation \\(t\\), and condition \\(c\\), let \\(z_{qtc}\\) denote a latent substantive response state and \\(y_{qtc}\\) the observed response features. Model the observation as generated from that state, with separate components for surface realization and annotation error.\n\nCompare:\n- A **single-state model**, in which substantive content is stable and observed differences are primarily surface variation.\n- A **multiple-state model**, in which responses can occupy or transition among distinct substantive states.\n- Where data support it, a hierarchical model allowing state prevalence or transition rates to vary by question, domain, and condition.\n\nTreat generation order as meaningful only where the design supports it; independently sampled calls need not imply a temporal process. In that case, estimate state membership or mixture proportions rather than interpreting transitions as a causal sequence.\n\n## 4. Data or evidence needed\n\nFor every generation, retain:\n- Exact user question and full preceding context.\n- Model identifier, version or snapshot, date/time, system instructions, decoding parameters, tool settings, and any available seed.\n- Raw response, including refusals, truncations, and formatting.\n- Generation order, session or batch identifier, and deviations from protocol.\n\nFor measurement, obtain:\n- A question-specific coding guide defining substantive claims, conclusions, recommendations, uncertainty, and relevant omissions.\n- Independent annotations by trained raters blinded to condition and generation order.\n- Pairwise equivalence judgments for sampled response pairs, with reasons for disagreement.\n- Disagreement-resolution records and inter-rater reliability estimates.\n- Reference evidence for factual evaluation where a defensible reference is available.\n\nPreserve both original responses and normalized representations. Normalization must not remove qualifications or other meaning-bearing content.\n\n## 5. Measurement\n\n### Substantive features\n\nCode each response for:\n- Core answer or conclusion.\n- Material factual claims and their polarity.\n- Recommendation or action proposed.\n- Interpretation of the question.\n- Confidence, uncertainty, and qualification.\n- Safety stance, refusal, or redirection, where applicable.\n- Material omissions relative to the question-specific coding guide.\n\nUse a question-specific coding schema established before confirmatory annotation. Permit “unclear” and “not applicable” codes. Distinguish a changed claim from a changed level of detail.\n\n### Surface features\n\nSeparately measure lexical overlap, semantic similarity, response length, organization, tone, and formatting. These indicators describe wording variation; none alone establishes substantive equivalence. Automated similarity scores should be validated against human judgments and should not replace claim-level coding.\n\n### Instability outcomes\n\nDefine in advance:\n- **Surface variation:** wording or presentation changes without a material change in coded meaning.\n- **Substantive divergence:** a change in at least one prespecified material feature, such as conclusion, key claim, recommendation, interpretation, or uncertainty that would plausibly alter a reader’s understanding or action.\n- **Critical divergence:** a prespecified high-impact contradiction, materially different advice, or safety-relevant change.\n\nEstimate both the rate of divergent response pairs and the distribution of latent states per question. Report uncertainty intervals and question-level results, not only pooled averages. Measure annotation reliability for each substantive feature and repeat adjudication on a sample to assess annotation stability.\n\n## 6. Analysis\n\n1. **Quality checks:** Verify protocol adherence, identify duplicates or technical failures, and report exclusions with reasons. Analyze refusals and partial responses as outcomes rather than silently discarding them.\n2. **Descriptive analysis:** For each question and condition, summarize state frequencies, pairwise substantive-divergence rates, surface-variation measures, and rater agreement.\n3. **State-space comparison:** Fit the preregistered single-state and multiple-state models. Compare fit using a prespecified criterion, assess sensitivity to model assumptions, and examine whether inferred states correspond to interpretable differences in claims or conclusions.\n4. **Hierarchical estimation:** Estimate variation within questions and between questions. Avoid conclusions based solely on a pooled rate that could conceal a small set of highly unstable questions.\n5. **Cause analysis:** Compare randomized or otherwise controlled perturbation conditions with baseline. Estimate condition effects on the probability of substantive divergence and on state prevalence. Account for clustering by question and, if relevant, session or model snapshot.\n6. **Robustness checks:** Reanalyze using alternative defensible coding thresholds, excluding no cases without justification, and with automated similarity metrics only as supplementary evidence. Test whether results persist across raters, domains, and ambiguity strata.\n7. **Interpretation:** Distinguish evidence of surface variability, substantive state multiplicity, and condition-associated changes. A change in response frequency under a perturbation supports an effect of that condition only to the extent that assignment and execution were controlled. Do not interpret latent states as beliefs or intentions.\n\n## 7. Decision / stopping rule\n\nBefore confirmatory data collection, preregister:\n- The minimum number of questions and repetitions per condition, based on pilot estimates and desired precision for the primary instability rate.\n- The primary substantive-divergence definition and a smallest effect considered practically meaningful.\n- The model-comparison criterion and uncertainty threshold for concluding that multiple substantive states are supported.\n- Reliability thresholds and procedures for retraining, recoding, or reporting inconclusive measurement.\n- Stopping rules for technical failure, annotation quality, and precision; do not stop early because results appear favorable.\n\nConclude that evidence supports **meaningful response instability** only when substantive divergence exceeds the prespecified practical threshold, uncertainty is sufficiently narrow under the preregistered rule, and the result is robust to credible coding and model checks. Conclude that evidence is consistent with **ordinary wording variation** when surface variation is evident but substantive-divergence estimates remain below that threshold with adequate precision. Otherwise report the result as inconclusive. Report question-specific exceptions even when the aggregate conclusion is stable.\n\n## 8. Limitations\n\n- Results are conditional on the sampled questions, model version, prompt context, and decoding settings.\n- Latent states are analytical constructs; the data cannot establish that the model internally represents discrete states.\n- Human coding may miss subtle meaning changes, and automated metrics may confuse paraphrase with equivalence or detect similarity without capturing practical importance.\n- Reference answers may be disputed, incomplete, or unavailable, especially for open-ended questions.\n- Sampling effects, hidden deployment changes, nondeterminism, and unobserved implementation details may limit attribution.\n- High repeat counts for a narrow question set do not ensure broad generalizability.\n- Practical significance depends on use context; the same divergence may be trivial in one application and consequential in another.",
+  "raw_response": {
+    "id": "resp_0afa48bdabe0c5f6016abf4dfb06f887d0bccd45e20d895fc6",
+    "object": "response",
+    "created_at": 1790922235,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922255,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0afa48bdabe0c5f6016abf4dfb907c87d0bf78ff3a484c8a43",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive response instability from ordinary wording variation.\n\nThe primary framework is a **state-space model**: responses are observations generated from potentially changing latent response states. A state may represent, for example, a factual position, recommendation, uncertainty level, safety stance, or interpretation of the question. The study will estimate whether repeated responses remain within one state, switch between states, or vary only in surface form.\n\nThe study concerns reproducibility under specified model, prompt, and decoding conditions. It does not establish that one response is true, that a model has human-like beliefs, or that observed variation generalizes to all questions or systems.\n\n## 2. Assumptions\n\n- A question’s response can be represented at two levels:\n  1. **Substantive content**, including claims, recommendations, conclusions, and qualifications.\n  2. **Surface realization**, including wording, order, formatting, and stylistic choices.\n- Repeated generations may reflect both ordinary sampling variation and changes in latent response state.\n- Model version, system instructions, conversation context, decoding settings, and tool access can affect responses and must be recorded or controlled.\n- Human judgments of substantive equivalence are fallible. Measurement will therefore combine structured annotations with independent ratings and, where suitable, automated comparisons.\n- A “same question” means identical user-question text and identical preceding context unless a planned manipulation explicitly changes one of them.\n\n## 3. Research design\n\n### Question set and sampling\n\nConstruct a preregistered question set spanning domains and response types, such as factual questions, advice, interpretation, summarization, and questions involving uncertainty or contested evidence. Include questions expected to have:\n- A relatively determinate answer.\n- Several defensible answers.\n- Ambiguous or underspecified interpretations.\n\nSample questions from defined strata rather than selecting only conspicuous examples. Record question source, domain, expected answer structure, ambiguity, and any reference materials used to assess factual claims. Avoid treating a single question as representative of a domain.\n\n### Repeated generations\n\nFor each question, generate multiple responses under a baseline condition, holding fixed the exact prompt, model snapshot, system prompt, context, decoding configuration, and tool access. Where accessible, record random seeds; do not assume that a seed guarantees identical execution. Randomize generation order and distribute repetitions across sessions or time blocks to detect session- or time-related effects.\n\nUse a staged design:\n1. A pilot on a subset of questions to estimate response diversity, annotation burden, and suitable repetition counts.\n2. A confirmatory sample with preregistered sample size, conditions, exclusions, and analysis.\n\n### Planned perturbations\n\nTo investigate causes, vary one factor at a time from the baseline in controlled comparisons. Potential factors include:\n- Sampling parameters, such as temperature or top-p.\n- System instruction or formatting constraints.\n- Added conversational context.\n- Explicit requests to state uncertainty or provide a particular kind of justification.\n- Model version or deployment period, when comparison is feasible.\n\nKeep the exact user question fixed when testing generation variability alone. Treat changes to context, instructions, or model configuration as separate conditions, not as repeats of the identical full input. Do not infer causation from uncontrolled associations.\n\n### State-space specification\n\nRepresent each response as a sequence of coded substantive features and surface features. For question \\(q\\), generation \\(t\\), and condition \\(c\\), let \\(z_{qtc}\\) denote a latent substantive response state and \\(y_{qtc}\\) the observed response features. Model the observation as generated from that state, with separate components for surface realization and annotation error.\n\nCompare:\n- A **single-state model**, in which substantive content is stable and observed differences are primarily surface variation.\n- A **multiple-state model**, in which responses can occupy or transition among distinct substantive states.\n- Where data support it, a hierarchical model allowing state prevalence or transition rates to vary by question, domain, and condition.\n\nTreat generation order as meaningful only where the design supports it; independently sampled calls need not imply a temporal process. In that case, estimate state membership or mixture proportions rather than interpreting transitions as a causal sequence.\n\n## 4. Data or evidence needed\n\nFor every generation, retain:\n- Exact user question and full preceding context.\n- Model identifier, version or snapshot, date/time, system instructions, decoding parameters, tool settings, and any available seed.\n- Raw response, including refusals, truncations, and formatting.\n- Generation order, session or batch identifier, and deviations from protocol.\n\nFor measurement, obtain:\n- A question-specific coding guide defining substantive claims, conclusions, recommendations, uncertainty, and relevant omissions.\n- Independent annotations by trained raters blinded to condition and generation order.\n- Pairwise equivalence judgments for sampled response pairs, with reasons for disagreement.\n- Disagreement-resolution records and inter-rater reliability estimates.\n- Reference evidence for factual evaluation where a defensible reference is available.\n\nPreserve both original responses and normalized representations. Normalization must not remove qualifications or other meaning-bearing content.\n\n## 5. Measurement\n\n### Substantive features\n\nCode each response for:\n- Core answer or conclusion.\n- Material factual claims and their polarity.\n- Recommendation or action proposed.\n- Interpretation of the question.\n- Confidence, uncertainty, and qualification.\n- Safety stance, refusal, or redirection, where applicable.\n- Material omissions relative to the question-specific coding guide.\n\nUse a question-specific coding schema established before confirmatory annotation. Permit “unclear” and “not applicable” codes. Distinguish a changed claim from a changed level of detail.\n\n### Surface features\n\nSeparately measure lexical overlap, semantic similarity, response length, organization, tone, and formatting. These indicators describe wording variation; none alone establishes substantive equivalence. Automated similarity scores should be validated against human judgments and should not replace claim-level coding.\n\n### Instability outcomes\n\nDefine in advance:\n- **Surface variation:** wording or presentation changes without a material change in coded meaning.\n- **Substantive divergence:** a change in at least one prespecified material feature, such as conclusion, key claim, recommendation, interpretation, or uncertainty that would plausibly alter a reader’s understanding or action.\n- **Critical divergence:** a prespecified high-impact contradiction, materially different advice, or safety-relevant change.\n\nEstimate both the rate of divergent response pairs and the distribution of latent states per question. Report uncertainty intervals and question-level results, not only pooled averages. Measure annotation reliability for each substantive feature and repeat adjudication on a sample to assess annotation stability.\n\n## 6. Analysis\n\n1. **Quality checks:** Verify protocol adherence, identify duplicates or technical failures, and report exclusions with reasons. Analyze refusals and partial responses as outcomes rather than silently discarding them.\n2. **Descriptive analysis:** For each question and condition, summarize state frequencies, pairwise substantive-divergence rates, surface-variation measures, and rater agreement.\n3. **State-space comparison:** Fit the preregistered single-state and multiple-state models. Compare fit using a prespecified criterion, assess sensitivity to model assumptions, and examine whether inferred states correspond to interpretable differences in claims or conclusions.\n4. **Hierarchical estimation:** Estimate variation within questions and between questions. Avoid conclusions based solely on a pooled rate that could conceal a small set of highly unstable questions.\n5. **Cause analysis:** Compare randomized or otherwise controlled perturbation conditions with baseline. Estimate condition effects on the probability of substantive divergence and on state prevalence. Account for clustering by question and, if relevant, session or model snapshot.\n6. **Robustness checks:** Reanalyze using alternative defensible coding thresholds, excluding no cases without justification, and with automated similarity metrics only as supplementary evidence. Test whether results persist across raters, domains, and ambiguity strata.\n7. **Interpretation:** Distinguish evidence of surface variability, substantive state multiplicity, and condition-associated changes. A change in response frequency under a perturbation supports an effect of that condition only to the extent that assignment and execution were controlled. Do not interpret latent states as beliefs or intentions.\n\n## 7. Decision / stopping rule\n\nBefore confirmatory data collection, preregister:\n- The minimum number of questions and repetitions per condition, based on pilot estimates and desired precision for the primary instability rate.\n- The primary substantive-divergence definition and a smallest effect considered practically meaningful.\n- The model-comparison criterion and uncertainty threshold for concluding that multiple substantive states are supported.\n- Reliability thresholds and procedures for retraining, recoding, or reporting inconclusive measurement.\n- Stopping rules for technical failure, annotation quality, and precision; do not stop early because results appear favorable.\n\nConclude that evidence supports **meaningful response instability** only when substantive divergence exceeds the prespecified practical threshold, uncertainty is sufficiently narrow under the preregistered rule, and the result is robust to credible coding and model checks. Conclude that evidence is consistent with **ordinary wording variation** when surface variation is evident but substantive-divergence estimates remain below that threshold with adequate precision. Otherwise report the result as inconclusive. Report question-specific exceptions even when the aggregate conclusion is stable.\n\n## 8. Limitations\n\n- Results are conditional on the sampled questions, model version, prompt context, and decoding settings.\n- Latent states are analytical constructs; the data cannot establish that the model internally represents discrete states.\n- Human coding may miss subtle meaning changes, and automated metrics may confuse paraphrase with equivalence or detect similarity without capturing practical importance.\n- Reference answers may be disputed, incomplete, or unavailable, especially for open-ended questions.\n- Sampling effects, hidden deployment changes, nondeterminism, and unobserved implementation details may limit attribution.\n- High repeat counts for a narrow question set do not ensure broad generalizability.\n- Practical significance depends on use context; the same divergence may be trivial in one application and consequential in another."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2041,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2230
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

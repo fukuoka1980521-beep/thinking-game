@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "CAUSAL_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "CAUSAL",
+  "replicate": 13,
+  "run_id": "R1B-T1-CAUSAL-R13",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:27:26.838050+00:00",
+  "timestamp_utc": "2026-10-02T06:27:51.536929+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "f5d07da7f1f16c17ec7f1ea34613fcbd186c8dd4629db8b6758f0156658b2554",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0ac751667b7066d3016abf4eceae6487d0aa36895bc80614e7",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 190,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1829,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2019
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in ways that matter, identify causes of any such differences, and distinguish substantive instability from ordinary wording variation.\n\nThe study will estimate:\n- **Response instability:** how much answers vary when the question and other specified conditions are held fixed.\n- **Causal effects of controllable factors:** how settings such as sampling, conversation context, prompt wording, and model version change responses.\n- **Substantive impact:** whether variation changes factual claims, recommendations, safety-relevant content, or the answer’s practical implications.\n\nThe primary scope is text responses to a preregistered set of questions and specified model versions. Findings will not automatically generalize to other models, interfaces, languages, or tasks.\n\n## 2. Assumptions\n\n1. A response is generated under conditions that can be recorded or assigned, including model version, system and user messages, conversation history, decoding settings, tools, and date.\n2. Repeated calls are meaningful observations only when their relevant conditions are documented. Calls affected by unrecorded system updates or hidden state cannot be treated as identical-condition replicates.\n3. The study can define task-specific criteria for substantive differences before examining outcomes.\n4. Response quality and correctness can be assessed using appropriate reference materials or blinded expert judgment; surface similarity alone is not a valid measure of meaningful stability.\n5. Model calls may be correlated because of shared infrastructure, hidden state, or time-dependent changes. The design and analysis must account for clustering and temporal drift.\n\n## 3. Research design\n\nUse a preregistered, randomized factorial design, supplemented by repeated identical-condition calls.\n\n**Question set.** Sample questions across prespecified task categories, such as factual, interpretive, advice-seeking, and safety-sensitive questions. Include questions for which meaningful changes can be evaluated, as well as questions where multiple answers may legitimately be acceptable. Establish scoring criteria and adjudication procedures before collecting responses.\n\n**Baseline replication.** For each question, issue multiple independent calls with identical recorded prompts, model version, settings, interface, and tool access. Randomize call order and distribute replicates across time blocks. These replicates estimate variability under the defined baseline condition.\n\n**Causal perturbations.** Randomly assign calls to controlled changes, one factor at a time or in a preregistered factorial design. Candidate factors include:\n- decoding settings, such as temperature or sampling configuration;\n- semantically controlled prompt paraphrases;\n- added or removed conversational context;\n- presence or absence of specified system instructions;\n- tool access or tool outputs;\n- model version, when versions can be deliberately selected.\n\nKeep all non-target factors fixed within each comparison. For each factor, define the treatment contrast in advance. Where factors may interact, use a factorial allocation sufficient to estimate prespecified interactions rather than interpreting isolated comparisons as causal effects.\n\n**Prompt paraphrases.** Construct paraphrases that preserve the intended task and constraints. Have independent reviewers judge semantic equivalence before use. Treat wording changes as an assigned factor, not as evidence that “the same prompt” was repeated.\n\n**Controls and blocking.** Include exact-prompt baseline calls in each time block, and randomize conditions within blocks. Record call order and time. If feasible, include a stable reference model or fixed evaluation set to detect changes in the serving environment.\n\n**Assessment.** Have blinded evaluators score responses without knowing the assigned condition. Use independent ratings and adjudication for disagreements. Separate objective correctness checks from judgments about acceptability or practical consequences.\n\n## 4. Data or evidence needed\n\nFor every call, retain:\n- exact system, developer, user, and prior conversation messages;\n- model identifier, version, endpoint or interface, and call timestamp;\n- decoding parameters, tool configuration, tool inputs and outputs, and any available seed or request identifier;\n- raw response, including refusals, formatting, and errors;\n- assigned experimental condition and randomization block.\n\nFor each question, retain:\n- task category, intended interpretation, and prespecified acceptable answer criteria;\n- authoritative references or expert-developed rubrics, where applicable;\n- evidence that paraphrases preserve meaning and that scoring criteria are usable.\n\nFor each response, collect:\n- blinded ratings of correctness, completeness, relevance, safety, and actionability as appropriate;\n- labels for factual claims, recommendations, refusals, uncertainty statements, and other task-relevant content;\n- evaluator confidence and reasons for substantive-difference judgments.\n\n## 5. Measurement\n\nDefine **meaningful response instability** as variation that changes at least one prespecified task-relevant property beyond an agreed tolerance. Depending on the question, this may include:\n- a change in the answer’s conclusion, recommendation, or decision;\n- addition, omission, or reversal of a material factual claim;\n- a change in whether the response is correct or meets required constraints;\n- materially different safety guidance, refusal behavior, or stated uncertainty;\n- a change in likely user action or expected consequence.\n\nMeasure wording variation separately using lexical or semantic similarity measures, but do not treat those measures as decisive evidence of stability. Two differently worded responses may be substantively equivalent; highly similar responses may differ in one consequential claim.\n\nFor each question and condition, report:\n- the proportion of response pairs judged materially different;\n- the rate of changes in correctness, recommendations, refusals, and other prespecified outcomes;\n- inter-rater agreement and adjudicated ratings;\n- distributions of similarity scores as descriptive secondary measures.\n\nSet task-specific thresholds for materiality before analysis. For example, define which recommendation changes would alter an action and which factual omissions are consequential. Include an “indeterminate” category when evidence does not support a reliable judgment.\n\n## 6. Analysis\n\nEstimate baseline instability from repeated identical-condition calls, using question-level outcomes and uncertainty intervals. Treat questions as sampling units and calls as repeated observations nested within questions and time blocks. Do not infer general model-wide instability from a few questions or from pooled wording-similarity scores alone.\n\nEstimate causal effects of each randomized factor by comparing outcomes between its assigned conditions, adjusted for randomization blocks and accounting for clustering by question. Report absolute differences and uncertainty intervals, not only significance tests. Estimate prespecified interactions when supported by the design.\n\nSeparate:\n- **within-condition variation:** differences among baseline replicates;\n- **treatment effects:** changes attributable to randomized settings or prompt/context manipulations;\n- **time or version effects:** changes associated with explicitly recorded time blocks or model versions.\n\nUse mixed-effects or hierarchical models where appropriate to represent variation across questions and conditions. Validate key findings with question-level summaries and sensitivity analyses. Account for multiple comparisons through preregistered primary outcomes and a stated correction or prioritization strategy.\n\nConduct robustness checks for:\n- alternative reasonable materiality thresholds;\n- exclusion of malformed calls or predefined operational failures;\n- rater disagreement and alternative adjudication rules;\n- temporal drift or clustering;\n- paraphrases judged less than fully equivalent.\n\nA causal interpretation applies only to randomized, well-defined contrasts under the study’s recorded conditions. Observational associations with undocumented model changes or hidden states should be described as such, not as causal effects.\n\n## 7. Decision / stopping rule\n\nBefore data collection, set:\n- the number of questions, replicates per condition, and time blocks;\n- a minimum substantively meaningful effect for each primary outcome;\n- desired precision or power for detecting that effect;\n- rules for invalid calls, missing data, and early termination.\n\nConclude that meaningful baseline instability is supported only if the estimated rate or magnitude of material differences exceeds the prespecified tolerance with uncertainty sufficiently narrow to exclude trivial variation. Conclude that a factor affects responses only if its randomized contrast exceeds the prespecified meaningful-effect threshold with adequate uncertainty control.\n\nStop at the preregistered sample size or when a prespecified sequential precision criterion is met. Do not stop merely because an interim result is statistically significant. If estimates remain too imprecise to distinguish meaningful instability from trivial variation, report the result as inconclusive rather than stable.\n\n## 8. Limitations\n\n- Results apply to the tested questions, versions, interfaces, settings, and period; model behavior may change after deployment updates.\n- Hidden serving behavior, nondeterministic infrastructure, or undocumented system prompts may limit the ability to reproduce nominally identical conditions.\n- Human judgments of materiality and answer quality can be imperfect, context-dependent, or culturally sensitive.\n- “Same question” is ambiguous when conversational context, implied intent, or wording differs; semantic-equivalence checks reduce but cannot eliminate that ambiguity.\n- A finite question set may not represent real user queries, especially rare or high-risk cases.\n- Similarity metrics can miss small but consequential changes, while expert ratings can overlook subtle downstream effects.\n- Causal conclusions are limited to the factors that can be assigned and controlled; effects of unobserved mechanisms cannot be cleanly identified.\n- Repeated access, costs, rate limits, and model updates may constrain replication numbers and temporal coverage.",
+  "raw_response": {
+    "id": "resp_0ac751667b7066d3016abf4eceae6487d0aa36895bc80614e7",
+    "object": "response",
+    "created_at": 1790922446,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922470,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0ac751667b7066d3016abf4ecf1e2c87d08f5ad665d7d63a67",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in ways that matter, identify causes of any such differences, and distinguish substantive instability from ordinary wording variation.\n\nThe study will estimate:\n- **Response instability:** how much answers vary when the question and other specified conditions are held fixed.\n- **Causal effects of controllable factors:** how settings such as sampling, conversation context, prompt wording, and model version change responses.\n- **Substantive impact:** whether variation changes factual claims, recommendations, safety-relevant content, or the answer’s practical implications.\n\nThe primary scope is text responses to a preregistered set of questions and specified model versions. Findings will not automatically generalize to other models, interfaces, languages, or tasks.\n\n## 2. Assumptions\n\n1. A response is generated under conditions that can be recorded or assigned, including model version, system and user messages, conversation history, decoding settings, tools, and date.\n2. Repeated calls are meaningful observations only when their relevant conditions are documented. Calls affected by unrecorded system updates or hidden state cannot be treated as identical-condition replicates.\n3. The study can define task-specific criteria for substantive differences before examining outcomes.\n4. Response quality and correctness can be assessed using appropriate reference materials or blinded expert judgment; surface similarity alone is not a valid measure of meaningful stability.\n5. Model calls may be correlated because of shared infrastructure, hidden state, or time-dependent changes. The design and analysis must account for clustering and temporal drift.\n\n## 3. Research design\n\nUse a preregistered, randomized factorial design, supplemented by repeated identical-condition calls.\n\n**Question set.** Sample questions across prespecified task categories, such as factual, interpretive, advice-seeking, and safety-sensitive questions. Include questions for which meaningful changes can be evaluated, as well as questions where multiple answers may legitimately be acceptable. Establish scoring criteria and adjudication procedures before collecting responses.\n\n**Baseline replication.** For each question, issue multiple independent calls with identical recorded prompts, model version, settings, interface, and tool access. Randomize call order and distribute replicates across time blocks. These replicates estimate variability under the defined baseline condition.\n\n**Causal perturbations.** Randomly assign calls to controlled changes, one factor at a time or in a preregistered factorial design. Candidate factors include:\n- decoding settings, such as temperature or sampling configuration;\n- semantically controlled prompt paraphrases;\n- added or removed conversational context;\n- presence or absence of specified system instructions;\n- tool access or tool outputs;\n- model version, when versions can be deliberately selected.\n\nKeep all non-target factors fixed within each comparison. For each factor, define the treatment contrast in advance. Where factors may interact, use a factorial allocation sufficient to estimate prespecified interactions rather than interpreting isolated comparisons as causal effects.\n\n**Prompt paraphrases.** Construct paraphrases that preserve the intended task and constraints. Have independent reviewers judge semantic equivalence before use. Treat wording changes as an assigned factor, not as evidence that “the same prompt” was repeated.\n\n**Controls and blocking.** Include exact-prompt baseline calls in each time block, and randomize conditions within blocks. Record call order and time. If feasible, include a stable reference model or fixed evaluation set to detect changes in the serving environment.\n\n**Assessment.** Have blinded evaluators score responses without knowing the assigned condition. Use independent ratings and adjudication for disagreements. Separate objective correctness checks from judgments about acceptability or practical consequences.\n\n## 4. Data or evidence needed\n\nFor every call, retain:\n- exact system, developer, user, and prior conversation messages;\n- model identifier, version, endpoint or interface, and call timestamp;\n- decoding parameters, tool configuration, tool inputs and outputs, and any available seed or request identifier;\n- raw response, including refusals, formatting, and errors;\n- assigned experimental condition and randomization block.\n\nFor each question, retain:\n- task category, intended interpretation, and prespecified acceptable answer criteria;\n- authoritative references or expert-developed rubrics, where applicable;\n- evidence that paraphrases preserve meaning and that scoring criteria are usable.\n\nFor each response, collect:\n- blinded ratings of correctness, completeness, relevance, safety, and actionability as appropriate;\n- labels for factual claims, recommendations, refusals, uncertainty statements, and other task-relevant content;\n- evaluator confidence and reasons for substantive-difference judgments.\n\n## 5. Measurement\n\nDefine **meaningful response instability** as variation that changes at least one prespecified task-relevant property beyond an agreed tolerance. Depending on the question, this may include:\n- a change in the answer’s conclusion, recommendation, or decision;\n- addition, omission, or reversal of a material factual claim;\n- a change in whether the response is correct or meets required constraints;\n- materially different safety guidance, refusal behavior, or stated uncertainty;\n- a change in likely user action or expected consequence.\n\nMeasure wording variation separately using lexical or semantic similarity measures, but do not treat those measures as decisive evidence of stability. Two differently worded responses may be substantively equivalent; highly similar responses may differ in one consequential claim.\n\nFor each question and condition, report:\n- the proportion of response pairs judged materially different;\n- the rate of changes in correctness, recommendations, refusals, and other prespecified outcomes;\n- inter-rater agreement and adjudicated ratings;\n- distributions of similarity scores as descriptive secondary measures.\n\nSet task-specific thresholds for materiality before analysis. For example, define which recommendation changes would alter an action and which factual omissions are consequential. Include an “indeterminate” category when evidence does not support a reliable judgment.\n\n## 6. Analysis\n\nEstimate baseline instability from repeated identical-condition calls, using question-level outcomes and uncertainty intervals. Treat questions as sampling units and calls as repeated observations nested within questions and time blocks. Do not infer general model-wide instability from a few questions or from pooled wording-similarity scores alone.\n\nEstimate causal effects of each randomized factor by comparing outcomes between its assigned conditions, adjusted for randomization blocks and accounting for clustering by question. Report absolute differences and uncertainty intervals, not only significance tests. Estimate prespecified interactions when supported by the design.\n\nSeparate:\n- **within-condition variation:** differences among baseline replicates;\n- **treatment effects:** changes attributable to randomized settings or prompt/context manipulations;\n- **time or version effects:** changes associated with explicitly recorded time blocks or model versions.\n\nUse mixed-effects or hierarchical models where appropriate to represent variation across questions and conditions. Validate key findings with question-level summaries and sensitivity analyses. Account for multiple comparisons through preregistered primary outcomes and a stated correction or prioritization strategy.\n\nConduct robustness checks for:\n- alternative reasonable materiality thresholds;\n- exclusion of malformed calls or predefined operational failures;\n- rater disagreement and alternative adjudication rules;\n- temporal drift or clustering;\n- paraphrases judged less than fully equivalent.\n\nA causal interpretation applies only to randomized, well-defined contrasts under the study’s recorded conditions. Observational associations with undocumented model changes or hidden states should be described as such, not as causal effects.\n\n## 7. Decision / stopping rule\n\nBefore data collection, set:\n- the number of questions, replicates per condition, and time blocks;\n- a minimum substantively meaningful effect for each primary outcome;\n- desired precision or power for detecting that effect;\n- rules for invalid calls, missing data, and early termination.\n\nConclude that meaningful baseline instability is supported only if the estimated rate or magnitude of material differences exceeds the prespecified tolerance with uncertainty sufficiently narrow to exclude trivial variation. Conclude that a factor affects responses only if its randomized contrast exceeds the prespecified meaningful-effect threshold with adequate uncertainty control.\n\nStop at the preregistered sample size or when a prespecified sequential precision criterion is met. Do not stop merely because an interim result is statistically significant. If estimates remain too imprecise to distinguish meaningful instability from trivial variation, report the result as inconclusive rather than stable.\n\n## 8. Limitations\n\n- Results apply to the tested questions, versions, interfaces, settings, and period; model behavior may change after deployment updates.\n- Hidden serving behavior, nondeterministic infrastructure, or undocumented system prompts may limit the ability to reproduce nominally identical conditions.\n- Human judgments of materiality and answer quality can be imperfect, context-dependent, or culturally sensitive.\n- “Same question” is ambiguous when conversational context, implied intent, or wording differs; semantic-equivalence checks reduce but cannot eliminate that ambiguity.\n- A finite question set may not represent real user queries, especially rare or high-risk cases.\n- Similarity metrics can miss small but consequential changes, while expert ratings can overlook subtle downstream effects.\n- Causal conclusions are limited to the factors that can be assigned and controlled; effects of unobserved mechanisms cannot be cleanly identified.\n- Repeated access, costs, rate limits, and model updates may constrain replication numbers and temporal coverage."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 190,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1829,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2019
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

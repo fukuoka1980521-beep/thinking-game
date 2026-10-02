@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 8,
+  "run_id": "R1B-T1-STATE_SPACE-R08",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T01:45:15.074935+00:00",
+  "timestamp_utc": "2026-10-02T01:45:34.537055+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "832fba3b7142c44efaa9be82d8332e394e2518835651985d142293c7b5394fbf",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_047914d4066aa32b016abf0caad2d887d0a73511942cb5cd45",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1703,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1892
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to an identical question from a large language model (LLM) exhibit meaningful instability, identify conditions associated with that instability, and distinguish substantive changes from ordinary wording variation.\n\nThe study will treat the model’s response process as a state-space system. The observable state is the answer produced; latent states represent the model’s response mode or content configuration that may change across repeated generations or conditions. The study concerns the specified model version, interface, and operating conditions, not all LLMs or all uses.\n\n## 2. Assumptions\n\n- Model identity, version, system instructions, question text, and generation settings can be recorded and held constant where required.\n- When the interface allows it, random seeds or other generation controls can be set or logged. If they cannot, the study will treat the model’s internal randomness as unobserved.\n- A response’s wording may vary without changing its meaning, while differences in claims, recommendations, qualifications, or factual correctness may be consequential.\n- Prompt interpretation and output quality may depend on question type and domain. Results will therefore be reported by question category as well as overall.\n- The model’s latent response state is not directly observable. It must be inferred from response content and patterns across repeated generations, with uncertainty reported.\n\n## 3. Research design\n\nUse a preregistered, repeated-generation design.\n\n**Question set.** Sample questions across prespecified categories, such as factual retrieval, explanation, advice, summarization, and tasks with ambiguous or underspecified premises. Include questions at different levels of ambiguity and consequence. Freeze the exact text of each question before data collection. Exclude questions that require private information or would make unsafe generation necessary.\n\n**Conditions.** For each question, generate responses under:\n\n1. **Fixed-condition repetitions:** identical question, system instructions, model version, interface, and decoding settings. Repeat enough times to estimate response variability.\n2. **Controlled perturbations:** vary one factor at a time, such as temperature or another available decoding parameter, while holding the rest fixed. If relevant, include a separate condition that changes only a specified contextual instruction.\n3. **Operational repetitions:** repeat the fixed-condition procedure across sessions or days, logging any available deployment metadata. This distinguishes short-run stochastic variation from possible changes in the served model or system.\n\nUse multiple repetitions per question and condition, with the number chosen in advance based on a precision or power analysis for the primary instability measure. Randomize the order of questions and conditions. Avoid presenting prior responses in the context for later generations.\n\n**State-space framing.** Represent each response at turn \\(t\\) as an observation \\(Y_{qct}\\), where \\(q\\) denotes question and \\(c\\) condition. Infer a latent response state \\(Z_{qct}\\) from features such as the answer’s central conclusion, claims, evidence, recommendation, qualifications, and uncertainty. Model transitions among states and allow condition- and question-level predictors of those transitions. Compare a model with a single stable response state plus surface-level variation against models permitting multiple substantive states.\n\n**Annotation.** Have trained annotators, blind to condition and generation order, assess response meaning and importance of differences. Use independent coding, adjudication for disagreements, and periodic checks for drift. Automated semantic or textual measures may support, but not replace, human assessment of substantive change.\n\n## 4. Data or evidence needed\n\nFor every generation, retain:\n\n- Exact prompt, system instructions, model and version identifiers, date and time, interface, decoding settings, and any available seed or deployment metadata.\n- Full response, including formatting, refusals, uncertainty statements, and tool-use claims if applicable.\n- Question category, ambiguity rating, and consequence rating.\n- Annotation records identifying the response’s main answer, material claims, recommendation, qualifications, and confidence or uncertainty.\n- Pairwise judgments of whether responses are equivalent in meaning and whether any difference changes what a reasonable user would believe or do.\n- Independent factual or domain-specific assessments where correctness can be evaluated reliably.\n- For a subset, annotator confidence and explanations of disagreements.\n\n## 5. Measurement\n\n**Primary outcome: meaningful instability.** For repeated responses to the same question under fixed conditions, estimate the probability that a randomly selected pair differs in a prespecified consequential way. Consequential differences include changes to the central answer, material factual claims, recommended action, safety-relevant guidance, or stated uncertainty that could reasonably affect interpretation or action.\n\n**Secondary outcomes:**\n\n- **Latent-state diversity:** number and prevalence of distinct substantive response states per question.\n- **Transition probability:** probability that repeated generation moves from one substantive state to another.\n- **Within-state wording variation:** degree of lexical, syntactic, or stylistic variation among responses judged substantively equivalent.\n- **Correctness instability:** frequency with which repeated responses differ in factual correctness or evidential support.\n- **Calibration instability:** variation in expressed confidence or qualification, particularly when the underlying answer is stable.\n- **Condition sensitivity:** change in the preceding outcomes under controlled perturbations.\n\nFor all primary judgments, define a practical threshold for materiality in advance. Report inter-annotator agreement and uncertainty. Validate automated similarity measures against blinded human judgments; do not interpret text similarity alone as evidence of semantic stability.\n\n## 6. Analysis\n\n1. **Describe observed variation.** Report response counts, annotation agreement, and distributions of pairwise differences, separately for fixed, perturbed, and operational conditions.\n2. **Separate wording from content.** Classify pairs first by semantic equivalence and materiality judgments, then compare those judgments with lexical and embedding-based measures. Estimate how often surface measures falsely flag equivalent responses or miss consequential differences.\n3. **Fit state-space models.** Estimate question- and condition-specific latent response states, observation variability within states, and transition probabilities between states. Include question category, ambiguity, consequence, and generation settings as predictors. Account for clustering by question and, where applicable, session.\n4. **Compare stability hypotheses.** Compare a stable-state model that permits wording variation with models that allow multiple substantive states. Evaluate model fit and predictive performance using held-out questions or repetitions, and check sensitivity to reasonable changes in state definitions and priors or model specifications.\n5. **Quantify uncertainty and heterogeneity.** Provide intervals for instability rates and transition probabilities. Report both pooled estimates and the distribution across questions; avoid letting a few highly variable questions conceal otherwise stable behavior.\n6. **Assess robustness.** Repeat analyses with alternative annotation aggregations, materiality thresholds, and semantic measures. Analyze factual correctness separately from response-to-response consistency: consistent answers can be wrong, and variable answers can include a correct response.\n\n## 7. Decision / stopping rule\n\nBefore data collection, preregister the primary outcome, the materiality threshold, the minimum practically important instability rate, the planned sample and repetitions, exclusion rules, annotation protocol, and analysis.\n\nConclude that evidence supports meaningful instability under a condition only if the estimated rate of consequential differences exceeds the preregistered practical threshold and its uncertainty interval rules out a rate below that threshold according to the chosen decision criterion. Conclude that observed variation is predominantly wording variation if substantive-state changes remain below that threshold and responses are judged equivalent in meaning. Otherwise, report the result as inconclusive.\n\nStop data collection when the preregistered sample and repetition targets are met, or when a preregistered precision criterion is reached. Do not stop early based on interim results unless an interim rule was specified in advance.\n\n## 8. Limitations\n\n- Latent response states are inferred from outputs and annotations; they are not direct observations of the model’s internal representations or processes.\n- Human judgments of equivalence, materiality, and correctness can be uncertain, especially in specialized domains.\n- Results may depend on the chosen questions, model version, interface, decoding settings, and collection period. They cannot automatically be generalized to other deployments.\n- Repeated calls may not be independent if the provider changes the serving system, applies hidden context, or routes requests across model instances.\n- Available logging may not reveal seeds, backend changes, or all generation controls.\n- Semantic metrics may reflect similarity in wording rather than equivalence of meaning; domain-specific validation is necessary.\n- Consistency is distinct from truth, safety, and usefulness, so those properties require separate outcome assessments.",
+  "raw_response": {
+    "id": "resp_047914d4066aa32b016abf0caad2d887d0a73511942cb5cd45",
+    "object": "response",
+    "created_at": 1790905514,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790905533,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_047914d4066aa32b016abf0cab664c87d0a6a21b50faacd681",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to an identical question from a large language model (LLM) exhibit meaningful instability, identify conditions associated with that instability, and distinguish substantive changes from ordinary wording variation.\n\nThe study will treat the model’s response process as a state-space system. The observable state is the answer produced; latent states represent the model’s response mode or content configuration that may change across repeated generations or conditions. The study concerns the specified model version, interface, and operating conditions, not all LLMs or all uses.\n\n## 2. Assumptions\n\n- Model identity, version, system instructions, question text, and generation settings can be recorded and held constant where required.\n- When the interface allows it, random seeds or other generation controls can be set or logged. If they cannot, the study will treat the model’s internal randomness as unobserved.\n- A response’s wording may vary without changing its meaning, while differences in claims, recommendations, qualifications, or factual correctness may be consequential.\n- Prompt interpretation and output quality may depend on question type and domain. Results will therefore be reported by question category as well as overall.\n- The model’s latent response state is not directly observable. It must be inferred from response content and patterns across repeated generations, with uncertainty reported.\n\n## 3. Research design\n\nUse a preregistered, repeated-generation design.\n\n**Question set.** Sample questions across prespecified categories, such as factual retrieval, explanation, advice, summarization, and tasks with ambiguous or underspecified premises. Include questions at different levels of ambiguity and consequence. Freeze the exact text of each question before data collection. Exclude questions that require private information or would make unsafe generation necessary.\n\n**Conditions.** For each question, generate responses under:\n\n1. **Fixed-condition repetitions:** identical question, system instructions, model version, interface, and decoding settings. Repeat enough times to estimate response variability.\n2. **Controlled perturbations:** vary one factor at a time, such as temperature or another available decoding parameter, while holding the rest fixed. If relevant, include a separate condition that changes only a specified contextual instruction.\n3. **Operational repetitions:** repeat the fixed-condition procedure across sessions or days, logging any available deployment metadata. This distinguishes short-run stochastic variation from possible changes in the served model or system.\n\nUse multiple repetitions per question and condition, with the number chosen in advance based on a precision or power analysis for the primary instability measure. Randomize the order of questions and conditions. Avoid presenting prior responses in the context for later generations.\n\n**State-space framing.** Represent each response at turn \\(t\\) as an observation \\(Y_{qct}\\), where \\(q\\) denotes question and \\(c\\) condition. Infer a latent response state \\(Z_{qct}\\) from features such as the answer’s central conclusion, claims, evidence, recommendation, qualifications, and uncertainty. Model transitions among states and allow condition- and question-level predictors of those transitions. Compare a model with a single stable response state plus surface-level variation against models permitting multiple substantive states.\n\n**Annotation.** Have trained annotators, blind to condition and generation order, assess response meaning and importance of differences. Use independent coding, adjudication for disagreements, and periodic checks for drift. Automated semantic or textual measures may support, but not replace, human assessment of substantive change.\n\n## 4. Data or evidence needed\n\nFor every generation, retain:\n\n- Exact prompt, system instructions, model and version identifiers, date and time, interface, decoding settings, and any available seed or deployment metadata.\n- Full response, including formatting, refusals, uncertainty statements, and tool-use claims if applicable.\n- Question category, ambiguity rating, and consequence rating.\n- Annotation records identifying the response’s main answer, material claims, recommendation, qualifications, and confidence or uncertainty.\n- Pairwise judgments of whether responses are equivalent in meaning and whether any difference changes what a reasonable user would believe or do.\n- Independent factual or domain-specific assessments where correctness can be evaluated reliably.\n- For a subset, annotator confidence and explanations of disagreements.\n\n## 5. Measurement\n\n**Primary outcome: meaningful instability.** For repeated responses to the same question under fixed conditions, estimate the probability that a randomly selected pair differs in a prespecified consequential way. Consequential differences include changes to the central answer, material factual claims, recommended action, safety-relevant guidance, or stated uncertainty that could reasonably affect interpretation or action.\n\n**Secondary outcomes:**\n\n- **Latent-state diversity:** number and prevalence of distinct substantive response states per question.\n- **Transition probability:** probability that repeated generation moves from one substantive state to another.\n- **Within-state wording variation:** degree of lexical, syntactic, or stylistic variation among responses judged substantively equivalent.\n- **Correctness instability:** frequency with which repeated responses differ in factual correctness or evidential support.\n- **Calibration instability:** variation in expressed confidence or qualification, particularly when the underlying answer is stable.\n- **Condition sensitivity:** change in the preceding outcomes under controlled perturbations.\n\nFor all primary judgments, define a practical threshold for materiality in advance. Report inter-annotator agreement and uncertainty. Validate automated similarity measures against blinded human judgments; do not interpret text similarity alone as evidence of semantic stability.\n\n## 6. Analysis\n\n1. **Describe observed variation.** Report response counts, annotation agreement, and distributions of pairwise differences, separately for fixed, perturbed, and operational conditions.\n2. **Separate wording from content.** Classify pairs first by semantic equivalence and materiality judgments, then compare those judgments with lexical and embedding-based measures. Estimate how often surface measures falsely flag equivalent responses or miss consequential differences.\n3. **Fit state-space models.** Estimate question- and condition-specific latent response states, observation variability within states, and transition probabilities between states. Include question category, ambiguity, consequence, and generation settings as predictors. Account for clustering by question and, where applicable, session.\n4. **Compare stability hypotheses.** Compare a stable-state model that permits wording variation with models that allow multiple substantive states. Evaluate model fit and predictive performance using held-out questions or repetitions, and check sensitivity to reasonable changes in state definitions and priors or model specifications.\n5. **Quantify uncertainty and heterogeneity.** Provide intervals for instability rates and transition probabilities. Report both pooled estimates and the distribution across questions; avoid letting a few highly variable questions conceal otherwise stable behavior.\n6. **Assess robustness.** Repeat analyses with alternative annotation aggregations, materiality thresholds, and semantic measures. Analyze factual correctness separately from response-to-response consistency: consistent answers can be wrong, and variable answers can include a correct response.\n\n## 7. Decision / stopping rule\n\nBefore data collection, preregister the primary outcome, the materiality threshold, the minimum practically important instability rate, the planned sample and repetitions, exclusion rules, annotation protocol, and analysis.\n\nConclude that evidence supports meaningful instability under a condition only if the estimated rate of consequential differences exceeds the preregistered practical threshold and its uncertainty interval rules out a rate below that threshold according to the chosen decision criterion. Conclude that observed variation is predominantly wording variation if substantive-state changes remain below that threshold and responses are judged equivalent in meaning. Otherwise, report the result as inconclusive.\n\nStop data collection when the preregistered sample and repetition targets are met, or when a preregistered precision criterion is reached. Do not stop early based on interim results unless an interim rule was specified in advance.\n\n## 8. Limitations\n\n- Latent response states are inferred from outputs and annotations; they are not direct observations of the model’s internal representations or processes.\n- Human judgments of equivalence, materiality, and correctness can be uncertain, especially in specialized domains.\n- Results may depend on the chosen questions, model version, interface, decoding settings, and collection period. They cannot automatically be generalized to other deployments.\n- Repeated calls may not be independent if the provider changes the serving system, applies hidden context, or routes requests across model instances.\n- Available logging may not reveal seeds, backend changes, or all generation controls.\n- Semantic metrics may reflect similarity in wording rather than equivalence of meaning; domain-specific validation is necessary.\n- Consistency is distinct from truth, safety, and usefulness, so those properties require separate outcome assessments."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1703,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1892
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

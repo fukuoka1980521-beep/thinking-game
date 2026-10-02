@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "DIFFERENTIAL_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "DIFFERENTIAL",
+  "replicate": 13,
+  "run_id": "R1B-T1-DIFFERENTIAL-R13",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:21:04.512954+00:00",
+  "timestamp_utc": "2026-10-02T06:21:26.597294+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "1022829f151562620cc3c80de14b0e732dd32e71663ab85ebff491a3e456b5c0",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0b3b5d1a5a6a58f2016abf4d50431487d086bc1954d412eef1",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 192,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1950,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2142
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether a fixed large-language-model (LLM) question yields meaningfully different responses under small, controlled changes in conditions; identify which changes cause those differences; and distinguish substantive response instability from ordinary wording variation.\n\nThe primary framework will be **differential or local sensitivity**: measure how responses change when one input or generation condition is perturbed slightly while other conditions are held fixed. The study will focus on a prespecified set of questions, models, and perturbations. It will not assume that variation is inherently undesirable: appropriate changes in response to relevant context will be distinguished from unexplained or disproportionate changes.\n\n## 2. Assumptions\n\n- Model outputs can vary because of decoding randomness, prompt context, system instructions, conversation history, model version, or service-side changes.\n- A single pair of responses cannot reliably identify the cause of a difference. Conditions must be repeated and compared with suitable controls.\n- “Same question” requires an operational definition. The study will distinguish an unchanged question from minimal paraphrases and other local perturbations.\n- Meaningful difference is task-dependent. A changed answer to a factual or safety-sensitive question may matter more than a changed example or stylistic choice.\n- Semantic and task-level judgments require prespecified criteria and, where possible, blinded human assessment.\n- Findings apply to the tested models, versions, settings, questions, and time period; they do not automatically generalize to all LLM use.\n\n## 3. Research design\n\n### Questions and sampling\n\nConstruct a stratified question set covering several task types, such as factual question answering, calculation, summarization, advice, classification, and creative generation. Include questions with different stakes and different degrees of answer constraint. Define inclusion criteria, exclusions, and intended population before collecting outputs.\n\nFor every question, create:\n\n1. **Exact-repeat trials:** identical prompt and settings submitted repeatedly, estimating baseline response variation.\n2. **Minimal wording perturbations:** small paraphrases intended to preserve meaning, checked by independent reviewers.\n3. **Meaning-relevant perturbations:** small changes to a fact, constraint, or requested perspective for which a response change is warranted.\n4. **Context perturbations:** controlled additions or changes to preceding conversational context.\n5. **Generation-condition perturbations:** controlled changes to supported decoding settings, if available, with all other settings fixed.\n6. **Control trials:** repeated outputs under an unchanged condition interspersed with perturbation trials, to reveal time-related or service-related drift.\n\nThe central comparison is the response difference under a small perturbation versus the difference observed on exact-repeat trials. Use paired trials: for each question, compare outputs across conditions while preserving the same model, version, system message, and other settings. Randomize trial order where feasible. Record timestamps and any available model or service identifiers. If the deployed system cannot guarantee a fixed version or setting, treat that as a limitation and make repeated controls especially important.\n\nUse a preregistered number of independent repetitions per question and condition, determined by a pilot or simulation based on the smallest effect considered practically important. Distribute repetitions across sessions or time blocks where feasible, and do not treat multiple outputs from one unchanged session as independent without accounting for their clustering.\n\n### Blinding and annotation\n\nRemove condition labels before semantic and quality judgments. Use at least two independent annotators for a subset or all responses, with a written rubric and adjudication procedure. Annotators should not know whether a pair comes from an exact-repeat, wording-perturbation, or relevant-change condition.\n\n### Quality assurance\n\nCheck that paraphrases preserve intended meaning and that relevant perturbations differ only in the designated feature. Log prompt text, model and version identifiers, settings, trial order, timestamps, and collection errors. Exclude trials only under preregistered rules, such as incomplete outputs or a documented delivery failure; report all exclusions.\n\n## 4. Data or evidence needed\n\n- The exact prompts, paraphrases, contexts, system instructions, and perturbation specifications.\n- Repeated model outputs for every question-condition combination.\n- Model/version identifiers, generation settings, timestamps, and session or request identifiers where available.\n- Independent judgments of prompt equivalence and response meaning, correctness, completeness, safety, and task success, as appropriate to the question type.\n- A task-specific rubric defining which changes are consequential. Examples include a changed factual claim, recommendation, classification, calculation result, safety refusal, or required constraint.\n- Optional automated measures, such as token-level or embedding-based comparisons, retained as supporting evidence rather than treated as ground truth.\n\n## 5. Measurement\n\n### Response differences\n\nMeasure differences at multiple levels:\n\n- **Surface variation:** token or character edits, length, formatting, and phrasing.\n- **Semantic variation:** changes in claims, interpretation, recommendation, or stated uncertainty.\n- **Task-level variation:** changes in correctness, constraint satisfaction, classification, safety behavior, or practical outcome.\n- **Reliability:** whether an answer or decision is consistent across repeated trials.\n\nUse human-coded task-level measures as primary outcomes when feasible. Develop task-specific rubrics before inspecting results. For each response pair, annotators should identify whether the responses are equivalent, differ only in expression, differ substantively but remain acceptable, or conflict in a way that could alter a user’s understanding or action.\n\n### Local sensitivity and baseline\n\nFor each question, estimate:\n\n- **Baseline variation:** differences among exact-repeat outputs.\n- **Perturbation response:** differences between outputs under the original and perturbed conditions.\n- **Excess sensitivity:** perturbation-associated change beyond the exact-repeat baseline.\n- **Directional appropriateness:** whether a response changes in the expected direction after a meaning-relevant perturbation, and remains stable after a meaning-preserving paraphrase.\n\nWhere scores are available, define a normalized local sensitivity measure as response change divided by perturbation magnitude. Because prompt changes do not have a universally valid numeric scale, report the perturbation categories and pairwise effects directly as well; do not rely on a single sensitivity index.\n\nReport effects separately by task type, stakes, model, and perturbation class. Quantify annotator agreement and uncertainty.\n\n## 6. Analysis\n\nUse a preregistered analysis plan with the question as the principal unit of generalization and repeated outputs nested within question, condition, and session.\n\n1. **Estimate baseline variation.** Describe how often exact-repeat outputs differ at the surface, semantic, and task levels.\n2. **Estimate perturbation effects.** Compare minimal-paraphrase and other perturbation conditions with exact-repeat controls using paired, question-level comparisons. Report absolute rates and effect sizes with uncertainty intervals.\n3. **Test whether differences exceed ordinary variation.** Classify a change as evidence of excess instability only when the perturbation-associated change exceeds the relevant baseline variation and meets the prespecified task-level threshold.\n4. **Assess appropriate sensitivity.** For meaning-relevant perturbations, test whether responses change in the expected way. For meaning-preserving paraphrases, test whether consequential response properties remain stable.\n5. **Identify sources of variation.** Compare exact repeats, wording changes, context changes, and generation-setting changes while holding other factors fixed. Use hierarchical or mixed-effects models where suitable, including question- and session-level effects. Interpret associations cautiously if model version or service conditions cannot be held constant.\n6. **Check robustness.** Repeat analyses with alternative reasonable semantic thresholds, inspect results by task and stakes, and assess whether conclusions depend on a small number of questions or annotators. Report surface-level similarity separately from substantive outcomes.\n\nDistinguish three outcomes: **ordinary variation** (different wording without consequential change), **appropriate sensitivity** (change aligned with a relevant perturbation), and **excess instability** (a consequential, unexplained or disproportionate change, especially after meaning-preserving perturbation).\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify the smallest practically important increase in consequential response differences, a confidence level or interval criterion, and the target precision or sample size. Conclude that evidence supports excess instability for a defined model-question population only if:\n\n- the estimated consequential-change rate after meaning-preserving perturbations exceeds the exact-repeat baseline by at least the prespecified practical threshold;\n- uncertainty intervals support that excess under the chosen criterion; and\n- the finding is not explained by a documented relevant change, collection error, or model/version drift.\n\nConclude that outputs are sufficiently stable for the tested use only if the upper uncertainty bound for excess consequential variation falls below the prespecified tolerance. Otherwise, classify the result as inconclusive. Stop at the preregistered sample size or precision target; do not stop early based on favorable interim findings unless a sequential rule has been specified in advance. Report results even when estimates are inconclusive.\n\n## 8. Limitations\n\n- Black-box access may obscure decoding settings, routing, model updates, or service-side changes.\n- Paraphrase quality and semantic equivalence are matters of judgment; imperfect perturbations can confound sensitivity estimates.\n- Automated similarity measures can miss important factual or pragmatic differences, while human assessment can be subjective and costly.\n- Repeated prompts may not be independent, and time, session, or infrastructure effects may remain.\n- A finite question set cannot establish stability for all prompts, users, languages, domains, or model versions.\n- Task-level thresholds depend on consequences and context; results should not be reduced to one universal stability score.\n- This design measures observed response variation and its relationship to controlled perturbations; it does not by itself establish a complete causal account of the model’s internal mechanisms.",
+  "raw_response": {
+    "id": "resp_0b3b5d1a5a6a58f2016abf4d50431487d086bc1954d412eef1",
+    "object": "response",
+    "created_at": 1790922064,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922085,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0b3b5d1a5a6a58f2016abf4d50ec6487d0979f6b97518e76f0",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether a fixed large-language-model (LLM) question yields meaningfully different responses under small, controlled changes in conditions; identify which changes cause those differences; and distinguish substantive response instability from ordinary wording variation.\n\nThe primary framework will be **differential or local sensitivity**: measure how responses change when one input or generation condition is perturbed slightly while other conditions are held fixed. The study will focus on a prespecified set of questions, models, and perturbations. It will not assume that variation is inherently undesirable: appropriate changes in response to relevant context will be distinguished from unexplained or disproportionate changes.\n\n## 2. Assumptions\n\n- Model outputs can vary because of decoding randomness, prompt context, system instructions, conversation history, model version, or service-side changes.\n- A single pair of responses cannot reliably identify the cause of a difference. Conditions must be repeated and compared with suitable controls.\n- “Same question” requires an operational definition. The study will distinguish an unchanged question from minimal paraphrases and other local perturbations.\n- Meaningful difference is task-dependent. A changed answer to a factual or safety-sensitive question may matter more than a changed example or stylistic choice.\n- Semantic and task-level judgments require prespecified criteria and, where possible, blinded human assessment.\n- Findings apply to the tested models, versions, settings, questions, and time period; they do not automatically generalize to all LLM use.\n\n## 3. Research design\n\n### Questions and sampling\n\nConstruct a stratified question set covering several task types, such as factual question answering, calculation, summarization, advice, classification, and creative generation. Include questions with different stakes and different degrees of answer constraint. Define inclusion criteria, exclusions, and intended population before collecting outputs.\n\nFor every question, create:\n\n1. **Exact-repeat trials:** identical prompt and settings submitted repeatedly, estimating baseline response variation.\n2. **Minimal wording perturbations:** small paraphrases intended to preserve meaning, checked by independent reviewers.\n3. **Meaning-relevant perturbations:** small changes to a fact, constraint, or requested perspective for which a response change is warranted.\n4. **Context perturbations:** controlled additions or changes to preceding conversational context.\n5. **Generation-condition perturbations:** controlled changes to supported decoding settings, if available, with all other settings fixed.\n6. **Control trials:** repeated outputs under an unchanged condition interspersed with perturbation trials, to reveal time-related or service-related drift.\n\nThe central comparison is the response difference under a small perturbation versus the difference observed on exact-repeat trials. Use paired trials: for each question, compare outputs across conditions while preserving the same model, version, system message, and other settings. Randomize trial order where feasible. Record timestamps and any available model or service identifiers. If the deployed system cannot guarantee a fixed version or setting, treat that as a limitation and make repeated controls especially important.\n\nUse a preregistered number of independent repetitions per question and condition, determined by a pilot or simulation based on the smallest effect considered practically important. Distribute repetitions across sessions or time blocks where feasible, and do not treat multiple outputs from one unchanged session as independent without accounting for their clustering.\n\n### Blinding and annotation\n\nRemove condition labels before semantic and quality judgments. Use at least two independent annotators for a subset or all responses, with a written rubric and adjudication procedure. Annotators should not know whether a pair comes from an exact-repeat, wording-perturbation, or relevant-change condition.\n\n### Quality assurance\n\nCheck that paraphrases preserve intended meaning and that relevant perturbations differ only in the designated feature. Log prompt text, model and version identifiers, settings, trial order, timestamps, and collection errors. Exclude trials only under preregistered rules, such as incomplete outputs or a documented delivery failure; report all exclusions.\n\n## 4. Data or evidence needed\n\n- The exact prompts, paraphrases, contexts, system instructions, and perturbation specifications.\n- Repeated model outputs for every question-condition combination.\n- Model/version identifiers, generation settings, timestamps, and session or request identifiers where available.\n- Independent judgments of prompt equivalence and response meaning, correctness, completeness, safety, and task success, as appropriate to the question type.\n- A task-specific rubric defining which changes are consequential. Examples include a changed factual claim, recommendation, classification, calculation result, safety refusal, or required constraint.\n- Optional automated measures, such as token-level or embedding-based comparisons, retained as supporting evidence rather than treated as ground truth.\n\n## 5. Measurement\n\n### Response differences\n\nMeasure differences at multiple levels:\n\n- **Surface variation:** token or character edits, length, formatting, and phrasing.\n- **Semantic variation:** changes in claims, interpretation, recommendation, or stated uncertainty.\n- **Task-level variation:** changes in correctness, constraint satisfaction, classification, safety behavior, or practical outcome.\n- **Reliability:** whether an answer or decision is consistent across repeated trials.\n\nUse human-coded task-level measures as primary outcomes when feasible. Develop task-specific rubrics before inspecting results. For each response pair, annotators should identify whether the responses are equivalent, differ only in expression, differ substantively but remain acceptable, or conflict in a way that could alter a user’s understanding or action.\n\n### Local sensitivity and baseline\n\nFor each question, estimate:\n\n- **Baseline variation:** differences among exact-repeat outputs.\n- **Perturbation response:** differences between outputs under the original and perturbed conditions.\n- **Excess sensitivity:** perturbation-associated change beyond the exact-repeat baseline.\n- **Directional appropriateness:** whether a response changes in the expected direction after a meaning-relevant perturbation, and remains stable after a meaning-preserving paraphrase.\n\nWhere scores are available, define a normalized local sensitivity measure as response change divided by perturbation magnitude. Because prompt changes do not have a universally valid numeric scale, report the perturbation categories and pairwise effects directly as well; do not rely on a single sensitivity index.\n\nReport effects separately by task type, stakes, model, and perturbation class. Quantify annotator agreement and uncertainty.\n\n## 6. Analysis\n\nUse a preregistered analysis plan with the question as the principal unit of generalization and repeated outputs nested within question, condition, and session.\n\n1. **Estimate baseline variation.** Describe how often exact-repeat outputs differ at the surface, semantic, and task levels.\n2. **Estimate perturbation effects.** Compare minimal-paraphrase and other perturbation conditions with exact-repeat controls using paired, question-level comparisons. Report absolute rates and effect sizes with uncertainty intervals.\n3. **Test whether differences exceed ordinary variation.** Classify a change as evidence of excess instability only when the perturbation-associated change exceeds the relevant baseline variation and meets the prespecified task-level threshold.\n4. **Assess appropriate sensitivity.** For meaning-relevant perturbations, test whether responses change in the expected way. For meaning-preserving paraphrases, test whether consequential response properties remain stable.\n5. **Identify sources of variation.** Compare exact repeats, wording changes, context changes, and generation-setting changes while holding other factors fixed. Use hierarchical or mixed-effects models where suitable, including question- and session-level effects. Interpret associations cautiously if model version or service conditions cannot be held constant.\n6. **Check robustness.** Repeat analyses with alternative reasonable semantic thresholds, inspect results by task and stakes, and assess whether conclusions depend on a small number of questions or annotators. Report surface-level similarity separately from substantive outcomes.\n\nDistinguish three outcomes: **ordinary variation** (different wording without consequential change), **appropriate sensitivity** (change aligned with a relevant perturbation), and **excess instability** (a consequential, unexplained or disproportionate change, especially after meaning-preserving perturbation).\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify the smallest practically important increase in consequential response differences, a confidence level or interval criterion, and the target precision or sample size. Conclude that evidence supports excess instability for a defined model-question population only if:\n\n- the estimated consequential-change rate after meaning-preserving perturbations exceeds the exact-repeat baseline by at least the prespecified practical threshold;\n- uncertainty intervals support that excess under the chosen criterion; and\n- the finding is not explained by a documented relevant change, collection error, or model/version drift.\n\nConclude that outputs are sufficiently stable for the tested use only if the upper uncertainty bound for excess consequential variation falls below the prespecified tolerance. Otherwise, classify the result as inconclusive. Stop at the preregistered sample size or precision target; do not stop early based on favorable interim findings unless a sequential rule has been specified in advance. Report results even when estimates are inconclusive.\n\n## 8. Limitations\n\n- Black-box access may obscure decoding settings, routing, model updates, or service-side changes.\n- Paraphrase quality and semantic equivalence are matters of judgment; imperfect perturbations can confound sensitivity estimates.\n- Automated similarity measures can miss important factual or pragmatic differences, while human assessment can be subjective and costly.\n- Repeated prompts may not be independent, and time, session, or infrastructure effects may remain.\n- A finite question set cannot establish stability for all prompts, users, languages, domains, or model versions.\n- Task-level thresholds depend on consequences and context; results should not be reduced to one universal stability score.\n- This design measures observed response variation and its relationship to controlled perturbations; it does not by itself establish a complete causal account of the model’s internal mechanisms."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 192,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1950,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2142
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

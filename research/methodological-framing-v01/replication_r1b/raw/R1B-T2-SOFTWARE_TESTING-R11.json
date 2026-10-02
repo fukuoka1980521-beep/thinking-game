@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "SOFTWARE_TESTING_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "SOFTWARE_TESTING",
+  "replicate": 11,
+  "run_id": "R1B-T2-SOFTWARE_TESTING-R11",
+  "task_id": "T2",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T01:44:29.141591+00:00",
+  "timestamp_utc": "2026-10-02T01:44:50.507059+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "0467971a3b63560012a3b9165b590b61189c538914ca2fc5ee9de145f9d0b69c",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0ece4d79912e2b72016abf0c7ceb0887d0bdacf8eb8797b83a",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2093,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2282
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine why teams following the same nominal workplace process have persistent differences in completion time across sites, identify which competing explanations are supported, and specify what evidence would distinguish them.\n\nThe study treats the process as a system under test. It examines whether observed differences arise from how work is performed, differences in cases or resources, measurement artifacts, or interactions among these factors. The scope is the defined process, participating sites, and observation period; conclusions should not be generalized beyond them without further evidence.\n\n## 2. Assumptions\n\n- “Same nominal process” means sites are expected to follow a common documented sequence and completion criterion. Actual implementation may differ.\n- Completion time must have consistently defined start and end events. Delays before work begins and interruptions during work may contribute to elapsed time.\n- Cases may differ in complexity, required approvals, dependencies, and other characteristics that affect duration.\n- Site differences may reflect team composition, workload, tools, local management practices, or constraints—not only process execution.\n- Available records may be incomplete or inconsistent; recorded duration is not automatically equivalent to time spent doing work.\n- The study is observational. Associations can help assess explanations but, absent a credible causal design, cannot alone establish causation.\n\n## 3. Research design\n\nUse a multi-site, longitudinal process-testing design, combining case-level operational data with direct observation and structured interviews. Define the process specification and test its implementation and outputs at each site.\n\n1. **Specify the process under test.** Document the intended steps, decision points, handoffs, permitted exceptions, required inputs, and completion condition. Establish a shared operational definition of start, pause, and end events before comparing sites.\n\n2. **Map actual execution.** At each site, trace a sample of cases from initiation to completion. Record steps taken, order, rework, deviations, handoffs, queues, approvals, and exceptions. Compare observed execution with the specification; do not treat a documented procedure as proof of uniform practice.\n\n3. **Build a case-level cohort.** Include cases from all sites over a common period, using consistent inclusion criteria. Sample across relevant case types and workload conditions. Retain case-level data so differences in case mix can be examined rather than hidden in site averages.\n\n4. **Test competing explanations.** Assess evidence for:\n   - **Implementation variation:** sites differ in sequence, interpretation, exception handling, or adherence.\n   - **Case-mix variation:** sites receive cases of different complexity or types.\n   - **Resource and workload variation:** staffing, skill mix, caseload, queue length, or competing work differs.\n   - **Tool or infrastructure variation:** systems, equipment, access, reliability, or local configurations differ.\n   - **Handoff and dependency effects:** external approvals, upstream inputs, or downstream teams create site-specific delays.\n   - **Rework or quality differences:** incomplete work, errors, or failed checks lead to repeated steps or later correction.\n   - **Measurement artifacts:** timestamp definitions, missing records, rounding, or logging practices differ.\n   - **Contextual constraints:** local policies, schedules, geography, or management routines shape elapsed time.\n\n5. **Check whether explanations are distinguishable.** Where possible, identify cases that are comparable across sites on type, complexity, and other observed characteristics. Examine within-site variation and changes over time as well as between-site differences. Use observations and interviews to investigate mechanisms suggested by the quantitative patterns.\n\n6. **Validate the evidence.** Reconcile timestamps against case records for a sample of cases, compare administrative data with direct observations, and ask process owners to verify the mapped workflow. Record disagreements and unresolved ambiguities rather than forcing apparent uniformity.\n\n## 4. Data or evidence needed\n\n- The formal process documentation, versions in force, training materials, and local guidance.\n- Case-level timestamps for initiation, each recorded step or handoff, pauses where available, and completion.\n- Case attributes that may predict duration, such as type, complexity, urgency, completeness at intake, and exception status.\n- Workload and capacity measures over time: staffing levels, role and experience mix, caseload, queue size, absences, and competing duties.\n- Records of tools and infrastructure in use, outages, access constraints, and configuration differences.\n- Quality and rework evidence, including failed checks, returned cases, corrections, and reopenings.\n- Evidence on external dependencies, such as approval turnaround or waiting for information from other units.\n- Sampling logs, data dictionaries, system changes, and records of missing or revised timestamps.\n- Structured observations of case progression and interviews with staff, supervisors, and relevant partners. Interviews should probe specific cases and mechanisms, not only general impressions.\n\n## 5. Measurement\n\n- **Primary outcome:** elapsed time from the agreed start event to the agreed completion event. Report the definition, treatment of pauses, and handling of reopened cases.\n- **Complementary time measures:** active work time, queue or waiting time, time at each step, number and duration of handoffs, and time lost to rework, where reliably observable.\n- **Process-conformance measures:** completion of required steps, step order, deviations, exception use, missing inputs, and handoff completeness.\n- **Case-mix measures:** pre-specified attributes of case type, complexity, urgency, and completeness at intake.\n- **Capacity and context measures:** staffing and skill mix, caseload, queue size, workload peaks, tool availability, and relevant schedule or policy conditions.\n- **Quality measures:** error, return, correction, reopen, or failed-check rates, using common definitions across sites.\n- **Data-quality measures:** timestamp completeness, consistency with source records, and agreement between administrative records and observed events.\n\nBefore analysis, establish common coding rules and assess whether each measure is comparable across sites. Report distributions and uncertainty, not just mean durations; completion times may be skewed and sensitive to a small number of long cases.\n\n## 6. Analysis\n\n1. **Assess data comparability.** Check missingness, timestamp logic, definition changes, outliers, and consistency across sources and sites. Recalculate durations from source events where possible. Report results both with and without records whose timing is uncertain.\n\n2. **Describe the observed difference.** Summarize completion-time distributions by site and period, alongside case mix, workload, quality, and process-conformance measures. Separate within-site variability from between-site differences.\n\n3. **Compare like with like.** Estimate site differences after adjusting for pre-specified case attributes and relevant time-varying workload factors. Use appropriate models for skewed duration data and account for team or time clustering where supported by the data. Show unadjusted and adjusted estimates so the effect of adjustment is visible.\n\n4. **Decompose elapsed time.** Determine whether site differences arise mainly in active work, queues, handoffs, approvals, or rework. A longer total duration with similar active work but more waiting supports a different explanation than a longer duration concentrated in task execution.\n\n5. **Evaluate predicted patterns.** For each explanation, specify in advance the observations it predicts and whether they are present. For example:\n   - Implementation variation is supported if differences in observed steps or exception handling align with longer durations, particularly at the affected steps.\n   - Case-mix variation is supported if differences shrink substantially among comparable cases or after adjustment for measured case attributes.\n   - Capacity or workload constraints are supported if queues or durations rise with workload and available capacity, within or across sites.\n   - Tool or infrastructure effects are supported if delays coincide with access problems, outages, or relevant system differences.\n   - Handoff or dependency effects are supported if elapsed time accumulates while cases await identifiable external inputs or approvals.\n   - Rework or quality effects are supported if longer times co-occur with more corrections, returns, or failed checks.\n   - Measurement artifacts are supported if site differences shrink or change materially under harmonized event definitions or validated timestamps.\n\n6. **Check alternative interpretations.** Test sensitivity to reasonable choices about start and end events, pause handling, exclusions, case classification, and model specification. Examine whether conclusions depend on a few cases, a short period, or one site. Treat interview accounts as evidence about mechanisms, not as measures of prevalence.\n\n7. **Synthesize evidence by explanation.** Classify each explanation as supported, partly supported, not supported by the available evidence, or unresolved. Distinguish evidence against an explanation from insufficient measurement or statistical precision. Where explanations may operate together, report their joint contribution rather than forcing a single cause.\n\n## 7. Decision / stopping rule\n\nConclude the study when:\n\n- the process specification and event definitions are sufficiently clear to compare sites;\n- data-quality and comparability checks are complete;\n- the case-level cohort covers the agreed sites and period with enough information to assess the pre-specified explanations;\n- key quantitative patterns have been checked against workflow observations and source records; and\n- sensitivity analyses show whether the principal conclusions are robust to plausible measurement and modeling choices.\n\nDo not declare a cause established solely because a site difference is statistically significant or because one adjusted model reduces it. A conclusion of support requires a predicted, mechanism-consistent pattern and evidence that plausible alternatives—especially case mix and measurement differences—do not fully account for it. If critical measures are unavailable, sites are not comparable, or competing explanations remain observationally indistinguishable, stop with an unresolved finding and identify the evidence needed to resolve it.\n\n## 8. Limitations\n\n- Observational comparisons may be confounded by unmeasured differences among sites, teams, or cases.\n- Process records may omit informal work, waiting, or unrecorded exceptions; timestamps can reflect logging practice rather than event timing.\n- Interviews and observations may alter behavior or reflect recall and social-desirability biases.\n- Case complexity and work quality can be difficult to measure consistently, and adjustment for imperfect measures may leave residual confounding.\n- A common documented process does not imply a common purpose, constraint set, or local interpretation.\n- Effects may vary over time, by case type, or by staff member; site averages can obscure these patterns.\n- The study can identify plausible mechanisms and distinguish explanations to the extent supported by evidence, but it may not establish causality without stronger identification or follow-up evaluation.",
+  "raw_response": {
+    "id": "resp_0ece4d79912e2b72016abf0c7ceb0887d0bdacf8eb8797b83a",
+    "object": "response",
+    "created_at": 1790905468,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790905489,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0ece4d79912e2b72016abf0c7e395887d0b32d8cfc6886b42f",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine why teams following the same nominal workplace process have persistent differences in completion time across sites, identify which competing explanations are supported, and specify what evidence would distinguish them.\n\nThe study treats the process as a system under test. It examines whether observed differences arise from how work is performed, differences in cases or resources, measurement artifacts, or interactions among these factors. The scope is the defined process, participating sites, and observation period; conclusions should not be generalized beyond them without further evidence.\n\n## 2. Assumptions\n\n- “Same nominal process” means sites are expected to follow a common documented sequence and completion criterion. Actual implementation may differ.\n- Completion time must have consistently defined start and end events. Delays before work begins and interruptions during work may contribute to elapsed time.\n- Cases may differ in complexity, required approvals, dependencies, and other characteristics that affect duration.\n- Site differences may reflect team composition, workload, tools, local management practices, or constraints—not only process execution.\n- Available records may be incomplete or inconsistent; recorded duration is not automatically equivalent to time spent doing work.\n- The study is observational. Associations can help assess explanations but, absent a credible causal design, cannot alone establish causation.\n\n## 3. Research design\n\nUse a multi-site, longitudinal process-testing design, combining case-level operational data with direct observation and structured interviews. Define the process specification and test its implementation and outputs at each site.\n\n1. **Specify the process under test.** Document the intended steps, decision points, handoffs, permitted exceptions, required inputs, and completion condition. Establish a shared operational definition of start, pause, and end events before comparing sites.\n\n2. **Map actual execution.** At each site, trace a sample of cases from initiation to completion. Record steps taken, order, rework, deviations, handoffs, queues, approvals, and exceptions. Compare observed execution with the specification; do not treat a documented procedure as proof of uniform practice.\n\n3. **Build a case-level cohort.** Include cases from all sites over a common period, using consistent inclusion criteria. Sample across relevant case types and workload conditions. Retain case-level data so differences in case mix can be examined rather than hidden in site averages.\n\n4. **Test competing explanations.** Assess evidence for:\n   - **Implementation variation:** sites differ in sequence, interpretation, exception handling, or adherence.\n   - **Case-mix variation:** sites receive cases of different complexity or types.\n   - **Resource and workload variation:** staffing, skill mix, caseload, queue length, or competing work differs.\n   - **Tool or infrastructure variation:** systems, equipment, access, reliability, or local configurations differ.\n   - **Handoff and dependency effects:** external approvals, upstream inputs, or downstream teams create site-specific delays.\n   - **Rework or quality differences:** incomplete work, errors, or failed checks lead to repeated steps or later correction.\n   - **Measurement artifacts:** timestamp definitions, missing records, rounding, or logging practices differ.\n   - **Contextual constraints:** local policies, schedules, geography, or management routines shape elapsed time.\n\n5. **Check whether explanations are distinguishable.** Where possible, identify cases that are comparable across sites on type, complexity, and other observed characteristics. Examine within-site variation and changes over time as well as between-site differences. Use observations and interviews to investigate mechanisms suggested by the quantitative patterns.\n\n6. **Validate the evidence.** Reconcile timestamps against case records for a sample of cases, compare administrative data with direct observations, and ask process owners to verify the mapped workflow. Record disagreements and unresolved ambiguities rather than forcing apparent uniformity.\n\n## 4. Data or evidence needed\n\n- The formal process documentation, versions in force, training materials, and local guidance.\n- Case-level timestamps for initiation, each recorded step or handoff, pauses where available, and completion.\n- Case attributes that may predict duration, such as type, complexity, urgency, completeness at intake, and exception status.\n- Workload and capacity measures over time: staffing levels, role and experience mix, caseload, queue size, absences, and competing duties.\n- Records of tools and infrastructure in use, outages, access constraints, and configuration differences.\n- Quality and rework evidence, including failed checks, returned cases, corrections, and reopenings.\n- Evidence on external dependencies, such as approval turnaround or waiting for information from other units.\n- Sampling logs, data dictionaries, system changes, and records of missing or revised timestamps.\n- Structured observations of case progression and interviews with staff, supervisors, and relevant partners. Interviews should probe specific cases and mechanisms, not only general impressions.\n\n## 5. Measurement\n\n- **Primary outcome:** elapsed time from the agreed start event to the agreed completion event. Report the definition, treatment of pauses, and handling of reopened cases.\n- **Complementary time measures:** active work time, queue or waiting time, time at each step, number and duration of handoffs, and time lost to rework, where reliably observable.\n- **Process-conformance measures:** completion of required steps, step order, deviations, exception use, missing inputs, and handoff completeness.\n- **Case-mix measures:** pre-specified attributes of case type, complexity, urgency, and completeness at intake.\n- **Capacity and context measures:** staffing and skill mix, caseload, queue size, workload peaks, tool availability, and relevant schedule or policy conditions.\n- **Quality measures:** error, return, correction, reopen, or failed-check rates, using common definitions across sites.\n- **Data-quality measures:** timestamp completeness, consistency with source records, and agreement between administrative records and observed events.\n\nBefore analysis, establish common coding rules and assess whether each measure is comparable across sites. Report distributions and uncertainty, not just mean durations; completion times may be skewed and sensitive to a small number of long cases.\n\n## 6. Analysis\n\n1. **Assess data comparability.** Check missingness, timestamp logic, definition changes, outliers, and consistency across sources and sites. Recalculate durations from source events where possible. Report results both with and without records whose timing is uncertain.\n\n2. **Describe the observed difference.** Summarize completion-time distributions by site and period, alongside case mix, workload, quality, and process-conformance measures. Separate within-site variability from between-site differences.\n\n3. **Compare like with like.** Estimate site differences after adjusting for pre-specified case attributes and relevant time-varying workload factors. Use appropriate models for skewed duration data and account for team or time clustering where supported by the data. Show unadjusted and adjusted estimates so the effect of adjustment is visible.\n\n4. **Decompose elapsed time.** Determine whether site differences arise mainly in active work, queues, handoffs, approvals, or rework. A longer total duration with similar active work but more waiting supports a different explanation than a longer duration concentrated in task execution.\n\n5. **Evaluate predicted patterns.** For each explanation, specify in advance the observations it predicts and whether they are present. For example:\n   - Implementation variation is supported if differences in observed steps or exception handling align with longer durations, particularly at the affected steps.\n   - Case-mix variation is supported if differences shrink substantially among comparable cases or after adjustment for measured case attributes.\n   - Capacity or workload constraints are supported if queues or durations rise with workload and available capacity, within or across sites.\n   - Tool or infrastructure effects are supported if delays coincide with access problems, outages, or relevant system differences.\n   - Handoff or dependency effects are supported if elapsed time accumulates while cases await identifiable external inputs or approvals.\n   - Rework or quality effects are supported if longer times co-occur with more corrections, returns, or failed checks.\n   - Measurement artifacts are supported if site differences shrink or change materially under harmonized event definitions or validated timestamps.\n\n6. **Check alternative interpretations.** Test sensitivity to reasonable choices about start and end events, pause handling, exclusions, case classification, and model specification. Examine whether conclusions depend on a few cases, a short period, or one site. Treat interview accounts as evidence about mechanisms, not as measures of prevalence.\n\n7. **Synthesize evidence by explanation.** Classify each explanation as supported, partly supported, not supported by the available evidence, or unresolved. Distinguish evidence against an explanation from insufficient measurement or statistical precision. Where explanations may operate together, report their joint contribution rather than forcing a single cause.\n\n## 7. Decision / stopping rule\n\nConclude the study when:\n\n- the process specification and event definitions are sufficiently clear to compare sites;\n- data-quality and comparability checks are complete;\n- the case-level cohort covers the agreed sites and period with enough information to assess the pre-specified explanations;\n- key quantitative patterns have been checked against workflow observations and source records; and\n- sensitivity analyses show whether the principal conclusions are robust to plausible measurement and modeling choices.\n\nDo not declare a cause established solely because a site difference is statistically significant or because one adjusted model reduces it. A conclusion of support requires a predicted, mechanism-consistent pattern and evidence that plausible alternatives—especially case mix and measurement differences—do not fully account for it. If critical measures are unavailable, sites are not comparable, or competing explanations remain observationally indistinguishable, stop with an unresolved finding and identify the evidence needed to resolve it.\n\n## 8. Limitations\n\n- Observational comparisons may be confounded by unmeasured differences among sites, teams, or cases.\n- Process records may omit informal work, waiting, or unrecorded exceptions; timestamps can reflect logging practice rather than event timing.\n- Interviews and observations may alter behavior or reflect recall and social-desirability biases.\n- Case complexity and work quality can be difficult to measure consistently, and adjustment for imperfect measures may leave residual confounding.\n- A common documented process does not imply a common purpose, constraint set, or local interpretation.\n- Effects may vary over time, by case type, or by staff member; site averages can obscure these patterns.\n- The study can identify plausible mechanisms and distinguish explanations to the extent supported by evidence, but it may not establish causality without stronger identification or follow-up evaluation."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2093,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2282
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

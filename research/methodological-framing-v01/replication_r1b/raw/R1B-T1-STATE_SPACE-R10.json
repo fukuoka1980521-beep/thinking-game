@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 10,
+  "run_id": "R1B-T1-STATE_SPACE-R10",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:23:45.134462+00:00",
+  "timestamp_utc": "2026-10-02T06:24:04.848964+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "832fba3b7142c44efaa9be82d8332e394e2518835651985d142293c7b5394fbf",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_04cb381e4225ae79016abf4df0dc2c87d0920b7de8bcd34b4f",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1931,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2120
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model question exhibit meaningful instability, identify conditions associated with that instability, and distinguish substantive changes from ordinary wording variation.\n\nThe primary frame is a **state-space model**: each response is an observed realization of an underlying answer state, potentially influenced by prompt features, model configuration, conversation context, and stochastic generation. The study will estimate both variation within an answer state and transitions between substantively different states.\n\nThe scope is limited to a preregistered set of questions, models, and controlled generation conditions. Conclusions will apply to those settings, not automatically to all models or prompts.\n\n## 2. Assumptions\n\n- The target model and its version can be fixed and identified throughout data collection.\n- Identical questions can be submitted under controlled conditions, with relevant settings recorded.\n- Responses can be compared on prespecified dimensions such as factual claims, recommendations, reasoning structure, and uncertainty.\n- Some variation is stylistic and does not change the answer’s substantive content; other variation changes what a user could reasonably infer or do.\n- Human judgment, supported by structured coding, is needed to define meaningful differences. Automated similarity metrics may assist but will not determine the outcome alone.\n- Repeated outputs are observations from a response-generating process. They need not be independent; session, time, or context effects may induce dependence.\n\n## 3. Research design\n\n### Questions and sampling\n\nConstruct a stratified set of questions covering domains and response types relevant to the intended use, such as factual retrieval, explanation, summarization, advice, and ambiguous or underspecified questions. Include questions expected to have clear answers as well as questions where reasonable answers may differ. Document selection criteria and exclude questions requiring changing external facts unless the reference date is fixed.\n\nFor each question, specify the answer dimensions that matter before collecting responses. Examples include the central conclusion, factual claims, recommended action, stated caveats, and level of certainty.\n\n### Controlled repeated sampling\n\nFor each question, collect repeated responses while holding constant the exact prompt, system instructions, model version, conversation context, and generation settings. Use fresh sessions for the primary repeated-sampling condition. Record settings such as temperature, sampling parameters, and any seed or determinism controls available.\n\nWhere feasible, add planned comparison conditions to investigate sources of change:\n\n- **Generation condition:** vary one sampling setting at a time while holding other inputs fixed.\n- **Context condition:** compare fresh-session responses with responses generated after prespecified, controlled context changes.\n- **Prompt-form condition:** compare the original question with carefully defined paraphrases, analyzed separately from exact-repeat instability.\n- **Time condition:** repeat a subset across time or deployment versions to detect temporal or version-related shifts.\n\nThese conditions are explanatory contrasts, not substitutes for the identical-question primary condition. Randomize collection order where practical and preserve the raw prompts and outputs.\n\n### State-space formulation\n\nFor question \\(q\\) and replicate \\(t\\), represent response \\(Y_{qt}\\) as an observation emitted from latent substantive state \\(Z_{qt}\\), with additional surface-form variation \\(W_{qt}\\). The state may encode the answer’s main conclusion and other prespecified content dimensions; surface variation includes phrasing, organization, and stylistic choices that do not alter those dimensions.\n\nModel the probability of a substantive state and the probability of moving between states as functions of controlled conditions and, where relevant, time or session:\n\n- **State occupancy:** how often each substantive answer state occurs.\n- **Transition behavior:** whether observed state changes are consistent with within-condition variation or are associated with changes in generation setting, context, prompt form, or model version.\n- **Observation variation:** how much wording and presentation vary conditional on the same substantive state.\n\nThe operational state representation and state-assignment procedure must be documented before outcomes are examined. If outputs do not naturally form discrete clusters, use a prespecified graded or multidimensional state representation rather than forcing discrete categories.\n\n### Replication and annotation\n\nChoose the number of questions and repeats through a pilot-free, blinded precision or power calculation based on a prespecified minimum meaningful instability rate and desired uncertainty bounds. If no defensible pilot estimates exist, use a staged design: an initial blinded phase to estimate variance and annotation burden, followed by a preregistered sample-size recalculation that does not inspect condition-specific effects.\n\nHave at least two trained annotators independently code responses without seeing replicate order or generation condition. Resolve disagreements under a documented adjudication procedure. Include calibration examples, periodic reliability checks, and a record of codebook revisions.\n\n## 4. Data or evidence needed\n\n- Exact question text, system instructions, conversation context, and any prompt variants.\n- Model name, version or deployment identifier, date and time, generation settings, and session identifiers.\n- Raw responses, including refusals, tool-use notices, and incomplete outputs.\n- Prespecified question-level answer dimensions and any reference materials used to judge factual claims.\n- Annotator codes for substantive content, uncertainty, caveats, recommendations, and surface features.\n- Independent similarity and factual-consistency assessments, when applicable.\n- Annotation time and adjudication records, to evaluate feasibility and coding reliability.\n- Documentation of missing outputs, collection failures, model changes, and protocol deviations.\n\n## 5. Measurement\n\n### Primary outcome: meaningful response instability\n\nDefine a response pair as meaningfully different when it changes at least one prespecified consequential answer dimension—for example, the main conclusion, a material factual claim, a recommendation, a safety-relevant caveat, or the expressed confidence in a way that could alter interpretation or action.\n\nUse a question-specific rubric established before collection. Do not define instability solely by lexical or embedding-distance thresholds.\n\n### Secondary outcomes\n\n- **Substantive state diversity:** number and distribution of distinct coded answer states per question.\n- **Pairwise substantive disagreement:** probability that two responses to the same question differ meaningfully.\n- **State-transition rate:** probability of a change in latent or coded answer state across replicates, with session and condition accounted for.\n- **Surface-form variation:** lexical, syntactic, organizational, or stylistic difference among responses classified as substantively equivalent.\n- **Factual disagreement:** differences in claims assessed against appropriate references, separated from acceptable variation in emphasis or explanation.\n- **Uncertainty variation:** changes in confidence, hedging, or caveats, scored independently of answer correctness.\n- **Annotation reliability:** agreement on substantive categories and severity ratings, reported with measures appropriate to the coding scale.\n\nUse automated text measures only as supplementary diagnostics. Validate them against human-coded pairs and report cases where they diverge from substantive judgments.\n\n## 6. Analysis\n\nFirst assess annotation reliability and the adequacy of the state representation. Report the distribution of response states and examples of each category, including borderline cases.\n\nEstimate, for each question and overall, the probability that two independently sampled responses differ meaningfully. Provide uncertainty intervals that account for repeated observations nested within questions and, where applicable, sessions. Avoid treating all response pairs as independent. Use hierarchical models or cluster-aware resampling to represent question-level heterogeneity.\n\nFit the prespecified state-space model to separate:\n\n1. variation in wording conditional on the same substantive state;\n2. variation in substantive state occupancy under fixed conditions; and\n3. changes in state-transition behavior associated with generation settings, context, prompt form, time, or model version.\n\nCompare the model’s state-based findings with direct human-coded pairwise judgments. Conduct sensitivity analyses using alternative reasonable state definitions, severity thresholds, and treatment of ambiguous cases. Report both results and how conclusions change under these alternatives.\n\nFor explanatory conditions, estimate contrasts against the exact-repeat baseline. Interpret them as evidence about the tested conditions only; do not infer a causal mechanism unless the condition was manipulated while other factors were held constant and collection was appropriately randomized.\n\n## 7. Decision / stopping rule\n\nBefore collection, define a minimum meaningful instability rate, \\(\\delta\\), for the intended use, along with an uncertainty criterion and any higher-risk thresholds. The value of \\(\\delta\\) should be selected with domain stakeholders based on the consequences of materially different answers, not chosen after examining results.\n\nConclude that meaningful response instability is supported for the tested setting if the uncertainty interval for the primary instability rate is sufficiently above the prespecified practical threshold, with the result robust to the planned sensitivity analyses. Conclude that instability is acceptably low only if the interval lies sufficiently below the threshold. Otherwise, classify the evidence as inconclusive.\n\nStop at the preregistered sample size or at the end of the prespecified staged design. Do not stop early based on favorable or unfavorable interim effects unless a sequential stopping procedure and its error control were specified in advance. Report deviations and any incomplete or inconclusive analyses.\n\n## 8. Limitations\n\n- Findings are specific to the sampled questions, model version, settings, and collection period.\n- Human judgments about materiality can be domain-dependent; rubrics and adjudication reduce but cannot eliminate this subjectivity.\n- A latent-state model may simplify responses that contain multiple claims, mixed positions, or genuinely continuous variation.\n- Automated metrics can mistake paraphrase for disagreement or miss substantive changes expressed similarly.\n- Repeated responses may be dependent because of shared infrastructure, session history, or hidden model updates.\n- Exact-repeat stability does not establish correctness, robustness to prompt changes, or reliability in real user interactions.\n- Controlled sampling may not represent deployment conditions, including long conversations, user feedback, tools, or changing external information.",
+  "raw_response": {
+    "id": "resp_04cb381e4225ae79016abf4df0dc2c87d0920b7de8bcd34b4f",
+    "object": "response",
+    "created_at": 1790922224,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922244,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_04cb381e4225ae79016abf4df152e487d0a004b8ffc52e47bc",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model question exhibit meaningful instability, identify conditions associated with that instability, and distinguish substantive changes from ordinary wording variation.\n\nThe primary frame is a **state-space model**: each response is an observed realization of an underlying answer state, potentially influenced by prompt features, model configuration, conversation context, and stochastic generation. The study will estimate both variation within an answer state and transitions between substantively different states.\n\nThe scope is limited to a preregistered set of questions, models, and controlled generation conditions. Conclusions will apply to those settings, not automatically to all models or prompts.\n\n## 2. Assumptions\n\n- The target model and its version can be fixed and identified throughout data collection.\n- Identical questions can be submitted under controlled conditions, with relevant settings recorded.\n- Responses can be compared on prespecified dimensions such as factual claims, recommendations, reasoning structure, and uncertainty.\n- Some variation is stylistic and does not change the answer’s substantive content; other variation changes what a user could reasonably infer or do.\n- Human judgment, supported by structured coding, is needed to define meaningful differences. Automated similarity metrics may assist but will not determine the outcome alone.\n- Repeated outputs are observations from a response-generating process. They need not be independent; session, time, or context effects may induce dependence.\n\n## 3. Research design\n\n### Questions and sampling\n\nConstruct a stratified set of questions covering domains and response types relevant to the intended use, such as factual retrieval, explanation, summarization, advice, and ambiguous or underspecified questions. Include questions expected to have clear answers as well as questions where reasonable answers may differ. Document selection criteria and exclude questions requiring changing external facts unless the reference date is fixed.\n\nFor each question, specify the answer dimensions that matter before collecting responses. Examples include the central conclusion, factual claims, recommended action, stated caveats, and level of certainty.\n\n### Controlled repeated sampling\n\nFor each question, collect repeated responses while holding constant the exact prompt, system instructions, model version, conversation context, and generation settings. Use fresh sessions for the primary repeated-sampling condition. Record settings such as temperature, sampling parameters, and any seed or determinism controls available.\n\nWhere feasible, add planned comparison conditions to investigate sources of change:\n\n- **Generation condition:** vary one sampling setting at a time while holding other inputs fixed.\n- **Context condition:** compare fresh-session responses with responses generated after prespecified, controlled context changes.\n- **Prompt-form condition:** compare the original question with carefully defined paraphrases, analyzed separately from exact-repeat instability.\n- **Time condition:** repeat a subset across time or deployment versions to detect temporal or version-related shifts.\n\nThese conditions are explanatory contrasts, not substitutes for the identical-question primary condition. Randomize collection order where practical and preserve the raw prompts and outputs.\n\n### State-space formulation\n\nFor question \\(q\\) and replicate \\(t\\), represent response \\(Y_{qt}\\) as an observation emitted from latent substantive state \\(Z_{qt}\\), with additional surface-form variation \\(W_{qt}\\). The state may encode the answer’s main conclusion and other prespecified content dimensions; surface variation includes phrasing, organization, and stylistic choices that do not alter those dimensions.\n\nModel the probability of a substantive state and the probability of moving between states as functions of controlled conditions and, where relevant, time or session:\n\n- **State occupancy:** how often each substantive answer state occurs.\n- **Transition behavior:** whether observed state changes are consistent with within-condition variation or are associated with changes in generation setting, context, prompt form, or model version.\n- **Observation variation:** how much wording and presentation vary conditional on the same substantive state.\n\nThe operational state representation and state-assignment procedure must be documented before outcomes are examined. If outputs do not naturally form discrete clusters, use a prespecified graded or multidimensional state representation rather than forcing discrete categories.\n\n### Replication and annotation\n\nChoose the number of questions and repeats through a pilot-free, blinded precision or power calculation based on a prespecified minimum meaningful instability rate and desired uncertainty bounds. If no defensible pilot estimates exist, use a staged design: an initial blinded phase to estimate variance and annotation burden, followed by a preregistered sample-size recalculation that does not inspect condition-specific effects.\n\nHave at least two trained annotators independently code responses without seeing replicate order or generation condition. Resolve disagreements under a documented adjudication procedure. Include calibration examples, periodic reliability checks, and a record of codebook revisions.\n\n## 4. Data or evidence needed\n\n- Exact question text, system instructions, conversation context, and any prompt variants.\n- Model name, version or deployment identifier, date and time, generation settings, and session identifiers.\n- Raw responses, including refusals, tool-use notices, and incomplete outputs.\n- Prespecified question-level answer dimensions and any reference materials used to judge factual claims.\n- Annotator codes for substantive content, uncertainty, caveats, recommendations, and surface features.\n- Independent similarity and factual-consistency assessments, when applicable.\n- Annotation time and adjudication records, to evaluate feasibility and coding reliability.\n- Documentation of missing outputs, collection failures, model changes, and protocol deviations.\n\n## 5. Measurement\n\n### Primary outcome: meaningful response instability\n\nDefine a response pair as meaningfully different when it changes at least one prespecified consequential answer dimension—for example, the main conclusion, a material factual claim, a recommendation, a safety-relevant caveat, or the expressed confidence in a way that could alter interpretation or action.\n\nUse a question-specific rubric established before collection. Do not define instability solely by lexical or embedding-distance thresholds.\n\n### Secondary outcomes\n\n- **Substantive state diversity:** number and distribution of distinct coded answer states per question.\n- **Pairwise substantive disagreement:** probability that two responses to the same question differ meaningfully.\n- **State-transition rate:** probability of a change in latent or coded answer state across replicates, with session and condition accounted for.\n- **Surface-form variation:** lexical, syntactic, organizational, or stylistic difference among responses classified as substantively equivalent.\n- **Factual disagreement:** differences in claims assessed against appropriate references, separated from acceptable variation in emphasis or explanation.\n- **Uncertainty variation:** changes in confidence, hedging, or caveats, scored independently of answer correctness.\n- **Annotation reliability:** agreement on substantive categories and severity ratings, reported with measures appropriate to the coding scale.\n\nUse automated text measures only as supplementary diagnostics. Validate them against human-coded pairs and report cases where they diverge from substantive judgments.\n\n## 6. Analysis\n\nFirst assess annotation reliability and the adequacy of the state representation. Report the distribution of response states and examples of each category, including borderline cases.\n\nEstimate, for each question and overall, the probability that two independently sampled responses differ meaningfully. Provide uncertainty intervals that account for repeated observations nested within questions and, where applicable, sessions. Avoid treating all response pairs as independent. Use hierarchical models or cluster-aware resampling to represent question-level heterogeneity.\n\nFit the prespecified state-space model to separate:\n\n1. variation in wording conditional on the same substantive state;\n2. variation in substantive state occupancy under fixed conditions; and\n3. changes in state-transition behavior associated with generation settings, context, prompt form, time, or model version.\n\nCompare the model’s state-based findings with direct human-coded pairwise judgments. Conduct sensitivity analyses using alternative reasonable state definitions, severity thresholds, and treatment of ambiguous cases. Report both results and how conclusions change under these alternatives.\n\nFor explanatory conditions, estimate contrasts against the exact-repeat baseline. Interpret them as evidence about the tested conditions only; do not infer a causal mechanism unless the condition was manipulated while other factors were held constant and collection was appropriately randomized.\n\n## 7. Decision / stopping rule\n\nBefore collection, define a minimum meaningful instability rate, \\(\\delta\\), for the intended use, along with an uncertainty criterion and any higher-risk thresholds. The value of \\(\\delta\\) should be selected with domain stakeholders based on the consequences of materially different answers, not chosen after examining results.\n\nConclude that meaningful response instability is supported for the tested setting if the uncertainty interval for the primary instability rate is sufficiently above the prespecified practical threshold, with the result robust to the planned sensitivity analyses. Conclude that instability is acceptably low only if the interval lies sufficiently below the threshold. Otherwise, classify the evidence as inconclusive.\n\nStop at the preregistered sample size or at the end of the prespecified staged design. Do not stop early based on favorable or unfavorable interim effects unless a sequential stopping procedure and its error control were specified in advance. Report deviations and any incomplete or inconclusive analyses.\n\n## 8. Limitations\n\n- Findings are specific to the sampled questions, model version, settings, and collection period.\n- Human judgments about materiality can be domain-dependent; rubrics and adjudication reduce but cannot eliminate this subjectivity.\n- A latent-state model may simplify responses that contain multiple claims, mixed positions, or genuinely continuous variation.\n- Automated metrics can mistake paraphrase for disagreement or miss substantive changes expressed similarly.\n- Repeated responses may be dependent because of shared infrastructure, session history, or hidden model updates.\n- Exact-repeat stability does not establish correctness, robustness to prompt changes, or reliability in real user interactions.\n- Controlled sampling may not represent deployment conditions, including long conversations, user feedback, tools, or changing external information."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1931,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2120
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

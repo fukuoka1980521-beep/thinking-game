@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 2,
+  "run_id": "R1B-T1-STATE_SPACE-R02",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:27:22.618151+00:00",
+  "timestamp_utc": "2026-10-02T06:27:43.161022+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "832fba3b7142c44efaa9be82d8332e394e2518835651985d142293c7b5394fbf",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_07b1798e207e842c016abf4eca795c87d0b4e5430dd7d23dce",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1984,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2173
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive response instability from ordinary wording variation.\n\nThe study will treat generation as a process through a **state space**: a response moves through a sequence of intermediate representational or observable states before reaching its final text. The primary aim is to identify whether variation arises in these states, whether it persists into the final answer, and whether it changes the answer’s meaning, factual content, reasoning, or recommended action.\n\nThe scope is repeated responses under controlled conditions to a prespecified set of questions and model configurations. Conclusions will be limited to the models, questions, settings, and access conditions tested.\n\n## 2. Assumptions\n\n- A “same question” means identical user-visible input, including system and developer instructions, conversation history, formatting, and attached content.\n- A model configuration includes its version, inference settings, tools, retrieval sources, and any other components that can affect generation.\n- When accessible, generation will be represented as transitions among successive token-level or model-internal states. If internal states are unavailable, observable checkpoints—such as partial outputs, sampled continuations, or structured answer components—will serve as a proxy. Findings from observable proxies will not be described as direct evidence about hidden internal states.\n- Stochastic decoding can produce variation even with a fixed model configuration. Undocumented version changes, infrastructure differences, caching, and nondeterministic computation may also matter.\n- No single similarity metric adequately separates stylistic from substantive change. Judgments will therefore use multiple measures and blinded human review.\n- The study will distinguish *variation* (any difference) from *meaningful instability* (a difference that changes a relevant interpretation, claim, conclusion, confidence, or action).\n\n## 3. Research design\n\n### Sampling and conditions\n\nConstruct a stratified question set spanning tasks likely to differ in sensitivity to generation variation:\n\n- factual questions with verifiable answers;\n- questions with ambiguous or underspecified premises;\n- multi-step reasoning and calculation;\n- advice or recommendation tasks;\n- summarization and transformation tasks;\n- safety-sensitive or policy-constrained requests.\n\nInclude questions with both concise and extended expected answers. For each question, specify the expected answer elements, permissible alternatives, and material errors before collecting responses.\n\nFor every question, generate repeated answers under:\n\n1. **Fixed-condition repetitions:** identical model version, prompt, decoding settings, tools, and context. These estimate within-condition variability.\n2. **Decoding perturbations:** prespecified changes to sampling settings, including deterministic or near-deterministic decoding where supported. These test the contribution of decoding.\n3. **Prompt-form perturbations:** meaning-preserving paraphrases and formatting changes, kept separate from exact-prompt repetitions. These test sensitivity to surface form without treating them as the same input condition.\n4. **Context and tool perturbations, where relevant:** controlled changes to conversation history, retrieval results, or tool availability. These test other potential sources of response change.\n5. **Version or deployment comparisons, where feasible:** repeated samples from documented model versions or endpoints, analyzed separately from within-version variation.\n\nRandomize collection order. Record timestamps, identifiers, settings, and any observable serving metadata. Avoid mixing conditions in the same estimate of fixed-condition variability.\n\n### State-space representation\n\nRepresent each generation, as access permits, by a sequence of states:\n\n- **Initial state:** the prompt, model configuration, and available context.\n- **Intermediate states:** token prefixes, structured answer components, or other observable checkpoints.\n- **Terminal state:** the completed response.\n\nPrespecify state features relevant to the task, such as emerging claims, answer choices, calculations, stated assumptions, uncertainty, or recommended actions. Where internal activations or other model states are available, analyze them as supplementary evidence; do not assume that a measurable internal difference is inherently meaningful.\n\nUse the state-space view to ask where runs first diverge, whether early divergence predicts final substantive differences, and whether apparently different trajectories converge on equivalent answers. For access-limited models, make these inferences only at the resolution supported by observable outputs.\n\n## 4. Data or evidence needed\n\nFor each run, retain:\n\n- exact prompt, conversation history, and any attached material;\n- model and deployment/version identifiers, if available;\n- decoding settings, tool configuration, retrieval inputs, and timestamps;\n- complete output and, where available, token log probabilities, intermediate checkpoints, or state representations;\n- errors, refusals, tool calls, and other observable execution events.\n\nFor each question, prepare an expert-authored rubric identifying:\n\n- required answer elements and acceptable alternatives;\n- verifiable factual claims and authoritative means of checking them;\n- material omissions, contradictions, and unsupported claims;\n- task-specific criteria for whether differences affect reasoning, interpretation, confidence, safety, or action.\n\nHave at least two trained reviewers independently assess responses while blinded to run condition. Resolve disagreements through adjudication and report initial agreement as well as adjudicated results. Use domain-qualified reviewers for specialized factual or high-stakes content.\n\n## 5. Measurement\n\nMeasure response differences at several levels:\n\n1. **Surface variation:** wording, length, formatting, and lexical or syntactic differences.\n2. **Semantic variation:** similarity or difference in propositions, entities, relationships, and answer structure.\n3. **Task-relevant variation:** changes in correctness, completeness, reasoning steps, uncertainty, interpretation, recommendation, refusal, or safety.\n4. **State-space variation:** divergence in observed intermediate states and transition patterns, where available.\n\nOperationalize *meaningful instability* before evaluation. Count a pair of responses as meaningfully different when it changes at least one prespecified, task-relevant outcome—for example, gives incompatible factual answers, changes a calculation or conclusion, reverses a recommendation, introduces or removes a material caveat, or changes whether the request is fulfilled or refused. Mere paraphrase, reordering, or formatting changes do not qualify unless they alter interpretation or use.\n\nUse complementary measures:\n\n- rubric-based correctness, completeness, and material-error ratings;\n- claim-level contradiction and omission checks;\n- semantic comparison by blinded reviewers;\n- automated textual or embedding measures as descriptive aids, not decisive tests;\n- pairwise human judgments of whether two responses would lead a reasonable user to a different understanding or action;\n- state divergence timing and its association with final semantic or task-relevant differences.\n\nReport uncertainty for all estimates. Check inter-rater reliability and sensitivity to reasonable alternative thresholds for materiality.\n\n## 6. Analysis\n\nEstimate variability separately for each question and condition, then summarize across prespecified task strata. Do not let large numbers of easy questions obscure instability on difficult or high-impact tasks.\n\n- Estimate the proportion of response pairs and question-level sets with meaningful instability under fixed conditions.\n- Compare that rate with surface-only variation to quantify how often textual changes are immaterial.\n- Compare fixed-condition results with decoding, prompt-form, context/tool, and version perturbations to identify which changes are associated with increased instability.\n- Model answers as nested observations within questions and conditions, using question-level effects and uncertainty estimates that respect this structure.\n- Analyze factual, reasoning, recommendation, refusal, and safety outcomes separately where relevant.\n- For state-space evidence, test whether early or persistent divergence predicts terminal meaningful differences, and whether different paths commonly converge to equivalent outcomes. Treat such associations as descriptive unless the design supports causal attribution.\n- Conduct robustness analyses using alternative materiality thresholds, reviewer subsets, and semantic measures. Investigate disagreements qualitatively, especially cases where automated similarity scores conflict with expert judgments.\n- Report both aggregate performance and the distribution of instability across questions; include examples only when they illustrate an established category rather than substitute for quantitative results.\n\nCausal claims about why changes occur will be limited to controlled contrasts. For example, a difference between decoding conditions supports an effect of that manipulation only if other relevant conditions were held fixed. Differences across undocumented deployments will be treated as associations.\n\n## 7. Decision / stopping rule\n\nSet the sample size and repetition count before data collection using a precision target for the estimated rate of meaningful instability, with additional allocation to task strata where precise estimates are important. Use a pilot only to refine procedures and variance assumptions; exclude pilot responses from confirmatory estimates unless the protocol prespecifies their inclusion.\n\nStop collection when the planned number of questions and repetitions has been completed and the prespecified precision target is met, or at the fixed maximum sample size. Do not stop early because results appear favorable or unfavorable.\n\nConclude that meaningful instability is present for a defined population of tested conditions if the prespecified uncertainty interval for its rate or magnitude rules out the study’s negligible-instability region. Define that region in advance using task-specific materiality criteria. If results do not distinguish the estimate from that region with adequate precision, report the conclusion as inconclusive rather than as evidence of stability.\n\n## 8. Limitations\n\n- Black-box access may prevent observation of internal states; output trajectories are only a partial state-space view.\n- Model endpoints can change silently, making exact repeatability difficult to verify.\n- A finite question set may not represent real-world use, and benchmark questions can reward properties unlike those valued by users.\n- Human materiality judgments can be subjective, culturally dependent, and domain-sensitive.\n- Automated semantic measures can miss negation, uncertainty, numerical errors, and pragmatic consequences.\n- Repeated runs estimate variability for sampled prompts and conditions, not the probability that every user will receive a particular answer.\n- Observed associations with decoding, prompt form, tools, or versions do not establish mechanisms unless the relevant factors are controlled.\n- The design assesses response stability, not whether a stable answer is true, safe, or appropriate; those require separate evaluations.",
+  "raw_response": {
+    "id": "resp_07b1798e207e842c016abf4eca795c87d0b4e5430dd7d23dce",
+    "object": "response",
+    "created_at": 1790922442,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922462,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_07b1798e207e842c016abf4ecadd4487d0bd47b037aab11259",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive response instability from ordinary wording variation.\n\nThe study will treat generation as a process through a **state space**: a response moves through a sequence of intermediate representational or observable states before reaching its final text. The primary aim is to identify whether variation arises in these states, whether it persists into the final answer, and whether it changes the answer’s meaning, factual content, reasoning, or recommended action.\n\nThe scope is repeated responses under controlled conditions to a prespecified set of questions and model configurations. Conclusions will be limited to the models, questions, settings, and access conditions tested.\n\n## 2. Assumptions\n\n- A “same question” means identical user-visible input, including system and developer instructions, conversation history, formatting, and attached content.\n- A model configuration includes its version, inference settings, tools, retrieval sources, and any other components that can affect generation.\n- When accessible, generation will be represented as transitions among successive token-level or model-internal states. If internal states are unavailable, observable checkpoints—such as partial outputs, sampled continuations, or structured answer components—will serve as a proxy. Findings from observable proxies will not be described as direct evidence about hidden internal states.\n- Stochastic decoding can produce variation even with a fixed model configuration. Undocumented version changes, infrastructure differences, caching, and nondeterministic computation may also matter.\n- No single similarity metric adequately separates stylistic from substantive change. Judgments will therefore use multiple measures and blinded human review.\n- The study will distinguish *variation* (any difference) from *meaningful instability* (a difference that changes a relevant interpretation, claim, conclusion, confidence, or action).\n\n## 3. Research design\n\n### Sampling and conditions\n\nConstruct a stratified question set spanning tasks likely to differ in sensitivity to generation variation:\n\n- factual questions with verifiable answers;\n- questions with ambiguous or underspecified premises;\n- multi-step reasoning and calculation;\n- advice or recommendation tasks;\n- summarization and transformation tasks;\n- safety-sensitive or policy-constrained requests.\n\nInclude questions with both concise and extended expected answers. For each question, specify the expected answer elements, permissible alternatives, and material errors before collecting responses.\n\nFor every question, generate repeated answers under:\n\n1. **Fixed-condition repetitions:** identical model version, prompt, decoding settings, tools, and context. These estimate within-condition variability.\n2. **Decoding perturbations:** prespecified changes to sampling settings, including deterministic or near-deterministic decoding where supported. These test the contribution of decoding.\n3. **Prompt-form perturbations:** meaning-preserving paraphrases and formatting changes, kept separate from exact-prompt repetitions. These test sensitivity to surface form without treating them as the same input condition.\n4. **Context and tool perturbations, where relevant:** controlled changes to conversation history, retrieval results, or tool availability. These test other potential sources of response change.\n5. **Version or deployment comparisons, where feasible:** repeated samples from documented model versions or endpoints, analyzed separately from within-version variation.\n\nRandomize collection order. Record timestamps, identifiers, settings, and any observable serving metadata. Avoid mixing conditions in the same estimate of fixed-condition variability.\n\n### State-space representation\n\nRepresent each generation, as access permits, by a sequence of states:\n\n- **Initial state:** the prompt, model configuration, and available context.\n- **Intermediate states:** token prefixes, structured answer components, or other observable checkpoints.\n- **Terminal state:** the completed response.\n\nPrespecify state features relevant to the task, such as emerging claims, answer choices, calculations, stated assumptions, uncertainty, or recommended actions. Where internal activations or other model states are available, analyze them as supplementary evidence; do not assume that a measurable internal difference is inherently meaningful.\n\nUse the state-space view to ask where runs first diverge, whether early divergence predicts final substantive differences, and whether apparently different trajectories converge on equivalent answers. For access-limited models, make these inferences only at the resolution supported by observable outputs.\n\n## 4. Data or evidence needed\n\nFor each run, retain:\n\n- exact prompt, conversation history, and any attached material;\n- model and deployment/version identifiers, if available;\n- decoding settings, tool configuration, retrieval inputs, and timestamps;\n- complete output and, where available, token log probabilities, intermediate checkpoints, or state representations;\n- errors, refusals, tool calls, and other observable execution events.\n\nFor each question, prepare an expert-authored rubric identifying:\n\n- required answer elements and acceptable alternatives;\n- verifiable factual claims and authoritative means of checking them;\n- material omissions, contradictions, and unsupported claims;\n- task-specific criteria for whether differences affect reasoning, interpretation, confidence, safety, or action.\n\nHave at least two trained reviewers independently assess responses while blinded to run condition. Resolve disagreements through adjudication and report initial agreement as well as adjudicated results. Use domain-qualified reviewers for specialized factual or high-stakes content.\n\n## 5. Measurement\n\nMeasure response differences at several levels:\n\n1. **Surface variation:** wording, length, formatting, and lexical or syntactic differences.\n2. **Semantic variation:** similarity or difference in propositions, entities, relationships, and answer structure.\n3. **Task-relevant variation:** changes in correctness, completeness, reasoning steps, uncertainty, interpretation, recommendation, refusal, or safety.\n4. **State-space variation:** divergence in observed intermediate states and transition patterns, where available.\n\nOperationalize *meaningful instability* before evaluation. Count a pair of responses as meaningfully different when it changes at least one prespecified, task-relevant outcome—for example, gives incompatible factual answers, changes a calculation or conclusion, reverses a recommendation, introduces or removes a material caveat, or changes whether the request is fulfilled or refused. Mere paraphrase, reordering, or formatting changes do not qualify unless they alter interpretation or use.\n\nUse complementary measures:\n\n- rubric-based correctness, completeness, and material-error ratings;\n- claim-level contradiction and omission checks;\n- semantic comparison by blinded reviewers;\n- automated textual or embedding measures as descriptive aids, not decisive tests;\n- pairwise human judgments of whether two responses would lead a reasonable user to a different understanding or action;\n- state divergence timing and its association with final semantic or task-relevant differences.\n\nReport uncertainty for all estimates. Check inter-rater reliability and sensitivity to reasonable alternative thresholds for materiality.\n\n## 6. Analysis\n\nEstimate variability separately for each question and condition, then summarize across prespecified task strata. Do not let large numbers of easy questions obscure instability on difficult or high-impact tasks.\n\n- Estimate the proportion of response pairs and question-level sets with meaningful instability under fixed conditions.\n- Compare that rate with surface-only variation to quantify how often textual changes are immaterial.\n- Compare fixed-condition results with decoding, prompt-form, context/tool, and version perturbations to identify which changes are associated with increased instability.\n- Model answers as nested observations within questions and conditions, using question-level effects and uncertainty estimates that respect this structure.\n- Analyze factual, reasoning, recommendation, refusal, and safety outcomes separately where relevant.\n- For state-space evidence, test whether early or persistent divergence predicts terminal meaningful differences, and whether different paths commonly converge to equivalent outcomes. Treat such associations as descriptive unless the design supports causal attribution.\n- Conduct robustness analyses using alternative materiality thresholds, reviewer subsets, and semantic measures. Investigate disagreements qualitatively, especially cases where automated similarity scores conflict with expert judgments.\n- Report both aggregate performance and the distribution of instability across questions; include examples only when they illustrate an established category rather than substitute for quantitative results.\n\nCausal claims about why changes occur will be limited to controlled contrasts. For example, a difference between decoding conditions supports an effect of that manipulation only if other relevant conditions were held fixed. Differences across undocumented deployments will be treated as associations.\n\n## 7. Decision / stopping rule\n\nSet the sample size and repetition count before data collection using a precision target for the estimated rate of meaningful instability, with additional allocation to task strata where precise estimates are important. Use a pilot only to refine procedures and variance assumptions; exclude pilot responses from confirmatory estimates unless the protocol prespecifies their inclusion.\n\nStop collection when the planned number of questions and repetitions has been completed and the prespecified precision target is met, or at the fixed maximum sample size. Do not stop early because results appear favorable or unfavorable.\n\nConclude that meaningful instability is present for a defined population of tested conditions if the prespecified uncertainty interval for its rate or magnitude rules out the study’s negligible-instability region. Define that region in advance using task-specific materiality criteria. If results do not distinguish the estimate from that region with adequate precision, report the conclusion as inconclusive rather than as evidence of stability.\n\n## 8. Limitations\n\n- Black-box access may prevent observation of internal states; output trajectories are only a partial state-space view.\n- Model endpoints can change silently, making exact repeatability difficult to verify.\n- A finite question set may not represent real-world use, and benchmark questions can reward properties unlike those valued by users.\n- Human materiality judgments can be subjective, culturally dependent, and domain-sensitive.\n- Automated semantic measures can miss negation, uncertainty, numerical errors, and pragmatic consequences.\n- Repeated runs estimate variability for sampled prompts and conditions, not the probability that every user will receive a particular answer.\n- Observed associations with decoding, prompt form, tools, or versions do not establish mechanisms unless the relevant factors are controlled.\n- The design assesses response stability, not whether a stable answer is true, safe, or appropriate; those require separate evaluations."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1984,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2173
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

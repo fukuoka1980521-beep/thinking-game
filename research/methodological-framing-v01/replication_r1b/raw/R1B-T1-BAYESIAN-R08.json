@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "BAYESIAN_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "BAYESIAN",
+  "replicate": 8,
+  "run_id": "R1B-T1-BAYESIAN-R08",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T01:44:29.786479+00:00",
+  "timestamp_utc": "2026-10-02T01:44:49.136850+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "bd960c9b78dbae4b84e1a72dd7bccf72701810ed8a3acbc5b0b61f61f649af41",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_06378ace31048e3d016abf0c7d7f2087d09ccecfbee78b8d62",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 188,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1487,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1675
+  },
+  "raw_text": "## 1. Objective and scope\n\nEstimate whether repeated responses to the same large-language-model question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive response instability from ordinary wording variation.\n\nThe study will assess a prespecified set of models and question types. Its conclusions will apply to those models, versions, configurations, and question populations—not automatically to all language models or future versions. “Instability” will mean variation in a response’s meaning, factual claims, recommendations, or task outcome that could change a reasonable reader’s understanding or decision. Stylistic differences alone will not count.\n\n## 2. Assumptions\n\n- Model identity, version, system instructions, decoding settings, and other available configuration details can be recorded and held fixed within each comparison.\n- Repeated calls may differ because of sampling, nondeterministic serving, hidden system variation, or other uncontrolled factors. The experiment can estimate observed variation but may not identify every mechanism.\n- Questions can be sampled or constructed to cover relevant task types, difficulty levels, and stakes. Results depend on this sampling frame.\n- Human judgments of semantic and practical significance are imperfect. Blinded, independent ratings and explicit criteria can reduce, but not eliminate, subjectivity.\n- Bayesian estimates will depend on the specified likelihoods and priors. Priors and sensitivity analyses will therefore be reported.\n\n## 3. Research design\n\nUse a preregistered, repeated-measures design. Draw questions from a defined population or a stratified benchmark covering, at minimum, factual questions, reasoning, summarization, advice, and open-ended generation. Include questions with objectively checkable answers where feasible, alongside questions for which disagreement concerns reasonable interpretation or judgment. Avoid selecting questions based on observed model outputs.\n\nFor each question, collect multiple independent responses under a controlled baseline condition: identical prompt text, model version, system instructions, sampling settings, and execution protocol. Randomize call order and distribute repetitions over time where feasible, recording timestamps and any available serving metadata. The number of repetitions per question should be set through simulation-based design analysis to estimate the planned instability rates with useful precision.\n\nTo investigate causes, add prespecified contrasts that vary one factor at a time, such as sampling temperature, prompt wording that preserves intent, system instruction, or model version. Keep these contrasts separate from the baseline estimate of same-question instability. Include exact-repeat prompts as a control for wording effects. Do not infer a cause merely because an associated factor predicts variation; causal interpretation requires controlled manipulation.\n\nUse blinded evaluation: reviewers should not know the condition or whether two responses came from the same question. Compare response pairs or sets using a rubric that separates semantic content from style. Where possible, independently verify factual claims and task outcomes. Adjudicate disagreements under prespecified rules.\n\n## 4. Data or evidence needed\n\n- Exact prompt text, system instructions, model and version identifiers, available configuration settings, response timestamps, and any available serving metadata.\n- All raw responses, retained without selective editing.\n- A question sampling frame, stratum labels, and question-level difficulty or stakes assessments established independently of the outputs.\n- Independent ratings of semantic equivalence, factual consistency, completeness, recommendation consistency, and practical consequence. Reviewers should also identify specific conflicting claims rather than provide only a global impression.\n- External answer keys, cited sources, or domain-expert assessments for questions with verifiable answers.\n- Reviewer instructions, training materials, agreement statistics, and adjudication records.\n- For causal contrasts, the assigned condition and evidence that other settings were held constant.\n\n## 5. Measurement\n\nDefine and report several complementary outcomes:\n\n1. **Semantic divergence:** whether responses make incompatible claims, offer materially different recommendations, or answer different interpretations of the question.\n2. **Task-outcome divergence:** whether responses differ in correctness, conclusion, or whether they satisfy prespecified task requirements.\n3. **Practical significance:** whether the difference could reasonably change a reader’s understanding or action, rated under an explicit, domain-appropriate rubric.\n4. **Ordinary variation:** differences in wording, structure, emphasis, or examples that preserve the same substantive meaning.\n5. **Claim-level consistency:** the proportion of independently extracted, checkable claims that are supported consistently across repetitions.\n\nFor each question, derive a blinded, adjudicated classification of whether its response set contains at least one meaningfully different response. Also retain graded ratings, since a binary threshold can obscure the degree of variation. Specify the practical-significance threshold before examining results. Report inter-rater reliability and analyses using both initial ratings and adjudicated judgments.\n\n## 6. Analysis\n\nUse a Bayesian hierarchical model as the primary framework. Model response-level or pairwise divergence while accounting for clustering by question, question stratum, and—where applicable—model and condition. Include question-level random effects so that a small set of unusually ambiguous or difficult prompts does not dominate the overall estimate. Choose likelihoods appropriate to the outcome (for example, Bernoulli for binary meaningful divergence and ordinal likelihoods for graded ratings).\n\nReport posterior distributions and credible intervals for:\n- the overall probability that two independent responses to the same question differ meaningfully;\n- that probability by question type and stakes;\n- the distribution of question-specific instability; and\n- differences between controlled experimental conditions.\n\nUse weakly informative, justified priors for primary estimates, and preregister prior-sensitivity analyses. For causal contrasts, estimate condition effects using the randomized assignments and the hierarchical structure. Do not treat individual response pairs as independent when they share a question or response; model that dependence or use question-level summaries.\n\nSeparate style from substance by analyzing the blinded semantic and practical-significance measures independently from surface-form measures. Check whether conclusions persist with alternative reasonable thresholds and after excluding questions with low reviewer agreement. For factual tasks, compare model claims with independent evidence rather than treating response consensus as proof of correctness. Report posterior predictive checks and missingness or protocol deviations.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a smallest practically meaningful instability rate or condition effect, justified by the intended use. Conclude that meaningful instability is supported only if the posterior probability that the relevant rate or effect exceeds that threshold meets a preregistered criterion (for example, at least 0.95). Conclude that instability is practically negligible only if the posterior probability that it is below the threshold meets the corresponding criterion. Otherwise report the result as inconclusive.\n\nSet the sample size and repetition count using simulation-based Bayesian design analysis to give adequate precision for these decisions under plausible rates and clustering. Stop at the preregistered sample size, not when results appear favorable. If sequential updating is planned, specify permissible looks, stopping criteria, and the impact of repeated monitoring in advance.\n\n## 8. Limitations\n\nObserved repetition effects may reflect hidden serving changes or nondeterminism that cannot be separated without access to internal system information. Results may not generalize across model versions, prompts, languages, deployment settings, or user populations. Question sampling and reviewer judgments can shape the estimated instability rate, particularly for open-ended tasks. Consensus-based measures can miss shared errors, while claim extraction and practical-significance ratings can introduce evaluator error. Finally, Bayesian conclusions are conditional on the model, sampling frame, measurement process, and prior assumptions; uncertainty should be reported rather than collapsed into a universal claim about model reliability.",
+  "raw_response": {
+    "id": "resp_06378ace31048e3d016abf0c7d7f2087d09ccecfbee78b8d62",
+    "object": "response",
+    "created_at": 1790905469,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790905488,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_06378ace31048e3d016abf0c7dcfd887d0854c4aea51c19379",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nEstimate whether repeated responses to the same large-language-model question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive response instability from ordinary wording variation.\n\nThe study will assess a prespecified set of models and question types. Its conclusions will apply to those models, versions, configurations, and question populations—not automatically to all language models or future versions. “Instability” will mean variation in a response’s meaning, factual claims, recommendations, or task outcome that could change a reasonable reader’s understanding or decision. Stylistic differences alone will not count.\n\n## 2. Assumptions\n\n- Model identity, version, system instructions, decoding settings, and other available configuration details can be recorded and held fixed within each comparison.\n- Repeated calls may differ because of sampling, nondeterministic serving, hidden system variation, or other uncontrolled factors. The experiment can estimate observed variation but may not identify every mechanism.\n- Questions can be sampled or constructed to cover relevant task types, difficulty levels, and stakes. Results depend on this sampling frame.\n- Human judgments of semantic and practical significance are imperfect. Blinded, independent ratings and explicit criteria can reduce, but not eliminate, subjectivity.\n- Bayesian estimates will depend on the specified likelihoods and priors. Priors and sensitivity analyses will therefore be reported.\n\n## 3. Research design\n\nUse a preregistered, repeated-measures design. Draw questions from a defined population or a stratified benchmark covering, at minimum, factual questions, reasoning, summarization, advice, and open-ended generation. Include questions with objectively checkable answers where feasible, alongside questions for which disagreement concerns reasonable interpretation or judgment. Avoid selecting questions based on observed model outputs.\n\nFor each question, collect multiple independent responses under a controlled baseline condition: identical prompt text, model version, system instructions, sampling settings, and execution protocol. Randomize call order and distribute repetitions over time where feasible, recording timestamps and any available serving metadata. The number of repetitions per question should be set through simulation-based design analysis to estimate the planned instability rates with useful precision.\n\nTo investigate causes, add prespecified contrasts that vary one factor at a time, such as sampling temperature, prompt wording that preserves intent, system instruction, or model version. Keep these contrasts separate from the baseline estimate of same-question instability. Include exact-repeat prompts as a control for wording effects. Do not infer a cause merely because an associated factor predicts variation; causal interpretation requires controlled manipulation.\n\nUse blinded evaluation: reviewers should not know the condition or whether two responses came from the same question. Compare response pairs or sets using a rubric that separates semantic content from style. Where possible, independently verify factual claims and task outcomes. Adjudicate disagreements under prespecified rules.\n\n## 4. Data or evidence needed\n\n- Exact prompt text, system instructions, model and version identifiers, available configuration settings, response timestamps, and any available serving metadata.\n- All raw responses, retained without selective editing.\n- A question sampling frame, stratum labels, and question-level difficulty or stakes assessments established independently of the outputs.\n- Independent ratings of semantic equivalence, factual consistency, completeness, recommendation consistency, and practical consequence. Reviewers should also identify specific conflicting claims rather than provide only a global impression.\n- External answer keys, cited sources, or domain-expert assessments for questions with verifiable answers.\n- Reviewer instructions, training materials, agreement statistics, and adjudication records.\n- For causal contrasts, the assigned condition and evidence that other settings were held constant.\n\n## 5. Measurement\n\nDefine and report several complementary outcomes:\n\n1. **Semantic divergence:** whether responses make incompatible claims, offer materially different recommendations, or answer different interpretations of the question.\n2. **Task-outcome divergence:** whether responses differ in correctness, conclusion, or whether they satisfy prespecified task requirements.\n3. **Practical significance:** whether the difference could reasonably change a reader’s understanding or action, rated under an explicit, domain-appropriate rubric.\n4. **Ordinary variation:** differences in wording, structure, emphasis, or examples that preserve the same substantive meaning.\n5. **Claim-level consistency:** the proportion of independently extracted, checkable claims that are supported consistently across repetitions.\n\nFor each question, derive a blinded, adjudicated classification of whether its response set contains at least one meaningfully different response. Also retain graded ratings, since a binary threshold can obscure the degree of variation. Specify the practical-significance threshold before examining results. Report inter-rater reliability and analyses using both initial ratings and adjudicated judgments.\n\n## 6. Analysis\n\nUse a Bayesian hierarchical model as the primary framework. Model response-level or pairwise divergence while accounting for clustering by question, question stratum, and—where applicable—model and condition. Include question-level random effects so that a small set of unusually ambiguous or difficult prompts does not dominate the overall estimate. Choose likelihoods appropriate to the outcome (for example, Bernoulli for binary meaningful divergence and ordinal likelihoods for graded ratings).\n\nReport posterior distributions and credible intervals for:\n- the overall probability that two independent responses to the same question differ meaningfully;\n- that probability by question type and stakes;\n- the distribution of question-specific instability; and\n- differences between controlled experimental conditions.\n\nUse weakly informative, justified priors for primary estimates, and preregister prior-sensitivity analyses. For causal contrasts, estimate condition effects using the randomized assignments and the hierarchical structure. Do not treat individual response pairs as independent when they share a question or response; model that dependence or use question-level summaries.\n\nSeparate style from substance by analyzing the blinded semantic and practical-significance measures independently from surface-form measures. Check whether conclusions persist with alternative reasonable thresholds and after excluding questions with low reviewer agreement. For factual tasks, compare model claims with independent evidence rather than treating response consensus as proof of correctness. Report posterior predictive checks and missingness or protocol deviations.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a smallest practically meaningful instability rate or condition effect, justified by the intended use. Conclude that meaningful instability is supported only if the posterior probability that the relevant rate or effect exceeds that threshold meets a preregistered criterion (for example, at least 0.95). Conclude that instability is practically negligible only if the posterior probability that it is below the threshold meets the corresponding criterion. Otherwise report the result as inconclusive.\n\nSet the sample size and repetition count using simulation-based Bayesian design analysis to give adequate precision for these decisions under plausible rates and clustering. Stop at the preregistered sample size, not when results appear favorable. If sequential updating is planned, specify permissible looks, stopping criteria, and the impact of repeated monitoring in advance.\n\n## 8. Limitations\n\nObserved repetition effects may reflect hidden serving changes or nondeterminism that cannot be separated without access to internal system information. Results may not generalize across model versions, prompts, languages, deployment settings, or user populations. Question sampling and reviewer judgments can shape the estimated instability rate, particularly for open-ended tasks. Consensus-based measures can miss shared errors, while claim extraction and practical-significance ratings can introduce evaluator error. Finally, Bayesian conclusions are conditional on the model, sampling frame, measurement process, and prior assumptions; uncertainty should be reported rather than collapsed into a universal claim about model reliability."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 188,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1487,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1675
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "FALSIFICATION_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "FALSIFICATION",
+  "replicate": 9,
+  "run_id": "R1B-T1-FALSIFICATION-R09",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T01:45:35.450541+00:00",
+  "timestamp_utc": "2026-10-02T01:45:55.602521+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a falsification-first approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "fcc276f44d441b6ce78d2ac14b5763fc0eb84b32ae48944ccf45b0a0f4dec4d4",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a falsification-first approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_08f2b854d12b0cd3016abf0cbf3ed887d0901169985c4a1650",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 190,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1708,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1898
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether presenting the same question repeatedly to a large language model (LLM) produces responses that differ in meaning, factual content, reasoning, or recommendations beyond ordinary wording variation. If meaningful variation is observed, identify conditions associated with it and distinguish response instability from differences attributable to context, model configuration, or evaluation.\n\nThe study will focus on a preregistered set of questions and fixed model versions. It will assess response variability under both repeated identical conditions and controlled changes to prompt wording or conversation context. It will not assume that any difference is instability: differences must exceed a prespecified threshold of substantive importance.\n\n## 2. Assumptions\n\n- A model’s response may depend on sampling, hidden or changing service conditions, prompt interpretation, conversation history, and model or system updates.\n- “Same question” means the same user-visible question and, for exact-repeat tests, the same system instructions, preceding conversation, settings, and model version.\n- Wording differences are not inherently meaningful. A difference is meaningful when it changes a claim, qualification, recommendation, answer, or action in a way relevant to the question.\n- Automated similarity scores may help screen responses but cannot alone establish semantic equivalence or substantive difference.\n- Conclusions apply to the tested model versions, questions, settings, and collection period; they do not automatically generalize to all LLMs or prompts.\n\n## 3. Research design\n\nUse a falsification-first, preregistered design. State the primary instability claim in testable terms: under identical conditions, responses vary substantively more often than a prespecified acceptable rate. Specify the rate, outcomes, exclusions, and analyses before collecting responses.\n\nConstruct a question set spanning relevant task types, such as factual questions, explanations, advice, and questions with ambiguous or contested answers. Include questions with well-defined reference answers where feasible, and questions for which multiple defensible answers are possible. Stratify sampling by task type and anticipated ambiguity rather than selecting only cases known to produce variation.\n\nFor each question, collect multiple independent responses under an exact-repeat condition: keep the complete prompt, model version, system instructions, settings, and conversation context fixed. Randomize call order and distribute repetitions across the collection period to reduce confounding by time or service conditions. Record any available model and generation settings. If the interface does not expose a setting or model identifier, document that limitation.\n\nUse separate, controlled comparison conditions to investigate possible sources of change:\n\n1. **Prompt paraphrase:** preserve the intended request while varying wording, without adding information.\n2. **Context variation:** hold the question fixed while changing a defined aspect of preceding conversation or instructions.\n3. **Generation-setting variation:** where controllable, vary one setting at a time while holding other conditions constant.\n4. **Time or version check:** repeat a subset over time and record model-version changes where available.\n\nTreat these as diagnostic comparisons, not as exact-repeat estimates. Analyze them separately so that changes caused by deliberate prompt or setting differences are not misclassified as instability under identical conditions.\n\nInclude negative controls that should be insensitive to minor phrasing changes and positive controls where a deliberately changed constraint should predictably alter the response. Use these to check whether the measurement and annotation procedures detect substantive changes when expected, and avoid flagging immaterial changes when not expected.\n\n## 4. Data or evidence needed\n\nFor every response, retain:\n\n- Exact user prompt and preceding conversation.\n- Model name and version, date and time, and all available generation settings.\n- Raw response, including refusals, caveats, and formatting.\n- Condition assignment and repetition identifier.\n- Any errors, interruptions, or service-side changes apparent during collection.\n\nDevelop a codebook defining substantive dimensions for each question or task class. These may include answer correctness, key claims, uncertainty, qualifications, recommendations, stated assumptions, refusal behavior, and action-relevant details.\n\nHave at least two trained annotators independently assess response pairs or response sets. Mask condition labels where practical. Resolve disagreements using a prespecified adjudication procedure, and retain initial judgments for reliability analysis. Record responses in a form that permits both pairwise comparisons and assessment against reference information where available.\n\n## 5. Measurement\n\nDefine **substantive instability** before data collection. For a given question, a response pair counts as substantively different if one or more prespecified differences could reasonably alter a reader’s factual understanding, decision, or action. Examples include contradictory factual claims, materially different advice, a changed answer, or a qualification present in one response but absent in another when it affects interpretation. Differences in phrasing, ordering, or stylistic detail alone do not count.\n\nMeasure at least:\n\n- **Substantive disagreement rate:** share of eligible response pairs judged materially different.\n- **Within-question consistency:** variation in key claims, conclusions, recommendations, and uncertainty.\n- **Accuracy or defensibility:** agreement with verified reference information when available, assessed separately from consistency.\n- **Surface variation:** lexical or structural differences used descriptively, not as a substitute for semantic evaluation.\n- **Annotation reliability:** agreement between annotators on substantive-difference classifications and relevant dimensions.\n\nFor each question, compare repeated responses pairwise or against a prespecified anchor response; report which method is used and why. Avoid treating every pair as independent when several responses come from the same question. Use automated semantic measures only as supplementary screening or descriptive evidence, validated against human-coded examples. Report rates and uncertainty intervals at both question and response-pair levels, accounting for clustering by question.\n\n## 6. Analysis\n\nThe primary analysis estimates the substantive disagreement rate under exact-repeat conditions, with uncertainty intervals and question-level variation. Compare the estimate with the preregistered acceptable rate. Report results by task type and ambiguity category, while distinguishing exploratory subgroup findings from confirmatory tests.\n\nUse the controlled comparison conditions to assess whether variation is associated with prompt paraphrase, context, settings, or time/version. Analyze each factor separately where possible. If factors cannot be isolated—for example, if a model version or hidden service setting changes—describe the result as an association and do not assign a cause.\n\nCheck robustness to reasonable alternative scoring choices, such as stricter versus more inclusive definitions of materiality, different pairwise aggregation procedures, and exclusion of responses affected by documented technical errors. Examine negative and positive controls to assess whether the coding scheme is appropriately sensitive.\n\nReport counterexamples and failures to find instability, not only instances that support the claim. Distinguish three outcomes: variation in wording only, substantive variation with no clear accuracy difference, and substantive variation that changes correctness or practical implications. Do not infer that a model is generally unreliable from isolated examples or from a high surface-difference score.\n\n## 7. Decision / stopping rule\n\nSet the target number of questions and repetitions per condition before collection, using a precision or power justification based on the smallest substantively important disagreement rate. Stop when the preregistered sample is complete, or earlier only for a documented operational reason; do not stop because results appear favorable or unfavorable.\n\nSupport the claim of meaningful exact-repeat instability only if the primary estimate exceeds the preregistered acceptable rate and its uncertainty is inconsistent with that rate under the stated decision criterion. If the evidence is too imprecise to distinguish the rate from the threshold, classify the result as inconclusive. If the estimate is below the threshold, conclude only that the study did not find instability at or above the prespecified level for the tested scope.\n\nIf controlled comparisons show variation only after paraphrase, context, setting, or time/version changes, attribute findings to those conditions rather than to exact-repeat instability. Report any deviations from preregistration and their implications.\n\n## 8. Limitations\n\n- A finite question set cannot represent all prompts, domains, or users.\n- Hidden sampling, routing, caching, infrastructure changes, and undocumented model updates may prevent perfect control of repeated calls.\n- Human judgments of materiality can be context-dependent; adjudication and reliability measures reduce but do not eliminate this subjectivity.\n- Reference answers may be unavailable, incomplete, or contested, especially for advice and open-ended questions.\n- Pairwise tests can overstate precision unless clustering and repeated comparisons are handled appropriately.\n- Findings may not generalize to other model versions, interfaces, system prompts, settings, languages, or collection periods.\n- This design can identify patterns consistent with particular causes, but causal attribution requires successful isolation of those factors.",
+  "raw_response": {
+    "id": "resp_08f2b854d12b0cd3016abf0cbf3ed887d0901169985c4a1650",
+    "object": "response",
+    "created_at": 1790905535,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790905554,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_08f2b854d12b0cd3016abf0cbf9e3487d09cc128290f00383a",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether presenting the same question repeatedly to a large language model (LLM) produces responses that differ in meaning, factual content, reasoning, or recommendations beyond ordinary wording variation. If meaningful variation is observed, identify conditions associated with it and distinguish response instability from differences attributable to context, model configuration, or evaluation.\n\nThe study will focus on a preregistered set of questions and fixed model versions. It will assess response variability under both repeated identical conditions and controlled changes to prompt wording or conversation context. It will not assume that any difference is instability: differences must exceed a prespecified threshold of substantive importance.\n\n## 2. Assumptions\n\n- A model’s response may depend on sampling, hidden or changing service conditions, prompt interpretation, conversation history, and model or system updates.\n- “Same question” means the same user-visible question and, for exact-repeat tests, the same system instructions, preceding conversation, settings, and model version.\n- Wording differences are not inherently meaningful. A difference is meaningful when it changes a claim, qualification, recommendation, answer, or action in a way relevant to the question.\n- Automated similarity scores may help screen responses but cannot alone establish semantic equivalence or substantive difference.\n- Conclusions apply to the tested model versions, questions, settings, and collection period; they do not automatically generalize to all LLMs or prompts.\n\n## 3. Research design\n\nUse a falsification-first, preregistered design. State the primary instability claim in testable terms: under identical conditions, responses vary substantively more often than a prespecified acceptable rate. Specify the rate, outcomes, exclusions, and analyses before collecting responses.\n\nConstruct a question set spanning relevant task types, such as factual questions, explanations, advice, and questions with ambiguous or contested answers. Include questions with well-defined reference answers where feasible, and questions for which multiple defensible answers are possible. Stratify sampling by task type and anticipated ambiguity rather than selecting only cases known to produce variation.\n\nFor each question, collect multiple independent responses under an exact-repeat condition: keep the complete prompt, model version, system instructions, settings, and conversation context fixed. Randomize call order and distribute repetitions across the collection period to reduce confounding by time or service conditions. Record any available model and generation settings. If the interface does not expose a setting or model identifier, document that limitation.\n\nUse separate, controlled comparison conditions to investigate possible sources of change:\n\n1. **Prompt paraphrase:** preserve the intended request while varying wording, without adding information.\n2. **Context variation:** hold the question fixed while changing a defined aspect of preceding conversation or instructions.\n3. **Generation-setting variation:** where controllable, vary one setting at a time while holding other conditions constant.\n4. **Time or version check:** repeat a subset over time and record model-version changes where available.\n\nTreat these as diagnostic comparisons, not as exact-repeat estimates. Analyze them separately so that changes caused by deliberate prompt or setting differences are not misclassified as instability under identical conditions.\n\nInclude negative controls that should be insensitive to minor phrasing changes and positive controls where a deliberately changed constraint should predictably alter the response. Use these to check whether the measurement and annotation procedures detect substantive changes when expected, and avoid flagging immaterial changes when not expected.\n\n## 4. Data or evidence needed\n\nFor every response, retain:\n\n- Exact user prompt and preceding conversation.\n- Model name and version, date and time, and all available generation settings.\n- Raw response, including refusals, caveats, and formatting.\n- Condition assignment and repetition identifier.\n- Any errors, interruptions, or service-side changes apparent during collection.\n\nDevelop a codebook defining substantive dimensions for each question or task class. These may include answer correctness, key claims, uncertainty, qualifications, recommendations, stated assumptions, refusal behavior, and action-relevant details.\n\nHave at least two trained annotators independently assess response pairs or response sets. Mask condition labels where practical. Resolve disagreements using a prespecified adjudication procedure, and retain initial judgments for reliability analysis. Record responses in a form that permits both pairwise comparisons and assessment against reference information where available.\n\n## 5. Measurement\n\nDefine **substantive instability** before data collection. For a given question, a response pair counts as substantively different if one or more prespecified differences could reasonably alter a reader’s factual understanding, decision, or action. Examples include contradictory factual claims, materially different advice, a changed answer, or a qualification present in one response but absent in another when it affects interpretation. Differences in phrasing, ordering, or stylistic detail alone do not count.\n\nMeasure at least:\n\n- **Substantive disagreement rate:** share of eligible response pairs judged materially different.\n- **Within-question consistency:** variation in key claims, conclusions, recommendations, and uncertainty.\n- **Accuracy or defensibility:** agreement with verified reference information when available, assessed separately from consistency.\n- **Surface variation:** lexical or structural differences used descriptively, not as a substitute for semantic evaluation.\n- **Annotation reliability:** agreement between annotators on substantive-difference classifications and relevant dimensions.\n\nFor each question, compare repeated responses pairwise or against a prespecified anchor response; report which method is used and why. Avoid treating every pair as independent when several responses come from the same question. Use automated semantic measures only as supplementary screening or descriptive evidence, validated against human-coded examples. Report rates and uncertainty intervals at both question and response-pair levels, accounting for clustering by question.\n\n## 6. Analysis\n\nThe primary analysis estimates the substantive disagreement rate under exact-repeat conditions, with uncertainty intervals and question-level variation. Compare the estimate with the preregistered acceptable rate. Report results by task type and ambiguity category, while distinguishing exploratory subgroup findings from confirmatory tests.\n\nUse the controlled comparison conditions to assess whether variation is associated with prompt paraphrase, context, settings, or time/version. Analyze each factor separately where possible. If factors cannot be isolated—for example, if a model version or hidden service setting changes—describe the result as an association and do not assign a cause.\n\nCheck robustness to reasonable alternative scoring choices, such as stricter versus more inclusive definitions of materiality, different pairwise aggregation procedures, and exclusion of responses affected by documented technical errors. Examine negative and positive controls to assess whether the coding scheme is appropriately sensitive.\n\nReport counterexamples and failures to find instability, not only instances that support the claim. Distinguish three outcomes: variation in wording only, substantive variation with no clear accuracy difference, and substantive variation that changes correctness or practical implications. Do not infer that a model is generally unreliable from isolated examples or from a high surface-difference score.\n\n## 7. Decision / stopping rule\n\nSet the target number of questions and repetitions per condition before collection, using a precision or power justification based on the smallest substantively important disagreement rate. Stop when the preregistered sample is complete, or earlier only for a documented operational reason; do not stop because results appear favorable or unfavorable.\n\nSupport the claim of meaningful exact-repeat instability only if the primary estimate exceeds the preregistered acceptable rate and its uncertainty is inconsistent with that rate under the stated decision criterion. If the evidence is too imprecise to distinguish the rate from the threshold, classify the result as inconclusive. If the estimate is below the threshold, conclude only that the study did not find instability at or above the prespecified level for the tested scope.\n\nIf controlled comparisons show variation only after paraphrase, context, setting, or time/version changes, attribute findings to those conditions rather than to exact-repeat instability. Report any deviations from preregistration and their implications.\n\n## 8. Limitations\n\n- A finite question set cannot represent all prompts, domains, or users.\n- Hidden sampling, routing, caching, infrastructure changes, and undocumented model updates may prevent perfect control of repeated calls.\n- Human judgments of materiality can be context-dependent; adjudication and reliability measures reduce but do not eliminate this subjectivity.\n- Reference answers may be unavailable, incomplete, or contested, especially for advice and open-ended questions.\n- Pairwise tests can overstate precision unless clustering and repeated comparisons are handled appropriately.\n- Findings may not generalize to other model versions, interfaces, system prompts, settings, languages, or collection periods.\n- This design can identify patterns consistent with particular causes, but causal attribution requires successful isolation of those factors."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 190,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1708,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1898
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

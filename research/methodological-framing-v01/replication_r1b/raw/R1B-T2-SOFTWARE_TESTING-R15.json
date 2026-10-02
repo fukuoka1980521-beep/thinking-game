@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "SOFTWARE_TESTING_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "SOFTWARE_TESTING",
+  "replicate": 15,
+  "run_id": "R1B-T2-SOFTWARE_TESTING-R15",
+  "task_id": "T2",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:25:13.836264+00:00",
+  "timestamp_utc": "2026-10-02T06:25:35.919042+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "0467971a3b63560012a3b9165b590b61189c538914ca2fc5ee9de145f9d0b69c",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0f0929e300269cd5016abf4e49997c87d0b5b841a1bee366ba",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2113,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2302
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine why teams at different sites have persistently different completion times while following the same nominal workplace process. Assess whether the differences are consistent with, and supported by evidence for, competing explanations:\n\n- Differences in the work arriving at each site, such as complexity, urgency, or rework.\n- Differences in staffing, skills, workload, or access to resources.\n- Differences in how the nominal process is actually carried out.\n- Differences in local conditions, including interruptions, handoffs, systems, or management practices.\n- Differences caused by measurement or recording rather than actual performance.\n\nThe study will identify explanations that account for observed differences and specify what evidence would distinguish them. It will not assume the process is meaningfully identical merely because its formal description is shared, or infer causes from site-level correlations alone.\n\n## 2. Assumptions\n\n- Sites perform sufficiently comparable work for completion times to be meaningfully compared, or differences in work can be measured and adjusted for.\n- Completion time can be defined consistently, including a clear start event, end event, and treatment of paused or waiting periods.\n- The study can observe normal operations without directing teams to change their work.\n- Relevant events and contextual conditions can be recorded with adequate consistency, subject to privacy and operational constraints.\n- Teams and sites may differ in several ways simultaneously; explanations are not necessarily mutually exclusive.\n- Differences between sites may reflect both observed factors and unmeasured conditions. Findings should therefore distinguish descriptive evidence, adjusted associations, and stronger causal evidence.\n\n## 3. Research design\n\nUse a non-interventional, multi-site observational study organized as a software-testing investigation of competing hypotheses. Treat the shared process description as a specification to be checked against execution, not as proof that execution is uniform.\n\n1. **Define the process contract.** Translate the nominal process into testable stages, entry and exit conditions, required handoffs, exceptions, and permitted variations. Agree on a common operational definition of completion time.\n2. **Map the observed workflow.** At each site, collect process traces and conduct structured walkthroughs to identify actual stages, queues, handoffs, rework loops, and exceptions. Compare those traces with the process contract.\n3. **Specify hypotheses and expected observations in advance.** For each candidate explanation, state what pattern should appear if it is important, what evidence would contradict it, and which alternative explanations could produce the same pattern.\n4. **Sample across sites and operating conditions.** Include multiple teams per site where feasible, and observe enough cases across shifts, workload levels, work categories, and time periods to separate site effects from team- or period-specific effects. Use a common sampling and recording protocol.\n5. **Test data and process validity.** Apply software-testing practices to the evidence pipeline: validate event definitions, check timestamp ordering and completeness, reconcile sampled records against source records, and test whether the same event is coded consistently across sites.\n6. **Compare cases, not just site averages.** Where possible, compare cases with similar characteristics across sites and examine within-site variation. Use exceptions and matched contrasting cases to investigate how and where time accumulates.\n7. **Triangulate.** Check whether event logs, direct observations, staffing and workload records, and structured accounts from workers and supervisors converge. Treat disagreements as findings to investigate rather than resolve by preference.\n8. **Preserve normal operations.** Researchers will observe and analyze; they will not alter staffing, work allocation, process steps, or tools as part of this study.\n\n## 4. Data or evidence needed\n\nFor each sampled case, collect:\n\n- A consistent, privacy-preserving case identifier and site, team, shift, and relevant time period.\n- Work type, complexity indicators, urgency, priority, and other pre-existing case characteristics likely to affect duration.\n- Timestamps for process start, completion, stage transitions, queue entry and exit, handoffs, pauses, rework, and exceptions.\n- The source and reliability of each timestamp, including whether it is system-generated, manually entered, or reconstructed.\n- Staffing and workload at relevant times: team size, role coverage, experience or skill mix, concurrent case load, absences, and material resource constraints.\n- Relevant operating conditions, such as interruptions, system availability, tool or equipment use, dependencies on other teams, and local policy or management practices.\n- Evidence of process fidelity: which stages occurred, their order, omitted or added steps, alternate routes, and reasons for deviations.\n- Structured observations of selected cases and interviews or short structured accounts from people performing, receiving, or supervising the work.\n- Definitions, data dictionaries, process documentation, and records of changes to the process, tools, or logging systems during the study period.\n\nCollect only information necessary to test the hypotheses. Apply appropriate access controls, retention limits, and protections for worker and case privacy.\n\n## 5. Measurement\n\n**Primary outcome:** elapsed time from the agreed start event to the agreed completion event. Report both total elapsed time and its components, including active work time, queue or waiting time, pause time, and rework time when these can be measured reliably. Do not treat elapsed time as interchangeable with effort.\n\n**Secondary measures:**\n\n- Time spent in each process stage and at handoffs.\n- Frequency and duration of waits, interruptions, rework, exceptions, and process deviations.\n- Completion rates and the share of cases exceeding a prespecified duration threshold, if a justified threshold exists.\n- Workload, staffing coverage, case mix, and system or resource availability.\n- Process-conformance measures defined against the process contract.\n\n**Measurement checks:**\n\n- Use one event dictionary and coding guide across sites.\n- Record missing, delayed, implausible, or out-of-order timestamps rather than silently correcting them.\n- Check agreement between independent reviewers on a sample of manually coded observations.\n- Estimate the extent to which recording practices differ by site.\n- Report the effects of alternative defensible definitions of start, completion, pauses, and rework.\n\n## 6. Analysis\n\nPre-register the primary outcome, key comparisons, candidate explanations, adjustment variables, and planned sensitivity checks before examining site differences in detail.\n\n1. **Establish whether the difference is real and persistent.** Describe completion-time distributions by site and period, not only averages. Use appropriate summaries for skewed times and report uncertainty. Check whether rankings or gaps persist across periods, teams, and comparable categories of work.\n2. **Validate comparability.** Compare work mix, event completeness, and recording practices across sites. If measurement quality differs materially, quantify that limitation and avoid treating recorded differences as operational differences without corroboration.\n3. **Decompose elapsed time.** Identify whether site gaps arise primarily during active work, queues, handoffs, pauses, rework, or other stages. This localizes where explanations should predict observable differences.\n4. **Adjust for measured case and operating conditions.** Use a multilevel model or an equivalent approach that accounts for cases nested within teams, sites, and time periods. Adjust for prespecified case characteristics and relevant workload or staffing measures. Report both unadjusted and adjusted estimates, since adjustment changes the question being answered.\n5. **Test the competing explanations against their predicted patterns.**\n   - **Work mix:** Does the gap shrink when comparing cases of similar type, complexity, and urgency?\n   - **Staffing or workload:** Does time vary with coverage, skill mix, or concurrent load, and does accounting for those conditions reduce the site gap?\n   - **Process execution:** Are there site differences in stage order, omitted steps, handoffs, exceptions, or rework that correspond to the time difference?\n   - **Local conditions and resources:** Do delays align with interruptions, tool availability, dependencies, or other measured constraints?\n   - **Measurement artifacts:** Do gaps weaken when using independently validated timestamps or a common alternative measurement definition?\n6. **Assess competing and combined accounts.** Compare models with prespecified sets of explanatory variables and examine whether conclusions are robust to reasonable alternative specifications. Avoid interpreting model fit or statistical significance alone as proof of a mechanism.\n7. **Use qualitative evidence to test mechanisms.** Select cases that are informative for competing explanations, such as unusually fast or slow cases within the same site and similar cases across sites. Check whether reported mechanisms are consistent with observed traces and timing locations.\n8. **Check robustness.** Repeat analyses using alternative outcome definitions, excluding cases with unreliable records, and stratifying by major work categories and periods. Assess whether findings depend on a small number of teams, cases, or unusual periods.\n\nClassify each explanation as **supported**, **partially supported**, **not supported by the available evidence**, or **indeterminate**. Support requires a predicted pattern in the data, reasonable measurement validity, and evidence that the pattern is not better explained by a major competing account. State explicitly when the study cannot distinguish explanations.\n\n## 7. Decision / stopping rule\n\nConclude data collection when the prespecified sampling targets are met and the evidence is adequate to estimate site and stage differences, assess measurement quality, and test the main hypotheses across relevant work categories and periods. Before collection, set practical minimums for site, team, case, and time-period coverage based on expected variation and feasibility.\n\nIf a key site, team, work category, or period is too sparsely represented, or if event data fail the prespecified validity checks, report the corresponding question as unresolved rather than treating absence of evidence as evidence of absence. Do not extend collection selectively because a preferred explanation is unsupported. Any extension should be based on a documented gap in coverage or measurement and applied consistently across relevant sites.\n\n## 8. Limitations\n\n- Observational comparisons cannot by themselves establish that an associated site condition caused a time difference.\n- Unmeasured differences in work complexity, informal practices, or local constraints may remain.\n- Logging systems may record activity inconsistently or omit informal work, making waiting and active time difficult to separate.\n- Observation and interviews may alter behavior or reflect recall and reporting biases.\n- Sites may not provide comparable cases, and adjustment cannot fully correct for poor overlap in case types or conditions.\n- Process conformance measures may not capture the quality, appropriateness, or effectiveness of work.\n- Findings may be specific to the sampled sites, teams, period, or process version.\n- A shared nominal process may legitimately allow local adaptation; observed variation is not necessarily a defect.",
+  "raw_response": {
+    "id": "resp_0f0929e300269cd5016abf4e49997c87d0b5b841a1bee366ba",
+    "object": "response",
+    "created_at": 1790922313,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922335,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0f0929e300269cd5016abf4e4a20dc87d099b6cb634013ad03",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine why teams at different sites have persistently different completion times while following the same nominal workplace process. Assess whether the differences are consistent with, and supported by evidence for, competing explanations:\n\n- Differences in the work arriving at each site, such as complexity, urgency, or rework.\n- Differences in staffing, skills, workload, or access to resources.\n- Differences in how the nominal process is actually carried out.\n- Differences in local conditions, including interruptions, handoffs, systems, or management practices.\n- Differences caused by measurement or recording rather than actual performance.\n\nThe study will identify explanations that account for observed differences and specify what evidence would distinguish them. It will not assume the process is meaningfully identical merely because its formal description is shared, or infer causes from site-level correlations alone.\n\n## 2. Assumptions\n\n- Sites perform sufficiently comparable work for completion times to be meaningfully compared, or differences in work can be measured and adjusted for.\n- Completion time can be defined consistently, including a clear start event, end event, and treatment of paused or waiting periods.\n- The study can observe normal operations without directing teams to change their work.\n- Relevant events and contextual conditions can be recorded with adequate consistency, subject to privacy and operational constraints.\n- Teams and sites may differ in several ways simultaneously; explanations are not necessarily mutually exclusive.\n- Differences between sites may reflect both observed factors and unmeasured conditions. Findings should therefore distinguish descriptive evidence, adjusted associations, and stronger causal evidence.\n\n## 3. Research design\n\nUse a non-interventional, multi-site observational study organized as a software-testing investigation of competing hypotheses. Treat the shared process description as a specification to be checked against execution, not as proof that execution is uniform.\n\n1. **Define the process contract.** Translate the nominal process into testable stages, entry and exit conditions, required handoffs, exceptions, and permitted variations. Agree on a common operational definition of completion time.\n2. **Map the observed workflow.** At each site, collect process traces and conduct structured walkthroughs to identify actual stages, queues, handoffs, rework loops, and exceptions. Compare those traces with the process contract.\n3. **Specify hypotheses and expected observations in advance.** For each candidate explanation, state what pattern should appear if it is important, what evidence would contradict it, and which alternative explanations could produce the same pattern.\n4. **Sample across sites and operating conditions.** Include multiple teams per site where feasible, and observe enough cases across shifts, workload levels, work categories, and time periods to separate site effects from team- or period-specific effects. Use a common sampling and recording protocol.\n5. **Test data and process validity.** Apply software-testing practices to the evidence pipeline: validate event definitions, check timestamp ordering and completeness, reconcile sampled records against source records, and test whether the same event is coded consistently across sites.\n6. **Compare cases, not just site averages.** Where possible, compare cases with similar characteristics across sites and examine within-site variation. Use exceptions and matched contrasting cases to investigate how and where time accumulates.\n7. **Triangulate.** Check whether event logs, direct observations, staffing and workload records, and structured accounts from workers and supervisors converge. Treat disagreements as findings to investigate rather than resolve by preference.\n8. **Preserve normal operations.** Researchers will observe and analyze; they will not alter staffing, work allocation, process steps, or tools as part of this study.\n\n## 4. Data or evidence needed\n\nFor each sampled case, collect:\n\n- A consistent, privacy-preserving case identifier and site, team, shift, and relevant time period.\n- Work type, complexity indicators, urgency, priority, and other pre-existing case characteristics likely to affect duration.\n- Timestamps for process start, completion, stage transitions, queue entry and exit, handoffs, pauses, rework, and exceptions.\n- The source and reliability of each timestamp, including whether it is system-generated, manually entered, or reconstructed.\n- Staffing and workload at relevant times: team size, role coverage, experience or skill mix, concurrent case load, absences, and material resource constraints.\n- Relevant operating conditions, such as interruptions, system availability, tool or equipment use, dependencies on other teams, and local policy or management practices.\n- Evidence of process fidelity: which stages occurred, their order, omitted or added steps, alternate routes, and reasons for deviations.\n- Structured observations of selected cases and interviews or short structured accounts from people performing, receiving, or supervising the work.\n- Definitions, data dictionaries, process documentation, and records of changes to the process, tools, or logging systems during the study period.\n\nCollect only information necessary to test the hypotheses. Apply appropriate access controls, retention limits, and protections for worker and case privacy.\n\n## 5. Measurement\n\n**Primary outcome:** elapsed time from the agreed start event to the agreed completion event. Report both total elapsed time and its components, including active work time, queue or waiting time, pause time, and rework time when these can be measured reliably. Do not treat elapsed time as interchangeable with effort.\n\n**Secondary measures:**\n\n- Time spent in each process stage and at handoffs.\n- Frequency and duration of waits, interruptions, rework, exceptions, and process deviations.\n- Completion rates and the share of cases exceeding a prespecified duration threshold, if a justified threshold exists.\n- Workload, staffing coverage, case mix, and system or resource availability.\n- Process-conformance measures defined against the process contract.\n\n**Measurement checks:**\n\n- Use one event dictionary and coding guide across sites.\n- Record missing, delayed, implausible, or out-of-order timestamps rather than silently correcting them.\n- Check agreement between independent reviewers on a sample of manually coded observations.\n- Estimate the extent to which recording practices differ by site.\n- Report the effects of alternative defensible definitions of start, completion, pauses, and rework.\n\n## 6. Analysis\n\nPre-register the primary outcome, key comparisons, candidate explanations, adjustment variables, and planned sensitivity checks before examining site differences in detail.\n\n1. **Establish whether the difference is real and persistent.** Describe completion-time distributions by site and period, not only averages. Use appropriate summaries for skewed times and report uncertainty. Check whether rankings or gaps persist across periods, teams, and comparable categories of work.\n2. **Validate comparability.** Compare work mix, event completeness, and recording practices across sites. If measurement quality differs materially, quantify that limitation and avoid treating recorded differences as operational differences without corroboration.\n3. **Decompose elapsed time.** Identify whether site gaps arise primarily during active work, queues, handoffs, pauses, rework, or other stages. This localizes where explanations should predict observable differences.\n4. **Adjust for measured case and operating conditions.** Use a multilevel model or an equivalent approach that accounts for cases nested within teams, sites, and time periods. Adjust for prespecified case characteristics and relevant workload or staffing measures. Report both unadjusted and adjusted estimates, since adjustment changes the question being answered.\n5. **Test the competing explanations against their predicted patterns.**\n   - **Work mix:** Does the gap shrink when comparing cases of similar type, complexity, and urgency?\n   - **Staffing or workload:** Does time vary with coverage, skill mix, or concurrent load, and does accounting for those conditions reduce the site gap?\n   - **Process execution:** Are there site differences in stage order, omitted steps, handoffs, exceptions, or rework that correspond to the time difference?\n   - **Local conditions and resources:** Do delays align with interruptions, tool availability, dependencies, or other measured constraints?\n   - **Measurement artifacts:** Do gaps weaken when using independently validated timestamps or a common alternative measurement definition?\n6. **Assess competing and combined accounts.** Compare models with prespecified sets of explanatory variables and examine whether conclusions are robust to reasonable alternative specifications. Avoid interpreting model fit or statistical significance alone as proof of a mechanism.\n7. **Use qualitative evidence to test mechanisms.** Select cases that are informative for competing explanations, such as unusually fast or slow cases within the same site and similar cases across sites. Check whether reported mechanisms are consistent with observed traces and timing locations.\n8. **Check robustness.** Repeat analyses using alternative outcome definitions, excluding cases with unreliable records, and stratifying by major work categories and periods. Assess whether findings depend on a small number of teams, cases, or unusual periods.\n\nClassify each explanation as **supported**, **partially supported**, **not supported by the available evidence**, or **indeterminate**. Support requires a predicted pattern in the data, reasonable measurement validity, and evidence that the pattern is not better explained by a major competing account. State explicitly when the study cannot distinguish explanations.\n\n## 7. Decision / stopping rule\n\nConclude data collection when the prespecified sampling targets are met and the evidence is adequate to estimate site and stage differences, assess measurement quality, and test the main hypotheses across relevant work categories and periods. Before collection, set practical minimums for site, team, case, and time-period coverage based on expected variation and feasibility.\n\nIf a key site, team, work category, or period is too sparsely represented, or if event data fail the prespecified validity checks, report the corresponding question as unresolved rather than treating absence of evidence as evidence of absence. Do not extend collection selectively because a preferred explanation is unsupported. Any extension should be based on a documented gap in coverage or measurement and applied consistently across relevant sites.\n\n## 8. Limitations\n\n- Observational comparisons cannot by themselves establish that an associated site condition caused a time difference.\n- Unmeasured differences in work complexity, informal practices, or local constraints may remain.\n- Logging systems may record activity inconsistently or omit informal work, making waiting and active time difficult to separate.\n- Observation and interviews may alter behavior or reflect recall and reporting biases.\n- Sites may not provide comparable cases, and adjustment cannot fully correct for poor overlap in case types or conditions.\n- Process conformance measures may not capture the quality, appropriateness, or effectiveness of work.\n- Findings may be specific to the sampled sites, teams, period, or process version.\n- A shared nominal process may legitimately allow local adaptation; observed variation is not necessarily a defect."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2113,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2302
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

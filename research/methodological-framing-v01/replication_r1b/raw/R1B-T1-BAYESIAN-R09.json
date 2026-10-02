@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "BAYESIAN_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "BAYESIAN",
+  "replicate": 9,
+  "run_id": "R1B-T1-BAYESIAN-R09",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:27:57.255103+00:00",
+  "timestamp_utc": "2026-10-02T06:28:13.616652+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "bd960c9b78dbae4b84e1a72dd7bccf72701810ed8a3acbc5b0b61f61f649af41",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_07730bf805780741016abf4eecfda087d0b9ef6d121f196822",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 188,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1535,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1723
+  },
+  "raw_text": "## 1. Objective and scope\n\nEstimate how often a fixed question to a specified large language model (LLM) yields responses that differ in meaning, factual content, or practical consequences—not merely in wording—and identify conditions associated with such differences.\n\nThe study will distinguish:\n\n- **Surface variation:** wording, organization, or style changes without a material change in meaning.\n- **Substantive variation:** changes in claims, recommendations, uncertainty, or other content that could affect a reader’s understanding or actions.\n- **Response instability:** substantive variation across repeated responses to the same question under otherwise controlled conditions.\n\nThe primary scope is repeated querying of one specified model version with fixed questions and fixed settings. Generalization to other models, versions, or deployment contexts is secondary.\n\n## 2. Assumptions\n\n- The model, version, system instructions, decoding settings, and other controllable parameters can be recorded and held constant.\n- Repeated calls can be treated as observations from a response-generating process, though dependence or unobserved system changes may violate this assumption.\n- A question’s intended meaning can be assessed independently of the particular responses it elicits.\n- Human evaluators can reliably distinguish material meaning changes from ordinary wording variation when given a prespecified rubric and adequate training.\n- Model outputs are evidence about response behavior, not evidence that their factual claims are true. Factual accuracy therefore requires separate reference standards where feasible.\n\n## 3. Research design\n\nUse a preregistered, Bayesian repeated-measures design.\n\n**Question set.** Construct a stratified set of questions covering prespecified domains, such as factual explanation, summarization, advice, and ambiguous or underspecified requests. Include questions that vary in ambiguity and consequence of error. Sample questions before observing model responses; document inclusion criteria and intended interpretations.\n\n**Repeated elicitation.** Submit each exact question multiple times to the same model version under a fixed prompt, system context, and decoding configuration. Randomize query order and, if feasible, spread calls across time to detect temporal variation. Record timestamps and all available settings. Do not revise questions in response to observed outputs in the primary analysis.\n\n**Diagnostic conditions.** To investigate causes, use a secondary, randomized factorial design in which one factor at a time—or a preregistered set of factors—is varied, such as decoding temperature, prompt context, or paraphrase. Keep the fixed-question condition as the primary estimate of instability. Treat paraphrases as a separate sensitivity analysis, since they alter the input rather than repeat it.\n\n**Evaluation.** De-identify and randomize response presentation. Have at least two independent evaluators assess each response and response pair using a rubric established before evaluation. Evaluators should not know the model settings or whether outputs are from the same question. Adjudicate disagreements using a prespecified process.\n\n**Replication.** Where feasible, repeat the design for a later time window or model release. Analyze such replications separately unless the model and deployment conditions are demonstrably unchanged.\n\n## 4. Data or evidence needed\n\n- Exact questions, question-domain labels, sampling and inclusion procedures, and any reference interpretation or answer standard.\n- Full prompts, system instructions, model identifier/version, decoding parameters, tool availability, timestamps, and relevant platform metadata.\n- All generated responses, including refusals, empty outputs, and errors.\n- Independent evaluator ratings and reasons for disagreements.\n- For factual questions, authoritative reference material or expert judgments sufficient to assess whether content differences are also accuracy differences.\n- Logs of exclusions, outages, retries, and protocol deviations.\n\nRetain raw outputs and maintain a versioned record of coding rules. Do not discard unusual responses solely because they appear anomalous.\n\n## 5. Measurement\n\nDefine the primary outcome at the **question level**: whether repeated responses exhibit at least one material semantic difference under the prespecified rubric.\n\nFor each response pair, assess:\n\n1. **Propositional content:** differences in factual claims, included or omitted key information, and contradictions.\n2. **Recommendations or actions:** changes in advice, prioritization, or proposed action.\n3. **Qualification and uncertainty:** differences in confidence, caveats, scope, or stated limitations.\n4. **Practical significance:** whether the difference could reasonably alter a user’s belief or decision in the question’s context.\n5. **Surface form:** wording or structural variation without material semantic change.\n\nUse an ordinal severity scale, for example: no material difference; minor substantive difference; major difference with likely practical relevance. Specify examples and decision rules in the coding manual. The principal binary instability classification should require a material difference, not merely lexical or stylistic divergence.\n\nMeasure evaluator agreement and report it alongside results. Separate semantic instability from factual accuracy: a response set may be stable but wrong, or variable while containing only accurate alternatives.\n\n## 6. Analysis\n\nUse a Bayesian hierarchical model to account for repeated observations nested within questions and, where relevant, evaluators and domains.\n\nThe primary estimand is the probability that two independently sampled responses to the same fixed question differ materially, averaged over the prespecified question population and model conditions. Estimate this probability with posterior intervals and report domain-specific estimates. Also estimate the probability of major, practically consequential differences.\n\nUse weakly informative priors justified in the preregistration, and conduct sensitivity analyses with alternative reasonable priors. Model question-level heterogeneity rather than treating all response pairs as independent. Avoid interpreting the many possible pairs from a question as independent observations; use a model or summary method that respects their shared responses.\n\nFor diagnostic conditions, estimate posterior contrasts in instability associated with each manipulated factor, including uncertainty and any prespecified interactions. Distinguish causal conclusions from observational associations: causal attribution is warranted only for randomized manipulations conducted with other conditions controlled.\n\nReport posterior distributions, not only thresholded conclusions. Include checks for time trends, protocol deviations, evaluator disagreement, and sensitivity to alternative materiality thresholds. For factual tasks, analyze accuracy separately and, where appropriate, jointly with instability.\n\n## 7. Decision / stopping rule\n\nSet sample size and stopping procedures before data collection using prior or pilot assumptions about question-level variability and the precision needed for the primary estimate. Prefer a fixed, preregistered number of questions and repetitions per question. If sequential Bayesian monitoring is used, specify the monitoring schedule, priors, decision thresholds, and minimum information requirements in advance.\n\nDefine a practically meaningful instability threshold before observing outcomes. Conclude that instability is supported only if the posterior probability that the primary estimand exceeds that threshold is sufficiently high under the preregistered criterion; conclude evidence of low instability only if the posterior probability that it is below the threshold is sufficiently high. Otherwise, report the result as inconclusive. Give posterior intervals and sensitivity analyses in all cases.\n\n## 8. Limitations\n\n- Findings may apply only to the tested model version, settings, questions, and period; model updates or platform changes may alter behavior.\n- A finite question set may not represent real-world use, and measured rates depend on how questions and domains are sampled.\n- Materiality judgments are partly contextual and may vary among evaluators or users despite structured guidance.\n- Repeated calls may not be independent, and hidden platform changes or routing may be unobservable.\n- Some questions lack a single reference answer, limiting judgments about accuracy even when semantic differences are clear.\n- The study can identify variation and test controlled causes, but cannot establish why every individual response changed.\n- Bayesian conclusions depend partly on the chosen priors, model structure, and threshold for practical importance; these choices must be transparent and examined through sensitivity analyses.",
+  "raw_response": {
+    "id": "resp_07730bf805780741016abf4eecfda087d0b9ef6d121f196822",
+    "object": "response",
+    "created_at": 1790922477,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922492,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_07730bf805780741016abf4eed5b4487d0876330ca5dcd8394",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nEstimate how often a fixed question to a specified large language model (LLM) yields responses that differ in meaning, factual content, or practical consequences—not merely in wording—and identify conditions associated with such differences.\n\nThe study will distinguish:\n\n- **Surface variation:** wording, organization, or style changes without a material change in meaning.\n- **Substantive variation:** changes in claims, recommendations, uncertainty, or other content that could affect a reader’s understanding or actions.\n- **Response instability:** substantive variation across repeated responses to the same question under otherwise controlled conditions.\n\nThe primary scope is repeated querying of one specified model version with fixed questions and fixed settings. Generalization to other models, versions, or deployment contexts is secondary.\n\n## 2. Assumptions\n\n- The model, version, system instructions, decoding settings, and other controllable parameters can be recorded and held constant.\n- Repeated calls can be treated as observations from a response-generating process, though dependence or unobserved system changes may violate this assumption.\n- A question’s intended meaning can be assessed independently of the particular responses it elicits.\n- Human evaluators can reliably distinguish material meaning changes from ordinary wording variation when given a prespecified rubric and adequate training.\n- Model outputs are evidence about response behavior, not evidence that their factual claims are true. Factual accuracy therefore requires separate reference standards where feasible.\n\n## 3. Research design\n\nUse a preregistered, Bayesian repeated-measures design.\n\n**Question set.** Construct a stratified set of questions covering prespecified domains, such as factual explanation, summarization, advice, and ambiguous or underspecified requests. Include questions that vary in ambiguity and consequence of error. Sample questions before observing model responses; document inclusion criteria and intended interpretations.\n\n**Repeated elicitation.** Submit each exact question multiple times to the same model version under a fixed prompt, system context, and decoding configuration. Randomize query order and, if feasible, spread calls across time to detect temporal variation. Record timestamps and all available settings. Do not revise questions in response to observed outputs in the primary analysis.\n\n**Diagnostic conditions.** To investigate causes, use a secondary, randomized factorial design in which one factor at a time—or a preregistered set of factors—is varied, such as decoding temperature, prompt context, or paraphrase. Keep the fixed-question condition as the primary estimate of instability. Treat paraphrases as a separate sensitivity analysis, since they alter the input rather than repeat it.\n\n**Evaluation.** De-identify and randomize response presentation. Have at least two independent evaluators assess each response and response pair using a rubric established before evaluation. Evaluators should not know the model settings or whether outputs are from the same question. Adjudicate disagreements using a prespecified process.\n\n**Replication.** Where feasible, repeat the design for a later time window or model release. Analyze such replications separately unless the model and deployment conditions are demonstrably unchanged.\n\n## 4. Data or evidence needed\n\n- Exact questions, question-domain labels, sampling and inclusion procedures, and any reference interpretation or answer standard.\n- Full prompts, system instructions, model identifier/version, decoding parameters, tool availability, timestamps, and relevant platform metadata.\n- All generated responses, including refusals, empty outputs, and errors.\n- Independent evaluator ratings and reasons for disagreements.\n- For factual questions, authoritative reference material or expert judgments sufficient to assess whether content differences are also accuracy differences.\n- Logs of exclusions, outages, retries, and protocol deviations.\n\nRetain raw outputs and maintain a versioned record of coding rules. Do not discard unusual responses solely because they appear anomalous.\n\n## 5. Measurement\n\nDefine the primary outcome at the **question level**: whether repeated responses exhibit at least one material semantic difference under the prespecified rubric.\n\nFor each response pair, assess:\n\n1. **Propositional content:** differences in factual claims, included or omitted key information, and contradictions.\n2. **Recommendations or actions:** changes in advice, prioritization, or proposed action.\n3. **Qualification and uncertainty:** differences in confidence, caveats, scope, or stated limitations.\n4. **Practical significance:** whether the difference could reasonably alter a user’s belief or decision in the question’s context.\n5. **Surface form:** wording or structural variation without material semantic change.\n\nUse an ordinal severity scale, for example: no material difference; minor substantive difference; major difference with likely practical relevance. Specify examples and decision rules in the coding manual. The principal binary instability classification should require a material difference, not merely lexical or stylistic divergence.\n\nMeasure evaluator agreement and report it alongside results. Separate semantic instability from factual accuracy: a response set may be stable but wrong, or variable while containing only accurate alternatives.\n\n## 6. Analysis\n\nUse a Bayesian hierarchical model to account for repeated observations nested within questions and, where relevant, evaluators and domains.\n\nThe primary estimand is the probability that two independently sampled responses to the same fixed question differ materially, averaged over the prespecified question population and model conditions. Estimate this probability with posterior intervals and report domain-specific estimates. Also estimate the probability of major, practically consequential differences.\n\nUse weakly informative priors justified in the preregistration, and conduct sensitivity analyses with alternative reasonable priors. Model question-level heterogeneity rather than treating all response pairs as independent. Avoid interpreting the many possible pairs from a question as independent observations; use a model or summary method that respects their shared responses.\n\nFor diagnostic conditions, estimate posterior contrasts in instability associated with each manipulated factor, including uncertainty and any prespecified interactions. Distinguish causal conclusions from observational associations: causal attribution is warranted only for randomized manipulations conducted with other conditions controlled.\n\nReport posterior distributions, not only thresholded conclusions. Include checks for time trends, protocol deviations, evaluator disagreement, and sensitivity to alternative materiality thresholds. For factual tasks, analyze accuracy separately and, where appropriate, jointly with instability.\n\n## 7. Decision / stopping rule\n\nSet sample size and stopping procedures before data collection using prior or pilot assumptions about question-level variability and the precision needed for the primary estimate. Prefer a fixed, preregistered number of questions and repetitions per question. If sequential Bayesian monitoring is used, specify the monitoring schedule, priors, decision thresholds, and minimum information requirements in advance.\n\nDefine a practically meaningful instability threshold before observing outcomes. Conclude that instability is supported only if the posterior probability that the primary estimand exceeds that threshold is sufficiently high under the preregistered criterion; conclude evidence of low instability only if the posterior probability that it is below the threshold is sufficiently high. Otherwise, report the result as inconclusive. Give posterior intervals and sensitivity analyses in all cases.\n\n## 8. Limitations\n\n- Findings may apply only to the tested model version, settings, questions, and period; model updates or platform changes may alter behavior.\n- A finite question set may not represent real-world use, and measured rates depend on how questions and domains are sampled.\n- Materiality judgments are partly contextual and may vary among evaluators or users despite structured guidance.\n- Repeated calls may not be independent, and hidden platform changes or routing may be unobservable.\n- Some questions lack a single reference answer, limiting judgments about accuracy even when semantic differences are clear.\n- The study can identify variation and test controlled causes, but cannot establish why every individual response changed.\n- Bayesian conclusions depend partly on the chosen priors, model structure, and threshold for practical importance; these choices must be transparent and examined through sensitivity analyses."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 188,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1535,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1723
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "FALSIFICATION_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "FALSIFICATION",
+  "replicate": 16,
+  "run_id": "R1B-T1-FALSIFICATION-R16",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:24:43.855971+00:00",
+  "timestamp_utc": "2026-10-02T06:25:01.251243+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a falsification-first approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "fcc276f44d441b6ce78d2ac14b5763fc0eb84b32ae48944ccf45b0a0f4dec4d4",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a falsification-first approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_00cb0000bddaa613016abf4e2ba2bc87d0b119078726c99d22",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 190,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1716,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1906
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated answers to the same large-language-model (LLM) question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive response instability from ordinary wording variation.\n\nThe study will test a prespecified model, version, configuration, and set of prompts. Its conclusions will apply to those tested conditions, not automatically to other models, versions, or deployment settings. The primary focus is variation across repeated generations with the prompt held fixed. Prompt rewording, context, and configuration will be examined as separate factors rather than conflated with repeatability.\n\n## 2. Assumptions\n\n- “Same question” means the same prompt text, system instructions, conversation history, and available context.\n- The model and all accessible generation settings can be documented and held constant, except when a factor is deliberately varied.\n- Answers may differ in surface form without differing in meaning, factual commitments, reasoning, or recommendations.\n- No single answer is assumed to be correct merely because it is common or generated first.\n- Judgments of substantive difference require explicit criteria and, where feasible, independent blinded assessment.\n- The study can observe output variation but may not be able to identify the model’s internal causal mechanism for it.\n\n## 3. Research design\n\nUse a falsification-first, preregistered design. State the claim to be tested as: **under fixed conditions, repeated generations do not produce substantively different answers more often than a prespecified negligible rate**. Define the negligible rate before data collection based on the intended use and the cost of inconsistent answers. The study aims to find credible counterexamples to this claim, not merely to accumulate examples of variation.\n\n1. **Fix the target conditions.** Record model identifier and version, system prompt, full conversation context, decoding parameters, tool availability, date, and any other exposed settings. Disable tools unless tool use is an explicit study factor.\n2. **Construct a question set.** Sample questions from prespecified task categories, such as factual, ambiguous, interpretive, advice-oriented, and safety-sensitive prompts. Include questions for which differences could plausibly matter and, separately, straightforward control questions. Define inclusion and exclusion criteria before generation.\n3. **Establish repeated-generation trials.** For every question, generate multiple independent answers under identical settings. Randomize request order, separate trials where operationally feasible, and record failures, refusals, and truncations. Choose the number of questions and repetitions through a precision or power analysis based on the prespecified negligible rate and expected clustering by question.\n4. **Test candidate causes separately.** In distinct, controlled blocks, vary one factor at a time where possible: wording of the question, conversation context, temperature or other exposed decoding settings, and model version. Keep other factors fixed. Include repeated generations within each condition so that a change in average response can be distinguished from within-condition variability.\n5. **Use a blinded evaluation procedure.** Remove identifiers that reveal trial order or condition. Assessors should not know which answers are repeated generations or which factor was varied. Use multiple trained assessors and a documented adjudication procedure.\n6. **Include controls.** Use paraphrase-only comparisons as a negative control for substantive instability, and prompts with prespecified mutually exclusive answer commitments as a positive-control check that the evaluation procedure can detect meaningful differences. Controls should not be treated as evidence about the prevalence of instability in the target question set.\n\n## 4. Data or evidence needed\n\n- Exact prompts, system instructions, conversation histories, and any supplied materials.\n- Model, version, date, accessible settings, and request-level metadata.\n- All raw outputs, including refusals, errors, and incomplete responses.\n- The prespecified question taxonomy, sampling frame, inclusion criteria, and trial allocation.\n- Annotator guidance, individual ratings, disagreements, adjudications, and rationale for substantive-difference labels.\n- Where claims of factual correctness are evaluated, independent reference material or domain-expert judgments specified before inspecting the outputs.\n- A complete record of deviations from the protocol and missing or unusable trials.\n\n## 5. Measurement\n\nDefine and report separate measures rather than treating textual distance as response instability.\n\n**Primary outcome: substantive instability.** For each question and pair of repeated outputs, blinded assessors determine whether the answers differ in at least one prespecified material dimension:\n\n- factual claim or asserted uncertainty;\n- logical or evidential rationale;\n- conclusion, recommendation, or action;\n- handling of a material ambiguity or qualification;\n- safety-relevant guidance or refusal behavior.\n\nA difference is material only if it could reasonably change a reader’s belief, decision, or assessment of the answer’s correctness or safety. Specify category-specific criteria and examples before annotation.\n\n**Secondary outcomes:**\n\n- rate of material disagreement per question and per output pair;\n- type and direction of disagreement, including contradiction, omission, qualification, and changed recommendation;\n- answer correctness, calibration, and completeness, assessed independently of consistency where appropriate;\n- refusal and format compliance;\n- surface-form variation, assessed with text-similarity measures or paraphrase judgments, as a descriptive measure only.\n\nEstimate inter-rater reliability and report category-specific agreement. Treat low agreement as uncertainty in measurement, not as proof that outputs are equivalent. Analyze output pairs with appropriate clustering by question; do not treat all pairs from the same question as independent observations.\n\n## 6. Analysis\n\nPreregister the analysis plan, hypotheses, materiality thresholds, exclusions, and multiplicity handling.\n\n1. **Test the primary claim.** Estimate the proportion of questions exhibiting at least one material disagreement under fixed conditions, with uncertainty intervals that account for clustering by question. Also report the distribution across questions; an overall average could conceal a small set of highly unstable prompts.\n2. **Attempt to falsify the negligible-instability claim.** Compare the estimate and its uncertainty interval with the prespecified negligible rate. Report concrete, independently reviewed counterexamples, while distinguishing isolated cases from a repeatable pattern.\n3. **Separate wording variation from substantive change.** Cross-tabulate surface-form differences against blinded materiality judgments. A high textual distance without material disagreement is not instability under the primary definition; close wording with changed commitments may be.\n4. **Assess candidate causes.** For each deliberately varied factor, compare conditions using models or contrasts that account for repeated observations within questions. Report effect sizes and uncertainty, not only significance tests. Distinguish a factor that shifts typical answers from one that increases within-condition variability.\n5. **Assess robustness.** Repeat analyses using reasonable prespecified alternative materiality codings and excluding protocol violations. Present sensitivity analyses without replacing the primary result.\n6. **Avoid overclaiming causation.** Attribute changes to a varied factor only when that factor was manipulated while other relevant conditions were controlled. Observed associations across question types or metadata do not by themselves establish mechanism.\n\n## 7. Decision / stopping rule\n\nSet the negligible instability rate, desired precision, sample size, and maximum study size before data collection. Do not stop early because a striking example appears or because an interim result is favorable.\n\nConclude that the negligible-instability claim is **falsified for the tested conditions** if the prespecified primary analysis shows a material-disagreement rate exceeding the negligible threshold under the preregistered decision criterion, with the conclusion robust to the specified reliability and sensitivity checks. Report the scope and nature of the counterexamples.\n\nIf the interval is sufficiently narrow and lies below the threshold, conclude only that the study found no evidence of instability above that threshold for the tested conditions. If the interval overlaps the threshold, or annotation reliability is inadequate, classify the result as inconclusive and recommend additional data or improved measurement rather than claiming stability.\n\n## 8. Limitations\n\n- Results may not generalize to other model versions, deployment systems, user populations, prompts, or settings.\n- Access to a service may not reveal all sources of variation, including hidden system changes or infrastructure effects.\n- Human judgments of materiality can be uncertain, especially for technical, ambiguous, or high-stakes questions.\n- Automated text-similarity measures capture wording differences imperfectly and cannot establish semantic equivalence on their own.\n- A finite set of questions and generations cannot rule out rare but consequential disagreements.\n- Controlled variation can identify effects of tested factors but may not reveal internal model mechanisms.\n- Consistency is not correctness: a model may repeat an incorrect answer consistently, or vary while remaining correct.",
+  "raw_response": {
+    "id": "resp_00cb0000bddaa613016abf4e2ba2bc87d0b119078726c99d22",
+    "object": "response",
+    "created_at": 1790922283,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922300,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_00cb0000bddaa613016abf4e2c180487d09c7606e511bdb6fd",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated answers to the same large-language-model (LLM) question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive response instability from ordinary wording variation.\n\nThe study will test a prespecified model, version, configuration, and set of prompts. Its conclusions will apply to those tested conditions, not automatically to other models, versions, or deployment settings. The primary focus is variation across repeated generations with the prompt held fixed. Prompt rewording, context, and configuration will be examined as separate factors rather than conflated with repeatability.\n\n## 2. Assumptions\n\n- “Same question” means the same prompt text, system instructions, conversation history, and available context.\n- The model and all accessible generation settings can be documented and held constant, except when a factor is deliberately varied.\n- Answers may differ in surface form without differing in meaning, factual commitments, reasoning, or recommendations.\n- No single answer is assumed to be correct merely because it is common or generated first.\n- Judgments of substantive difference require explicit criteria and, where feasible, independent blinded assessment.\n- The study can observe output variation but may not be able to identify the model’s internal causal mechanism for it.\n\n## 3. Research design\n\nUse a falsification-first, preregistered design. State the claim to be tested as: **under fixed conditions, repeated generations do not produce substantively different answers more often than a prespecified negligible rate**. Define the negligible rate before data collection based on the intended use and the cost of inconsistent answers. The study aims to find credible counterexamples to this claim, not merely to accumulate examples of variation.\n\n1. **Fix the target conditions.** Record model identifier and version, system prompt, full conversation context, decoding parameters, tool availability, date, and any other exposed settings. Disable tools unless tool use is an explicit study factor.\n2. **Construct a question set.** Sample questions from prespecified task categories, such as factual, ambiguous, interpretive, advice-oriented, and safety-sensitive prompts. Include questions for which differences could plausibly matter and, separately, straightforward control questions. Define inclusion and exclusion criteria before generation.\n3. **Establish repeated-generation trials.** For every question, generate multiple independent answers under identical settings. Randomize request order, separate trials where operationally feasible, and record failures, refusals, and truncations. Choose the number of questions and repetitions through a precision or power analysis based on the prespecified negligible rate and expected clustering by question.\n4. **Test candidate causes separately.** In distinct, controlled blocks, vary one factor at a time where possible: wording of the question, conversation context, temperature or other exposed decoding settings, and model version. Keep other factors fixed. Include repeated generations within each condition so that a change in average response can be distinguished from within-condition variability.\n5. **Use a blinded evaluation procedure.** Remove identifiers that reveal trial order or condition. Assessors should not know which answers are repeated generations or which factor was varied. Use multiple trained assessors and a documented adjudication procedure.\n6. **Include controls.** Use paraphrase-only comparisons as a negative control for substantive instability, and prompts with prespecified mutually exclusive answer commitments as a positive-control check that the evaluation procedure can detect meaningful differences. Controls should not be treated as evidence about the prevalence of instability in the target question set.\n\n## 4. Data or evidence needed\n\n- Exact prompts, system instructions, conversation histories, and any supplied materials.\n- Model, version, date, accessible settings, and request-level metadata.\n- All raw outputs, including refusals, errors, and incomplete responses.\n- The prespecified question taxonomy, sampling frame, inclusion criteria, and trial allocation.\n- Annotator guidance, individual ratings, disagreements, adjudications, and rationale for substantive-difference labels.\n- Where claims of factual correctness are evaluated, independent reference material or domain-expert judgments specified before inspecting the outputs.\n- A complete record of deviations from the protocol and missing or unusable trials.\n\n## 5. Measurement\n\nDefine and report separate measures rather than treating textual distance as response instability.\n\n**Primary outcome: substantive instability.** For each question and pair of repeated outputs, blinded assessors determine whether the answers differ in at least one prespecified material dimension:\n\n- factual claim or asserted uncertainty;\n- logical or evidential rationale;\n- conclusion, recommendation, or action;\n- handling of a material ambiguity or qualification;\n- safety-relevant guidance or refusal behavior.\n\nA difference is material only if it could reasonably change a reader’s belief, decision, or assessment of the answer’s correctness or safety. Specify category-specific criteria and examples before annotation.\n\n**Secondary outcomes:**\n\n- rate of material disagreement per question and per output pair;\n- type and direction of disagreement, including contradiction, omission, qualification, and changed recommendation;\n- answer correctness, calibration, and completeness, assessed independently of consistency where appropriate;\n- refusal and format compliance;\n- surface-form variation, assessed with text-similarity measures or paraphrase judgments, as a descriptive measure only.\n\nEstimate inter-rater reliability and report category-specific agreement. Treat low agreement as uncertainty in measurement, not as proof that outputs are equivalent. Analyze output pairs with appropriate clustering by question; do not treat all pairs from the same question as independent observations.\n\n## 6. Analysis\n\nPreregister the analysis plan, hypotheses, materiality thresholds, exclusions, and multiplicity handling.\n\n1. **Test the primary claim.** Estimate the proportion of questions exhibiting at least one material disagreement under fixed conditions, with uncertainty intervals that account for clustering by question. Also report the distribution across questions; an overall average could conceal a small set of highly unstable prompts.\n2. **Attempt to falsify the negligible-instability claim.** Compare the estimate and its uncertainty interval with the prespecified negligible rate. Report concrete, independently reviewed counterexamples, while distinguishing isolated cases from a repeatable pattern.\n3. **Separate wording variation from substantive change.** Cross-tabulate surface-form differences against blinded materiality judgments. A high textual distance without material disagreement is not instability under the primary definition; close wording with changed commitments may be.\n4. **Assess candidate causes.** For each deliberately varied factor, compare conditions using models or contrasts that account for repeated observations within questions. Report effect sizes and uncertainty, not only significance tests. Distinguish a factor that shifts typical answers from one that increases within-condition variability.\n5. **Assess robustness.** Repeat analyses using reasonable prespecified alternative materiality codings and excluding protocol violations. Present sensitivity analyses without replacing the primary result.\n6. **Avoid overclaiming causation.** Attribute changes to a varied factor only when that factor was manipulated while other relevant conditions were controlled. Observed associations across question types or metadata do not by themselves establish mechanism.\n\n## 7. Decision / stopping rule\n\nSet the negligible instability rate, desired precision, sample size, and maximum study size before data collection. Do not stop early because a striking example appears or because an interim result is favorable.\n\nConclude that the negligible-instability claim is **falsified for the tested conditions** if the prespecified primary analysis shows a material-disagreement rate exceeding the negligible threshold under the preregistered decision criterion, with the conclusion robust to the specified reliability and sensitivity checks. Report the scope and nature of the counterexamples.\n\nIf the interval is sufficiently narrow and lies below the threshold, conclude only that the study found no evidence of instability above that threshold for the tested conditions. If the interval overlaps the threshold, or annotation reliability is inadequate, classify the result as inconclusive and recommend additional data or improved measurement rather than claiming stability.\n\n## 8. Limitations\n\n- Results may not generalize to other model versions, deployment systems, user populations, prompts, or settings.\n- Access to a service may not reveal all sources of variation, including hidden system changes or infrastructure effects.\n- Human judgments of materiality can be uncertain, especially for technical, ambiguous, or high-stakes questions.\n- Automated text-similarity measures capture wording differences imperfectly and cannot establish semantic equivalence on their own.\n- A finite set of questions and generations cannot rule out rare but consequential disagreements.\n- Controlled variation can identify effects of tested factors but may not reveal internal model mechanisms.\n- Consistency is not correctness: a model may repeat an incorrect answer consistently, or vary while remaining correct."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 190,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1716,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1906
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

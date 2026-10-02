@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "DIFFERENTIAL_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "DIFFERENTIAL",
+  "replicate": 5,
+  "run_id": "R1B-T1-DIFFERENTIAL-R05",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:27:25.743746+00:00",
+  "timestamp_utc": "2026-10-02T06:27:40.998003+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "1022829f151562620cc3c80de14b0e732dd32e71663ab85ebff491a3e456b5c0",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_084fc54e012bd11a016abf4ecd81d887d0a09cb565c0d4beb9",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 192,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1350,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1542
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive instability from ordinary wording variation.\n\nUse a differential or local-sensitivity approach: begin with a baseline prompt and vary one feature at a time by a small, controlled amount. Study a preregistered set of questions spanning relevant task types, such as factual answering, summarization, advice, and reasoning. The conclusions will apply to the tested models, settings, questions, and perturbations—not to all LLMs or possible prompts.\n\n## 2. Assumptions\n\n- A response can vary because of sampling, prompt interpretation, model or service changes, or other uncontrolled factors.\n- Repeated calls to an unchanged prompt estimate response variation under the observed service conditions, but do not by themselves reveal its cause.\n- Small, controlled prompt edits can test local sensitivity, though they cannot establish how the model responds to broad prompt reformulations.\n- “Meaningful difference” depends on the task and should be defined before examining results.\n- Human judgments may be inconsistent; raters should use explicit criteria and be blinded to prompt condition where feasible.\n\n## 3. Research design\n\n1. **Select and characterize questions.** Assemble a balanced set of questions and label each by task type, answer format, ambiguity, and consequence level. Exclude questions whose evaluation criteria cannot be specified.\n2. **Establish baselines.** For every question, elicit multiple responses using the exact same prompt and fixed model, system instructions, tools, and generation settings. Record timestamps and any available version or configuration metadata.\n3. **Apply local perturbations.** Create preregistered, minimal variants that change one feature at a time—for example, a minor wording change, clarification of an ambiguous term, requested answer format, or explicit constraint. Keep the underlying question and all other conditions fixed.\n4. **Separate sources of variation.** Repeat baseline and perturbed prompts across calls. If supported, compare fixed and stochastic generation settings; do not treat a setting change as a prompt perturbation. Randomize call order and interleave conditions to reduce confounding by temporal service changes.\n5. **Use paired comparisons.** Compare each perturbed response distribution with the baseline distribution for the same question. Include unaltered repeated prompts as a reference for ordinary run-to-run variation.\n6. **Evaluate blind.** Have independent raters assess factual content, conclusions, recommendations, omissions, and task compliance without knowing which condition produced a response. Adjudicate disagreements under a preregistered procedure.\n\n## 4. Data or evidence needed\n\n- Exact prompts, perturbation specifications, and question-level task labels.\n- Full responses and call timestamps.\n- Model identifier, version information if available, system instructions, tool access, and generation settings.\n- Repeated-call records for each baseline and perturbation condition.\n- Rater assessments against task-specific rubrics, with rater identifiers and disagreement records.\n- Where applicable, verifiable reference answers or sources, and records of whether those references were available to the model.\n\n## 5. Measurement\n\nDefine metrics before data collection and report them by question and task type.\n\n- **Surface variation:** lexical, structural, or stylistic differences, used descriptively rather than as evidence of instability.\n- **Semantic variation:** degree of difference in claims, conclusions, recommendations, or stated uncertainty, assessed with human ratings and, where suitable, validated automated measures.\n- **Task-relevant change:** change in correctness, key information, compliance, or decision implication under a task-specific rubric.\n- **Within-condition variation:** variation across repeated calls to the same prompt.\n- **Perturbation effect:** difference between responses to a minimally changed prompt and responses to the original prompt.\n- **Materiality:** a preregistered rating of whether a difference could alter a user’s understanding or action, with thresholds appropriate to the task’s consequence level.\n\nAutomated similarity measures may support screening but should not determine materiality on their own. Assess rater agreement and report uncertainty for all primary measures.\n\n## 6. Analysis\n\n- Estimate baseline within-condition variation for each question and task type.\n- Estimate the effect of each perturbation relative to that baseline, using paired or hierarchical analyses that account for repeated calls, questions, and raters.\n- Distinguish a systematic shift in the response distribution from isolated response differences. Report effect sizes and uncertainty intervals, not only significance tests.\n- Classify observed differences as primarily stylistic, semantically substantive, task-relevant, or materially consequential.\n- Test whether sensitivity varies with ambiguity, task type, perturbation type, or consequence level, while treating these as preregistered moderators.\n- Examine factual correctness and omissions separately from semantic similarity: two similarly worded answers can differ in correctness, and differently worded answers can preserve the same meaning.\n- Conduct robustness checks using alternative defensible scoring choices and excluding questions with poor rater agreement.\n- Attribute causes cautiously. If variation coincides with undocumented model or service changes, report it as a potential confound rather than evidence of prompt sensitivity.\n\n## 7. Decision / stopping rule\n\nBefore collection, specify the minimum effect considered meaningful, the acceptable uncertainty, the sampling plan, and any sequential stopping procedure. Conclude that a question shows **meaningful local instability** only when:\n\n1. the perturbation produces a task-relevant or material difference under the preregistered rubric;\n2. the difference exceeds ordinary variation observed for repeated baseline calls by the prespecified margin; and\n3. the estimated effect is sufficiently precise under the prespecified uncertainty criterion.\n\nConclude that evidence is **inconclusive** when estimates are too imprecise, ratings are unreliable, or service changes cannot be separated from the tested conditions. Stop after the planned sample or at the prespecified sequential boundary; do not stop merely because an interim result appears favorable.\n\n## 8. Limitations\n\n- Findings are limited to tested prompts, perturbations, model versions, settings, and time periods.\n- Small edits probe local sensitivity and may not represent real-world paraphrases or larger changes in context.\n- Repeated calls cannot fully identify hidden sampling, routing, or infrastructure effects when the provider does not expose them.\n- Human judgments and automated semantic measures can miss subtle but consequential differences or overstate harmless ones.\n- Reference answers may be incomplete, contested, or unavailable, especially for open-ended tasks.\n- A response difference does not by itself establish why it occurred, whether it reflects a model defect, or how frequently it will arise in deployment.",
+  "raw_response": {
+    "id": "resp_084fc54e012bd11a016abf4ecd81d887d0a09cb565c0d4beb9",
+    "object": "response",
+    "created_at": 1790922445,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922460,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_084fc54e012bd11a016abf4ecdf9c887d09ccc304d12c4d0b6",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in ways that matter, identify conditions associated with those differences, and distinguish substantive instability from ordinary wording variation.\n\nUse a differential or local-sensitivity approach: begin with a baseline prompt and vary one feature at a time by a small, controlled amount. Study a preregistered set of questions spanning relevant task types, such as factual answering, summarization, advice, and reasoning. The conclusions will apply to the tested models, settings, questions, and perturbations—not to all LLMs or possible prompts.\n\n## 2. Assumptions\n\n- A response can vary because of sampling, prompt interpretation, model or service changes, or other uncontrolled factors.\n- Repeated calls to an unchanged prompt estimate response variation under the observed service conditions, but do not by themselves reveal its cause.\n- Small, controlled prompt edits can test local sensitivity, though they cannot establish how the model responds to broad prompt reformulations.\n- “Meaningful difference” depends on the task and should be defined before examining results.\n- Human judgments may be inconsistent; raters should use explicit criteria and be blinded to prompt condition where feasible.\n\n## 3. Research design\n\n1. **Select and characterize questions.** Assemble a balanced set of questions and label each by task type, answer format, ambiguity, and consequence level. Exclude questions whose evaluation criteria cannot be specified.\n2. **Establish baselines.** For every question, elicit multiple responses using the exact same prompt and fixed model, system instructions, tools, and generation settings. Record timestamps and any available version or configuration metadata.\n3. **Apply local perturbations.** Create preregistered, minimal variants that change one feature at a time—for example, a minor wording change, clarification of an ambiguous term, requested answer format, or explicit constraint. Keep the underlying question and all other conditions fixed.\n4. **Separate sources of variation.** Repeat baseline and perturbed prompts across calls. If supported, compare fixed and stochastic generation settings; do not treat a setting change as a prompt perturbation. Randomize call order and interleave conditions to reduce confounding by temporal service changes.\n5. **Use paired comparisons.** Compare each perturbed response distribution with the baseline distribution for the same question. Include unaltered repeated prompts as a reference for ordinary run-to-run variation.\n6. **Evaluate blind.** Have independent raters assess factual content, conclusions, recommendations, omissions, and task compliance without knowing which condition produced a response. Adjudicate disagreements under a preregistered procedure.\n\n## 4. Data or evidence needed\n\n- Exact prompts, perturbation specifications, and question-level task labels.\n- Full responses and call timestamps.\n- Model identifier, version information if available, system instructions, tool access, and generation settings.\n- Repeated-call records for each baseline and perturbation condition.\n- Rater assessments against task-specific rubrics, with rater identifiers and disagreement records.\n- Where applicable, verifiable reference answers or sources, and records of whether those references were available to the model.\n\n## 5. Measurement\n\nDefine metrics before data collection and report them by question and task type.\n\n- **Surface variation:** lexical, structural, or stylistic differences, used descriptively rather than as evidence of instability.\n- **Semantic variation:** degree of difference in claims, conclusions, recommendations, or stated uncertainty, assessed with human ratings and, where suitable, validated automated measures.\n- **Task-relevant change:** change in correctness, key information, compliance, or decision implication under a task-specific rubric.\n- **Within-condition variation:** variation across repeated calls to the same prompt.\n- **Perturbation effect:** difference between responses to a minimally changed prompt and responses to the original prompt.\n- **Materiality:** a preregistered rating of whether a difference could alter a user’s understanding or action, with thresholds appropriate to the task’s consequence level.\n\nAutomated similarity measures may support screening but should not determine materiality on their own. Assess rater agreement and report uncertainty for all primary measures.\n\n## 6. Analysis\n\n- Estimate baseline within-condition variation for each question and task type.\n- Estimate the effect of each perturbation relative to that baseline, using paired or hierarchical analyses that account for repeated calls, questions, and raters.\n- Distinguish a systematic shift in the response distribution from isolated response differences. Report effect sizes and uncertainty intervals, not only significance tests.\n- Classify observed differences as primarily stylistic, semantically substantive, task-relevant, or materially consequential.\n- Test whether sensitivity varies with ambiguity, task type, perturbation type, or consequence level, while treating these as preregistered moderators.\n- Examine factual correctness and omissions separately from semantic similarity: two similarly worded answers can differ in correctness, and differently worded answers can preserve the same meaning.\n- Conduct robustness checks using alternative defensible scoring choices and excluding questions with poor rater agreement.\n- Attribute causes cautiously. If variation coincides with undocumented model or service changes, report it as a potential confound rather than evidence of prompt sensitivity.\n\n## 7. Decision / stopping rule\n\nBefore collection, specify the minimum effect considered meaningful, the acceptable uncertainty, the sampling plan, and any sequential stopping procedure. Conclude that a question shows **meaningful local instability** only when:\n\n1. the perturbation produces a task-relevant or material difference under the preregistered rubric;\n2. the difference exceeds ordinary variation observed for repeated baseline calls by the prespecified margin; and\n3. the estimated effect is sufficiently precise under the prespecified uncertainty criterion.\n\nConclude that evidence is **inconclusive** when estimates are too imprecise, ratings are unreliable, or service changes cannot be separated from the tested conditions. Stop after the planned sample or at the prespecified sequential boundary; do not stop merely because an interim result appears favorable.\n\n## 8. Limitations\n\n- Findings are limited to tested prompts, perturbations, model versions, settings, and time periods.\n- Small edits probe local sensitivity and may not represent real-world paraphrases or larger changes in context.\n- Repeated calls cannot fully identify hidden sampling, routing, or infrastructure effects when the provider does not expose them.\n- Human judgments and automated semantic measures can miss subtle but consequential differences or overstate harmless ones.\n- Reference answers may be incomplete, contested, or unavailable, especially for open-ended tasks.\n- A response difference does not by itself establish why it occurred, whether it reflects a model defect, or how frequently it will arise in deployment."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 192,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1350,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1542
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

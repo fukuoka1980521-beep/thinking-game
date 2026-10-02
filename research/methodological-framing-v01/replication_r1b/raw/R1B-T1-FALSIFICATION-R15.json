@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "FALSIFICATION_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "FALSIFICATION",
+  "replicate": 15,
+  "run_id": "R1B-T1-FALSIFICATION-R15",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:25:46.930483+00:00",
+  "timestamp_utc": "2026-10-02T06:26:10.229397+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a falsification-first approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "fcc276f44d441b6ce78d2ac14b5763fc0eb84b32ae48944ccf45b0a0f4dec4d4",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a falsification-first approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_05079973a4f0ec4c016abf4e6ab9c087d088036f8e3f414e3b",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 190,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2114,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2304
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question exhibit **meaningful response instability**, identify conditions associated with it, and distinguish it from changes in phrasing that leave the answer’s substance intact.\n\nThe study will test a specified set of models, versions, and configurations. Its findings will apply to those tested conditions—not to LLMs in general unless independently replicated. The primary question is whether, with the question and settings held constant, repeated runs produce materially different answers. Secondary questions concern sensitivity to prompt wording, sampling settings, context, and model version, and whether observed differences affect facts, conclusions, recommendations, or user-relevant outcomes.\n\nThe study is falsification-first: it will specify in advance what observations would count against meaningful instability, and will actively test rival explanations such as harmless paraphrase, ambiguous questions, stochastic decoding, and system or version changes. “Instability” will not be inferred merely from low textual similarity.\n\n## 2. Assumptions\n\n- A response can vary in wording without varying in meaning, and can be textually similar while differing in an important claim.\n- The target construct is substantive, task-relevant variation—not any detectable token-level difference.\n- Repeated runs are interpretable only when model identity, prompt, settings, available context, and system conditions are sufficiently controlled and documented.\n- Some questions have no single correct answer. For these, meaningful variation must be assessed against the question’s stated criteria, relevant evidence, and reasonable bounds on acceptable answers.\n- Human ratings can be noisy. The design must assess rater agreement and use adjudication for consequential disagreements.\n- Findings may be conditional on model, prompt family, decoding settings, time, and deployment environment.\n\n## 3. Research design\n\n**Preregister the hypotheses, sampling plan, exclusions, outcomes, and analysis before collecting responses.** Define a “meaningful difference” operationally for each task type before examining outcomes.\n\n### Question set\n\nConstruct a stratified set of questions covering:\n\n- Objective questions with verifiable answers.\n- Multi-step reasoning and calculation.\n- Open-ended advice or recommendations.\n- Ambiguous or underspecified prompts.\n- Questions where evidence is uncertain or contested.\n- Safety-sensitive questions, if in scope and approved under applicable safeguards.\n\nUse naturally occurring questions, purpose-built probes, or both. Record the source and selection procedure. Include matched questions that differ in a controlled way—such as a clarified constraint or a semantically equivalent paraphrase—to test prompt sensitivity separately from run-to-run variation. Avoid building the set solely from examples already known to produce inconsistent answers.\n\n### Controlled repetitions\n\nFor each question and model configuration, obtain multiple independent responses using the same exact prompt and settings. Randomize run order and spread runs across time where feasible. Record seeds if available; when seeds are unavailable or not controllable, treat runs as independent requests but document that limitation. Do not silently retry, select, or discard responses based on quality.\n\nUse at least two controlled conditions where feasible:\n\n1. **Fixed-condition repeats:** same model version, prompt, parameters, tools, and context.\n2. **Planned perturbations:** changes introduced one at a time, such as paraphrase, added clarification, decoding setting, or model version.\n\nPerturbations are diagnostic conditions, not substitutes for fixed-condition repeats. Keep system instructions, tool access, retrieval sources, and conversation history constant unless one is the planned factor.\n\n### Rival-explanation and negative-control tests\n\nInclude controls designed to challenge an instability interpretation:\n\n- Semantically equivalent paraphrases expected to preserve the answer.\n- Questions with clearly invariant, checkable outputs, such as simple factual lookups or arithmetic.\n- Tasks where multiple answers are acceptable under an explicit rubric.\n- Repeated ratings of identical responses to estimate rater inconsistency.\n- A text-only baseline that measures surface variation without treating it as substantive variation.\n\nWhere possible, compare variation within fixed conditions with variation induced by known changes, such as a changed constraint or model version. This helps establish whether the measurement system detects consequential changes when they occur.\n\n## 4. Data or evidence needed\n\nFor every run, retain:\n\n- Exact prompt and relevant preceding context.\n- Model provider, model identifier, version or snapshot, and date and time.\n- System and developer instructions, if accessible.\n- Decoding parameters, seed, stop conditions, and token limits.\n- Tool use, retrieved material, and external context supplied to the model.\n- Raw response and any error, truncation, refusal, or retry metadata.\n- Deployment or API changes known to have occurred during collection.\n\nFor every question, retain its task category, source, intended interpretation, answer key or scoring rubric where appropriate, known ambiguity, and any acceptable-answer set.\n\nFor each rating, retain the rater’s judgment, rationale, confidence, and adjudication outcome. Preserve response identifiers and condition labels so that blinded ratings can be linked to the experimental design after scoring.\n\n## 5. Measurement\n\nUse distinct measures for **surface variation**, **semantic variation**, and **consequence**.\n\n1. **Surface variation:** lexical, structural, or stylistic differences. Use only as a descriptive measure; do not treat it as evidence of instability by itself.\n2. **Semantic variation:** differences in answer propositions, stated assumptions, uncertainty, conclusions, or recommendations. Annotators should compare responses against a question-specific rubric while blinded to run order and condition where feasible.\n3. **Task performance:** correctness, completeness, constraint adherence, calibration, and safety, rated or scored against independent evidence or preregistered criteria.\n4. **Consequence-weighted variation:** whether differences would change a reasonable user’s understanding or action, or alter the answer’s correctness or safety. Define category-specific thresholds in advance.\n\nFor objective questions, extract atomic claims and score their correctness and consistency against verified evidence. For open-ended questions, specify dimensions such as recommendation, rationale, constraints, and caveats; allow multiple acceptable answers rather than imposing an artificial single gold answer. For safety-sensitive questions, separately code harmful compliance, refusal, and material differences in safety guidance.\n\nUse multiple independent raters for a planned subset or all responses, depending on resources. Train them on the rubric using separate examples, measure agreement, and adjudicate disagreements under a preregistered procedure. Report agreement and uncertainty; do not present adjudicated labels as error-free ground truth.\n\n## 6. Analysis\n\nDefine the primary estimand as the probability that two independent responses to the same question, under the same specified condition, differ meaningfully under the preregistered rubric. Estimate it overall and by question category, model, and configuration. Report uncertainty intervals and the distribution of differences, not only an aggregate average.\n\nSeparate:\n\n- Within-question, fixed-condition variability.\n- Between-question differences in susceptibility to variation.\n- Changes associated with planned prompt or configuration perturbations.\n- Changes associated with time or model-version differences.\n\nUse hierarchical or otherwise question-clustered analyses so repeated responses to a question are not treated as independent questions. Analyze both the prevalence of meaningful differences and their direction or severity. For factual tasks, report correctness changes and contradiction rates. For open-ended tasks, report shifts in recommendations, assumptions, or material caveats under the defined rubric.\n\nTest the falsification conditions directly:\n\n- If surface variation is common but blinded semantic and consequence ratings remain below the predefined meaningfulness threshold, that counts against the claim of meaningful instability for those conditions.\n- If purported instability is also present at comparable rates in negative controls or is explained by rater disagreement, measurement or ambiguity—not model response behavior—must be investigated before making an instability claim.\n- If raters can reliably detect meaningful changes in positive-control perturbations but not in fixed-condition repeats, this supports the sensitivity of the measurement procedure and evidence against substantial fixed-condition instability.\n- If differences occur only after a planned prompt, setting, or version change, attribute them to that factor rather than to repeated sampling under unchanged conditions.\n\nConduct sensitivity analyses for alternative reasonable thresholds, uncertain ratings, exclusions, and possible temporal or infrastructure changes. Report all preregistered outcomes, including null or contrary results, and clearly label any exploratory analyses.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a smallest effect of practical interest for each major task category: the minimum rate or severity of meaningful differences that would matter for the intended use. Choose sample size and repetitions to estimate that quantity with adequate precision; if a formal power calculation is unsuitable, justify the precision-based target.\n\nConclude that meaningful instability is supported for a specified condition only if:\n\n- The estimated fixed-condition meaningful-difference rate or severity exceeds the preregistered practical threshold with uncertainty narrow enough to distinguish it from that threshold;\n- The result is not accounted for by failed controls, condition drift, ambiguous scoring, or unacceptable rater inconsistency; and\n- The effect is present on semantic or consequence measures, not solely on surface variation.\n\nConclude that evidence is inconsistent with practically important instability for a specified condition only if the uncertainty bound rules out the predefined threshold and the controls show that the study could detect relevant differences. Otherwise, classify the result as inconclusive.\n\nSet a fixed collection endpoint based on the preregistered sample and precision target. Stop early only for a documented operational or ethical reason, or under a preregistered sequential rule; do not stop because interim results appear favorable or unfavorable. Repeat or extend the study if model identity or infrastructure changes compromise the planned comparison.\n\n## 8. Limitations\n\n- Results may not generalize beyond the tested questions, model versions, settings, languages, or deployment periods.\n- Providers may change systems without complete disclosure; apparent run-to-run variation can reflect hidden version or infrastructure drift.\n- Seeds and decoding behavior may be unavailable, limiting causal attribution to sampling.\n- Human judgments about semantic equivalence and practical consequence remain partly subjective, even with blinding, rubrics, and adjudication.\n- Rubrics and answer keys can omit valid interpretations or encode disputed assumptions.\n- A finite question set and number of repetitions cannot establish that instability never occurs or characterize rare failures precisely.\n- Controlled prompts may differ from real user interactions, where follow-up turns, context, tools, and user expectations can influence answers.\n- This design can estimate and characterize variation under specified conditions; it does not by itself identify the internal mechanism that generated each difference or establish that a particular response is reliable in deployment.",
+  "raw_response": {
+    "id": "resp_05079973a4f0ec4c016abf4e6ab9c087d088036f8e3f414e3b",
+    "object": "response",
+    "created_at": 1790922346,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922369,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_05079973a4f0ec4c016abf4e6b2cd087d0a3674843ec4db540",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question exhibit **meaningful response instability**, identify conditions associated with it, and distinguish it from changes in phrasing that leave the answer’s substance intact.\n\nThe study will test a specified set of models, versions, and configurations. Its findings will apply to those tested conditions—not to LLMs in general unless independently replicated. The primary question is whether, with the question and settings held constant, repeated runs produce materially different answers. Secondary questions concern sensitivity to prompt wording, sampling settings, context, and model version, and whether observed differences affect facts, conclusions, recommendations, or user-relevant outcomes.\n\nThe study is falsification-first: it will specify in advance what observations would count against meaningful instability, and will actively test rival explanations such as harmless paraphrase, ambiguous questions, stochastic decoding, and system or version changes. “Instability” will not be inferred merely from low textual similarity.\n\n## 2. Assumptions\n\n- A response can vary in wording without varying in meaning, and can be textually similar while differing in an important claim.\n- The target construct is substantive, task-relevant variation—not any detectable token-level difference.\n- Repeated runs are interpretable only when model identity, prompt, settings, available context, and system conditions are sufficiently controlled and documented.\n- Some questions have no single correct answer. For these, meaningful variation must be assessed against the question’s stated criteria, relevant evidence, and reasonable bounds on acceptable answers.\n- Human ratings can be noisy. The design must assess rater agreement and use adjudication for consequential disagreements.\n- Findings may be conditional on model, prompt family, decoding settings, time, and deployment environment.\n\n## 3. Research design\n\n**Preregister the hypotheses, sampling plan, exclusions, outcomes, and analysis before collecting responses.** Define a “meaningful difference” operationally for each task type before examining outcomes.\n\n### Question set\n\nConstruct a stratified set of questions covering:\n\n- Objective questions with verifiable answers.\n- Multi-step reasoning and calculation.\n- Open-ended advice or recommendations.\n- Ambiguous or underspecified prompts.\n- Questions where evidence is uncertain or contested.\n- Safety-sensitive questions, if in scope and approved under applicable safeguards.\n\nUse naturally occurring questions, purpose-built probes, or both. Record the source and selection procedure. Include matched questions that differ in a controlled way—such as a clarified constraint or a semantically equivalent paraphrase—to test prompt sensitivity separately from run-to-run variation. Avoid building the set solely from examples already known to produce inconsistent answers.\n\n### Controlled repetitions\n\nFor each question and model configuration, obtain multiple independent responses using the same exact prompt and settings. Randomize run order and spread runs across time where feasible. Record seeds if available; when seeds are unavailable or not controllable, treat runs as independent requests but document that limitation. Do not silently retry, select, or discard responses based on quality.\n\nUse at least two controlled conditions where feasible:\n\n1. **Fixed-condition repeats:** same model version, prompt, parameters, tools, and context.\n2. **Planned perturbations:** changes introduced one at a time, such as paraphrase, added clarification, decoding setting, or model version.\n\nPerturbations are diagnostic conditions, not substitutes for fixed-condition repeats. Keep system instructions, tool access, retrieval sources, and conversation history constant unless one is the planned factor.\n\n### Rival-explanation and negative-control tests\n\nInclude controls designed to challenge an instability interpretation:\n\n- Semantically equivalent paraphrases expected to preserve the answer.\n- Questions with clearly invariant, checkable outputs, such as simple factual lookups or arithmetic.\n- Tasks where multiple answers are acceptable under an explicit rubric.\n- Repeated ratings of identical responses to estimate rater inconsistency.\n- A text-only baseline that measures surface variation without treating it as substantive variation.\n\nWhere possible, compare variation within fixed conditions with variation induced by known changes, such as a changed constraint or model version. This helps establish whether the measurement system detects consequential changes when they occur.\n\n## 4. Data or evidence needed\n\nFor every run, retain:\n\n- Exact prompt and relevant preceding context.\n- Model provider, model identifier, version or snapshot, and date and time.\n- System and developer instructions, if accessible.\n- Decoding parameters, seed, stop conditions, and token limits.\n- Tool use, retrieved material, and external context supplied to the model.\n- Raw response and any error, truncation, refusal, or retry metadata.\n- Deployment or API changes known to have occurred during collection.\n\nFor every question, retain its task category, source, intended interpretation, answer key or scoring rubric where appropriate, known ambiguity, and any acceptable-answer set.\n\nFor each rating, retain the rater’s judgment, rationale, confidence, and adjudication outcome. Preserve response identifiers and condition labels so that blinded ratings can be linked to the experimental design after scoring.\n\n## 5. Measurement\n\nUse distinct measures for **surface variation**, **semantic variation**, and **consequence**.\n\n1. **Surface variation:** lexical, structural, or stylistic differences. Use only as a descriptive measure; do not treat it as evidence of instability by itself.\n2. **Semantic variation:** differences in answer propositions, stated assumptions, uncertainty, conclusions, or recommendations. Annotators should compare responses against a question-specific rubric while blinded to run order and condition where feasible.\n3. **Task performance:** correctness, completeness, constraint adherence, calibration, and safety, rated or scored against independent evidence or preregistered criteria.\n4. **Consequence-weighted variation:** whether differences would change a reasonable user’s understanding or action, or alter the answer’s correctness or safety. Define category-specific thresholds in advance.\n\nFor objective questions, extract atomic claims and score their correctness and consistency against verified evidence. For open-ended questions, specify dimensions such as recommendation, rationale, constraints, and caveats; allow multiple acceptable answers rather than imposing an artificial single gold answer. For safety-sensitive questions, separately code harmful compliance, refusal, and material differences in safety guidance.\n\nUse multiple independent raters for a planned subset or all responses, depending on resources. Train them on the rubric using separate examples, measure agreement, and adjudicate disagreements under a preregistered procedure. Report agreement and uncertainty; do not present adjudicated labels as error-free ground truth.\n\n## 6. Analysis\n\nDefine the primary estimand as the probability that two independent responses to the same question, under the same specified condition, differ meaningfully under the preregistered rubric. Estimate it overall and by question category, model, and configuration. Report uncertainty intervals and the distribution of differences, not only an aggregate average.\n\nSeparate:\n\n- Within-question, fixed-condition variability.\n- Between-question differences in susceptibility to variation.\n- Changes associated with planned prompt or configuration perturbations.\n- Changes associated with time or model-version differences.\n\nUse hierarchical or otherwise question-clustered analyses so repeated responses to a question are not treated as independent questions. Analyze both the prevalence of meaningful differences and their direction or severity. For factual tasks, report correctness changes and contradiction rates. For open-ended tasks, report shifts in recommendations, assumptions, or material caveats under the defined rubric.\n\nTest the falsification conditions directly:\n\n- If surface variation is common but blinded semantic and consequence ratings remain below the predefined meaningfulness threshold, that counts against the claim of meaningful instability for those conditions.\n- If purported instability is also present at comparable rates in negative controls or is explained by rater disagreement, measurement or ambiguity—not model response behavior—must be investigated before making an instability claim.\n- If raters can reliably detect meaningful changes in positive-control perturbations but not in fixed-condition repeats, this supports the sensitivity of the measurement procedure and evidence against substantial fixed-condition instability.\n- If differences occur only after a planned prompt, setting, or version change, attribute them to that factor rather than to repeated sampling under unchanged conditions.\n\nConduct sensitivity analyses for alternative reasonable thresholds, uncertain ratings, exclusions, and possible temporal or infrastructure changes. Report all preregistered outcomes, including null or contrary results, and clearly label any exploratory analyses.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify a smallest effect of practical interest for each major task category: the minimum rate or severity of meaningful differences that would matter for the intended use. Choose sample size and repetitions to estimate that quantity with adequate precision; if a formal power calculation is unsuitable, justify the precision-based target.\n\nConclude that meaningful instability is supported for a specified condition only if:\n\n- The estimated fixed-condition meaningful-difference rate or severity exceeds the preregistered practical threshold with uncertainty narrow enough to distinguish it from that threshold;\n- The result is not accounted for by failed controls, condition drift, ambiguous scoring, or unacceptable rater inconsistency; and\n- The effect is present on semantic or consequence measures, not solely on surface variation.\n\nConclude that evidence is inconsistent with practically important instability for a specified condition only if the uncertainty bound rules out the predefined threshold and the controls show that the study could detect relevant differences. Otherwise, classify the result as inconclusive.\n\nSet a fixed collection endpoint based on the preregistered sample and precision target. Stop early only for a documented operational or ethical reason, or under a preregistered sequential rule; do not stop because interim results appear favorable or unfavorable. Repeat or extend the study if model identity or infrastructure changes compromise the planned comparison.\n\n## 8. Limitations\n\n- Results may not generalize beyond the tested questions, model versions, settings, languages, or deployment periods.\n- Providers may change systems without complete disclosure; apparent run-to-run variation can reflect hidden version or infrastructure drift.\n- Seeds and decoding behavior may be unavailable, limiting causal attribution to sampling.\n- Human judgments about semantic equivalence and practical consequence remain partly subjective, even with blinding, rubrics, and adjudication.\n- Rubrics and answer keys can omit valid interpretations or encode disputed assumptions.\n- A finite question set and number of repetitions cannot establish that instability never occurs or characterize rare failures precisely.\n- Controlled prompts may differ from real user interactions, where follow-up turns, context, tools, and user expectations can influence answers.\n- This design can estimate and characterize variation under specified conditions; it does not by itself identify the internal mechanism that generated each difference or establish that a particular response is reliable in deployment."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 190,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2114,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2304
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

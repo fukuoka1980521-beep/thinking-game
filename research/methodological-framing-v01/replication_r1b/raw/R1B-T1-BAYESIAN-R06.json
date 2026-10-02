@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "BAYESIAN_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "BAYESIAN",
+  "replicate": 6,
+  "run_id": "R1B-T1-BAYESIAN-R06",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:19:19.539351+00:00",
+  "timestamp_utc": "2026-10-02T06:19:40.041359+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "bd960c9b78dbae4b84e1a72dd7bccf72701810ed8a3acbc5b0b61f61f649af41",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0394f6da0b509bf5016abf4ce754a887d0b38b60bf78b4a651",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 188,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1724,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1912
+  },
+  "raw_text": "## 1. Objective and scope\n\nEstimate how often an unchanged question elicits materially different responses from the same large language model (LLM), identify conditions associated with those differences, and distinguish substantive instability from harmless variation in wording, organization, or style.\n\nThe primary unit of analysis is a response to a particular question under a specified model configuration. The study will examine both:\n\n- **Repeatability:** variation when the same question is submitted repeatedly under identical recorded conditions.\n- **Sensitivity:** variation when a single, controlled aspect of the prompt or generation setup changes.\n\nThe study will not treat all response differences as failures. It will distinguish differences in factual claims, conclusions, recommendations, reasoning, and safety behavior from surface-level variation. Findings will be limited to the models, questions, and configurations sampled.\n\n## 2. Assumptions\n\n- Model outputs may vary because of sampling, hidden or changing system conditions, model updates, prompt interpretation, or interactions among these factors.\n- A model’s version, configuration, and accessible system instructions can be recorded, but some serving infrastructure or hidden instructions may remain unobserved.\n- “Meaningful difference” is domain-dependent. It must therefore be operationalized before responses are reviewed and assessed by qualified evaluators.\n- Questions should be classified by domain and risk, since the consequences of inconsistent answers differ between, for example, creative writing and medical guidance.\n- Bayesian estimates depend on the stated likelihoods, priors, and sampling design. Sensitivity analyses will assess how conclusions change under reasonable alternatives.\n- The target is empirical variation in observed outputs, not a claim about the model’s internal mental states or intentions.\n\n## 3. Research design\n\n### Sampling frame\n\nConstruct a stratified set of questions covering several domains, such as factual knowledge, explanation, summarization, advice, reasoning, and safety-sensitive requests. Include questions that vary in ambiguity, complexity, answerability, and stakes. Sample questions using a documented procedure, and preserve the exact wording and any contextual material.\n\nBefore collecting responses, define the model configurations to be studied. Record the accessible model identifier or version, date and time, system and developer instructions where available, tool access, decoding parameters, and any other controllable settings. Keep these fixed for repeatability trials.\n\n### Repeated-response design\n\nSubmit each unchanged question multiple times to the same model under the same recorded configuration. Randomize submission order, interleave questions where practical, and repeat a subset at different times to detect temporal or service-related changes. If possible, distinguish independent sessions from repeated turns within one session.\n\n### Controlled sensitivity design\n\nFor selected questions, create prespecified variants that alter one factor at a time, such as:\n\n- minor wording or formatting changes;\n- explicit versus implicit constraints;\n- a relevant contextual detail;\n- instruction order;\n- generation settings, where controllable.\n\nRetain the original question as a control. Avoid treating paraphrases as identical-question repeats: analyze them as a separate sensitivity condition. Include matched variants that should not change the correct answer, as well as variants deliberately expected to change it.\n\n### Blinded assessment\n\nRemove identifiers indicating trial condition and randomize response presentation. Evaluators should judge responses using question-specific rubrics established before seeing the outputs. Use multiple independent evaluators, especially for high-stakes or interpretive items. Resolve or model evaluator disagreement rather than assuming one rating is definitive.\n\n## 4. Data or evidence needed\n\nFor each trial, retain:\n\n- exact question, conversation context, and prompt condition;\n- model identifier or version and collection timestamp;\n- accessible system instructions and generation settings;\n- response text and any refusal, tool-use, or formatting indicators;\n- trial order, session identifier, and relevant service errors;\n- independently assigned response labels and evaluator confidence.\n\nFor each question, prepare an answer key or evaluation rubric where feasible. It should identify essential claims, acceptable alternatives, uncertainty requirements, and foreseeable unsafe or unsupported recommendations. For open-ended items without a single correct answer, define criteria for material agreement in advance.\n\nCollect evaluator judgments on both **semantic dimensions**—such as factual claims, conclusion, recommendation, and safety—and **surface dimensions**—such as wording, tone, and organization. Preserve disagreement and confidence scores for analysis.\n\n## 5. Measurement\n\nPre-register a hierarchy of outcomes.\n\n### Primary outcome: substantive instability\n\nFor repeated responses to the same question, classify whether any pair differs materially on at least one prespecified consequential dimension:\n\n- correctness or central factual claims;\n- answer or conclusion;\n- recommendation or action guidance;\n- key reasoning or stated uncertainty;\n- refusal, compliance, or safety behavior.\n\nSpecify question-specific thresholds for materiality. A difference counts only if it could plausibly alter a reader’s understanding, decision, or assessment of safety—not merely because evaluators prefer one phrasing.\n\n### Secondary outcomes\n\nMeasure:\n\n- semantic agreement across responses, using blinded human ratings and, if used, calibrated automated measures;\n- rate and type of factual error or unsupported assertion;\n- consistency of uncertainty and confidence language;\n- refusal and policy-relevant behavior;\n- surface variation in wording, length, tone, or structure.\n\nAutomated similarity measures should not define meaningful change on their own. Validate them against human judgments on a sampled subset, and report their limitations.\n\n### Evaluator reliability\n\nEstimate inter-rater agreement and disagreement by outcome type and domain. Use adjudication for descriptive reporting where needed, but retain original ratings in the statistical model so that uncertainty in judgment is not hidden.\n\n## 6. Analysis\n\nUse a Bayesian hierarchical model to estimate substantive-instability rates while accounting for variation among questions, domains, conditions, and evaluators.\n\nFor example, model the probability of a materially different response as a function of repeat condition and prespecified question characteristics, with varying effects for question and domain. Include evaluator-level effects or a measurement-error component for ratings. Report posterior distributions, not just point estimates, including credible intervals for overall and subgroup rates.\n\nAnalyze controlled prompt changes separately from unchanged-question repeats. Estimate how much variation is associated with repeated sampling under fixed conditions versus specific prompt or configuration changes. Where enough observations support it, examine interactions—for example, whether ambiguity is associated with greater instability in advice than in factual questions.\n\nUse priors justified before analysis. For rate parameters, use weakly informative priors and conduct sensitivity analyses with more skeptical and more diffuse alternatives. For subgroup comparisons, use partial pooling to avoid overinterpreting small samples. Report posterior predictive checks and assess whether model fit is adequate for the observed frequency and clustering of disagreements.\n\nPresent results at multiple levels:\n\n1. overall probability that a repeated response differs materially;\n2. domain- and risk-specific probabilities;\n3. probability of changes to each substantive dimension;\n4. contrast between substantive and surface-only variation;\n5. sensitivity to prompt, configuration, and collection time.\n\nAvoid interpreting observational associations as causes unless the relevant factor was experimentally manipulated and other conditions were held fixed.\n\n## 7. Decision / stopping rule\n\nSet sample sizes and stopping criteria before collecting responses, based on the precision required for the primary outcome and anticipated clustering by question. Do not stop early merely because an interim result is favorable or unfavorable.\n\nA decision threshold should reflect the intended use. For example, define in advance a maximum tolerable posterior probability of substantive instability for a specified domain and risk level. Conclude that instability is **materially concerning** only if the posterior probability that the rate exceeds that threshold is sufficiently high; conclude that it is **below the threshold** only if the posterior probability that it does not exceed the threshold is sufficiently high. Otherwise, report the result as inconclusive and identify what additional evidence would reduce uncertainty.\n\nSpecify separate thresholds for high-stakes and low-stakes applications. Report estimates and uncertainty even when no decision threshold is crossed.\n\n## 8. Limitations\n\n- Results may not generalize beyond the sampled questions, domains, model versions, dates, or configurations.\n- Hidden system prompts, backend changes, routing, and infrastructure behavior may not be observable or controllable.\n- Operational definitions of materiality and evaluator rubrics involve judgment, particularly for open-ended responses and complex advice.\n- Automated semantic measures can miss consequential distinctions or overstate differences; human evaluations also have limitations and disagreement.\n- Repeated submissions may not be statistically independent, especially within sessions or during short collection windows.\n- Controlled prompt variants reveal sensitivity to the tested changes, not all possible causes of response variation.\n- Bayesian conclusions can be influenced by prior choices when the evidence is sparse; sensitivity analyses and transparent reporting are therefore essential.\n",
+  "raw_response": {
+    "id": "resp_0394f6da0b509bf5016abf4ce754a887d0b38b60bf78b4a651",
+    "object": "response",
+    "created_at": 1790921959,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790921979,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0394f6da0b509bf5016abf4ce7b6e487d0b54aa40ba403f472",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nEstimate how often an unchanged question elicits materially different responses from the same large language model (LLM), identify conditions associated with those differences, and distinguish substantive instability from harmless variation in wording, organization, or style.\n\nThe primary unit of analysis is a response to a particular question under a specified model configuration. The study will examine both:\n\n- **Repeatability:** variation when the same question is submitted repeatedly under identical recorded conditions.\n- **Sensitivity:** variation when a single, controlled aspect of the prompt or generation setup changes.\n\nThe study will not treat all response differences as failures. It will distinguish differences in factual claims, conclusions, recommendations, reasoning, and safety behavior from surface-level variation. Findings will be limited to the models, questions, and configurations sampled.\n\n## 2. Assumptions\n\n- Model outputs may vary because of sampling, hidden or changing system conditions, model updates, prompt interpretation, or interactions among these factors.\n- A model’s version, configuration, and accessible system instructions can be recorded, but some serving infrastructure or hidden instructions may remain unobserved.\n- “Meaningful difference” is domain-dependent. It must therefore be operationalized before responses are reviewed and assessed by qualified evaluators.\n- Questions should be classified by domain and risk, since the consequences of inconsistent answers differ between, for example, creative writing and medical guidance.\n- Bayesian estimates depend on the stated likelihoods, priors, and sampling design. Sensitivity analyses will assess how conclusions change under reasonable alternatives.\n- The target is empirical variation in observed outputs, not a claim about the model’s internal mental states or intentions.\n\n## 3. Research design\n\n### Sampling frame\n\nConstruct a stratified set of questions covering several domains, such as factual knowledge, explanation, summarization, advice, reasoning, and safety-sensitive requests. Include questions that vary in ambiguity, complexity, answerability, and stakes. Sample questions using a documented procedure, and preserve the exact wording and any contextual material.\n\nBefore collecting responses, define the model configurations to be studied. Record the accessible model identifier or version, date and time, system and developer instructions where available, tool access, decoding parameters, and any other controllable settings. Keep these fixed for repeatability trials.\n\n### Repeated-response design\n\nSubmit each unchanged question multiple times to the same model under the same recorded configuration. Randomize submission order, interleave questions where practical, and repeat a subset at different times to detect temporal or service-related changes. If possible, distinguish independent sessions from repeated turns within one session.\n\n### Controlled sensitivity design\n\nFor selected questions, create prespecified variants that alter one factor at a time, such as:\n\n- minor wording or formatting changes;\n- explicit versus implicit constraints;\n- a relevant contextual detail;\n- instruction order;\n- generation settings, where controllable.\n\nRetain the original question as a control. Avoid treating paraphrases as identical-question repeats: analyze them as a separate sensitivity condition. Include matched variants that should not change the correct answer, as well as variants deliberately expected to change it.\n\n### Blinded assessment\n\nRemove identifiers indicating trial condition and randomize response presentation. Evaluators should judge responses using question-specific rubrics established before seeing the outputs. Use multiple independent evaluators, especially for high-stakes or interpretive items. Resolve or model evaluator disagreement rather than assuming one rating is definitive.\n\n## 4. Data or evidence needed\n\nFor each trial, retain:\n\n- exact question, conversation context, and prompt condition;\n- model identifier or version and collection timestamp;\n- accessible system instructions and generation settings;\n- response text and any refusal, tool-use, or formatting indicators;\n- trial order, session identifier, and relevant service errors;\n- independently assigned response labels and evaluator confidence.\n\nFor each question, prepare an answer key or evaluation rubric where feasible. It should identify essential claims, acceptable alternatives, uncertainty requirements, and foreseeable unsafe or unsupported recommendations. For open-ended items without a single correct answer, define criteria for material agreement in advance.\n\nCollect evaluator judgments on both **semantic dimensions**—such as factual claims, conclusion, recommendation, and safety—and **surface dimensions**—such as wording, tone, and organization. Preserve disagreement and confidence scores for analysis.\n\n## 5. Measurement\n\nPre-register a hierarchy of outcomes.\n\n### Primary outcome: substantive instability\n\nFor repeated responses to the same question, classify whether any pair differs materially on at least one prespecified consequential dimension:\n\n- correctness or central factual claims;\n- answer or conclusion;\n- recommendation or action guidance;\n- key reasoning or stated uncertainty;\n- refusal, compliance, or safety behavior.\n\nSpecify question-specific thresholds for materiality. A difference counts only if it could plausibly alter a reader’s understanding, decision, or assessment of safety—not merely because evaluators prefer one phrasing.\n\n### Secondary outcomes\n\nMeasure:\n\n- semantic agreement across responses, using blinded human ratings and, if used, calibrated automated measures;\n- rate and type of factual error or unsupported assertion;\n- consistency of uncertainty and confidence language;\n- refusal and policy-relevant behavior;\n- surface variation in wording, length, tone, or structure.\n\nAutomated similarity measures should not define meaningful change on their own. Validate them against human judgments on a sampled subset, and report their limitations.\n\n### Evaluator reliability\n\nEstimate inter-rater agreement and disagreement by outcome type and domain. Use adjudication for descriptive reporting where needed, but retain original ratings in the statistical model so that uncertainty in judgment is not hidden.\n\n## 6. Analysis\n\nUse a Bayesian hierarchical model to estimate substantive-instability rates while accounting for variation among questions, domains, conditions, and evaluators.\n\nFor example, model the probability of a materially different response as a function of repeat condition and prespecified question characteristics, with varying effects for question and domain. Include evaluator-level effects or a measurement-error component for ratings. Report posterior distributions, not just point estimates, including credible intervals for overall and subgroup rates.\n\nAnalyze controlled prompt changes separately from unchanged-question repeats. Estimate how much variation is associated with repeated sampling under fixed conditions versus specific prompt or configuration changes. Where enough observations support it, examine interactions—for example, whether ambiguity is associated with greater instability in advice than in factual questions.\n\nUse priors justified before analysis. For rate parameters, use weakly informative priors and conduct sensitivity analyses with more skeptical and more diffuse alternatives. For subgroup comparisons, use partial pooling to avoid overinterpreting small samples. Report posterior predictive checks and assess whether model fit is adequate for the observed frequency and clustering of disagreements.\n\nPresent results at multiple levels:\n\n1. overall probability that a repeated response differs materially;\n2. domain- and risk-specific probabilities;\n3. probability of changes to each substantive dimension;\n4. contrast between substantive and surface-only variation;\n5. sensitivity to prompt, configuration, and collection time.\n\nAvoid interpreting observational associations as causes unless the relevant factor was experimentally manipulated and other conditions were held fixed.\n\n## 7. Decision / stopping rule\n\nSet sample sizes and stopping criteria before collecting responses, based on the precision required for the primary outcome and anticipated clustering by question. Do not stop early merely because an interim result is favorable or unfavorable.\n\nA decision threshold should reflect the intended use. For example, define in advance a maximum tolerable posterior probability of substantive instability for a specified domain and risk level. Conclude that instability is **materially concerning** only if the posterior probability that the rate exceeds that threshold is sufficiently high; conclude that it is **below the threshold** only if the posterior probability that it does not exceed the threshold is sufficiently high. Otherwise, report the result as inconclusive and identify what additional evidence would reduce uncertainty.\n\nSpecify separate thresholds for high-stakes and low-stakes applications. Report estimates and uncertainty even when no decision threshold is crossed.\n\n## 8. Limitations\n\n- Results may not generalize beyond the sampled questions, domains, model versions, dates, or configurations.\n- Hidden system prompts, backend changes, routing, and infrastructure behavior may not be observable or controllable.\n- Operational definitions of materiality and evaluator rubrics involve judgment, particularly for open-ended responses and complex advice.\n- Automated semantic measures can miss consequential distinctions or overstate differences; human evaluations also have limitations and disagreement.\n- Repeated submissions may not be statistically independent, especially within sessions or during short collection windows.\n- Controlled prompt variants reveal sensitivity to the tested changes, not all possible causes of response variation.\n- Bayesian conclusions can be influenced by prior choices when the evidence is sparse; sensitivity analyses and transparent reporting are therefore essential.\n"
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 188,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1724,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1912
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

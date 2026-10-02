@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "DIFFERENTIAL_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "DIFFERENTIAL",
+  "replicate": 6,
+  "run_id": "R1B-T1-DIFFERENTIAL-R06",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T01:45:51.773481+00:00",
+  "timestamp_utc": "2026-10-02T02:02:54.205725+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "1022829f151562620cc3c80de14b0e732dd32e71663ab85ebff491a3e456b5c0",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_042a1f5378b58b5d016abf0ccf8dc087d0b13b41c76af99d40",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 192,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1329,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1521
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether small, controlled changes in the conditions of an LLM query produce responses that differ in meaning, factual content, reasoning, or decisions—not merely in wording. Identify which changes cause such differences and distinguish them from variation that is immaterial to the question’s intended use.\n\nThe primary method is a differential, local-sensitivity design: compare responses to a baseline query with responses to queries altered along one defined dimension at a time. The study concerns a specified model version and set of decoding settings; conclusions will be limited to those conditions.\n\n## 2. Assumptions\n\n- The model, system instructions, tools, decoding settings, and context can be held fixed or recorded across comparisons.\n- A baseline question can be defined precisely enough to identify its intended meaning and the claims or decisions a satisfactory answer should support.\n- Small query changes can be varied independently, including changes in wording, order, formatting, explicitness, and minor contextual framing.\n- Response differences are not automatically evidence of instability. A difference matters only relative to a prespecified task-specific standard of semantic or practical equivalence.\n- Repeated calls may vary because of sampling, hidden state, or service-level effects; these sources should be controlled where possible and documented where not.\n\n## 3. Research design\n\nSelect a diverse set of benchmark questions covering factual answers, explanations, summarization, and decision or recommendation tasks. For each question, write a baseline prompt and define a set of minimally altered variants. Each variant should change one feature at a time—for example, a synonym, sentence order, a formatting cue, a request for justification, or a small contextual detail. Include sham variants intended to preserve meaning and contrast them with variants that deliberately change a relevant constraint.\n\nFor each question and prompt version, collect repeated responses under fixed model and decoding settings. Randomize the order of prompt conditions and interleave baseline runs to reduce confounding with time, session, or service changes. Where supported, record random seeds and use matched seeds across conditions; also run replications with independent seeds to estimate ordinary sampling variation. Keep all other instructions and conversation history constant.\n\nUse two complementary comparisons:\n\n1. **Within-prompt variability:** compare repeated responses to the same prompt.\n2. **Between-prompt sensitivity:** compare responses to the baseline and each minimally altered variant.\n\nHave independent evaluators, blind to condition, assess responses against question-specific answer criteria. Resolve disagreements using a predefined adjudication procedure. For a subset, include repeated or reordered evaluation examples to assess evaluator consistency.\n\n## 4. Data or evidence needed\n\n- Exact model identifier, version, system prompt, tools, decoding parameters, date, and session metadata.\n- Baseline questions, their intended interpretations, task-specific answer criteria, and all prompt variants.\n- Full raw outputs, including refusals, formatting, and tool-use traces where applicable.\n- Repeated runs per prompt condition, with seeds or other available controls recorded.\n- Human ratings of semantic equivalence, factual claims, reasoning or justification, confidence, and task outcome.\n- For factual tasks, a prespecified source of ground truth or a documented adjudication standard.\n- Evaluator identities or anonymized identifiers, rating instructions, and disagreement records.\n\n## 5. Measurement\n\nMeasure response differences at several levels:\n\n- **Surface variation:** wording, length, structure, and formatting differences.\n- **Propositional variation:** changes in claims, qualifications, assumptions, or omissions.\n- **Task outcome:** answer correctness, recommendation, classification, or decision.\n- **Reasoning and evidence:** changes in stated rationale or supporting evidence when these are part of the task.\n- **Practical consequence:** whether a difference would alter a reasonable user’s interpretation or action.\n\nBefore examining results, define task-specific thresholds for a meaningful change. For example, factual tasks may treat a changed answer or material claim as meaningful, while open-ended explanations may require a shift in core conclusion or recommendation. Treat wording differences alone as immaterial unless they alter interpretation.\n\nUse blinded human judgments as the primary semantic measure, with structured coding of claims and outcomes where feasible. Report inter-rater agreement and retain separate labels for uncertainty, contradiction, omission, and harmless paraphrase rather than collapsing them into a single difference score.\n\n## 6. Analysis\n\nEstimate within-prompt variability first, then compare it with between-prompt differences. For each prompt perturbation, quantify the change in the probability of a meaningful response difference relative to the baseline’s repeat-to-repeat variation. Use paired comparisons where runs can be matched, and account for clustering by question, prompt variant, and evaluator.\n\nModel sensitivity as a function of perturbation type and task category, including question-level variation. Report effect sizes and uncertainty intervals, not only significance tests. Distinguish:\n\n- differences associated with ordinary sampling variation under an unchanged prompt;\n- differences associated with controlled prompt changes that exceed that variation;\n- differences in surface form that do not affect meaning or task outcome.\n\nInspect individual cases as well as aggregate results. In particular, review cases where small perturbations reverse a conclusion, change a key factual claim, alter a recommendation, or change a refusal. Test robustness to evaluator disagreement and to alternative reasonable thresholds for meaningful change.\n\n## 7. Decision / stopping rule\n\nBefore data collection, set a minimum effect of practical interest, a target precision, and a maximum number of questions and repeats. Stop when the planned sample is complete or when the prespecified precision target is reached, subject to the maximum. Do not stop early solely because a result is statistically significant.\n\nConclude that meaningful local sensitivity is present for a task or perturbation class when the estimated rate of consequential between-prompt differences exceeds the prespecified practical threshold and is greater than the corresponding within-prompt variability, with uncertainty sufficiently narrow to support that conclusion. Conclude that evidence is insufficient when intervals include both negligible and practically important effects. Conclude that observed variation is predominantly immaterial when differences remain below the task-specific threshold and do not exceed ordinary repeat-to-repeat variation.\n\n## 8. Limitations\n\nResults may not generalize to other model versions, settings, languages, tasks, or deployment contexts. A finite set of prompt perturbations cannot cover all plausible wording changes. Human judgments of semantic and practical importance may be uncertain despite blinding and adjudication. Ground truth may be incomplete for open-ended tasks. Repeated calls may not be fully independent, and hidden service-level changes may remain uncontrolled. Finally, a differential design identifies sensitivity to tested changes but does not, by itself, establish the internal mechanism causing that sensitivity.",
+  "raw_response": {
+    "id": "resp_042a1f5378b58b5d016abf0ccf8dc087d0b13b41c76af99d40",
+    "object": "response",
+    "created_at": 1790905551,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790905563,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_042a1f5378b58b5d016abf0cd0091487d0a9232372b1fdcce5",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether small, controlled changes in the conditions of an LLM query produce responses that differ in meaning, factual content, reasoning, or decisions—not merely in wording. Identify which changes cause such differences and distinguish them from variation that is immaterial to the question’s intended use.\n\nThe primary method is a differential, local-sensitivity design: compare responses to a baseline query with responses to queries altered along one defined dimension at a time. The study concerns a specified model version and set of decoding settings; conclusions will be limited to those conditions.\n\n## 2. Assumptions\n\n- The model, system instructions, tools, decoding settings, and context can be held fixed or recorded across comparisons.\n- A baseline question can be defined precisely enough to identify its intended meaning and the claims or decisions a satisfactory answer should support.\n- Small query changes can be varied independently, including changes in wording, order, formatting, explicitness, and minor contextual framing.\n- Response differences are not automatically evidence of instability. A difference matters only relative to a prespecified task-specific standard of semantic or practical equivalence.\n- Repeated calls may vary because of sampling, hidden state, or service-level effects; these sources should be controlled where possible and documented where not.\n\n## 3. Research design\n\nSelect a diverse set of benchmark questions covering factual answers, explanations, summarization, and decision or recommendation tasks. For each question, write a baseline prompt and define a set of minimally altered variants. Each variant should change one feature at a time—for example, a synonym, sentence order, a formatting cue, a request for justification, or a small contextual detail. Include sham variants intended to preserve meaning and contrast them with variants that deliberately change a relevant constraint.\n\nFor each question and prompt version, collect repeated responses under fixed model and decoding settings. Randomize the order of prompt conditions and interleave baseline runs to reduce confounding with time, session, or service changes. Where supported, record random seeds and use matched seeds across conditions; also run replications with independent seeds to estimate ordinary sampling variation. Keep all other instructions and conversation history constant.\n\nUse two complementary comparisons:\n\n1. **Within-prompt variability:** compare repeated responses to the same prompt.\n2. **Between-prompt sensitivity:** compare responses to the baseline and each minimally altered variant.\n\nHave independent evaluators, blind to condition, assess responses against question-specific answer criteria. Resolve disagreements using a predefined adjudication procedure. For a subset, include repeated or reordered evaluation examples to assess evaluator consistency.\n\n## 4. Data or evidence needed\n\n- Exact model identifier, version, system prompt, tools, decoding parameters, date, and session metadata.\n- Baseline questions, their intended interpretations, task-specific answer criteria, and all prompt variants.\n- Full raw outputs, including refusals, formatting, and tool-use traces where applicable.\n- Repeated runs per prompt condition, with seeds or other available controls recorded.\n- Human ratings of semantic equivalence, factual claims, reasoning or justification, confidence, and task outcome.\n- For factual tasks, a prespecified source of ground truth or a documented adjudication standard.\n- Evaluator identities or anonymized identifiers, rating instructions, and disagreement records.\n\n## 5. Measurement\n\nMeasure response differences at several levels:\n\n- **Surface variation:** wording, length, structure, and formatting differences.\n- **Propositional variation:** changes in claims, qualifications, assumptions, or omissions.\n- **Task outcome:** answer correctness, recommendation, classification, or decision.\n- **Reasoning and evidence:** changes in stated rationale or supporting evidence when these are part of the task.\n- **Practical consequence:** whether a difference would alter a reasonable user’s interpretation or action.\n\nBefore examining results, define task-specific thresholds for a meaningful change. For example, factual tasks may treat a changed answer or material claim as meaningful, while open-ended explanations may require a shift in core conclusion or recommendation. Treat wording differences alone as immaterial unless they alter interpretation.\n\nUse blinded human judgments as the primary semantic measure, with structured coding of claims and outcomes where feasible. Report inter-rater agreement and retain separate labels for uncertainty, contradiction, omission, and harmless paraphrase rather than collapsing them into a single difference score.\n\n## 6. Analysis\n\nEstimate within-prompt variability first, then compare it with between-prompt differences. For each prompt perturbation, quantify the change in the probability of a meaningful response difference relative to the baseline’s repeat-to-repeat variation. Use paired comparisons where runs can be matched, and account for clustering by question, prompt variant, and evaluator.\n\nModel sensitivity as a function of perturbation type and task category, including question-level variation. Report effect sizes and uncertainty intervals, not only significance tests. Distinguish:\n\n- differences associated with ordinary sampling variation under an unchanged prompt;\n- differences associated with controlled prompt changes that exceed that variation;\n- differences in surface form that do not affect meaning or task outcome.\n\nInspect individual cases as well as aggregate results. In particular, review cases where small perturbations reverse a conclusion, change a key factual claim, alter a recommendation, or change a refusal. Test robustness to evaluator disagreement and to alternative reasonable thresholds for meaningful change.\n\n## 7. Decision / stopping rule\n\nBefore data collection, set a minimum effect of practical interest, a target precision, and a maximum number of questions and repeats. Stop when the planned sample is complete or when the prespecified precision target is reached, subject to the maximum. Do not stop early solely because a result is statistically significant.\n\nConclude that meaningful local sensitivity is present for a task or perturbation class when the estimated rate of consequential between-prompt differences exceeds the prespecified practical threshold and is greater than the corresponding within-prompt variability, with uncertainty sufficiently narrow to support that conclusion. Conclude that evidence is insufficient when intervals include both negligible and practically important effects. Conclude that observed variation is predominantly immaterial when differences remain below the task-specific threshold and do not exceed ordinary repeat-to-repeat variation.\n\n## 8. Limitations\n\nResults may not generalize to other model versions, settings, languages, tasks, or deployment contexts. A finite set of prompt perturbations cannot cover all plausible wording changes. Human judgments of semantic and practical importance may be uncertain despite blinding and adjudication. Ground truth may be incomplete for open-ended tasks. Repeated calls may not be fully independent, and hidden service-level changes may remain uncontrolled. Finally, a differential design identifies sensitivity to tested changes but does not, by itself, establish the internal mechanism causing that sensitivity."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 192,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1329,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1521
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

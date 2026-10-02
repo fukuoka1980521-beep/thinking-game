@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 7,
+  "run_id": "R1B-T2-STATE_SPACE-R07",
+  "task_id": "T2",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:19:17.066463+00:00",
+  "timestamp_utc": "2026-10-02T06:19:39.456470+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "75d2d7ee6911a899a609ba3b1c16f4d015fb80e10d82631b53857e79bcc0a8ba",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0e58a73a8768ba20016abf4ce4dd8487d0a0821647c9df34ee",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1955,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2144
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine why teams following the same nominal workplace process have persistently different completion times across sites. The study will distinguish among:\n\n- Differences in case mix or workload;\n- Differences in actual process execution despite a shared nominal procedure;\n- Site-level resources, technology, or working conditions;\n- Team-level coordination, skill, or staffing;\n- Measurement artifacts or differences in what counts as “completion.”\n\nThe primary outcome is elapsed time from a consistently defined start event to a consistently defined completion event. Secondary outcomes include time in each process stage, queueing and waiting time, rework, errors, and successful completion. The study will estimate both within-site variation and persistent between-site differences, and identify which observations support or weaken each explanation.\n\n## 2. Assumptions\n\n- Sites perform a sufficiently comparable type of work that a common process representation is meaningful.\n- The nominal process can be expressed as ordered or branching stages, while allowing for rework, skipped stages, and local adaptations.\n- Completion-time records can be linked to cases, process events, teams, and sites with appropriate privacy protections.\n- Site differences may arise from multiple mechanisms acting together; the study will not assume a single cause.\n- Observational associations alone do not establish causality. Stronger causal interpretation requires credible variation in exposure, timing, or implementation and adequate control of confounding.\n- The study period is long enough to observe routine variation, seasonality, and changes in staffing or demand.\n\n## 3. Research design\n\nUse a longitudinal, multilevel state-space design. Represent each case as moving through latent or observed process states, such as received, awaiting assignment, active work, awaiting input, review, rework, and completed. Permit state durations, transition probabilities, and time-varying conditions to differ across sites and teams.\n\nCollect repeated case-level and site-level observations across all participating sites. Include enough sites, teams, and time periods to separate persistent site effects from transient fluctuations and team composition. Where feasible, follow the same teams over time and exploit naturally occurring changes—such as staffing changes, technology updates, policy changes, or demand shocks—as within-site contrasts. Do not introduce experimental changes.\n\nThe state-space model will separate:\n\n- **Observation processes:** how events and timestamps are recorded, including missing, delayed, or inconsistently defined events;\n- **Process states:** the underlying stage or condition of each case, including unobserved waiting or rework;\n- **Transition dynamics:** probabilities and durations for movement between states;\n- **Time-varying inputs:** case complexity, workload, staffing, interruptions, system availability, and other measured conditions;\n- **Persistent effects:** site- and team-level differences that remain after accounting for observed inputs.\n\nUse qualitative process tracing at a purposive subset of sites to check whether the modeled states reflect actual work and to investigate mechanisms behind model findings. Select sites with contrasting completion times and, where possible, similar measured case mix. Interviews and observations should include frontline staff and managers, and should focus on concrete recent cases rather than general impressions.\n\n## 4. Data or evidence needed\n\nFor each case, obtain:\n\n- A stable, privacy-preserving case identifier;\n- Site, team, role, and relevant assignment history;\n- Timestamped events for receipt, assignment, stage entry and exit, handoffs, requests for information, pauses, review, rework, and completion;\n- Case characteristics known at intake that plausibly affect effort or risk;\n- Workload and priority measures, including queue size and arrival volume;\n- Completion status, quality, errors, escalation, and reopening where available.\n\nFor each team and site, obtain repeated measures of:\n\n- Staffing levels, skill mix, experience, absences, turnover, and schedule coverage;\n- Work allocation, supervision, coordination routines, and local process adaptations;\n- Software or equipment, outages, system response times, and relevant configuration differences;\n- Policies, targets, and changes to procedures;\n- Work environment factors likely to affect capacity or interruption.\n\nAssess data-generation practices through timestamp audits, documentation review, and interviews. Record when systems create timestamps automatically versus when staff enter them, and whether cases can be worked outside the recorded workflow.\n\nQualitative evidence should include process maps, observations of selected work, and interviews about handoffs, bottlenecks, informal workarounds, and sources of delay. Collect only information necessary for the research questions and apply access controls, de-identification, and retention limits.\n\n## 5. Measurement\n\nDefine the primary outcome before analysis: elapsed calendar time from a specified, auditable intake event to a specified completion event. Also calculate active-work time and time spent in each state where timestamps permit. Report both calendar and business-time measures if operating hours differ materially across sites.\n\nCreate a common process-state taxonomy with explicit rules for entry, exit, pauses, parallel work, handoffs, and rework. Validate it against system records and qualitative accounts. Where local workflows do not map cleanly onto the taxonomy, preserve the local event data and document the mapping rather than forcing equivalence.\n\nMeasure candidate explanations using pre-specified indicators:\n\n- **Case mix:** complexity, risk, completeness at intake, and other intake-time characteristics;\n- **Execution:** stage order, skipped or repeated steps, handoffs, and local deviations;\n- **Capacity:** staffing per workload, skill mix, queue size, and schedule coverage;\n- **Coordination:** handoff delays, assignment delays, and unresolved dependencies;\n- **Technology:** availability, latency, workflow configuration, and manual workarounds;\n- **Quality trade-offs:** errors, rework, escalation, reopening, and outcomes after completion;\n- **Recording differences:** timestamp source, missingness, lag, and agreement between records and observed events.\n\nCheck measurement comparability across sites before interpreting site effects. Examine missingness and timestamp quality by site and process stage; treat missing or unreliable events as measurement uncertainty, not automatically as zero duration.\n\n## 6. Analysis\n\nFirst describe completion-time distributions, stage durations, queueing, rework, quality, and data completeness by site, team, and period. Use robust summaries and show uncertainty; avoid relying only on site averages.\n\nFit a hierarchical state-space model that allows:\n\n- Cases to transition among process states, including returns to earlier states;\n- State durations and transition rates to depend on case characteristics and time-varying conditions;\n- Team and site effects to persist over time;\n- Observation error and missing events to vary by recording system or site;\n- Changes in workload, resources, or technology to alter transition dynamics.\n\nEstimate the remaining between-site variation after adjustment for intake case mix, calendar effects, and measured operating conditions. Decompose the observed time difference into time in active work, queueing, handoffs, waiting for external input, review, and rework where the evidence supports that partition.\n\nCompare pre-specified explanatory models or parameter blocks:\n\n1. Case-mix-only explanation;\n2. Measurement or timestamp explanation;\n3. Process-execution explanation;\n4. Resource, workload, or technology explanation;\n5. Team coordination or skill explanation;\n6. Combined explanations with possible interactions.\n\nAssess explanatory support by predictive performance on held-out periods or sites, uncertainty intervals for relevant effects, and whether predicted state-specific patterns match observed data. Use sensitivity analyses for unmeasured case complexity, alternate completion definitions, business-time assumptions, missing-event mechanisms, and site inclusion. For natural changes, use interrupted or comparative time-series analyses only when timing, pre-trends, and comparison conditions are credible; otherwise describe findings as associations.\n\nTriangulate quantitative patterns with process tracing. For example, a model indicating long assignment delays should be checked against assignment logs and staff accounts. Record evidence that contradicts proposed mechanisms as well as evidence that supports them.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify minimum data-quality and coverage criteria, the primary contrasts, candidate explanations, and practical thresholds for a meaningful completion-time difference. Set a fixed study period or pre-specified minimum coverage of cases, teams, sites, and operating conditions.\n\nConclude that an explanation is supported only when:\n\n- Its predicted state-level pattern is observed;\n- The association remains reasonably stable under specified sensitivity analyses;\n- Measurement checks do not provide a more plausible account of the pattern; and\n- Qualitative or operational evidence is consistent with the proposed mechanism.\n\nClassify explanations as supported, weakened, unresolved, or not assessable. Do not select a single explanation if multiple mechanisms remain plausible or interact. If data-quality requirements are not met, report the affected comparisons as inconclusive rather than extending collection selectively until a preferred conclusion appears. Stop when the pre-specified coverage and quality criteria are met and the planned analyses are complete, or when remaining uncertainty is unlikely to be resolved with the available observational data.\n\n## 8. Limitations\n\n- State-space models cannot recover unobserved work or distinguish mechanisms that produce the same observed event pattern without additional evidence.\n- Case complexity, informal work, and local adaptations may be incompletely measured, leaving residual confounding.\n- Sites may differ in clientele, regulation, labor markets, or organizational history in ways that cannot be separated from site effects.\n- Timestamp definitions and recording practices may remain non-comparable despite audit and validation.\n- Natural changes are not randomized; causal claims depend on the plausibility of their assumptions and comparison groups.\n- Qualitative observations may be affected by selection, observer effects, and variation in willingness to report workarounds.\n- Completion time alone is not a sufficient measure of performance. Faster processing may coincide with lower quality, inequity, or later rework; conclusions should consider outcomes and trade-offs.",
+  "raw_response": {
+    "id": "resp_0e58a73a8768ba20016abf4ce4dd8487d0a0821647c9df34ee",
+    "object": "response",
+    "created_at": 1790921956,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790921978,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0e58a73a8768ba20016abf4ce614a487d0916224acc5c244e4",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine why teams following the same nominal workplace process have persistently different completion times across sites. The study will distinguish among:\n\n- Differences in case mix or workload;\n- Differences in actual process execution despite a shared nominal procedure;\n- Site-level resources, technology, or working conditions;\n- Team-level coordination, skill, or staffing;\n- Measurement artifacts or differences in what counts as “completion.”\n\nThe primary outcome is elapsed time from a consistently defined start event to a consistently defined completion event. Secondary outcomes include time in each process stage, queueing and waiting time, rework, errors, and successful completion. The study will estimate both within-site variation and persistent between-site differences, and identify which observations support or weaken each explanation.\n\n## 2. Assumptions\n\n- Sites perform a sufficiently comparable type of work that a common process representation is meaningful.\n- The nominal process can be expressed as ordered or branching stages, while allowing for rework, skipped stages, and local adaptations.\n- Completion-time records can be linked to cases, process events, teams, and sites with appropriate privacy protections.\n- Site differences may arise from multiple mechanisms acting together; the study will not assume a single cause.\n- Observational associations alone do not establish causality. Stronger causal interpretation requires credible variation in exposure, timing, or implementation and adequate control of confounding.\n- The study period is long enough to observe routine variation, seasonality, and changes in staffing or demand.\n\n## 3. Research design\n\nUse a longitudinal, multilevel state-space design. Represent each case as moving through latent or observed process states, such as received, awaiting assignment, active work, awaiting input, review, rework, and completed. Permit state durations, transition probabilities, and time-varying conditions to differ across sites and teams.\n\nCollect repeated case-level and site-level observations across all participating sites. Include enough sites, teams, and time periods to separate persistent site effects from transient fluctuations and team composition. Where feasible, follow the same teams over time and exploit naturally occurring changes—such as staffing changes, technology updates, policy changes, or demand shocks—as within-site contrasts. Do not introduce experimental changes.\n\nThe state-space model will separate:\n\n- **Observation processes:** how events and timestamps are recorded, including missing, delayed, or inconsistently defined events;\n- **Process states:** the underlying stage or condition of each case, including unobserved waiting or rework;\n- **Transition dynamics:** probabilities and durations for movement between states;\n- **Time-varying inputs:** case complexity, workload, staffing, interruptions, system availability, and other measured conditions;\n- **Persistent effects:** site- and team-level differences that remain after accounting for observed inputs.\n\nUse qualitative process tracing at a purposive subset of sites to check whether the modeled states reflect actual work and to investigate mechanisms behind model findings. Select sites with contrasting completion times and, where possible, similar measured case mix. Interviews and observations should include frontline staff and managers, and should focus on concrete recent cases rather than general impressions.\n\n## 4. Data or evidence needed\n\nFor each case, obtain:\n\n- A stable, privacy-preserving case identifier;\n- Site, team, role, and relevant assignment history;\n- Timestamped events for receipt, assignment, stage entry and exit, handoffs, requests for information, pauses, review, rework, and completion;\n- Case characteristics known at intake that plausibly affect effort or risk;\n- Workload and priority measures, including queue size and arrival volume;\n- Completion status, quality, errors, escalation, and reopening where available.\n\nFor each team and site, obtain repeated measures of:\n\n- Staffing levels, skill mix, experience, absences, turnover, and schedule coverage;\n- Work allocation, supervision, coordination routines, and local process adaptations;\n- Software or equipment, outages, system response times, and relevant configuration differences;\n- Policies, targets, and changes to procedures;\n- Work environment factors likely to affect capacity or interruption.\n\nAssess data-generation practices through timestamp audits, documentation review, and interviews. Record when systems create timestamps automatically versus when staff enter them, and whether cases can be worked outside the recorded workflow.\n\nQualitative evidence should include process maps, observations of selected work, and interviews about handoffs, bottlenecks, informal workarounds, and sources of delay. Collect only information necessary for the research questions and apply access controls, de-identification, and retention limits.\n\n## 5. Measurement\n\nDefine the primary outcome before analysis: elapsed calendar time from a specified, auditable intake event to a specified completion event. Also calculate active-work time and time spent in each state where timestamps permit. Report both calendar and business-time measures if operating hours differ materially across sites.\n\nCreate a common process-state taxonomy with explicit rules for entry, exit, pauses, parallel work, handoffs, and rework. Validate it against system records and qualitative accounts. Where local workflows do not map cleanly onto the taxonomy, preserve the local event data and document the mapping rather than forcing equivalence.\n\nMeasure candidate explanations using pre-specified indicators:\n\n- **Case mix:** complexity, risk, completeness at intake, and other intake-time characteristics;\n- **Execution:** stage order, skipped or repeated steps, handoffs, and local deviations;\n- **Capacity:** staffing per workload, skill mix, queue size, and schedule coverage;\n- **Coordination:** handoff delays, assignment delays, and unresolved dependencies;\n- **Technology:** availability, latency, workflow configuration, and manual workarounds;\n- **Quality trade-offs:** errors, rework, escalation, reopening, and outcomes after completion;\n- **Recording differences:** timestamp source, missingness, lag, and agreement between records and observed events.\n\nCheck measurement comparability across sites before interpreting site effects. Examine missingness and timestamp quality by site and process stage; treat missing or unreliable events as measurement uncertainty, not automatically as zero duration.\n\n## 6. Analysis\n\nFirst describe completion-time distributions, stage durations, queueing, rework, quality, and data completeness by site, team, and period. Use robust summaries and show uncertainty; avoid relying only on site averages.\n\nFit a hierarchical state-space model that allows:\n\n- Cases to transition among process states, including returns to earlier states;\n- State durations and transition rates to depend on case characteristics and time-varying conditions;\n- Team and site effects to persist over time;\n- Observation error and missing events to vary by recording system or site;\n- Changes in workload, resources, or technology to alter transition dynamics.\n\nEstimate the remaining between-site variation after adjustment for intake case mix, calendar effects, and measured operating conditions. Decompose the observed time difference into time in active work, queueing, handoffs, waiting for external input, review, and rework where the evidence supports that partition.\n\nCompare pre-specified explanatory models or parameter blocks:\n\n1. Case-mix-only explanation;\n2. Measurement or timestamp explanation;\n3. Process-execution explanation;\n4. Resource, workload, or technology explanation;\n5. Team coordination or skill explanation;\n6. Combined explanations with possible interactions.\n\nAssess explanatory support by predictive performance on held-out periods or sites, uncertainty intervals for relevant effects, and whether predicted state-specific patterns match observed data. Use sensitivity analyses for unmeasured case complexity, alternate completion definitions, business-time assumptions, missing-event mechanisms, and site inclusion. For natural changes, use interrupted or comparative time-series analyses only when timing, pre-trends, and comparison conditions are credible; otherwise describe findings as associations.\n\nTriangulate quantitative patterns with process tracing. For example, a model indicating long assignment delays should be checked against assignment logs and staff accounts. Record evidence that contradicts proposed mechanisms as well as evidence that supports them.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify minimum data-quality and coverage criteria, the primary contrasts, candidate explanations, and practical thresholds for a meaningful completion-time difference. Set a fixed study period or pre-specified minimum coverage of cases, teams, sites, and operating conditions.\n\nConclude that an explanation is supported only when:\n\n- Its predicted state-level pattern is observed;\n- The association remains reasonably stable under specified sensitivity analyses;\n- Measurement checks do not provide a more plausible account of the pattern; and\n- Qualitative or operational evidence is consistent with the proposed mechanism.\n\nClassify explanations as supported, weakened, unresolved, or not assessable. Do not select a single explanation if multiple mechanisms remain plausible or interact. If data-quality requirements are not met, report the affected comparisons as inconclusive rather than extending collection selectively until a preferred conclusion appears. Stop when the pre-specified coverage and quality criteria are met and the planned analyses are complete, or when remaining uncertainty is unlikely to be resolved with the available observational data.\n\n## 8. Limitations\n\n- State-space models cannot recover unobserved work or distinguish mechanisms that produce the same observed event pattern without additional evidence.\n- Case complexity, informal work, and local adaptations may be incompletely measured, leaving residual confounding.\n- Sites may differ in clientele, regulation, labor markets, or organizational history in ways that cannot be separated from site effects.\n- Timestamp definitions and recording practices may remain non-comparable despite audit and validation.\n- Natural changes are not randomized; causal claims depend on the plausibility of their assumptions and comparison groups.\n- Qualitative observations may be affected by selection, observer effects, and variation in willingness to report workarounds.\n- Completion time alone is not a sufficient measure of performance. Faster processing may coincide with lower quality, inequity, or later rework; conclusions should consider outcomes and trade-offs."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1955,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2144
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

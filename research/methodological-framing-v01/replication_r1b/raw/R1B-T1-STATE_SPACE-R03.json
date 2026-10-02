@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 3,
+  "run_id": "R1B-T1-STATE_SPACE-R03",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:21:32.090394+00:00",
+  "timestamp_utc": "2026-10-02T06:21:53.999060+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "832fba3b7142c44efaa9be82d8332e394e2518835651985d142293c7b5394fbf",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_03f6ea121f2af824016abf4d6bd08887d095ff0fd5bd39ca43",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2116,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2305
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in meaningfully consequential ways; identify conditions associated with such differences; and distinguish substantive instability from ordinary wording variation.\n\nThe study will treat response generation as a process in a **state space**. A response is mapped to a structured representation of its claims, recommendations, qualifications, and other task-relevant features. Variation between runs is then assessed in this representation, rather than inferred from surface text differences alone.\n\nThe study will estimate:\n\n- **Within-condition instability:** how much responses vary when the question and all controlled settings are held fixed.\n- **Condition-associated change:** how response distributions shift when specified generation settings or prompt features change.\n- **Between-question variation:** how instability differs across question types and levels of ambiguity or consequence.\n\nThe plan concerns the model and interface as tested, not all versions of a model or all possible deployment environments.\n\n## 2. Assumptions\n\n- The tested model, model version, system instructions, interface, and generation settings can be recorded and held fixed where specified.\n- Repeated calls are not necessarily independent: shared infrastructure, caching, routing, or persistent conversational state may affect responses. These factors will be documented where observable and addressed in the design.\n- “Same question” means the same user-visible prompt, with the same preceding context. Any deliberately altered prompt or setting defines a separate experimental condition.\n- No single embedding, similarity score, or automated semantic judgment is sufficient to establish meaningful consistency. Meaning must be evaluated relative to the task and its consequences.\n- Responses can be represented as points or distributions in a task-specific state space. The representation must preserve distinctions that matter for the question type.\n- A response difference is not automatically an error. The study will distinguish variation from correctness and will evaluate both where suitable reference standards exist.\n\n## 3. Research design\n\n### Question set\n\nConstruct a preregistered, stratified set of questions covering several task families, such as:\n\n- factual questions with verifiable answers;\n- advice or recommendation questions;\n- interpretive or open-ended questions;\n- summarization and transformation tasks;\n- safety-sensitive or high-consequence questions, where approved and appropriate.\n\nWithin each family, include questions varying in ambiguity, answer constraints, and expected consequence. Define these characteristics before examining model outputs. Use enough questions per stratum to estimate question-level variability, and report the sampling frame and selection procedure.\n\n### Conditions and repeated sampling\n\nFor every question, collect repeated responses under a baseline condition with the prompt and generation settings fixed. Randomize call order and interleave questions where feasible to reduce confounding by time or service conditions. Record timestamps and all observable configuration details.\n\nTo investigate why responses change, use a factorial or otherwise prespecified set of controlled perturbations. Candidate factors include:\n\n- sampling settings, such as temperature or top-p, where configurable;\n- system or developer instruction wording, altered one feature at a time;\n- harmless changes in prompt formatting or context placement;\n- session state, such as fresh versus continuing conversation;\n- time or service session, if the study can repeat calls across sessions.\n\nThe baseline condition estimates stochastic or operational variation under fixed inputs. Perturbation conditions estimate how response distributions shift when a particular factor changes. Do not treat comparisons across different model versions as equivalent to within-version instability; analyze them as separate populations.\n\nUse a pilot, excluded from confirmatory analysis, to check that the state-space coding scheme captures relevant distinctions and that the planned repetition count can estimate the desired uncertainty. Fix the final sample size and analysis rules before confirmatory collection.\n\n### Blinding and quality control\n\nWhere human annotation is used, remove condition labels and randomize response presentation. Train annotators on a preregistered codebook, double-code a subset or all responses, and adjudicate disagreements using defined procedures. Keep the adjudication record and report agreement by feature; do not treat agreement alone as proof of validity.\n\n## 4. Data or evidence needed\n\nFor each response, retain:\n\n- exact prompt and preceding conversation context;\n- model and version identifiers, system instructions, and accessible generation settings;\n- response text, call order, timestamp, and any observable error or routing information;\n- the assigned condition and question stratum;\n- annotations of claims, recommendations, qualifications, assumptions, uncertainty, refusals, and requested output structure, as applicable.\n\nFor questions with evaluable answers, obtain an appropriate external criterion, such as a verified answer key, validated reference material, or domain-expert judgment. For open-ended outputs without a single reference answer, define task-specific criteria for acceptable content and consequences before analysis.\n\nDocument missing calls, retries, truncation, safety refusals, and other exclusions. Preserve raw responses so that derived representations and judgments can be audited.\n\n## 5. Measurement\n\n### Task-specific state representation\n\nRepresent each response as a vector or structured state containing features relevant to its task. Depending on the task, features may include:\n\n- propositions or key claims and their polarity;\n- chosen answer or recommendation;\n- ordering, priority, or ranking;\n- numerical values and units;\n- conditions, caveats, uncertainty, and stated assumptions;\n- safety actions, refusal status, or escalation advice;\n- coverage of required elements and unsupported assertions.\n\nDefine the state representation and feature extraction rules before confirmatory analysis. Use a combination of structured annotation and automated extraction only where validated against human-coded examples. Retain the original text and permit an “uncodable” or “uncertain” value rather than forcing a misleading assignment.\n\n### Distance and meaningfulness\n\nSpecify task-specific distances between states. A distance may combine weighted differences in claims, recommendations, numeric outputs, qualifications, and required-element coverage. Select weights with domain input before analyzing confirmatory outputs and conduct sensitivity analyses over plausible alternatives.\n\nSet a **meaningfulness threshold** for each task family before the main analysis. Examples include a changed factual answer, a materially different recommendation, a changed numerical result beyond a prespecified tolerance, omission of a critical warning, or a change in refusal status. A stylistic rewrite, paraphrase, or change in nonessential examples does not count unless it changes a task-relevant state feature.\n\nMeasure surface-form variation separately, using measures such as lexical or syntactic differences. These are descriptive and cannot, by themselves, establish semantic instability.\n\n### Reliability and validity checks\n\nAssess annotation agreement and the validity of automated state extraction against blinded human judgments. Check whether the state representation distinguishes known meaningful contrasts from paraphrases. If it fails these checks, revise it during the pilot or label the affected construct as inadequately measured; do not silently substitute a convenient similarity metric.\n\n## 6. Analysis\n\n### Baseline instability\n\nFor each question, estimate the distribution of observed response states under the fixed baseline condition. Report:\n\n- the proportion of responses that cross the task-specific meaningfulness threshold;\n- the frequency and type of meaningful state changes;\n- within-question state dispersion and uncertainty intervals;\n- ordinary wording variation that does not cross the meaningfulness threshold.\n\nEstimate overall and task-stratified results. Use hierarchical models or an equivalent multilevel approach to account for responses nested within questions and question families. Present question-level results alongside pooled estimates so that a small number of highly variable questions cannot be mistaken for uniform instability.\n\n### Sources of change\n\nFor each controlled perturbation, compare response-state distributions with the baseline. Estimate both:\n\n1. changes in the probability of crossing the meaningfulness threshold; and  \n2. shifts in the distribution of individual state features.\n\nUse factorial terms for prespecified interactions where justified. Distinguish within-condition variability from changes in condition-level means or distributions. Report uncertainty intervals and effect sizes, not only significance tests. If calls are clustered by session or time, include those structures in the model or use an appropriate clustered uncertainty estimate.\n\n### Validity and sensitivity analyses\n\n- Compare semantic-state conclusions with surface-text similarity results to show where lexical variation does and does not track meaningful change.\n- Reanalyze using reasonable alternative state-distance weights and thresholds.\n- Repeat analyses excluding technically anomalous calls, then report the effect of those exclusions.\n- Compare human-coded results with automated representations and describe systematic disagreements.\n- Where reference criteria exist, analyze correctness separately from response consistency. A model can be consistently wrong or variably correct; these are distinct outcomes.\n- Report multiplicity handling for confirmatory comparisons and label exploratory analyses clearly.\n\n## 7. Decision / stopping rule\n\nBefore confirmatory data collection, preregister the question set, conditions, repetition counts, state representation, meaningfulness thresholds, exclusions, primary estimands, and analysis procedure.\n\nConclude that **meaningful response instability is supported** for a prespecified population of questions only if the estimated rate of threshold-crossing changes, with its uncertainty interval, exceeds a prespecified practically relevant minimum. Conclude that **instability is not established** if the interval is compatible with both negligible and practically relevant rates. Conclude that instability is **unlikely to exceed the chosen practical bound** only if the upper uncertainty bound falls below that bound. Apply these rules by task family as well as overall.\n\nConclude that a tested factor is associated with response change only if its prespecified contrast produces a practically relevant shift in the response-state distribution with adequate uncertainty bounds. This does not establish the internal mechanism of the model.\n\nStop collection at the preregistered sample size, or earlier only for predefined technical, safety, or data-integrity reasons. Do not stop based on interim findings unless a sequential design and its error control were specified in advance.\n\n## 8. Limitations\n\n- Findings apply to the tested model, version, interface, prompts, settings, and collection period; model updates or deployment changes may alter results.\n- Hidden routing, caching, infrastructure state, and undocumented system instructions may be unobservable and may contribute to variation.\n- A state-space representation can omit subtle but consequential meaning or impose judgment through its feature definitions and weights.\n- Human annotation can be inconsistent, and expert judgments may differ, especially for open-ended or value-laden questions.\n- Results depend on the selected questions and may not generalize to the full range of real-world use.\n- Repeated outputs reveal observable variation, not necessarily the internal cause of that variation. Factor perturbations support causal claims only about the manipulated conditions under the tested design.\n- Consistency does not imply factual accuracy, fairness, safety, or usefulness; those properties require separate evaluation.",
+  "raw_response": {
+    "id": "resp_03f6ea121f2af824016abf4d6bd08887d095ff0fd5bd39ca43",
+    "object": "response",
+    "created_at": 1790922091,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922113,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_03f6ea121f2af824016abf4d6c54b487d094442127b2e17f79",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same large-language-model (LLM) question differ in meaningfully consequential ways; identify conditions associated with such differences; and distinguish substantive instability from ordinary wording variation.\n\nThe study will treat response generation as a process in a **state space**. A response is mapped to a structured representation of its claims, recommendations, qualifications, and other task-relevant features. Variation between runs is then assessed in this representation, rather than inferred from surface text differences alone.\n\nThe study will estimate:\n\n- **Within-condition instability:** how much responses vary when the question and all controlled settings are held fixed.\n- **Condition-associated change:** how response distributions shift when specified generation settings or prompt features change.\n- **Between-question variation:** how instability differs across question types and levels of ambiguity or consequence.\n\nThe plan concerns the model and interface as tested, not all versions of a model or all possible deployment environments.\n\n## 2. Assumptions\n\n- The tested model, model version, system instructions, interface, and generation settings can be recorded and held fixed where specified.\n- Repeated calls are not necessarily independent: shared infrastructure, caching, routing, or persistent conversational state may affect responses. These factors will be documented where observable and addressed in the design.\n- “Same question” means the same user-visible prompt, with the same preceding context. Any deliberately altered prompt or setting defines a separate experimental condition.\n- No single embedding, similarity score, or automated semantic judgment is sufficient to establish meaningful consistency. Meaning must be evaluated relative to the task and its consequences.\n- Responses can be represented as points or distributions in a task-specific state space. The representation must preserve distinctions that matter for the question type.\n- A response difference is not automatically an error. The study will distinguish variation from correctness and will evaluate both where suitable reference standards exist.\n\n## 3. Research design\n\n### Question set\n\nConstruct a preregistered, stratified set of questions covering several task families, such as:\n\n- factual questions with verifiable answers;\n- advice or recommendation questions;\n- interpretive or open-ended questions;\n- summarization and transformation tasks;\n- safety-sensitive or high-consequence questions, where approved and appropriate.\n\nWithin each family, include questions varying in ambiguity, answer constraints, and expected consequence. Define these characteristics before examining model outputs. Use enough questions per stratum to estimate question-level variability, and report the sampling frame and selection procedure.\n\n### Conditions and repeated sampling\n\nFor every question, collect repeated responses under a baseline condition with the prompt and generation settings fixed. Randomize call order and interleave questions where feasible to reduce confounding by time or service conditions. Record timestamps and all observable configuration details.\n\nTo investigate why responses change, use a factorial or otherwise prespecified set of controlled perturbations. Candidate factors include:\n\n- sampling settings, such as temperature or top-p, where configurable;\n- system or developer instruction wording, altered one feature at a time;\n- harmless changes in prompt formatting or context placement;\n- session state, such as fresh versus continuing conversation;\n- time or service session, if the study can repeat calls across sessions.\n\nThe baseline condition estimates stochastic or operational variation under fixed inputs. Perturbation conditions estimate how response distributions shift when a particular factor changes. Do not treat comparisons across different model versions as equivalent to within-version instability; analyze them as separate populations.\n\nUse a pilot, excluded from confirmatory analysis, to check that the state-space coding scheme captures relevant distinctions and that the planned repetition count can estimate the desired uncertainty. Fix the final sample size and analysis rules before confirmatory collection.\n\n### Blinding and quality control\n\nWhere human annotation is used, remove condition labels and randomize response presentation. Train annotators on a preregistered codebook, double-code a subset or all responses, and adjudicate disagreements using defined procedures. Keep the adjudication record and report agreement by feature; do not treat agreement alone as proof of validity.\n\n## 4. Data or evidence needed\n\nFor each response, retain:\n\n- exact prompt and preceding conversation context;\n- model and version identifiers, system instructions, and accessible generation settings;\n- response text, call order, timestamp, and any observable error or routing information;\n- the assigned condition and question stratum;\n- annotations of claims, recommendations, qualifications, assumptions, uncertainty, refusals, and requested output structure, as applicable.\n\nFor questions with evaluable answers, obtain an appropriate external criterion, such as a verified answer key, validated reference material, or domain-expert judgment. For open-ended outputs without a single reference answer, define task-specific criteria for acceptable content and consequences before analysis.\n\nDocument missing calls, retries, truncation, safety refusals, and other exclusions. Preserve raw responses so that derived representations and judgments can be audited.\n\n## 5. Measurement\n\n### Task-specific state representation\n\nRepresent each response as a vector or structured state containing features relevant to its task. Depending on the task, features may include:\n\n- propositions or key claims and their polarity;\n- chosen answer or recommendation;\n- ordering, priority, or ranking;\n- numerical values and units;\n- conditions, caveats, uncertainty, and stated assumptions;\n- safety actions, refusal status, or escalation advice;\n- coverage of required elements and unsupported assertions.\n\nDefine the state representation and feature extraction rules before confirmatory analysis. Use a combination of structured annotation and automated extraction only where validated against human-coded examples. Retain the original text and permit an “uncodable” or “uncertain” value rather than forcing a misleading assignment.\n\n### Distance and meaningfulness\n\nSpecify task-specific distances between states. A distance may combine weighted differences in claims, recommendations, numeric outputs, qualifications, and required-element coverage. Select weights with domain input before analyzing confirmatory outputs and conduct sensitivity analyses over plausible alternatives.\n\nSet a **meaningfulness threshold** for each task family before the main analysis. Examples include a changed factual answer, a materially different recommendation, a changed numerical result beyond a prespecified tolerance, omission of a critical warning, or a change in refusal status. A stylistic rewrite, paraphrase, or change in nonessential examples does not count unless it changes a task-relevant state feature.\n\nMeasure surface-form variation separately, using measures such as lexical or syntactic differences. These are descriptive and cannot, by themselves, establish semantic instability.\n\n### Reliability and validity checks\n\nAssess annotation agreement and the validity of automated state extraction against blinded human judgments. Check whether the state representation distinguishes known meaningful contrasts from paraphrases. If it fails these checks, revise it during the pilot or label the affected construct as inadequately measured; do not silently substitute a convenient similarity metric.\n\n## 6. Analysis\n\n### Baseline instability\n\nFor each question, estimate the distribution of observed response states under the fixed baseline condition. Report:\n\n- the proportion of responses that cross the task-specific meaningfulness threshold;\n- the frequency and type of meaningful state changes;\n- within-question state dispersion and uncertainty intervals;\n- ordinary wording variation that does not cross the meaningfulness threshold.\n\nEstimate overall and task-stratified results. Use hierarchical models or an equivalent multilevel approach to account for responses nested within questions and question families. Present question-level results alongside pooled estimates so that a small number of highly variable questions cannot be mistaken for uniform instability.\n\n### Sources of change\n\nFor each controlled perturbation, compare response-state distributions with the baseline. Estimate both:\n\n1. changes in the probability of crossing the meaningfulness threshold; and  \n2. shifts in the distribution of individual state features.\n\nUse factorial terms for prespecified interactions where justified. Distinguish within-condition variability from changes in condition-level means or distributions. Report uncertainty intervals and effect sizes, not only significance tests. If calls are clustered by session or time, include those structures in the model or use an appropriate clustered uncertainty estimate.\n\n### Validity and sensitivity analyses\n\n- Compare semantic-state conclusions with surface-text similarity results to show where lexical variation does and does not track meaningful change.\n- Reanalyze using reasonable alternative state-distance weights and thresholds.\n- Repeat analyses excluding technically anomalous calls, then report the effect of those exclusions.\n- Compare human-coded results with automated representations and describe systematic disagreements.\n- Where reference criteria exist, analyze correctness separately from response consistency. A model can be consistently wrong or variably correct; these are distinct outcomes.\n- Report multiplicity handling for confirmatory comparisons and label exploratory analyses clearly.\n\n## 7. Decision / stopping rule\n\nBefore confirmatory data collection, preregister the question set, conditions, repetition counts, state representation, meaningfulness thresholds, exclusions, primary estimands, and analysis procedure.\n\nConclude that **meaningful response instability is supported** for a prespecified population of questions only if the estimated rate of threshold-crossing changes, with its uncertainty interval, exceeds a prespecified practically relevant minimum. Conclude that **instability is not established** if the interval is compatible with both negligible and practically relevant rates. Conclude that instability is **unlikely to exceed the chosen practical bound** only if the upper uncertainty bound falls below that bound. Apply these rules by task family as well as overall.\n\nConclude that a tested factor is associated with response change only if its prespecified contrast produces a practically relevant shift in the response-state distribution with adequate uncertainty bounds. This does not establish the internal mechanism of the model.\n\nStop collection at the preregistered sample size, or earlier only for predefined technical, safety, or data-integrity reasons. Do not stop based on interim findings unless a sequential design and its error control were specified in advance.\n\n## 8. Limitations\n\n- Findings apply to the tested model, version, interface, prompts, settings, and collection period; model updates or deployment changes may alter results.\n- Hidden routing, caching, infrastructure state, and undocumented system instructions may be unobservable and may contribute to variation.\n- A state-space representation can omit subtle but consequential meaning or impose judgment through its feature definitions and weights.\n- Human annotation can be inconsistent, and expert judgments may differ, especially for open-ended or value-laden questions.\n- Results depend on the selected questions and may not generalize to the full range of real-world use.\n- Repeated outputs reveal observable variation, not necessarily the internal cause of that variation. Factor perturbations support causal claims only about the manipulated conditions under the tested design.\n- Consistency does not imply factual accuracy, fairness, safety, or usefulness; those properties require separate evaluation."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2116,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2305
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

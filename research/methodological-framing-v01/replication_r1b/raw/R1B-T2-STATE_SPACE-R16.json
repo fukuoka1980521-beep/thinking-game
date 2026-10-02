@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "STATE_SPACE_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "STATE_SPACE",
+  "replicate": 16,
+  "run_id": "R1B-T2-STATE_SPACE-R16",
+  "task_id": "T2",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:24:54.543922+00:00",
+  "timestamp_utc": "2026-10-02T06:25:13.804850+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "75d2d7ee6911a899a609ba3b1c16f4d015fb80e10d82631b53857e79bcc0a8ba",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a state-space approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_04c73445cd794222016abf4e36538087d0a474188950563925",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1915,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2104
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine why sites using the same nominal workplace process have persistent differences in completion time, which competing explanations are supported, and what observations would distinguish them.\n\nThe study will use a **state-space framework**: represent each process episode as a sequence of transitions among operational states, some of which may be incompletely observed. The primary outcome is elapsed time from a consistently defined process start to completion. The study will distinguish time spent in active work from waiting, rework, handoffs, and other delays where the evidence permits.\n\nThe scope is the selected process across participating sites and a prespecified observation period. Conclusions will concern differences among those sites and the mechanisms supported by the observed data; they will not automatically generalize to other processes or organizations.\n\n## 2. Assumptions\n\n- “Same nominal process” means sites share a documented intended workflow, not necessarily the same enacted workflow.\n- Completion time is meaningful only if start, completion, cancellation, and pause rules are defined consistently.\n- Episodes may differ in case characteristics, staffing, demand, tools, local practices, and operating conditions.\n- Recorded events may be incomplete, delayed, or generated differently across sites.\n- Site differences may reflect several mechanisms at once. Candidate explanations are not assumed to be mutually exclusive or exhaustive.\n- Observational evidence can identify patterns consistent with explanations, but causal claims require adequate control of confounding and should be qualified where that is not possible.\n- The state-space representation is a measurement and explanatory framework; it does not presume that all sites follow identical states or transition paths.\n\n## 3. Research design\n\nConduct a prospective, multisite observational study, supplemented by a consistent retrospective extract where reliable records are available. Include all eligible process episodes during the observation window, or sample episodes using the same rules at every site. Define eligibility, exclusion, and censoring criteria before analysis.\n\nFirst, document the intended process and develop a provisional state-transition map with frontline staff and process owners. The map should include, as applicable, intake, active processing, queued or waiting states, handoffs, review, rework, completion, and exits such as cancellation. Validate the map against actual episodes at each site rather than assuming that local practice matches the documented workflow. Permit site-specific states or transitions when observations show they are needed, while retaining a common higher-level mapping for comparison.\n\nFor each episode, assemble time-stamped events, case attributes, staffing and workload context, relevant tool or system events, and indicators of local practice. Conduct structured observation or interviews at a subset of sites to clarify what timestamped events mean, identify unlogged work and waiting, and verify state definitions. Use the same protocols across sites.\n\nSpecify competing explanations in advance, including:\n\n1. **Case-mix differences:** sites receive episodes with different complexity or risk.\n2. **Demand and capacity imbalance:** workload relative to available staff or resources differs.\n3. **Different enacted workflows:** sites use different transition sequences, handoffs, queues, or rework practices despite the same nominal process.\n4. **Execution or capability differences:** time in comparable active states differs due to experience, training, coordination, or local expertise.\n5. **Tools and infrastructure:** systems, equipment, access, or reliability affect transition rates or time spent in states.\n6. **Measurement differences:** sites record starts, stops, pauses, or transitions differently, creating apparent rather than operational differences.\n7. **Contextual conditions:** schedules, policies, geography, or other site conditions affect timing.\n\nPreregister the principal outcome, candidate mechanisms, covariates, state definitions, and planned comparisons. Where feasible, include repeated observations across shifts or demand conditions so persistent site patterns can be separated from short-term fluctuations.\n\n## 4. Data or evidence needed\n\nCollect, at episode level:\n\n- Consistent identifiers; site, date, shift, and relevant operating conditions.\n- Start, completion, cancellation, and other terminal timestamps, with the source and meaning of each event.\n- Time-stamped state entries and exits, handoffs, queue entry and exit, review, rework, and pauses.\n- Case attributes available at intake that plausibly predict effort or difficulty.\n- Staffing levels, role mix, experience, absences, workload, backlog, and concurrent demand.\n- Tool or system availability, delays, failures, and relevant version or configuration.\n- Evidence about local workflow practices, including deviations from the documented process.\n- Quality or outcome indicators, to determine whether faster completion coincides with different quality or risk.\n- Data-quality indicators, including missing, duplicated, out-of-order, or retrospectively entered timestamps.\n\nUse interviews and structured observations to interpret records, identify unobserved work and waiting, and check whether similarly named events represent the same real-world state across sites. Document differences in data systems and recording practices.\n\n## 5. Measurement\n\nDefine elapsed completion time uniformly, including the rules for pauses, reopened cases, cancellations, and incomplete episodes. Report both total elapsed time and, where observable, its components: active processing, queueing or waiting, handoff delay, rework, and other modeled states.\n\nRepresent each episode as a trajectory over discrete or continuous time. Define:\n\n- **States:** operational conditions relevant to completion.\n- **Transitions:** movement between states, including return transitions such as rework.\n- **Transition times:** observed or inferred times of entry and exit.\n- **Episode attributes:** case, staffing, workload, tools, and site context.\n- **Observation process:** which states and events are recorded, by whom or what, and with what known limitations.\n\nUse common definitions for cross-site comparison, while retaining local detail where necessary. Test whether event definitions and state assignments are comparable across sites. Quantify timestamp precision, missingness, and agreement between recorded events and structured observations. Treat unobserved states or uncertain timestamps explicitly rather than assigning false precision.\n\n## 6. Analysis\n\nBegin with descriptive comparisons of completion-time distributions, state occupancy, transition sequences, queueing, rework, and data quality by site. Examine variation across cases, shifts, and demand conditions. Avoid relying solely on site averages, which can conceal skew, tail delays, or heterogeneous effects.\n\nFit a hierarchical state-space or multistate duration model appropriate to the data. Allow transition rates or state durations to vary by site and episode characteristics, and distinguish process variation from measurement error and unobserved state occupancy where identifiable. Account for clustering of episodes within sites and repeated operating conditions. Model completion, cancellation, and other exits as distinct outcomes when they have different meanings.\n\nAssess candidate explanations through prespecified comparisons:\n\n- **Case mix:** test whether site differences attenuate after adjustment or standardization to a common case distribution.\n- **Demand and capacity:** examine whether state durations or transition rates vary with workload, backlog, staffing, and role mix within and between sites.\n- **Workflow:** compare transition paths, handoff frequency, queue placement, rework, and state-specific durations.\n- **Execution or capability:** compare time in comparable active states conditional on case, workload, staffing, and workflow; interpret remaining site effects cautiously.\n- **Tools and infrastructure:** relate state-specific delays and transition patterns to recorded availability or reliability.\n- **Measurement:** test whether differences are explained by timestamp conventions, event capture, missingness, or discrepancies with observed episodes.\n- **Context:** examine measured site conditions and temporal variation, separating within-site from between-site associations where possible.\n\nUse counterfactual standardization or decomposition to estimate how much of the observed site gap is associated with differences in case mix, state occupancy, transition rates, and measured operating conditions. Report uncertainty intervals and sensitivity analyses for missing events, alternative state mappings, unmeasured confounding, and alternative definitions of completion time.\n\nTreat an explanation as supported when its predicted observable pattern is present, the pattern is robust to reasonable measurement and model choices, and competing explanations do not account for it equally well. Distinguish “consistent with” from causal attribution. If multiple mechanisms explain different portions of the gap, report them jointly rather than selecting a single winner.\n\n## 7. Decision / stopping rule\n\nBefore data collection, set a minimum observation period and minimum episode coverage per site based on the precision needed to estimate site differences and state-specific durations. Continue collection until those thresholds are met and the main estimates are sufficiently precise to distinguish practically meaningful differences from negligible ones, or until a prespecified maximum duration is reached.\n\nStop earlier only for a documented data-integrity or operational reason. Do not stop because interim results favor a particular explanation. At the stopping point, classify each candidate explanation as supported, not supported by the available evidence, or unresolved. Report unresolved explanations when estimates are imprecise, mechanisms are confounded, or data do not observe the relevant states.\n\n## 8. Limitations\n\n- Observational comparisons may not establish that site-level conditions cause timing differences.\n- Unmeasured case complexity, local norms, or selection into sites may remain.\n- Incomplete or inconsistent event logs can make state occupancy and transition timing difficult to identify.\n- State definitions may simplify complex, overlapping work or fail to capture informal coordination.\n- Some sites may have too few episodes or too little variation in conditions for reliable comparisons.\n- A state-space model cannot recover distinctions unsupported by the observed data; apparently precise estimates may depend on modeling assumptions.\n- The study’s findings may not transfer to other processes, organizations, or periods, particularly after staffing, technology, or policy changes.",
+  "raw_response": {
+    "id": "resp_04c73445cd794222016abf4e36538087d0a474188950563925",
+    "object": "response",
+    "created_at": 1790922294,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922313,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_04c73445cd794222016abf4e36c4cc87d0b78a080be67caf23",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine why sites using the same nominal workplace process have persistent differences in completion time, which competing explanations are supported, and what observations would distinguish them.\n\nThe study will use a **state-space framework**: represent each process episode as a sequence of transitions among operational states, some of which may be incompletely observed. The primary outcome is elapsed time from a consistently defined process start to completion. The study will distinguish time spent in active work from waiting, rework, handoffs, and other delays where the evidence permits.\n\nThe scope is the selected process across participating sites and a prespecified observation period. Conclusions will concern differences among those sites and the mechanisms supported by the observed data; they will not automatically generalize to other processes or organizations.\n\n## 2. Assumptions\n\n- “Same nominal process” means sites share a documented intended workflow, not necessarily the same enacted workflow.\n- Completion time is meaningful only if start, completion, cancellation, and pause rules are defined consistently.\n- Episodes may differ in case characteristics, staffing, demand, tools, local practices, and operating conditions.\n- Recorded events may be incomplete, delayed, or generated differently across sites.\n- Site differences may reflect several mechanisms at once. Candidate explanations are not assumed to be mutually exclusive or exhaustive.\n- Observational evidence can identify patterns consistent with explanations, but causal claims require adequate control of confounding and should be qualified where that is not possible.\n- The state-space representation is a measurement and explanatory framework; it does not presume that all sites follow identical states or transition paths.\n\n## 3. Research design\n\nConduct a prospective, multisite observational study, supplemented by a consistent retrospective extract where reliable records are available. Include all eligible process episodes during the observation window, or sample episodes using the same rules at every site. Define eligibility, exclusion, and censoring criteria before analysis.\n\nFirst, document the intended process and develop a provisional state-transition map with frontline staff and process owners. The map should include, as applicable, intake, active processing, queued or waiting states, handoffs, review, rework, completion, and exits such as cancellation. Validate the map against actual episodes at each site rather than assuming that local practice matches the documented workflow. Permit site-specific states or transitions when observations show they are needed, while retaining a common higher-level mapping for comparison.\n\nFor each episode, assemble time-stamped events, case attributes, staffing and workload context, relevant tool or system events, and indicators of local practice. Conduct structured observation or interviews at a subset of sites to clarify what timestamped events mean, identify unlogged work and waiting, and verify state definitions. Use the same protocols across sites.\n\nSpecify competing explanations in advance, including:\n\n1. **Case-mix differences:** sites receive episodes with different complexity or risk.\n2. **Demand and capacity imbalance:** workload relative to available staff or resources differs.\n3. **Different enacted workflows:** sites use different transition sequences, handoffs, queues, or rework practices despite the same nominal process.\n4. **Execution or capability differences:** time in comparable active states differs due to experience, training, coordination, or local expertise.\n5. **Tools and infrastructure:** systems, equipment, access, or reliability affect transition rates or time spent in states.\n6. **Measurement differences:** sites record starts, stops, pauses, or transitions differently, creating apparent rather than operational differences.\n7. **Contextual conditions:** schedules, policies, geography, or other site conditions affect timing.\n\nPreregister the principal outcome, candidate mechanisms, covariates, state definitions, and planned comparisons. Where feasible, include repeated observations across shifts or demand conditions so persistent site patterns can be separated from short-term fluctuations.\n\n## 4. Data or evidence needed\n\nCollect, at episode level:\n\n- Consistent identifiers; site, date, shift, and relevant operating conditions.\n- Start, completion, cancellation, and other terminal timestamps, with the source and meaning of each event.\n- Time-stamped state entries and exits, handoffs, queue entry and exit, review, rework, and pauses.\n- Case attributes available at intake that plausibly predict effort or difficulty.\n- Staffing levels, role mix, experience, absences, workload, backlog, and concurrent demand.\n- Tool or system availability, delays, failures, and relevant version or configuration.\n- Evidence about local workflow practices, including deviations from the documented process.\n- Quality or outcome indicators, to determine whether faster completion coincides with different quality or risk.\n- Data-quality indicators, including missing, duplicated, out-of-order, or retrospectively entered timestamps.\n\nUse interviews and structured observations to interpret records, identify unobserved work and waiting, and check whether similarly named events represent the same real-world state across sites. Document differences in data systems and recording practices.\n\n## 5. Measurement\n\nDefine elapsed completion time uniformly, including the rules for pauses, reopened cases, cancellations, and incomplete episodes. Report both total elapsed time and, where observable, its components: active processing, queueing or waiting, handoff delay, rework, and other modeled states.\n\nRepresent each episode as a trajectory over discrete or continuous time. Define:\n\n- **States:** operational conditions relevant to completion.\n- **Transitions:** movement between states, including return transitions such as rework.\n- **Transition times:** observed or inferred times of entry and exit.\n- **Episode attributes:** case, staffing, workload, tools, and site context.\n- **Observation process:** which states and events are recorded, by whom or what, and with what known limitations.\n\nUse common definitions for cross-site comparison, while retaining local detail where necessary. Test whether event definitions and state assignments are comparable across sites. Quantify timestamp precision, missingness, and agreement between recorded events and structured observations. Treat unobserved states or uncertain timestamps explicitly rather than assigning false precision.\n\n## 6. Analysis\n\nBegin with descriptive comparisons of completion-time distributions, state occupancy, transition sequences, queueing, rework, and data quality by site. Examine variation across cases, shifts, and demand conditions. Avoid relying solely on site averages, which can conceal skew, tail delays, or heterogeneous effects.\n\nFit a hierarchical state-space or multistate duration model appropriate to the data. Allow transition rates or state durations to vary by site and episode characteristics, and distinguish process variation from measurement error and unobserved state occupancy where identifiable. Account for clustering of episodes within sites and repeated operating conditions. Model completion, cancellation, and other exits as distinct outcomes when they have different meanings.\n\nAssess candidate explanations through prespecified comparisons:\n\n- **Case mix:** test whether site differences attenuate after adjustment or standardization to a common case distribution.\n- **Demand and capacity:** examine whether state durations or transition rates vary with workload, backlog, staffing, and role mix within and between sites.\n- **Workflow:** compare transition paths, handoff frequency, queue placement, rework, and state-specific durations.\n- **Execution or capability:** compare time in comparable active states conditional on case, workload, staffing, and workflow; interpret remaining site effects cautiously.\n- **Tools and infrastructure:** relate state-specific delays and transition patterns to recorded availability or reliability.\n- **Measurement:** test whether differences are explained by timestamp conventions, event capture, missingness, or discrepancies with observed episodes.\n- **Context:** examine measured site conditions and temporal variation, separating within-site from between-site associations where possible.\n\nUse counterfactual standardization or decomposition to estimate how much of the observed site gap is associated with differences in case mix, state occupancy, transition rates, and measured operating conditions. Report uncertainty intervals and sensitivity analyses for missing events, alternative state mappings, unmeasured confounding, and alternative definitions of completion time.\n\nTreat an explanation as supported when its predicted observable pattern is present, the pattern is robust to reasonable measurement and model choices, and competing explanations do not account for it equally well. Distinguish “consistent with” from causal attribution. If multiple mechanisms explain different portions of the gap, report them jointly rather than selecting a single winner.\n\n## 7. Decision / stopping rule\n\nBefore data collection, set a minimum observation period and minimum episode coverage per site based on the precision needed to estimate site differences and state-specific durations. Continue collection until those thresholds are met and the main estimates are sufficiently precise to distinguish practically meaningful differences from negligible ones, or until a prespecified maximum duration is reached.\n\nStop earlier only for a documented data-integrity or operational reason. Do not stop because interim results favor a particular explanation. At the stopping point, classify each candidate explanation as supported, not supported by the available evidence, or unresolved. Report unresolved explanations when estimates are imprecise, mechanisms are confounded, or data do not observe the relevant states.\n\n## 8. Limitations\n\n- Observational comparisons may not establish that site-level conditions cause timing differences.\n- Unmeasured case complexity, local norms, or selection into sites may remain.\n- Incomplete or inconsistent event logs can make state occupancy and transition timing difficult to identify.\n- State definitions may simplify complex, overlapping work or fail to capture informal coordination.\n- Some sites may have too few episodes or too little variation in conditions for reliable comparisons.\n- A state-space model cannot recover distinctions unsupported by the observed data; apparently precise estimates may depend on modeling assumptions.\n- The study’s findings may not transfer to other processes, organizations, or periods, particularly after staffing, technology, or policy changes."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1915,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2104
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

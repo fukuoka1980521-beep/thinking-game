@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "CAUSAL_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "CAUSAL",
+  "replicate": 14,
+  "run_id": "R1B-T2-CAUSAL-R14",
+  "task_id": "T2",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:25:18.648574+00:00",
+  "timestamp_utc": "2026-10-02T06:25:40.082684+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "5ca9672074bef0aa64944aa2e07dd11abdb05c1c0f523ada799d9bad87da0420",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_0b8771007c45ae15016abf4e4e729c87d0908dfcac3f97a5a9",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 190,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2220,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2410
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine why teams at different sites have persistent differences in completion time despite nominally using the same workplace process. The study will estimate the size of those differences, assess competing causal explanations, and specify observations that would distinguish them.\n\nThe primary outcome is elapsed time from a consistently defined process start to completion. The study will also examine rework, quality, workload, and intermediate-stage times so that a shorter completion time is not mistaken for a better result if it reflects omissions or lower quality.\n\nThe initial scope is a set of sites with comparable process definitions and enough variation in site conditions, team practices, staffing, and case mix to evaluate plausible explanations. Findings will apply to the observed sites and period; broader generalization will require replication.\n\n## 2. Assumptions\n\n- The nominal process can be defined consistently across sites, including start and end points, required steps, and allowable exceptions.\n- Completion-time records can be linked reliably to teams, sites, cases, and relevant operating conditions.\n- Persistent differences mean differences that remain after accounting for observed case mix and calendar variation, not merely a temporary surge or an uneven distribution of difficult cases.\n- Plausible explanations include:\n  - Case complexity or other differences in incoming work.\n  - Staffing levels, experience, workload, or skill mix.\n  - Local implementation differences, including deviations from the nominal process.\n  - Differences in tools, infrastructure, handoffs, or access to information.\n  - Coordination practices, managerial support, and team learning.\n  - Data recording practices that create apparent rather than actual differences.\n- Potential causes may be interrelated. For example, workload can affect adherence to process steps, and local management may affect both staffing and coordination.\n- Any causal interpretation depends on adequate measurement of key confounders, overlap in relevant conditions across sites, and defensible temporal ordering.\n\n## 3. Research design\n\nUse a longitudinal, mixed-methods observational design organized around explicit causal questions. Do not treat site identity as a cause in itself; treat it as a marker for potentially differing conditions.\n\n**Phase 1: Define the process and causal model**\n\nMap the nominal workflow with representatives from multiple sites. Establish a common process definition, identify permitted variations, and document where timing begins and ends. Develop a causal diagram linking candidate causes to completion time and quality. Include plausible confounders such as case mix, seasonality, demand volume, site resources, and organizational changes.\n\nPre-specify the main estimands:\n\n1. The adjusted difference in completion time between sites.\n2. The contribution of measured case mix and operating conditions to that difference.\n3. The effect, where identifiable, of actionable conditions such as staffing, tool availability, or specific process deviations.\n4. Whether apparent time advantages are accompanied by differences in quality, rework, or outcomes.\n\n**Phase 2: Establish the pattern**\n\nCollect repeated case-level observations over a period long enough to cover usual fluctuations and relevant operational cycles. Confirm whether site differences persist across teams, case types, and time periods. Separate within-site changes from between-site differences.\n\n**Phase 3: Test competing explanations**\n\nUse the natural variation already present in the data, including changes over time in staffing, workload, tools, or practices. Where a change is introduced at one or more sites for operational reasons, use it as a quasi-experimental opportunity only if timing, comparison sites, and pre-change trends support a credible comparison. Do not assume that the change is exogenous.\n\nFor each proposed explanation, specify in advance:\n- The predicted pattern if it is causal.\n- The observations that would weaken that explanation.\n- The confounders that must be addressed.\n- Whether the data allow identification of a causal effect or only an adjusted association.\n\n**Phase 4: Explain mechanisms**\n\nConduct structured interviews and workflow observations at sites with contrasting time profiles. Sample teams and cases across relevant roles, shifts, and complexity levels. Use this evidence to identify mechanisms, clarify process variation, and assess whether quantitative measures represent actual work conditions. Qualitative findings can refine the causal model but do not by themselves establish causal effects.\n\n## 4. Data or evidence needed\n\n**Case-level operational records**\n- Process start, intermediate milestones, completion, pauses, cancellations, and reopening.\n- Case type, complexity indicators, urgency, dependencies, and required approvals.\n- Quality measures, errors, rework, escalations, and downstream outcomes.\n- Team and site affiliation, while protecting confidentiality.\n\n**Workforce and operating conditions**\n- Staffing by role, shift, and time period; absences; tenure; experience; training; and turnover.\n- Incoming volume, queue size, concurrent workload, and demand variability.\n- Availability and reliability of tools, systems, equipment, information, and workspace.\n- Handoffs, approval steps, coordination arrangements, and management practices.\n- Dates and details of changes to staffing, technology, policy, or workflow.\n\n**Process-adherence evidence**\n- Which steps were completed, skipped, reordered, repeated, or handled differently.\n- Reasons for exceptions and whether variation was authorized or workaround-driven.\n- Where feasible, direct observation or validated event logs to compare recorded process with actual practice.\n\n**Context and validation evidence**\n- Calendar effects, closures, policy changes, local constraints, and unusual disruptions.\n- Interviews and observations with staff and managers from contrasting sites.\n- Data-quality checks comparing system timestamps with observed or independently recorded events.\n\n## 5. Measurement\n\nDefine completion time as elapsed time between validated start and completion events. Specify how pauses, waits outside the team’s control, cancellations, reopened cases, and overnight or non-working hours are handled. Report both total elapsed time and, where data permit, active work time and waiting time.\n\nMeasure time distributions, not only averages: medians, upper quantiles, and variability can reveal whether a site is slower broadly or has a small number of exceptionally delayed cases. Account for right-censored cases that have not completed by the end of observation.\n\nUse pre-defined, comparable measures for case complexity and quality. Validate that quality measures have the same meaning across sites. Measure process adherence at the step level rather than relying solely on a self-reported overall compliance score.\n\nAssess data comparability by site, including timestamp precision, missingness, record linkage, and whether delays are captured consistently. Treat a site difference as potentially artifactual until these checks are satisfactory.\n\n## 6. Analysis\n\n**Describe and validate.** Plot site-specific time distributions over time and by case type. Examine missingness, timestamp anomalies, and differences in recording practices. Test whether observed site rankings are stable across periods and teams.\n\n**Estimate adjusted differences.** Model case completion time using methods appropriate to its distribution and censoring, with cases nested within teams and sites and repeated time periods represented. Adjust for pre-specified case-mix and calendar factors. Report both unadjusted and adjusted estimates, with uncertainty intervals. Avoid interpreting adjustment as causal when relevant confounding remains.\n\n**Evaluate competing explanations.** Add candidate explanatory conditions in substantively defined groups, such as case mix, staffing and workload, tools, and process implementation. Estimate how adjusted site differences change, but do not interpret attenuation alone as proof of mediation or cause. Examine whether each proposed cause predicts the pattern it should: for example, whether queue pressure predicts waiting time, or whether a specific handoff difference predicts delay at the corresponding stage.\n\nWhere a condition changes over time, consider a controlled interrupted time-series or difference-in-differences analysis only if there is a defensible comparison, adequate pre-change observations, no strong evidence of diverging pre-trends, and no concurrent site-specific change likely to explain the outcome. State the identifying assumptions and test plausible violations. If these conditions are not met, report the result as associational.\n\n**Distinguish mechanisms.** Decompose elapsed time into stage and waiting intervals where records permit. Compare the quantitative pattern with observations and interviews. For example:\n- A case-mix explanation is supported if the gap substantially narrows within comparable case types and complexity strata.\n- A workload explanation is supported if higher queue pressure precedes longer waits within teams, beyond case mix and calendar effects.\n- A process-implementation explanation is supported if specific deviations correspond to delays at the affected stages and are corroborated by direct evidence.\n- A tool or infrastructure explanation is supported if measured outages or access constraints align temporally with delays and relevant stages.\n- A recording explanation is supported if independent timing evidence disagrees systematically with site records.\n- A quality trade-off is indicated if shorter times coincide with worse quality, more rework, or more downstream failures.\n\n**Robustness and sensitivity.** Repeat analyses using alternative reasonable time definitions, case-mix specifications, and exclusion rules. Examine results by team, shift, case type, and period. Assess sensitivity to unmeasured confounding and differential missingness. Report null, mixed, and contradictory results rather than selecting only favorable explanations.\n\n## 7. Decision / stopping rule\n\nConclude that a candidate explanation is supported as a causal contributor only when:\n\n1. The relevant exposure is measured with adequate validity and precedes the outcome.\n2. Its association with completion time is robust to pre-specified adjustments and reasonable sensitivity analyses.\n3. The observed stage-level or subgroup pattern is consistent with the proposed mechanism.\n4. Data-quality differences and plausible alternative explanations do not adequately account for the result.\n5. Where a quasi-experimental estimate is used, its identifying assumptions are credible and the estimate is not contradicted by diagnostic evidence.\n\nClassify explanations as **supported**, **consistent but not causally identified**, **not supported by the observed evidence**, or **unresolved**. More than one explanation may be supported.\n\nThe study can stop when the process and timing measures are validated, site differences have been characterized over the planned observation period, major pre-specified explanations have been evaluated with adequate precision or documented as not identifiable, and additional collection is unlikely to change the classification of the leading explanations. If estimates remain too imprecise, key sites or conditions lack overlap, or data quality prevents comparison, report the question as unresolved and identify the additional evidence needed.\n\n## 8. Limitations\n\n- Observational data may leave residual confounding, especially where local management, team skills, and process practices change together.\n- Site-level comparisons can be misleading if sites differ in unmeasured case characteristics or recordkeeping.\n- Process adherence and work conditions may be imperfectly measured; interviews may be affected by recall or social-desirability bias.\n- Quasi-experimental estimates depend on assumptions such as credible comparison trends and absence of concurrent changes; these may be difficult to verify.\n- Some causes may vary at team or individual level while available data are only site-level, limiting mechanism attribution.\n- Results may not generalize to sites, periods, or process versions not observed.\n- Completion time alone is insufficient to judge performance; quality, safety, staff burden, and downstream consequences must be considered.",
+  "raw_response": {
+    "id": "resp_0b8771007c45ae15016abf4e4e729c87d0908dfcac3f97a5a9",
+    "object": "response",
+    "created_at": 1790922318,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922339,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0b8771007c45ae15016abf4e4f065087d0adc0a0f67d57fca0",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine why teams at different sites have persistent differences in completion time despite nominally using the same workplace process. The study will estimate the size of those differences, assess competing causal explanations, and specify observations that would distinguish them.\n\nThe primary outcome is elapsed time from a consistently defined process start to completion. The study will also examine rework, quality, workload, and intermediate-stage times so that a shorter completion time is not mistaken for a better result if it reflects omissions or lower quality.\n\nThe initial scope is a set of sites with comparable process definitions and enough variation in site conditions, team practices, staffing, and case mix to evaluate plausible explanations. Findings will apply to the observed sites and period; broader generalization will require replication.\n\n## 2. Assumptions\n\n- The nominal process can be defined consistently across sites, including start and end points, required steps, and allowable exceptions.\n- Completion-time records can be linked reliably to teams, sites, cases, and relevant operating conditions.\n- Persistent differences mean differences that remain after accounting for observed case mix and calendar variation, not merely a temporary surge or an uneven distribution of difficult cases.\n- Plausible explanations include:\n  - Case complexity or other differences in incoming work.\n  - Staffing levels, experience, workload, or skill mix.\n  - Local implementation differences, including deviations from the nominal process.\n  - Differences in tools, infrastructure, handoffs, or access to information.\n  - Coordination practices, managerial support, and team learning.\n  - Data recording practices that create apparent rather than actual differences.\n- Potential causes may be interrelated. For example, workload can affect adherence to process steps, and local management may affect both staffing and coordination.\n- Any causal interpretation depends on adequate measurement of key confounders, overlap in relevant conditions across sites, and defensible temporal ordering.\n\n## 3. Research design\n\nUse a longitudinal, mixed-methods observational design organized around explicit causal questions. Do not treat site identity as a cause in itself; treat it as a marker for potentially differing conditions.\n\n**Phase 1: Define the process and causal model**\n\nMap the nominal workflow with representatives from multiple sites. Establish a common process definition, identify permitted variations, and document where timing begins and ends. Develop a causal diagram linking candidate causes to completion time and quality. Include plausible confounders such as case mix, seasonality, demand volume, site resources, and organizational changes.\n\nPre-specify the main estimands:\n\n1. The adjusted difference in completion time between sites.\n2. The contribution of measured case mix and operating conditions to that difference.\n3. The effect, where identifiable, of actionable conditions such as staffing, tool availability, or specific process deviations.\n4. Whether apparent time advantages are accompanied by differences in quality, rework, or outcomes.\n\n**Phase 2: Establish the pattern**\n\nCollect repeated case-level observations over a period long enough to cover usual fluctuations and relevant operational cycles. Confirm whether site differences persist across teams, case types, and time periods. Separate within-site changes from between-site differences.\n\n**Phase 3: Test competing explanations**\n\nUse the natural variation already present in the data, including changes over time in staffing, workload, tools, or practices. Where a change is introduced at one or more sites for operational reasons, use it as a quasi-experimental opportunity only if timing, comparison sites, and pre-change trends support a credible comparison. Do not assume that the change is exogenous.\n\nFor each proposed explanation, specify in advance:\n- The predicted pattern if it is causal.\n- The observations that would weaken that explanation.\n- The confounders that must be addressed.\n- Whether the data allow identification of a causal effect or only an adjusted association.\n\n**Phase 4: Explain mechanisms**\n\nConduct structured interviews and workflow observations at sites with contrasting time profiles. Sample teams and cases across relevant roles, shifts, and complexity levels. Use this evidence to identify mechanisms, clarify process variation, and assess whether quantitative measures represent actual work conditions. Qualitative findings can refine the causal model but do not by themselves establish causal effects.\n\n## 4. Data or evidence needed\n\n**Case-level operational records**\n- Process start, intermediate milestones, completion, pauses, cancellations, and reopening.\n- Case type, complexity indicators, urgency, dependencies, and required approvals.\n- Quality measures, errors, rework, escalations, and downstream outcomes.\n- Team and site affiliation, while protecting confidentiality.\n\n**Workforce and operating conditions**\n- Staffing by role, shift, and time period; absences; tenure; experience; training; and turnover.\n- Incoming volume, queue size, concurrent workload, and demand variability.\n- Availability and reliability of tools, systems, equipment, information, and workspace.\n- Handoffs, approval steps, coordination arrangements, and management practices.\n- Dates and details of changes to staffing, technology, policy, or workflow.\n\n**Process-adherence evidence**\n- Which steps were completed, skipped, reordered, repeated, or handled differently.\n- Reasons for exceptions and whether variation was authorized or workaround-driven.\n- Where feasible, direct observation or validated event logs to compare recorded process with actual practice.\n\n**Context and validation evidence**\n- Calendar effects, closures, policy changes, local constraints, and unusual disruptions.\n- Interviews and observations with staff and managers from contrasting sites.\n- Data-quality checks comparing system timestamps with observed or independently recorded events.\n\n## 5. Measurement\n\nDefine completion time as elapsed time between validated start and completion events. Specify how pauses, waits outside the team’s control, cancellations, reopened cases, and overnight or non-working hours are handled. Report both total elapsed time and, where data permit, active work time and waiting time.\n\nMeasure time distributions, not only averages: medians, upper quantiles, and variability can reveal whether a site is slower broadly or has a small number of exceptionally delayed cases. Account for right-censored cases that have not completed by the end of observation.\n\nUse pre-defined, comparable measures for case complexity and quality. Validate that quality measures have the same meaning across sites. Measure process adherence at the step level rather than relying solely on a self-reported overall compliance score.\n\nAssess data comparability by site, including timestamp precision, missingness, record linkage, and whether delays are captured consistently. Treat a site difference as potentially artifactual until these checks are satisfactory.\n\n## 6. Analysis\n\n**Describe and validate.** Plot site-specific time distributions over time and by case type. Examine missingness, timestamp anomalies, and differences in recording practices. Test whether observed site rankings are stable across periods and teams.\n\n**Estimate adjusted differences.** Model case completion time using methods appropriate to its distribution and censoring, with cases nested within teams and sites and repeated time periods represented. Adjust for pre-specified case-mix and calendar factors. Report both unadjusted and adjusted estimates, with uncertainty intervals. Avoid interpreting adjustment as causal when relevant confounding remains.\n\n**Evaluate competing explanations.** Add candidate explanatory conditions in substantively defined groups, such as case mix, staffing and workload, tools, and process implementation. Estimate how adjusted site differences change, but do not interpret attenuation alone as proof of mediation or cause. Examine whether each proposed cause predicts the pattern it should: for example, whether queue pressure predicts waiting time, or whether a specific handoff difference predicts delay at the corresponding stage.\n\nWhere a condition changes over time, consider a controlled interrupted time-series or difference-in-differences analysis only if there is a defensible comparison, adequate pre-change observations, no strong evidence of diverging pre-trends, and no concurrent site-specific change likely to explain the outcome. State the identifying assumptions and test plausible violations. If these conditions are not met, report the result as associational.\n\n**Distinguish mechanisms.** Decompose elapsed time into stage and waiting intervals where records permit. Compare the quantitative pattern with observations and interviews. For example:\n- A case-mix explanation is supported if the gap substantially narrows within comparable case types and complexity strata.\n- A workload explanation is supported if higher queue pressure precedes longer waits within teams, beyond case mix and calendar effects.\n- A process-implementation explanation is supported if specific deviations correspond to delays at the affected stages and are corroborated by direct evidence.\n- A tool or infrastructure explanation is supported if measured outages or access constraints align temporally with delays and relevant stages.\n- A recording explanation is supported if independent timing evidence disagrees systematically with site records.\n- A quality trade-off is indicated if shorter times coincide with worse quality, more rework, or more downstream failures.\n\n**Robustness and sensitivity.** Repeat analyses using alternative reasonable time definitions, case-mix specifications, and exclusion rules. Examine results by team, shift, case type, and period. Assess sensitivity to unmeasured confounding and differential missingness. Report null, mixed, and contradictory results rather than selecting only favorable explanations.\n\n## 7. Decision / stopping rule\n\nConclude that a candidate explanation is supported as a causal contributor only when:\n\n1. The relevant exposure is measured with adequate validity and precedes the outcome.\n2. Its association with completion time is robust to pre-specified adjustments and reasonable sensitivity analyses.\n3. The observed stage-level or subgroup pattern is consistent with the proposed mechanism.\n4. Data-quality differences and plausible alternative explanations do not adequately account for the result.\n5. Where a quasi-experimental estimate is used, its identifying assumptions are credible and the estimate is not contradicted by diagnostic evidence.\n\nClassify explanations as **supported**, **consistent but not causally identified**, **not supported by the observed evidence**, or **unresolved**. More than one explanation may be supported.\n\nThe study can stop when the process and timing measures are validated, site differences have been characterized over the planned observation period, major pre-specified explanations have been evaluated with adequate precision or documented as not identifiable, and additional collection is unlikely to change the classification of the leading explanations. If estimates remain too imprecise, key sites or conditions lack overlap, or data quality prevents comparison, report the question as unresolved and identify the additional evidence needed.\n\n## 8. Limitations\n\n- Observational data may leave residual confounding, especially where local management, team skills, and process practices change together.\n- Site-level comparisons can be misleading if sites differ in unmeasured case characteristics or recordkeeping.\n- Process adherence and work conditions may be imperfectly measured; interviews may be affected by recall or social-desirability bias.\n- Quasi-experimental estimates depend on assumptions such as credible comparison trends and absence of concurrent changes; these may be difficult to verify.\n- Some causes may vary at team or individual level while available data are only site-level, limiting mechanism attribution.\n- Results may not generalize to sites, periods, or process versions not observed.\n- Completion time alone is insufficient to judge performance; quality, safety, staff burden, and downstream consequences must be considered."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 190,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2220,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2410
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

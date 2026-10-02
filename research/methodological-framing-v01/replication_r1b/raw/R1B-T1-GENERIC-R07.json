@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "GENERIC_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "GENERIC",
+  "replicate": 7,
+  "run_id": "R1B-T1-GENERIC-R07",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T01:45:12.710085+00:00",
+  "timestamp_utc": "2026-10-02T01:45:33.067686+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse your own best judgment as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "7e7d5cbd66997da805fe2daeadb06b6434f6f7f56872bfb3cacb44963f3ffc40",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse your own best judgment as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_089b86d4e75c88cf016abf0ca8763087d0b9c955d6caa99859",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2107,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2296
+  },
+  "raw_text": "# 1. Objective and scope\n\nDetermine whether repeated responses to the same question from the same large language model (LLM) differ in ways that matter, identify conditions associated with those differences, and distinguish substantive instability from harmless variation in wording or presentation.\n\nThe study will address three questions:\n\n1. **Existence:** Under fixed conditions, how often do repeated responses differ substantively?\n2. **Causes:** How do sampling settings, prompt context, model version, and other controlled conditions affect response variation?\n3. **Interpretation:** Which observed differences alter factual content, reasoning, recommendations, safety, or task success—and which are merely stylistic?\n\nThe primary scope is repeated responses to a fixed set of questions. It will not treat all possible prompts, models, or deployment settings as interchangeable.\n\n# 2. Assumptions\n\n- “Same question” means the same prompt text, system instructions, conversation history, model identifier, and generation settings, unless a condition is deliberately varied.\n- The model may be stochastic, may change over time, or may depend on serving infrastructure. These are distinct potential sources of variation and should not be conflated.\n- Textual difference alone is not evidence of meaningful instability. Meaningfulness must be defined relative to the task and assessed independently of surface similarity.\n- Some questions have multiple valid answers. A difference between valid alternatives is not automatically a failure, though it may matter for reliability or reproducibility.\n- Human judgments can be noisy and influenced by presentation. Evaluation procedures should therefore use blinded, structured assessments and adjudication.\n- The study’s conclusions apply only to the sampled models, questions, dates, and operating conditions.\n\n# 3. Research design\n\n## 3.1 Overall design\n\nUse a preregistered, repeated-generation study with two linked components:\n\n1. **Controlled replication:** Repeatedly submit identical prompts under fixed model and decoding conditions to estimate within-condition response variability.\n2. **Factorial perturbation:** Change one prespecified factor at a time, or use a balanced factorial design when interactions are of interest, to assess what conditions are associated with changes.\n\nFor each response, retain the full prompt, model identifier, settings, timestamp, and any available serving metadata. Randomize request order where feasible and distribute repetitions across sessions to avoid confounding a condition with time or request order.\n\n## 3.2 Question set\n\nConstruct a stratified set of questions covering task types for which differences can be evaluated meaningfully, for example:\n\n- factual questions with verifiable answers;\n- questions with several defensible answers;\n- summarization and extraction tasks;\n- advice or recommendation tasks;\n- reasoning and calculation tasks;\n- safety-sensitive or policy-governed requests;\n- underspecified questions where ambiguity is itself relevant.\n\nSpecify inclusion criteria and evaluation targets before generating responses. Include both naturally occurring prompts and carefully controlled prompts if both are within scope, and analyze them separately. Avoid drawing conclusions from a convenience sample alone.\n\n## 3.3 Replication and conditions\n\nFor every question, collect repeated generations under the baseline condition. Choose the number of repetitions by a prospective precision or power analysis based on the smallest instability rate that would matter in the intended use.\n\nWhere supported, examine prespecified factors such as:\n\n- sampling parameters, including temperature and nucleus-sampling settings;\n- prompt wording or formatting, while preserving intended meaning;\n- conversation history or preceding context;\n- model version or system configuration;\n- session, time, or serving route.\n\nVary factors in a way that permits attribution. For example, comparisons of model versions should hold question wording and evaluation procedures fixed. If the serving system does not expose or permit control of a factor, record that limitation rather than treating it as experimentally manipulated.\n\n## 3.4 Controls\n\n- Use a fixed baseline prompt and settings for the primary estimate.\n- Include deterministic or lowest-variance settings where available, but do not assume that a nominally deterministic setting guarantees identical outputs.\n- Include questions with known answers or explicit acceptance criteria to calibrate evaluators and automated checks.\n- Blind evaluators to condition, generation order, and whether outputs are baseline replicates or perturbed-condition responses.\n- Retain all outputs, including refusals, malformed responses, and incomplete generations; do not exclude them solely because they are inconvenient to score.\n\n# 4. Data or evidence needed\n\nFor each generation, record:\n\n- exact prompt, system message, and conversation history;\n- model name, version or snapshot, and available configuration details;\n- decoding settings, output-length limit, and any other exposed generation controls;\n- request timestamp, session identifier, request order, and available serving metadata;\n- raw response, completion status, and any error or refusal indicator.\n\nFor evaluation, collect:\n\n- structured labels for correctness, completeness, task success, factual claims, reasoning steps where appropriate, recommendations, and safety-relevant content;\n- pairwise judgments of whether two responses are substantively equivalent;\n- evaluator confidence and adjudication notes;\n- reference answers, rubrics, or external evidence appropriate to each task.\n\nPreserve provenance and version all prompts, rubrics, and coding rules. If responses contain claims requiring verification, use sources selected independently of the response, with source quality and date recorded. No response should be treated as its own evidence of correctness.\n\n# 5. Measurement\n\n## 5.1 Primary outcome: substantive instability\n\nDefine a response pair as substantively different only when a prespecified rubric identifies a change that could affect interpretation or use. Relevant dimensions include:\n\n- factual correctness or the main answer;\n- omitted, added, or contradicted material information;\n- reasoning or calculation that changes the conclusion;\n- recommendation, ranking, or action;\n- uncertainty or qualification that changes how confidently a user should rely on the answer;\n- refusal versus compliance;\n- safety, privacy, or policy-relevant content;\n- whether the response meets the task’s acceptance criteria.\n\nFor each question, estimate the probability that two independently generated responses under the same condition are substantively different. Report this alongside the probability of any observable difference, so textual variation is not mistaken for substantive instability.\n\n## 5.2 Secondary outcomes\n\nMeasure:\n\n- correctness and task success per response;\n- variation in factual claims and recommendations;\n- refusal and safety outcomes;\n- response length, organization, tone, and lexical variation;\n- evaluator-rated semantic equivalence;\n- within-question and between-question variability.\n\nFor multi-answer questions, score validity and coverage against a rubric rather than requiring one exact string or answer.\n\n## 5.3 Assessment procedures\n\nUse trained independent evaluators and a written rubric. For the primary outcome, assess responses in randomized pairs, with identifying metadata removed. Include duplicate pairs and known-different pairs to estimate evaluator consistency and sensitivity. Resolve disagreements through blinded adjudication, and report agreement before adjudication.\n\nAutomated similarity or semantic measures may be used as descriptive or screening measures, not as sole evidence of meaningful equivalence. Exact-match, lexical-overlap, and embedding-based metrics can miss changes in factual content or overstate differences between paraphrases.\n\n# 6. Analysis\n\n## 6.1 Descriptive estimates\n\nFor each question and condition, report:\n\n- the rate of any textual difference;\n- the rate of rubric-defined substantive difference;\n- correctness and task-success rates;\n- the types and severity of substantive changes;\n- uncertainty intervals for all principal estimates.\n\nSummarize results by task stratum as well as overall. Overall averages should not obscure high-instability subsets.\n\n## 6.2 Inferential analysis\n\nUse a hierarchical model or equivalent clustered analysis that accounts for repeated responses nested within questions and, where applicable, evaluators and sessions. Estimate within-condition instability and condition effects, with question-level variation reported explicitly.\n\nFor controlled factor comparisons, estimate the change in substantive-instability rate relative to baseline. Test prespecified interactions only where the design and sample size support them. Adjust for multiple comparisons or clearly distinguish confirmatory from exploratory analyses.\n\nSeparate:\n\n- **generation variability** within a fixed model and condition;\n- **condition effects** caused by manipulated settings or prompt context;\n- **time or version effects** associated with model or serving changes;\n- **evaluation uncertainty** due to disagreement among raters.\n\nConduct sensitivity analyses using alternative reasonable thresholds for substantive difference, excluding neither difficult questions nor unfavorable responses from the primary analysis. Report results with and without adjudicated cases if adjudication materially affects conclusions.\n\n## 6.3 Practical interpretation\n\nInterpret instability against prespecified consequences, not statistical significance alone. A low rate of harmless paraphrase may be acceptable; a small rate of changed safety guidance or incorrect high-stakes advice may not be. Present severity-stratified results and examples that illustrate each category without replacing the quantitative analysis.\n\n# 7. Decision / stopping rule\n\nBefore data collection, define:\n\n- the minimum substantively important instability rate or effect size;\n- acceptable error rates by task and risk level;\n- the required precision for the primary estimate;\n- any safety-critical failure threshold;\n- the planned sample size and maximum number of generations.\n\nStop data collection when the preregistered precision or sample-size target is met, or when the maximum is reached. Apply any early stopping rule only if specified in advance, such as for a clearly exceeded safety-critical threshold.\n\nConclude that meaningful instability is present for a defined task or condition when the estimated substantive-instability rate, with its uncertainty interval, exceeds the prespecified practical threshold. Conclude that evidence supports stability only when the upper uncertainty bound is below that threshold. Otherwise, classify the result as inconclusive. Do not infer general stability from a nonsignificant difference or from low textual variation alone.\n\n# 8. Limitations\n\n- Results are restricted to the sampled prompts, model versions, settings, and observation period.\n- Hidden serving changes, routing, system prompts, or backend nondeterminism may remain uncontrolled.\n- Human judgments of semantic and practical importance are imperfect, even with blinding and adjudication.\n- Reference answers may be incomplete or contested, especially for open-ended questions.\n- A finite set of repeated generations cannot rule out rare but consequential failures.\n- Prompt perturbations may change meaning as well as wording; conclusions require careful interpretation of the manipulation.\n- Similar outputs can share the same error, so consistency does not establish correctness.\n- The study measures observed outputs, not internal model causes. Findings can identify conditions associated with instability but may not establish the underlying mechanism.",
+  "raw_response": {
+    "id": "resp_089b86d4e75c88cf016abf0ca8763087d0b9c955d6caa99859",
+    "object": "response",
+    "created_at": 1790905512,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790905532,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_089b86d4e75c88cf016abf0ca8e9f887d0b859f3f7094b7410",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "# 1. Objective and scope\n\nDetermine whether repeated responses to the same question from the same large language model (LLM) differ in ways that matter, identify conditions associated with those differences, and distinguish substantive instability from harmless variation in wording or presentation.\n\nThe study will address three questions:\n\n1. **Existence:** Under fixed conditions, how often do repeated responses differ substantively?\n2. **Causes:** How do sampling settings, prompt context, model version, and other controlled conditions affect response variation?\n3. **Interpretation:** Which observed differences alter factual content, reasoning, recommendations, safety, or task success—and which are merely stylistic?\n\nThe primary scope is repeated responses to a fixed set of questions. It will not treat all possible prompts, models, or deployment settings as interchangeable.\n\n# 2. Assumptions\n\n- “Same question” means the same prompt text, system instructions, conversation history, model identifier, and generation settings, unless a condition is deliberately varied.\n- The model may be stochastic, may change over time, or may depend on serving infrastructure. These are distinct potential sources of variation and should not be conflated.\n- Textual difference alone is not evidence of meaningful instability. Meaningfulness must be defined relative to the task and assessed independently of surface similarity.\n- Some questions have multiple valid answers. A difference between valid alternatives is not automatically a failure, though it may matter for reliability or reproducibility.\n- Human judgments can be noisy and influenced by presentation. Evaluation procedures should therefore use blinded, structured assessments and adjudication.\n- The study’s conclusions apply only to the sampled models, questions, dates, and operating conditions.\n\n# 3. Research design\n\n## 3.1 Overall design\n\nUse a preregistered, repeated-generation study with two linked components:\n\n1. **Controlled replication:** Repeatedly submit identical prompts under fixed model and decoding conditions to estimate within-condition response variability.\n2. **Factorial perturbation:** Change one prespecified factor at a time, or use a balanced factorial design when interactions are of interest, to assess what conditions are associated with changes.\n\nFor each response, retain the full prompt, model identifier, settings, timestamp, and any available serving metadata. Randomize request order where feasible and distribute repetitions across sessions to avoid confounding a condition with time or request order.\n\n## 3.2 Question set\n\nConstruct a stratified set of questions covering task types for which differences can be evaluated meaningfully, for example:\n\n- factual questions with verifiable answers;\n- questions with several defensible answers;\n- summarization and extraction tasks;\n- advice or recommendation tasks;\n- reasoning and calculation tasks;\n- safety-sensitive or policy-governed requests;\n- underspecified questions where ambiguity is itself relevant.\n\nSpecify inclusion criteria and evaluation targets before generating responses. Include both naturally occurring prompts and carefully controlled prompts if both are within scope, and analyze them separately. Avoid drawing conclusions from a convenience sample alone.\n\n## 3.3 Replication and conditions\n\nFor every question, collect repeated generations under the baseline condition. Choose the number of repetitions by a prospective precision or power analysis based on the smallest instability rate that would matter in the intended use.\n\nWhere supported, examine prespecified factors such as:\n\n- sampling parameters, including temperature and nucleus-sampling settings;\n- prompt wording or formatting, while preserving intended meaning;\n- conversation history or preceding context;\n- model version or system configuration;\n- session, time, or serving route.\n\nVary factors in a way that permits attribution. For example, comparisons of model versions should hold question wording and evaluation procedures fixed. If the serving system does not expose or permit control of a factor, record that limitation rather than treating it as experimentally manipulated.\n\n## 3.4 Controls\n\n- Use a fixed baseline prompt and settings for the primary estimate.\n- Include deterministic or lowest-variance settings where available, but do not assume that a nominally deterministic setting guarantees identical outputs.\n- Include questions with known answers or explicit acceptance criteria to calibrate evaluators and automated checks.\n- Blind evaluators to condition, generation order, and whether outputs are baseline replicates or perturbed-condition responses.\n- Retain all outputs, including refusals, malformed responses, and incomplete generations; do not exclude them solely because they are inconvenient to score.\n\n# 4. Data or evidence needed\n\nFor each generation, record:\n\n- exact prompt, system message, and conversation history;\n- model name, version or snapshot, and available configuration details;\n- decoding settings, output-length limit, and any other exposed generation controls;\n- request timestamp, session identifier, request order, and available serving metadata;\n- raw response, completion status, and any error or refusal indicator.\n\nFor evaluation, collect:\n\n- structured labels for correctness, completeness, task success, factual claims, reasoning steps where appropriate, recommendations, and safety-relevant content;\n- pairwise judgments of whether two responses are substantively equivalent;\n- evaluator confidence and adjudication notes;\n- reference answers, rubrics, or external evidence appropriate to each task.\n\nPreserve provenance and version all prompts, rubrics, and coding rules. If responses contain claims requiring verification, use sources selected independently of the response, with source quality and date recorded. No response should be treated as its own evidence of correctness.\n\n# 5. Measurement\n\n## 5.1 Primary outcome: substantive instability\n\nDefine a response pair as substantively different only when a prespecified rubric identifies a change that could affect interpretation or use. Relevant dimensions include:\n\n- factual correctness or the main answer;\n- omitted, added, or contradicted material information;\n- reasoning or calculation that changes the conclusion;\n- recommendation, ranking, or action;\n- uncertainty or qualification that changes how confidently a user should rely on the answer;\n- refusal versus compliance;\n- safety, privacy, or policy-relevant content;\n- whether the response meets the task’s acceptance criteria.\n\nFor each question, estimate the probability that two independently generated responses under the same condition are substantively different. Report this alongside the probability of any observable difference, so textual variation is not mistaken for substantive instability.\n\n## 5.2 Secondary outcomes\n\nMeasure:\n\n- correctness and task success per response;\n- variation in factual claims and recommendations;\n- refusal and safety outcomes;\n- response length, organization, tone, and lexical variation;\n- evaluator-rated semantic equivalence;\n- within-question and between-question variability.\n\nFor multi-answer questions, score validity and coverage against a rubric rather than requiring one exact string or answer.\n\n## 5.3 Assessment procedures\n\nUse trained independent evaluators and a written rubric. For the primary outcome, assess responses in randomized pairs, with identifying metadata removed. Include duplicate pairs and known-different pairs to estimate evaluator consistency and sensitivity. Resolve disagreements through blinded adjudication, and report agreement before adjudication.\n\nAutomated similarity or semantic measures may be used as descriptive or screening measures, not as sole evidence of meaningful equivalence. Exact-match, lexical-overlap, and embedding-based metrics can miss changes in factual content or overstate differences between paraphrases.\n\n# 6. Analysis\n\n## 6.1 Descriptive estimates\n\nFor each question and condition, report:\n\n- the rate of any textual difference;\n- the rate of rubric-defined substantive difference;\n- correctness and task-success rates;\n- the types and severity of substantive changes;\n- uncertainty intervals for all principal estimates.\n\nSummarize results by task stratum as well as overall. Overall averages should not obscure high-instability subsets.\n\n## 6.2 Inferential analysis\n\nUse a hierarchical model or equivalent clustered analysis that accounts for repeated responses nested within questions and, where applicable, evaluators and sessions. Estimate within-condition instability and condition effects, with question-level variation reported explicitly.\n\nFor controlled factor comparisons, estimate the change in substantive-instability rate relative to baseline. Test prespecified interactions only where the design and sample size support them. Adjust for multiple comparisons or clearly distinguish confirmatory from exploratory analyses.\n\nSeparate:\n\n- **generation variability** within a fixed model and condition;\n- **condition effects** caused by manipulated settings or prompt context;\n- **time or version effects** associated with model or serving changes;\n- **evaluation uncertainty** due to disagreement among raters.\n\nConduct sensitivity analyses using alternative reasonable thresholds for substantive difference, excluding neither difficult questions nor unfavorable responses from the primary analysis. Report results with and without adjudicated cases if adjudication materially affects conclusions.\n\n## 6.3 Practical interpretation\n\nInterpret instability against prespecified consequences, not statistical significance alone. A low rate of harmless paraphrase may be acceptable; a small rate of changed safety guidance or incorrect high-stakes advice may not be. Present severity-stratified results and examples that illustrate each category without replacing the quantitative analysis.\n\n# 7. Decision / stopping rule\n\nBefore data collection, define:\n\n- the minimum substantively important instability rate or effect size;\n- acceptable error rates by task and risk level;\n- the required precision for the primary estimate;\n- any safety-critical failure threshold;\n- the planned sample size and maximum number of generations.\n\nStop data collection when the preregistered precision or sample-size target is met, or when the maximum is reached. Apply any early stopping rule only if specified in advance, such as for a clearly exceeded safety-critical threshold.\n\nConclude that meaningful instability is present for a defined task or condition when the estimated substantive-instability rate, with its uncertainty interval, exceeds the prespecified practical threshold. Conclude that evidence supports stability only when the upper uncertainty bound is below that threshold. Otherwise, classify the result as inconclusive. Do not infer general stability from a nonsignificant difference or from low textual variation alone.\n\n# 8. Limitations\n\n- Results are restricted to the sampled prompts, model versions, settings, and observation period.\n- Hidden serving changes, routing, system prompts, or backend nondeterminism may remain uncontrolled.\n- Human judgments of semantic and practical importance are imperfect, even with blinding and adjudication.\n- Reference answers may be incomplete or contested, especially for open-ended questions.\n- A finite set of repeated generations cannot rule out rare but consequential failures.\n- Prompt perturbations may change meaning as well as wording; conclusions require careful interpretation of the manipulation.\n- Similar outputs can share the same error, so consistency does not establish correctness.\n- The study measures observed outputs, not internal model causes. Findings can identify conditions associated with instability but may not establish the underlying mechanism."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2107,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2296
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

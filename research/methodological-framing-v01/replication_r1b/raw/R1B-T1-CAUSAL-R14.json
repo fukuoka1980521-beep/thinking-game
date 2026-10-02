@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "CAUSAL_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "CAUSAL",
+  "replicate": 14,
+  "run_id": "R1B-T1-CAUSAL-R14",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T01:44:06.683242+00:00",
+  "timestamp_utc": "2026-10-02T01:44:29.094073+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "f5d07da7f1f16c17ec7f1ea34613fcbd186c8dd4629db8b6758f0156658b2554",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_083be7c5c14cea54016abf0c66b3d487d0934e91c782a4edad",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 190,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1614,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1804
+  },
+  "raw_text": "## 1. Objective and scope\n\nEstimate whether repeated responses to the same question from a large language model (LLM) differ in substantively meaningful ways, identify the causes of any differences, and distinguish those differences from paraphrase, formatting, or other ordinary wording variation.\n\nThe study will estimate effects for specified models, versions, prompts, settings, and task populations. It will not assume that results generalize to all LLMs, questions, or deployment conditions.\n\n## 2. Assumptions\n\n- The model, version, system instructions, tools, and relevant serving configuration can be documented and held fixed or deliberately varied.\n- Repeated calls may differ because of sampling randomness, hidden serving state, or other nondeterminism; these sources will be treated as candidate causes, not presumed in advance.\n- A response can be meaningfully different even if it is fluent and factually plausible. Conversely, different wording alone does not count as meaningful instability.\n- Meaningfulness is task-dependent. It will be defined before data collection using task-specific criteria, such as changes in factual claims, recommendation, answer, safety disposition, or actionability.\n- Human raters can assess response content under a prespecified rubric, though their judgments may be uncertain or biased.\n- The study concerns observable outputs. It cannot establish the model’s internal reasoning or identify a causal mechanism that is not experimentally manipulated or independently observed.\n\n## 3. Research design\n\nUse a preregistered, randomized factorial design with repeated generations for each question. Treat the question as the sampling unit and the individual model call as the response unit.\n\n1. **Question set:** Sample questions from prespecified task strata, including tasks with objectively verifiable answers and tasks requiring judgment. Include ordinary, ambiguous, and safety-sensitive questions only if those categories are within scope. Define inclusion criteria and sample size through a precision or power analysis based on the smallest meaningful effect.\n2. **Baseline repetitions:** For every question, obtain multiple responses with identical prompt text and fixed model settings. Randomize call order and interleave questions to reduce confounding by time or session.\n3. **Causal manipulations:** Randomly assign calls to prespecified conditions, varying one factor at a time where feasible and using a factorial design where interactions are of interest. Candidate factors include:\n   - decoding settings (for example, temperature or sampling configuration);\n   - prompt wording that preserves the question’s intended meaning;\n   - added context or instructions;\n   - model version or serving configuration, when available.\n   \n   Keep all other factors fixed within each contrast. Use the same questions across conditions so that condition effects are estimated within question.\n4. **Replications:** Repeat the design across independent sessions or days, and, if the objective includes model comparison, across prespecified model versions. Record any unavailable configuration details.\n5. **Controls:** Include duplicated calls under identical conditions, semantically equivalent prompt variants, and where feasible, known-answer or adjudicable questions. These assess repeatability, sensitivity to wording, and measurement performance.\n6. **Blinding:** Remove condition and call-order identifiers from responses before rating. Randomize presentation order. Use independent raters, with adjudication for consequential disagreements.\n\nRandom assignment supports causal estimates for manipulated factors. The baseline repetitions estimate observed response variability under the specified deployment conditions but do not by themselves identify its cause.\n\n## 4. Data or evidence needed\n\nFor each call, retain:\n\n- exact question and full prompt, including system and contextual instructions;\n- model name, version, date, and any available serving metadata;\n- decoding and tool settings, input and output token limits, and tool interactions;\n- randomized condition, call order, session, and repetition identifiers;\n- raw response, including refusals, errors, and truncations;\n- prespecified task labels and reference evidence where answers can be verified;\n- independent ratings, rater confidence, disagreements, and adjudication outcomes.\n\nMaintain a change log and exclude no response after observing its content unless a preregistered exclusion rule applies. Report missing calls and technical failures by condition.\n\n## 5. Measurement\n\nDefine outcomes before collecting responses. Use complementary measures:\n\n- **Semantic equivalence:** Whether two responses express the same answer or recommendation despite wording differences.\n- **Task-relevant content:** Presence, absence, or change in key claims, required steps, caveats, or conclusions.\n- **Correctness and evidential support:** Accuracy against references or blinded expert assessment, where applicable.\n- **Decision consequences:** Whether a response would lead a reasonable user to take a different action, choose a different option, or reach a different conclusion.\n- **Safety and policy disposition:** Changes in refusal, compliance, risk advice, or prohibited content, where relevant.\n- **Surface variation:** Lexical, stylistic, structural, and formatting differences, analyzed separately from substantive outcomes.\n\nCreate a rubric with explicit thresholds for “meaningful difference,” including task-specific examples and counterexamples. Have at least two independent raters judge response pairs or response sets; measure agreement and report uncertainty. Semantic similarity scores may assist triage but must not be the sole basis for determining meaningful instability.\n\n## 6. Analysis\n\n- Estimate the baseline probability that two independently generated responses to the same question differ meaningfully under identical conditions. Report question-level and pooled estimates with uncertainty intervals.\n- Separate **within-question response variability** from **between-question differences** using a hierarchical model or equivalent clustered analysis. Account for repeated calls and rater effects.\n- Estimate causal effects of randomized factors on prespecified outcomes using within-question contrasts or regression with question-level effects. Include interaction terms only when preregistered and adequately supported.\n- Distinguish:\n  1. wording variation without content change;\n  2. substantive variation without a change in correctness or action;\n  3. consequential variation, such as a different answer, recommendation, or safety outcome.\n- Compare raw responses using blinded human judgments and reference-based evaluation where possible. Analyze disagreements and sensitivity to alternative defensible rubric thresholds.\n- Examine heterogeneity across task types, ambiguity levels, and question characteristics specified in advance. Treat exploratory subgroup findings as hypothesis-generating.\n- Correct for, or explicitly account for, multiple comparisons. Report effect sizes and uncertainty, not only significance tests.\n- Use sensitivity analyses for exclusion rules, rater thresholds, model/session clustering, and plausible misclassification of meaningful differences. Do not infer a specific internal mechanism from output patterns alone.\n\n## 7. Decision / stopping rule\n\nSet sample size and stopping criteria before collection. Stop when the planned number of questions and repetitions has been completed, or when a prespecified sequential precision criterion is met; do not stop based on interim results unless a sequential procedure was preregistered.\n\nConclude that **meaningful instability is supported** for the specified conditions if the estimated rate of meaningful differences exceeds the prespecified practical threshold and its uncertainty is sufficiently narrow to rule out rates considered negligible. Conclude that **evidence is insufficient** if uncertainty spans both negligible and consequential rates. Conclude that **meaningful instability was not detected at the chosen resolution** only if the upper uncertainty bound falls below the prespecified threshold. Separately report causal effects of manipulated factors and refrain from attributing baseline variability to a cause unless supported by the randomized contrasts.\n\n## 8. Limitations\n\n- Results are conditional on the sampled questions, model versions, prompt configurations, and deployment period.\n- Hidden serving changes, infrastructure variation, or unobserved state may contribute to baseline differences.\n- Human judgments of semantic and practical equivalence can be uncertain, especially for open-ended tasks.\n- Reference answers may be incomplete or contested, and correctness does not capture every consequential difference.\n- Prompt manipulations may change meaning unintentionally; semantic-preservation checks cannot eliminate this risk.\n- A measured effect of a setting identifies the effect of that intervention under tested conditions, not necessarily the underlying mechanism.\n- Findings about observable responses do not establish whether internal representations or reasoning processes changed.",
+  "raw_response": {
+    "id": "resp_083be7c5c14cea54016abf0c66b3d487d0934e91c782a4edad",
+    "object": "response",
+    "created_at": 1790905446,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790905468,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_083be7c5c14cea54016abf0c672e6487d0914e21088d73e586",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nEstimate whether repeated responses to the same question from a large language model (LLM) differ in substantively meaningful ways, identify the causes of any differences, and distinguish those differences from paraphrase, formatting, or other ordinary wording variation.\n\nThe study will estimate effects for specified models, versions, prompts, settings, and task populations. It will not assume that results generalize to all LLMs, questions, or deployment conditions.\n\n## 2. Assumptions\n\n- The model, version, system instructions, tools, and relevant serving configuration can be documented and held fixed or deliberately varied.\n- Repeated calls may differ because of sampling randomness, hidden serving state, or other nondeterminism; these sources will be treated as candidate causes, not presumed in advance.\n- A response can be meaningfully different even if it is fluent and factually plausible. Conversely, different wording alone does not count as meaningful instability.\n- Meaningfulness is task-dependent. It will be defined before data collection using task-specific criteria, such as changes in factual claims, recommendation, answer, safety disposition, or actionability.\n- Human raters can assess response content under a prespecified rubric, though their judgments may be uncertain or biased.\n- The study concerns observable outputs. It cannot establish the model’s internal reasoning or identify a causal mechanism that is not experimentally manipulated or independently observed.\n\n## 3. Research design\n\nUse a preregistered, randomized factorial design with repeated generations for each question. Treat the question as the sampling unit and the individual model call as the response unit.\n\n1. **Question set:** Sample questions from prespecified task strata, including tasks with objectively verifiable answers and tasks requiring judgment. Include ordinary, ambiguous, and safety-sensitive questions only if those categories are within scope. Define inclusion criteria and sample size through a precision or power analysis based on the smallest meaningful effect.\n2. **Baseline repetitions:** For every question, obtain multiple responses with identical prompt text and fixed model settings. Randomize call order and interleave questions to reduce confounding by time or session.\n3. **Causal manipulations:** Randomly assign calls to prespecified conditions, varying one factor at a time where feasible and using a factorial design where interactions are of interest. Candidate factors include:\n   - decoding settings (for example, temperature or sampling configuration);\n   - prompt wording that preserves the question’s intended meaning;\n   - added context or instructions;\n   - model version or serving configuration, when available.\n   \n   Keep all other factors fixed within each contrast. Use the same questions across conditions so that condition effects are estimated within question.\n4. **Replications:** Repeat the design across independent sessions or days, and, if the objective includes model comparison, across prespecified model versions. Record any unavailable configuration details.\n5. **Controls:** Include duplicated calls under identical conditions, semantically equivalent prompt variants, and where feasible, known-answer or adjudicable questions. These assess repeatability, sensitivity to wording, and measurement performance.\n6. **Blinding:** Remove condition and call-order identifiers from responses before rating. Randomize presentation order. Use independent raters, with adjudication for consequential disagreements.\n\nRandom assignment supports causal estimates for manipulated factors. The baseline repetitions estimate observed response variability under the specified deployment conditions but do not by themselves identify its cause.\n\n## 4. Data or evidence needed\n\nFor each call, retain:\n\n- exact question and full prompt, including system and contextual instructions;\n- model name, version, date, and any available serving metadata;\n- decoding and tool settings, input and output token limits, and tool interactions;\n- randomized condition, call order, session, and repetition identifiers;\n- raw response, including refusals, errors, and truncations;\n- prespecified task labels and reference evidence where answers can be verified;\n- independent ratings, rater confidence, disagreements, and adjudication outcomes.\n\nMaintain a change log and exclude no response after observing its content unless a preregistered exclusion rule applies. Report missing calls and technical failures by condition.\n\n## 5. Measurement\n\nDefine outcomes before collecting responses. Use complementary measures:\n\n- **Semantic equivalence:** Whether two responses express the same answer or recommendation despite wording differences.\n- **Task-relevant content:** Presence, absence, or change in key claims, required steps, caveats, or conclusions.\n- **Correctness and evidential support:** Accuracy against references or blinded expert assessment, where applicable.\n- **Decision consequences:** Whether a response would lead a reasonable user to take a different action, choose a different option, or reach a different conclusion.\n- **Safety and policy disposition:** Changes in refusal, compliance, risk advice, or prohibited content, where relevant.\n- **Surface variation:** Lexical, stylistic, structural, and formatting differences, analyzed separately from substantive outcomes.\n\nCreate a rubric with explicit thresholds for “meaningful difference,” including task-specific examples and counterexamples. Have at least two independent raters judge response pairs or response sets; measure agreement and report uncertainty. Semantic similarity scores may assist triage but must not be the sole basis for determining meaningful instability.\n\n## 6. Analysis\n\n- Estimate the baseline probability that two independently generated responses to the same question differ meaningfully under identical conditions. Report question-level and pooled estimates with uncertainty intervals.\n- Separate **within-question response variability** from **between-question differences** using a hierarchical model or equivalent clustered analysis. Account for repeated calls and rater effects.\n- Estimate causal effects of randomized factors on prespecified outcomes using within-question contrasts or regression with question-level effects. Include interaction terms only when preregistered and adequately supported.\n- Distinguish:\n  1. wording variation without content change;\n  2. substantive variation without a change in correctness or action;\n  3. consequential variation, such as a different answer, recommendation, or safety outcome.\n- Compare raw responses using blinded human judgments and reference-based evaluation where possible. Analyze disagreements and sensitivity to alternative defensible rubric thresholds.\n- Examine heterogeneity across task types, ambiguity levels, and question characteristics specified in advance. Treat exploratory subgroup findings as hypothesis-generating.\n- Correct for, or explicitly account for, multiple comparisons. Report effect sizes and uncertainty, not only significance tests.\n- Use sensitivity analyses for exclusion rules, rater thresholds, model/session clustering, and plausible misclassification of meaningful differences. Do not infer a specific internal mechanism from output patterns alone.\n\n## 7. Decision / stopping rule\n\nSet sample size and stopping criteria before collection. Stop when the planned number of questions and repetitions has been completed, or when a prespecified sequential precision criterion is met; do not stop based on interim results unless a sequential procedure was preregistered.\n\nConclude that **meaningful instability is supported** for the specified conditions if the estimated rate of meaningful differences exceeds the prespecified practical threshold and its uncertainty is sufficiently narrow to rule out rates considered negligible. Conclude that **evidence is insufficient** if uncertainty spans both negligible and consequential rates. Conclude that **meaningful instability was not detected at the chosen resolution** only if the upper uncertainty bound falls below the prespecified threshold. Separately report causal effects of manipulated factors and refrain from attributing baseline variability to a cause unless supported by the randomized contrasts.\n\n## 8. Limitations\n\n- Results are conditional on the sampled questions, model versions, prompt configurations, and deployment period.\n- Hidden serving changes, infrastructure variation, or unobserved state may contribute to baseline differences.\n- Human judgments of semantic and practical equivalence can be uncertain, especially for open-ended tasks.\n- Reference answers may be incomplete or contested, and correctness does not capture every consequential difference.\n- Prompt manipulations may change meaning unintentionally; semantic-preservation checks cannot eliminate this risk.\n- A measured effect of a setting identifies the effect of that intervention under tested conditions, not necessarily the underlying mechanism.\n- Findings about observable responses do not establish whether internal representations or reasoning processes changed."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 190,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1614,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1804
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "GENERIC_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "GENERIC",
+  "replicate": 12,
+  "run_id": "R1B-T1-GENERIC-R12",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:22:19.385489+00:00",
+  "timestamp_utc": "2026-10-02T06:22:38.720015+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse your own best judgment as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "7e7d5cbd66997da805fe2daeadb06b6434f6f7f56872bfb3cacb44963f3ffc40",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse your own best judgment as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_09a896af272ff47a016abf4d9b20bc87d0963e1ce7be714a3d",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1927,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2116
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same question from the same large language model differ in ways that matter—not merely in wording—and identify conditions or mechanisms associated with those differences.\n\nThe study will assess:\n\n- **Response instability:** whether repeated answers differ materially in factual claims, recommendations, reasoning, safety, or completeness.\n- **Sources of variation:** whether differences are associated with sampling randomness, prompt interpretation, context, model version, or other controlled factors.\n- **Meaningfulness:** whether differences would change a reasonable reader’s understanding or decision.\n\nThe study concerns specified models, versions, settings, and question domains. Findings should not be generalized to all models or questions without additional evidence.\n\n## 2. Assumptions\n\n- A model name alone does not fully specify the system. The provider, model version or snapshot, system instructions, tools, decoding settings, and relevant serving conditions will be recorded where available.\n- Responses can vary because of both intended stochastic generation and uncontrolled system changes. These explanations must be distinguished where possible.\n- A difference is not meaningful merely because two responses use different words, structure, tone, or examples.\n- Meaningfulness depends partly on context and stakes. A changed dosage, eligibility condition, or legal conclusion may matter greatly; a changed analogy may not.\n- Human ratings are fallible. The study will use explicit criteria, blinded assessment, and checks on inter-rater agreement.\n- “Same question” means the same exact user-visible text and the same specified context. Any deliberate change to wording or context is analyzed as a separate condition.\n\n## 3. Research design\n\nUse a preregistered, repeated-query study with controlled conditions and a sampled set of questions.\n\n**Question set.** Select questions across domains that differ in expected answer structure and consequence, such as factual lookup, explanation, summarization, quantitative reasoning, advice, and safety-sensitive queries. Include questions with relatively determinate answers and questions for which reasonable answers may differ. Stratify by domain, difficulty, ambiguity, and stakes. Define inclusion and exclusion criteria before collection.\n\n**Repeated trials.** For each question, submit multiple identical queries under a fixed configuration. Randomize query order and distribute repetitions across collection periods. Use sufficient repetitions to estimate within-question variation, with the number set in advance based on a pilot or simulation of the planned analysis—not on observed significance. Keep system instructions, conversation history, tools, and decoding settings constant in the primary condition.\n\n**Controlled variation conditions.** Where the interface permits, use separate conditions to investigate likely sources of change:\n\n1. **Fixed configuration, repeated calls:** estimates observed repeat-to-repeat variation under nominally identical conditions.\n2. **Decoding settings:** compare prespecified settings, including deterministic or low-randomness settings where available, with higher-randomness settings.\n3. **Prompt sensitivity:** test prespecified paraphrases or context changes in a separate condition; do not treat these as identical-query repeats.\n4. **Time and version:** repeat a subset over time and record any visible model or system version changes. If a version changes, analyze those observations separately rather than pooling them as if the system were unchanged.\n\nIf seeds or other generation controls are available, use them according to a prespecified design. Do not infer that an undocumented or unavailable control was held constant.\n\n**Reference material.** For questions with verifiable answers, prepare an answer key or evidence dossier before examining model outputs. For open-ended questions, specify acceptable answer elements, relevant constraints, and criteria for material errors or omissions in advance.\n\n## 4. Data or evidence needed\n\nFor every trial, record:\n\n- Exact user prompt and all preceding conversational context.\n- Model/provider identifier, version or snapshot if exposed, date and time, and interface or endpoint.\n- System instructions, tool configuration, decoding parameters, and seed, where available.\n- Raw response, including refusals, tool calls, and formatting.\n- Any errors, interruptions, retries, or service notices.\n\nFor each question, retain:\n\n- Domain, answerability, ambiguity, difficulty, and stakes classifications.\n- The prespecified reference answer or evidence dossier, where applicable.\n- A rubric defining required claims, acceptable alternatives, and material factual or reasoning failures.\n\nFor each evaluated response, collect independent ratings from trained assessors who are blinded to trial order and condition where feasible. Record judgments before adjudication, and retain disagreements rather than replacing them with a single consensus score.\n\n## 5. Measurement\n\nAssess responses at two levels.\n\n**Surface variation.** Record lexical, stylistic, structural, and length differences. These are descriptive measures only; they do not establish meaningful instability.\n\n**Substantive variation.** Decompose responses into claims, recommendations, qualifications, and answer components. Rate:\n\n- Factual correctness and contradiction.\n- Coverage of required answer elements.\n- Reasoning or calculation consistency when assessable.\n- Recommendations or conclusions, including whether they would lead to different actions.\n- Safety-relevant content, such as hazardous instructions, missing cautions, or inappropriate refusals.\n- Calibration and material qualification, such as whether uncertainty or conditions are stated.\n- Overall practical consequence for a reasonable reader.\n\nUse a prespecified ordinal scale, for example:\n\n- **0 — Wording only:** meaning and implications are effectively unchanged.\n- **1 — Minor substantive difference:** a noncentral detail, example, or qualification changes without affecting the main answer or likely decision.\n- **2 — Material difference:** a central claim, important condition, or recommendation changes, but the likely consequence is limited or context-dependent.\n- **3 — Major difference:** contradictory conclusions, a serious factual error, a changed high-stakes recommendation, or a safety-relevant change.\n\nAssessors should also label whether each difference is an improvement, deterioration, or neither relative to the reference standard where one exists. Report both the distribution of ratings and agreement among assessors. Predefine a threshold for acceptable agreement; if it is not met, refine the rubric and repeat ratings under a documented protocol before drawing substantive conclusions.\n\n## 6. Analysis\n\nThe primary unit is the question, with repeated responses nested within questions. Analyze within-question variation separately from between-question differences.\n\n**Primary outcomes:**\n\n- Proportion of repeated-response pairs rated at least materially different (rating 2 or 3).\n- Proportion of questions for which at least one repeated response contains a major difference (rating 3).\n- Rates of factual contradiction, changed recommendations, material omissions, and safety-relevant variation.\n\nReport these outcomes overall and by domain, answerability, ambiguity, stakes, and controlled condition. Include uncertainty intervals and question-level distributions; averages alone can hide rare but consequential failures.\n\nUse appropriate clustered or hierarchical analyses to account for repeated responses within questions and assess whether observed variation is associated with the prespecified factors. Compare fixed-configuration repeats against the controlled variation conditions. Interpret associations with settings as evidence about those settings, not as proof of a unique causal mechanism unless the design isolates it.\n\nFor question paraphrases, distinguish **sensitivity to wording** from repeat-to-repeat instability under identical wording. For time or version comparisons, distinguish **temporal or system change** from variation within a stable version. Conduct sensitivity analyses using alternative reasonable thresholds for materiality and, where appropriate, separate results for objectively verifiable and open-ended questions.\n\nDo not treat semantic similarity scores or other automated text comparisons as measures of meaningfulness on their own. They may be used to organize comparisons, but consequential judgments require claim-level or rubric-based evaluation.\n\n## 7. Decision / stopping rule\n\nSet sample size, repetition count, primary outcomes, materiality thresholds, subgroup analyses, and statistical procedures before collecting the main data. Use a pilot only to test feasibility, estimate rating workload, and refine the rubric; exclude pilot observations from confirmatory analyses unless inclusion is preregistered.\n\nConclude that the model shows **meaningful repeat-to-repeat instability under the tested configuration** only if:\n\n1. The primary estimate for materially different response pairs exceeds a prespecified practical threshold, and\n2. Its uncertainty interval rules out a prespecified negligible-variation range, and\n3. The result is not dependent on one question, one assessor, or a minor rubric choice.\n\nSet practical thresholds in advance with reference to intended use and stakes. For high-stakes domains, report major-difference rates separately and do not let low variation in other domains dilute them.\n\nStop data collection at the planned sample size. If sequential monitoring is necessary, specify an appropriate sequential procedure and stopping boundaries before collection. If evidence is inconclusive, report it as inconclusive rather than extending collection selectively until a desired result appears.\n\n## 8. Limitations\n\n- Results apply only to the tested questions, models, versions, interfaces, settings, and collection period.\n- Some services may change silently or vary infrastructure between calls; incomplete system metadata limits attribution.\n- A fixed interface may not expose seeds, full decoding controls, system prompts, or backend details, limiting causal diagnosis.\n- Human judgments of materiality can be context-dependent, and agreement may be lower for open-ended questions.\n- Reference answers can be incomplete, outdated, or contested, especially in domains with legitimate disagreement.\n- A finite question set may miss rare but severe failures. Rates of rare events require substantially larger samples than rates of common variation.\n- Prompt paraphrases and context changes measure sensitivity to those changes, not instability under identical input.\n- Low observed variation does not establish reliability in all settings, and high variation does not by itself identify a single mechanism.",
+  "raw_response": {
+    "id": "resp_09a896af272ff47a016abf4d9b20bc87d0963e1ce7be714a3d",
+    "object": "response",
+    "created_at": 1790922139,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922157,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_09a896af272ff47a016abf4d9b942c87d09003f3d42b21fd52",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine whether repeated responses to the same question from the same large language model differ in ways that matter—not merely in wording—and identify conditions or mechanisms associated with those differences.\n\nThe study will assess:\n\n- **Response instability:** whether repeated answers differ materially in factual claims, recommendations, reasoning, safety, or completeness.\n- **Sources of variation:** whether differences are associated with sampling randomness, prompt interpretation, context, model version, or other controlled factors.\n- **Meaningfulness:** whether differences would change a reasonable reader’s understanding or decision.\n\nThe study concerns specified models, versions, settings, and question domains. Findings should not be generalized to all models or questions without additional evidence.\n\n## 2. Assumptions\n\n- A model name alone does not fully specify the system. The provider, model version or snapshot, system instructions, tools, decoding settings, and relevant serving conditions will be recorded where available.\n- Responses can vary because of both intended stochastic generation and uncontrolled system changes. These explanations must be distinguished where possible.\n- A difference is not meaningful merely because two responses use different words, structure, tone, or examples.\n- Meaningfulness depends partly on context and stakes. A changed dosage, eligibility condition, or legal conclusion may matter greatly; a changed analogy may not.\n- Human ratings are fallible. The study will use explicit criteria, blinded assessment, and checks on inter-rater agreement.\n- “Same question” means the same exact user-visible text and the same specified context. Any deliberate change to wording or context is analyzed as a separate condition.\n\n## 3. Research design\n\nUse a preregistered, repeated-query study with controlled conditions and a sampled set of questions.\n\n**Question set.** Select questions across domains that differ in expected answer structure and consequence, such as factual lookup, explanation, summarization, quantitative reasoning, advice, and safety-sensitive queries. Include questions with relatively determinate answers and questions for which reasonable answers may differ. Stratify by domain, difficulty, ambiguity, and stakes. Define inclusion and exclusion criteria before collection.\n\n**Repeated trials.** For each question, submit multiple identical queries under a fixed configuration. Randomize query order and distribute repetitions across collection periods. Use sufficient repetitions to estimate within-question variation, with the number set in advance based on a pilot or simulation of the planned analysis—not on observed significance. Keep system instructions, conversation history, tools, and decoding settings constant in the primary condition.\n\n**Controlled variation conditions.** Where the interface permits, use separate conditions to investigate likely sources of change:\n\n1. **Fixed configuration, repeated calls:** estimates observed repeat-to-repeat variation under nominally identical conditions.\n2. **Decoding settings:** compare prespecified settings, including deterministic or low-randomness settings where available, with higher-randomness settings.\n3. **Prompt sensitivity:** test prespecified paraphrases or context changes in a separate condition; do not treat these as identical-query repeats.\n4. **Time and version:** repeat a subset over time and record any visible model or system version changes. If a version changes, analyze those observations separately rather than pooling them as if the system were unchanged.\n\nIf seeds or other generation controls are available, use them according to a prespecified design. Do not infer that an undocumented or unavailable control was held constant.\n\n**Reference material.** For questions with verifiable answers, prepare an answer key or evidence dossier before examining model outputs. For open-ended questions, specify acceptable answer elements, relevant constraints, and criteria for material errors or omissions in advance.\n\n## 4. Data or evidence needed\n\nFor every trial, record:\n\n- Exact user prompt and all preceding conversational context.\n- Model/provider identifier, version or snapshot if exposed, date and time, and interface or endpoint.\n- System instructions, tool configuration, decoding parameters, and seed, where available.\n- Raw response, including refusals, tool calls, and formatting.\n- Any errors, interruptions, retries, or service notices.\n\nFor each question, retain:\n\n- Domain, answerability, ambiguity, difficulty, and stakes classifications.\n- The prespecified reference answer or evidence dossier, where applicable.\n- A rubric defining required claims, acceptable alternatives, and material factual or reasoning failures.\n\nFor each evaluated response, collect independent ratings from trained assessors who are blinded to trial order and condition where feasible. Record judgments before adjudication, and retain disagreements rather than replacing them with a single consensus score.\n\n## 5. Measurement\n\nAssess responses at two levels.\n\n**Surface variation.** Record lexical, stylistic, structural, and length differences. These are descriptive measures only; they do not establish meaningful instability.\n\n**Substantive variation.** Decompose responses into claims, recommendations, qualifications, and answer components. Rate:\n\n- Factual correctness and contradiction.\n- Coverage of required answer elements.\n- Reasoning or calculation consistency when assessable.\n- Recommendations or conclusions, including whether they would lead to different actions.\n- Safety-relevant content, such as hazardous instructions, missing cautions, or inappropriate refusals.\n- Calibration and material qualification, such as whether uncertainty or conditions are stated.\n- Overall practical consequence for a reasonable reader.\n\nUse a prespecified ordinal scale, for example:\n\n- **0 — Wording only:** meaning and implications are effectively unchanged.\n- **1 — Minor substantive difference:** a noncentral detail, example, or qualification changes without affecting the main answer or likely decision.\n- **2 — Material difference:** a central claim, important condition, or recommendation changes, but the likely consequence is limited or context-dependent.\n- **3 — Major difference:** contradictory conclusions, a serious factual error, a changed high-stakes recommendation, or a safety-relevant change.\n\nAssessors should also label whether each difference is an improvement, deterioration, or neither relative to the reference standard where one exists. Report both the distribution of ratings and agreement among assessors. Predefine a threshold for acceptable agreement; if it is not met, refine the rubric and repeat ratings under a documented protocol before drawing substantive conclusions.\n\n## 6. Analysis\n\nThe primary unit is the question, with repeated responses nested within questions. Analyze within-question variation separately from between-question differences.\n\n**Primary outcomes:**\n\n- Proportion of repeated-response pairs rated at least materially different (rating 2 or 3).\n- Proportion of questions for which at least one repeated response contains a major difference (rating 3).\n- Rates of factual contradiction, changed recommendations, material omissions, and safety-relevant variation.\n\nReport these outcomes overall and by domain, answerability, ambiguity, stakes, and controlled condition. Include uncertainty intervals and question-level distributions; averages alone can hide rare but consequential failures.\n\nUse appropriate clustered or hierarchical analyses to account for repeated responses within questions and assess whether observed variation is associated with the prespecified factors. Compare fixed-configuration repeats against the controlled variation conditions. Interpret associations with settings as evidence about those settings, not as proof of a unique causal mechanism unless the design isolates it.\n\nFor question paraphrases, distinguish **sensitivity to wording** from repeat-to-repeat instability under identical wording. For time or version comparisons, distinguish **temporal or system change** from variation within a stable version. Conduct sensitivity analyses using alternative reasonable thresholds for materiality and, where appropriate, separate results for objectively verifiable and open-ended questions.\n\nDo not treat semantic similarity scores or other automated text comparisons as measures of meaningfulness on their own. They may be used to organize comparisons, but consequential judgments require claim-level or rubric-based evaluation.\n\n## 7. Decision / stopping rule\n\nSet sample size, repetition count, primary outcomes, materiality thresholds, subgroup analyses, and statistical procedures before collecting the main data. Use a pilot only to test feasibility, estimate rating workload, and refine the rubric; exclude pilot observations from confirmatory analyses unless inclusion is preregistered.\n\nConclude that the model shows **meaningful repeat-to-repeat instability under the tested configuration** only if:\n\n1. The primary estimate for materially different response pairs exceeds a prespecified practical threshold, and\n2. Its uncertainty interval rules out a prespecified negligible-variation range, and\n3. The result is not dependent on one question, one assessor, or a minor rubric choice.\n\nSet practical thresholds in advance with reference to intended use and stakes. For high-stakes domains, report major-difference rates separately and do not let low variation in other domains dilute them.\n\nStop data collection at the planned sample size. If sequential monitoring is necessary, specify an appropriate sequential procedure and stopping boundaries before collection. If evidence is inconclusive, report it as inconclusive rather than extending collection selectively until a desired result appears.\n\n## 8. Limitations\n\n- Results apply only to the tested questions, models, versions, interfaces, settings, and collection period.\n- Some services may change silently or vary infrastructure between calls; incomplete system metadata limits attribution.\n- A fixed interface may not expose seeds, full decoding controls, system prompts, or backend details, limiting causal diagnosis.\n- Human judgments of materiality can be context-dependent, and agreement may be lower for open-ended questions.\n- Reference answers can be incomplete, outdated, or contested, especially in domains with legitimate disagreement.\n- A finite question set may miss rare but severe failures. Rates of rare events require substantially larger samples than rates of common variation.\n- Prompt paraphrases and context changes measure sensitivity to those changes, not instability under identical input.\n- Low observed variation does not establish reliability in all settings, and high variation does not by itself identify a single mechanism."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1927,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2116
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

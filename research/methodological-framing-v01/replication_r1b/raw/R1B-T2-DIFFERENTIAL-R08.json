@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "DIFFERENTIAL_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "DIFFERENTIAL",
+  "replicate": 8,
+  "run_id": "R1B-T2-DIFFERENTIAL-R08",
+  "task_id": "T2",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T01:45:10.811697+00:00",
+  "timestamp_utc": "2026-10-02T01:45:35.566588+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "31077ab63604f6faedabc036d8a7e27fd2a75a18dd462402dcc2edac77b56c50",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine why teams using the same nominal workplace process show persistent differences in completion time across sites, which competing explanations are supported, and what observations would distinguish those explanations. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_021751e3383871fa016abf0ca6909c87d0a9a0d18bc0bc5921",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 192,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1961,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2153
+  },
+  "raw_text": "## 1. Objective and scope\n\nDetermine why teams at different sites have persistently different completion times despite following the same nominal workplace process. The study will compare competing explanations and identify the observations that would support or weaken each.\n\nThe primary methodological frame is differential and local-sensitivity analysis: estimate how completion time changes with small, observed differences in process conditions, team characteristics, workload, and site context. The study is observational; it will not introduce changes to work practices.\n\n## 2. Assumptions\n\n- “Same nominal process” means sites share the intended process specification, not necessarily identical implementation.\n- Completion time can be defined consistently across sites using common start and end events.\n- Relevant cases and teams can be matched or adjusted for differences in case complexity, workload, and operating conditions.\n- Observed data will include enough within-site and within-team variation to estimate local associations. If not, estimates will be reported as uncertain.\n- Candidate explanations include:\n  1. Differences in actual process execution or interpretation.\n  2. Differences in case mix or input quality.\n  3. Differences in staffing, skills, experience, or team coordination.\n  4. Differences in workload, queues, interruptions, or resource availability.\n  5. Differences in tools, systems, or local infrastructure.\n  6. Site-specific context or unmeasured factors.\n- Observational associations alone do not establish causation. Findings will be framed as evidence for or against mechanisms, not definitive causal attribution.\n\n## 3. Research design\n\nUse a multi-site observational study with repeated measurements over a prespecified period long enough to capture routine variation, seasonal effects, and atypical workload periods.\n\n### Study units and sampling\n- Include multiple sites performing the same nominal process and enough teams within sites to distinguish team-level from site-level variation.\n- Sample consecutive eligible cases where feasible, avoiding selection based on completion time or outcome.\n- Define inclusion and exclusion criteria before data extraction, including treatment of canceled, paused, reopened, and incomplete cases.\n- Link case-level records to team, site, staffing, workload, and operating-condition records using privacy-preserving identifiers.\n\n### Establish the disparity\nEstimate differences in completion time across sites after describing the raw distributions. Separate:\n- active processing time from waiting or queue time;\n- within-team variation from between-team and between-site variation;\n- typical performance from tail behavior and exceptional cases.\n\n### Differential / local-sensitivity approach\nSpecify a set of candidate explanatory variables and estimate how small differences in each relate to completion time, holding measured alternatives constant. Use local contrasts where possible—for example, comparable cases handled by the same team under slightly different workload or staffing conditions, or by different teams at the same site.\n\nModel interactions only when substantively justified, such as whether workload sensitivity differs by staffing level or process adherence. Examine whether estimated relationships are stable across sites and across reasonable case definitions and model specifications.\n\n### Process and mechanism evidence\nPair quantitative records with structured, non-intervention process observation and interviews or document review. These sources should establish how the nominal process is implemented, where delays arise, and whether recorded variables plausibly represent the proposed mechanisms. Use a common observation and interview protocol across sites.\n\n### Competing explanations and distinguishing observations\n- **Execution or interpretation differences:** Supported if sites differ in observed step order, rework, handoffs, exception handling, or adherence, and these differences account for some of the time gap. Weakened if execution is demonstrably similar and adjustment for execution measures leaves the gap unchanged.\n- **Case mix or input quality:** Supported if sites receive systematically different case types or input quality and the gap diminishes among comparable cases. Weakened if comparable cases retain the gap.\n- **Staffing, skills, or coordination:** Supported if time varies locally with relevant staffing, experience, skill coverage, or coordination measures, and the site gap is reduced after adjustment. Weakened if these measures show little association or do not explain the disparity.\n- **Workload and queues:** Supported if delays track queue size, utilization, interruptions, or workload changes, especially in waiting time, and the site gap narrows under comparable workload conditions. Weakened if timing differences persist at similar workload levels and are not concentrated in waiting.\n- **Tools or infrastructure:** Supported if delays align with system availability, latency, access, or equipment constraints and are concentrated in affected steps or periods. Weakened if relevant measures are similar and timing does not vary with them.\n- **Unmeasured site context:** Remains plausible if substantial site differences persist after well-supported adjustments and cannot be accounted for by recorded process or operational mechanisms.\n\n## 4. Data or evidence needed\n\n- Case-level timestamps for process start, each major step, handoffs, pauses, resumption, completion, reopening, and cancellation.\n- Case characteristics known at intake, relevant complexity indicators, input completeness or quality, and exception status.\n- Process maps and the documented standard, plus records of local guidance, forms, and workarounds.\n- Team and staffing records: role coverage, hours, experience, training, skill mix, absences, and turnover.\n- Workload and flow measures: arrivals, backlog, queue length, utilization, interruptions, and concurrent work.\n- Tool and infrastructure records: system outages, latency, access problems, equipment failures, and relevant configuration differences.\n- Structured observations of sampled cases at each site, including step sequence, handoffs, rework, waiting, and exception handling.\n- Interviews with workers and supervisors using neutral questions about sources of delay, variation, and local adaptations.\n- Calendar and operational context, including shifts, holidays, policy changes, and unusual demand periods.\n\n## 5. Measurement\n\nDefine completion time as elapsed time from a common, auditable start event to a common completion event. Report elapsed time separately from active work time and waiting time. Predefine how pauses, transfers, reopened work, and incomplete cases are handled.\n\nUse common operational definitions and data-quality checks across sites. Validate timestamp meaning against observations and staff accounts; document missingness, clock synchronization, and recording practices. Measure process execution with step-level indicators rather than a single subjective adherence rating.\n\nPrespecify primary outcomes and explanatory measures. Use robust summaries alongside means because completion-time distributions may be skewed. Assess agreement between administrative records and observed timing on a limited validation sample.\n\n## 6. Analysis\n\n1. **Describe the data:** Report case counts, missingness, completion-time distributions, and composition by site, team, case type, shift, and period.\n2. **Quantify disparities:** Estimate unadjusted and adjusted site differences, with uncertainty intervals. Decompose elapsed time into processing, waiting, and other components.\n3. **Estimate local sensitivities:** For each prespecified factor, estimate the change in completion time associated with a small change in that factor over its observed range. Use models that account for clustering of cases within teams and sites and repeated observations over time.\n4. **Use comparable contrasts:** Where support exists, compare similar cases within the same team or site, and comparable cases across sites. Avoid extrapolating beyond the overlap in case mix and operating conditions.\n5. **Assess explanatory contribution:** Sequentially adjust for case mix, process execution, staffing, workload, and tools, then report how the estimated site differences change. Treat attenuation as descriptive evidence, not proof of mediation.\n6. **Check mechanisms:** Test whether predicted components of time respond as expected—for example, queue conditions should primarily relate to waiting time; rework should relate to processing or repeat-step time.\n7. **Test robustness:** Repeat analyses with alternate defensible time definitions, exclusion of exceptional cases, different adjustment sets, and time-period restrictions. Examine missing-data sensitivity and whether results are driven by a small number of teams or cases.\n8. **Integrate evidence:** Compare quantitative patterns with observations and interview evidence. Record evidence that contradicts as well as supports each explanation. Keep residual site differences explicit rather than assigning them to a presumed mechanism.\n\n## 7. Decision / stopping rule\n\nBefore analysis, register the primary outcome, candidate explanations, covariates, comparison strategy, and robustness checks. Conclude that an explanation is **supported** only when:\n- its predicted measurements differ in the expected direction;\n- local-sensitivity estimates are sufficiently precise and robust to reasonable specifications;\n- the pattern is consistent with the proposed mechanism; and\n- relevant process evidence does not contradict it.\n\nConclude that an explanation is **not supported by these data** when its key predictions are absent with adequate measurement and precision. Use **inconclusive** when data quality, overlap, or precision is inadequate.\n\nStop data collection when the prespecified observation period and sampling targets are met, all included sites have adequate representation across relevant operating conditions, and data-quality checks pass. If precision or coverage remains inadequate, extend collection only under a prespecified rule; otherwise report the limitation rather than continuing until a preferred result appears.\n\n## 8. Limitations\n\n- Nonrandomized comparisons remain vulnerable to confounding and reverse causation.\n- Sites may record timestamps or process steps differently despite common definitions.\n- Observed work may differ from routine practice; interviews may be affected by recall or social-desirability bias.\n- Case complexity and work quality may be incompletely measured, and faster completion may not imply better outcomes.\n- Local-sensitivity estimates describe relationships near observed conditions and may not generalize to larger changes or other sites.\n- Strongly correlated explanations may be difficult to separate; the study may identify a set of plausible contributors rather than a single cause.\n- Persistent unexplained differences may reflect unobserved context, measurement error, or genuinely site-specific mechanisms.",
+  "raw_response": {
+    "id": "resp_021751e3383871fa016abf0ca6909c87d0a9a0d18bc0bc5921",
+    "object": "response",
+    "created_at": 1790905510,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790905534,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_021751e3383871fa016abf0ca6ff8887d09de3b7e7d7c2355f",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDetermine why teams at different sites have persistently different completion times despite following the same nominal workplace process. The study will compare competing explanations and identify the observations that would support or weaken each.\n\nThe primary methodological frame is differential and local-sensitivity analysis: estimate how completion time changes with small, observed differences in process conditions, team characteristics, workload, and site context. The study is observational; it will not introduce changes to work practices.\n\n## 2. Assumptions\n\n- “Same nominal process” means sites share the intended process specification, not necessarily identical implementation.\n- Completion time can be defined consistently across sites using common start and end events.\n- Relevant cases and teams can be matched or adjusted for differences in case complexity, workload, and operating conditions.\n- Observed data will include enough within-site and within-team variation to estimate local associations. If not, estimates will be reported as uncertain.\n- Candidate explanations include:\n  1. Differences in actual process execution or interpretation.\n  2. Differences in case mix or input quality.\n  3. Differences in staffing, skills, experience, or team coordination.\n  4. Differences in workload, queues, interruptions, or resource availability.\n  5. Differences in tools, systems, or local infrastructure.\n  6. Site-specific context or unmeasured factors.\n- Observational associations alone do not establish causation. Findings will be framed as evidence for or against mechanisms, not definitive causal attribution.\n\n## 3. Research design\n\nUse a multi-site observational study with repeated measurements over a prespecified period long enough to capture routine variation, seasonal effects, and atypical workload periods.\n\n### Study units and sampling\n- Include multiple sites performing the same nominal process and enough teams within sites to distinguish team-level from site-level variation.\n- Sample consecutive eligible cases where feasible, avoiding selection based on completion time or outcome.\n- Define inclusion and exclusion criteria before data extraction, including treatment of canceled, paused, reopened, and incomplete cases.\n- Link case-level records to team, site, staffing, workload, and operating-condition records using privacy-preserving identifiers.\n\n### Establish the disparity\nEstimate differences in completion time across sites after describing the raw distributions. Separate:\n- active processing time from waiting or queue time;\n- within-team variation from between-team and between-site variation;\n- typical performance from tail behavior and exceptional cases.\n\n### Differential / local-sensitivity approach\nSpecify a set of candidate explanatory variables and estimate how small differences in each relate to completion time, holding measured alternatives constant. Use local contrasts where possible—for example, comparable cases handled by the same team under slightly different workload or staffing conditions, or by different teams at the same site.\n\nModel interactions only when substantively justified, such as whether workload sensitivity differs by staffing level or process adherence. Examine whether estimated relationships are stable across sites and across reasonable case definitions and model specifications.\n\n### Process and mechanism evidence\nPair quantitative records with structured, non-intervention process observation and interviews or document review. These sources should establish how the nominal process is implemented, where delays arise, and whether recorded variables plausibly represent the proposed mechanisms. Use a common observation and interview protocol across sites.\n\n### Competing explanations and distinguishing observations\n- **Execution or interpretation differences:** Supported if sites differ in observed step order, rework, handoffs, exception handling, or adherence, and these differences account for some of the time gap. Weakened if execution is demonstrably similar and adjustment for execution measures leaves the gap unchanged.\n- **Case mix or input quality:** Supported if sites receive systematically different case types or input quality and the gap diminishes among comparable cases. Weakened if comparable cases retain the gap.\n- **Staffing, skills, or coordination:** Supported if time varies locally with relevant staffing, experience, skill coverage, or coordination measures, and the site gap is reduced after adjustment. Weakened if these measures show little association or do not explain the disparity.\n- **Workload and queues:** Supported if delays track queue size, utilization, interruptions, or workload changes, especially in waiting time, and the site gap narrows under comparable workload conditions. Weakened if timing differences persist at similar workload levels and are not concentrated in waiting.\n- **Tools or infrastructure:** Supported if delays align with system availability, latency, access, or equipment constraints and are concentrated in affected steps or periods. Weakened if relevant measures are similar and timing does not vary with them.\n- **Unmeasured site context:** Remains plausible if substantial site differences persist after well-supported adjustments and cannot be accounted for by recorded process or operational mechanisms.\n\n## 4. Data or evidence needed\n\n- Case-level timestamps for process start, each major step, handoffs, pauses, resumption, completion, reopening, and cancellation.\n- Case characteristics known at intake, relevant complexity indicators, input completeness or quality, and exception status.\n- Process maps and the documented standard, plus records of local guidance, forms, and workarounds.\n- Team and staffing records: role coverage, hours, experience, training, skill mix, absences, and turnover.\n- Workload and flow measures: arrivals, backlog, queue length, utilization, interruptions, and concurrent work.\n- Tool and infrastructure records: system outages, latency, access problems, equipment failures, and relevant configuration differences.\n- Structured observations of sampled cases at each site, including step sequence, handoffs, rework, waiting, and exception handling.\n- Interviews with workers and supervisors using neutral questions about sources of delay, variation, and local adaptations.\n- Calendar and operational context, including shifts, holidays, policy changes, and unusual demand periods.\n\n## 5. Measurement\n\nDefine completion time as elapsed time from a common, auditable start event to a common completion event. Report elapsed time separately from active work time and waiting time. Predefine how pauses, transfers, reopened work, and incomplete cases are handled.\n\nUse common operational definitions and data-quality checks across sites. Validate timestamp meaning against observations and staff accounts; document missingness, clock synchronization, and recording practices. Measure process execution with step-level indicators rather than a single subjective adherence rating.\n\nPrespecify primary outcomes and explanatory measures. Use robust summaries alongside means because completion-time distributions may be skewed. Assess agreement between administrative records and observed timing on a limited validation sample.\n\n## 6. Analysis\n\n1. **Describe the data:** Report case counts, missingness, completion-time distributions, and composition by site, team, case type, shift, and period.\n2. **Quantify disparities:** Estimate unadjusted and adjusted site differences, with uncertainty intervals. Decompose elapsed time into processing, waiting, and other components.\n3. **Estimate local sensitivities:** For each prespecified factor, estimate the change in completion time associated with a small change in that factor over its observed range. Use models that account for clustering of cases within teams and sites and repeated observations over time.\n4. **Use comparable contrasts:** Where support exists, compare similar cases within the same team or site, and comparable cases across sites. Avoid extrapolating beyond the overlap in case mix and operating conditions.\n5. **Assess explanatory contribution:** Sequentially adjust for case mix, process execution, staffing, workload, and tools, then report how the estimated site differences change. Treat attenuation as descriptive evidence, not proof of mediation.\n6. **Check mechanisms:** Test whether predicted components of time respond as expected—for example, queue conditions should primarily relate to waiting time; rework should relate to processing or repeat-step time.\n7. **Test robustness:** Repeat analyses with alternate defensible time definitions, exclusion of exceptional cases, different adjustment sets, and time-period restrictions. Examine missing-data sensitivity and whether results are driven by a small number of teams or cases.\n8. **Integrate evidence:** Compare quantitative patterns with observations and interview evidence. Record evidence that contradicts as well as supports each explanation. Keep residual site differences explicit rather than assigning them to a presumed mechanism.\n\n## 7. Decision / stopping rule\n\nBefore analysis, register the primary outcome, candidate explanations, covariates, comparison strategy, and robustness checks. Conclude that an explanation is **supported** only when:\n- its predicted measurements differ in the expected direction;\n- local-sensitivity estimates are sufficiently precise and robust to reasonable specifications;\n- the pattern is consistent with the proposed mechanism; and\n- relevant process evidence does not contradict it.\n\nConclude that an explanation is **not supported by these data** when its key predictions are absent with adequate measurement and precision. Use **inconclusive** when data quality, overlap, or precision is inadequate.\n\nStop data collection when the prespecified observation period and sampling targets are met, all included sites have adequate representation across relevant operating conditions, and data-quality checks pass. If precision or coverage remains inadequate, extend collection only under a prespecified rule; otherwise report the limitation rather than continuing until a preferred result appears.\n\n## 8. Limitations\n\n- Nonrandomized comparisons remain vulnerable to confounding and reverse causation.\n- Sites may record timestamps or process steps differently despite common definitions.\n- Observed work may differ from routine practice; interviews may be affected by recall or social-desirability bias.\n- Case complexity and work quality may be incompletely measured, and faster completion may not imply better outcomes.\n- Local-sensitivity estimates describe relationships near observed conditions and may not generalize to larger changes or other sites.\n- Strongly correlated explanations may be difficult to separate; the study may identify a set of plausible contributors rather than a single cause.\n- Persistent unexplained differences may reflect unobserved context, measurement error, or genuinely site-specific mechanisms."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 192,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1961,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2153
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

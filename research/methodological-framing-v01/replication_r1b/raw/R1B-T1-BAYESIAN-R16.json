@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "BAYESIAN_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "BAYESIAN",
+  "replicate": 16,
+  "run_id": "R1B-T1-BAYESIAN-R16",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:19:39.486355+00:00",
+  "timestamp_utc": "2026-10-02T06:19:59.462250+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "bd960c9b78dbae4b84e1a72dd7bccf72701810ed8a3acbc5b0b61f61f649af41",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_038dc179b645407d016abf4cfb4d2487d0a30de4c4284ba5ea",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 188,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1684,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1872
+  },
+  "raw_text": "## 1. Objective and scope\n\nEstimate how often a fixed question to a specified large language model (LLM) produces responses that differ in a substantively meaningful way when the question and all other controllable conditions are held constant. Identify which factors are associated with those differences and distinguish them from harmless variation in phrasing, formatting, or detail.\n\nThe study concerns a defined model version, interface, prompt, and set of tested conditions—not LLMs in general. It will examine both repeated responses under nominally identical conditions and responses under specified changes to generation settings or context. It will not infer why an individual response changed beyond evidence available from controlled comparisons.\n\n## 2. Assumptions\n\n- “Same question” means identical question text and identical supplied context, system instructions, tools, and other prompt components, unless a factor is deliberately varied.\n- Model version, endpoint, and generation settings can be recorded and held fixed where the interface permits. If the provider may update a model without notice, that uncertainty will be documented.\n- Repeated calls may be dependent, and the model may exhibit both stable behavioral tendencies and run-to-run variation.\n- Meaningful difference depends on the task. It must be defined before examining results rather than inferred from stylistic variation afterward.\n- Human judgments of correctness and materiality are fallible. The study will use blinded, independent assessments and report disagreement.\n- Results apply to the tested prompts, model, and conditions. Generalization requires replication across additional prompts, model versions, or settings.\n\n## 3. Research design\n\nUse a preregistered, Bayesian repeated-measures design.\n\n**Prompt sample.** Construct a stratified set of questions spanning task types likely to differ in what counts as a meaningful response change, such as factual questions, calculations, summarization, advice or recommendations, and open-ended generation. Include questions with objectively checkable answers and questions requiring judgment. Define inclusion criteria, strata, and the prompt-selection procedure in advance. Avoid selecting prompts because they produce surprising outputs.\n\n**Baseline repeats.** For every prompt, make multiple calls with identical inputs and fixed recorded settings. Randomize call order across prompts and sessions where feasible. Distribute calls over time to reveal session or service-level effects; record timestamps and any available model or endpoint identifiers. Repeats estimate variability under the nominally fixed condition.\n\n**Controlled contrasts.** Where permitted, vary one factor at a time, such as sampling settings, conversation context, or tool availability. Keep the question itself unchanged within each contrast. These comparisons can identify associations with response differences, but causal interpretation is limited to factors that are genuinely controlled and not confounded with time or endpoint changes. Include repeated calls in each condition.\n\n**Blinding and evaluation.** Remove condition labels and randomize response order before annotation. Present responses in pairs or sets for comparison, without telling raters whether they came from the same or different conditions. Use at least two independent annotators per comparison, with expert review or adjudication for pre-specified high-impact disagreements. Keep a record of the original outputs for audit.\n\n**Preregistration.** Specify prompts, conditions, repetition counts, outcome definitions, annotation instructions, statistical models, priors, and decision criteria before collecting responses. If pilot data are used to refine the protocol, keep them separate from the confirmatory analysis.\n\n## 4. Data or evidence needed\n\nFor each call, retain:\n\n- Exact prompt and full supplied context, including system and developer instructions where available.\n- Model name and version, endpoint, interface, timestamp, and any reported service metadata.\n- Generation settings, tool configuration, and relevant session state.\n- Raw response, including refusals, formatting, citations, and tool traces where available.\n- Call failures, retries, and any deviations from the protocol.\n- Independent annotations, annotator confidence, and adjudication outcomes.\n- For objectively checkable questions, an external answer key or verification procedure established independently of the model output.\n\nDo not treat unrecorded provider-side changes as observed causes. Mark periods or calls with uncertain model identity and analyze them separately in sensitivity analyses.\n\n## 5. Measurement\n\nDefine a **meaningful difference** as a difference that changes at least one pre-specified, task-relevant property, such as:\n\n- Truth or correctness of a substantive claim.\n- The answer, recommendation, ranking, or decision.\n- Inclusion of a material qualification, safety warning, or uncertainty statement.\n- Coverage of a required element or omission of a consequential one.\n- Whether the response complies with the task or refuses it.\n- A factual contradiction or incompatible conclusion.\n\nDefine **ordinary wording variation** to include changes in style, sentence structure, ordering, or level of elaboration that do not alter those properties.\n\nFor each response or response pair, collect separate ratings for:\n\n1. Substantive equivalence or meaningful difference.\n2. Correctness or task adequacy against the relevant standard.\n3. Severity of any difference, using a preregistered ordinal scale.\n4. Confidence in the judgment.\n5. Observable wording or formatting variation, recorded separately from substance.\n\nUse task-specific rubrics and examples developed before the main annotations. Report individual ratings as well as adjudicated outcomes. Estimate inter-rater agreement; do not interpret agreement as proof that the rubric captures all relevant differences.\n\n## 6. Analysis\n\nUse Bayesian models to estimate the frequency and severity of meaningful differences while accounting for repeated measurements and uncertainty.\n\n- Estimate, for each task stratum and overall, the probability that two independently sampled responses under the same condition differ meaningfully. Report posterior intervals and the prior-to-posterior update.\n- Use hierarchical models with prompt-level effects and, where data support it, annotator and session effects. This allows prompts to vary in susceptibility rather than assuming one common instability rate.\n- Model condition contrasts directly to estimate changes in the probability of a meaningful difference, with uncertainty intervals. Avoid interpreting associations as causal when condition assignment, timing, or endpoint stability does not support that conclusion.\n- Analyze correctness and meaningful difference separately. Two responses can differ meaningfully while both are correct, or appear similar while both are wrong.\n- Account for annotation uncertainty where feasible, for example by modeling annotator-specific error or using a latent consensus outcome. Also provide a transparent analysis of raw ratings.\n- Conduct sensitivity analyses using reasonable alternative priors, alternative definitions of meaningful difference, adjudicated versus individual ratings, and exclusion of calls with uncertain model identity.\n- Report absolute rates and uncertainty, not only statistical evidence for differences. Preserve representative examples chosen by a pre-specified sampling rule, including cases of agreement and disagreement.\n\n## 7. Decision / stopping rule\n\nSet the practical threshold for meaningful instability before data collection. For example, define a minimum response-difference rate or severity level that would matter for the intended use; justify that threshold in the preregistration.\n\nChoose a fixed sample size or a Bayesian sequential design with explicit maximum sample size and review intervals. For sequential sampling, stop only when a pre-specified posterior criterion is met—for example, when the posterior probability that the instability rate exceeds the practical threshold is sufficiently high or sufficiently low—or when the maximum sample size is reached. Specify criteria for inconclusive results in advance. Do not stop based on informal inspection of outputs.\n\nConclude that evidence supports practically important instability only if the posterior evidence crosses the preregistered threshold and the result is robust to key sensitivity analyses. If it does not, report whether evidence favors a low rate, remains inconclusive, or depends on task or condition.\n\n## 8. Limitations\n\n- A finite set of prompts cannot establish a universal rate for all questions, users, or applications.\n- Model updates, hidden system changes, routing, and provider-side nondeterminism may be unobservable.\n- Repeated calls may not be independent, and a nominally fixed setup may still contain latent variation.\n- Human judgments of materiality, correctness, and equivalence are imperfect and may vary by domain or intended use.\n- Objective answer keys may be unavailable or incomplete for open-ended tasks.\n- Controlled settings may not match real-world use, where prompts, conversation histories, and user needs vary.\n- Observed differences identify behavioral variability, not necessarily its underlying technical mechanism. Mechanistic claims require additional evidence, such as reliable metadata or provider-side instrumentation.",
+  "raw_response": {
+    "id": "resp_038dc179b645407d016abf4cfb4d2487d0a30de4c4284ba5ea",
+    "object": "response",
+    "created_at": 1790921979,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790921998,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_038dc179b645407d016abf4cfbb43c87d0846190937f6692a5",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nEstimate how often a fixed question to a specified large language model (LLM) produces responses that differ in a substantively meaningful way when the question and all other controllable conditions are held constant. Identify which factors are associated with those differences and distinguish them from harmless variation in phrasing, formatting, or detail.\n\nThe study concerns a defined model version, interface, prompt, and set of tested conditions—not LLMs in general. It will examine both repeated responses under nominally identical conditions and responses under specified changes to generation settings or context. It will not infer why an individual response changed beyond evidence available from controlled comparisons.\n\n## 2. Assumptions\n\n- “Same question” means identical question text and identical supplied context, system instructions, tools, and other prompt components, unless a factor is deliberately varied.\n- Model version, endpoint, and generation settings can be recorded and held fixed where the interface permits. If the provider may update a model without notice, that uncertainty will be documented.\n- Repeated calls may be dependent, and the model may exhibit both stable behavioral tendencies and run-to-run variation.\n- Meaningful difference depends on the task. It must be defined before examining results rather than inferred from stylistic variation afterward.\n- Human judgments of correctness and materiality are fallible. The study will use blinded, independent assessments and report disagreement.\n- Results apply to the tested prompts, model, and conditions. Generalization requires replication across additional prompts, model versions, or settings.\n\n## 3. Research design\n\nUse a preregistered, Bayesian repeated-measures design.\n\n**Prompt sample.** Construct a stratified set of questions spanning task types likely to differ in what counts as a meaningful response change, such as factual questions, calculations, summarization, advice or recommendations, and open-ended generation. Include questions with objectively checkable answers and questions requiring judgment. Define inclusion criteria, strata, and the prompt-selection procedure in advance. Avoid selecting prompts because they produce surprising outputs.\n\n**Baseline repeats.** For every prompt, make multiple calls with identical inputs and fixed recorded settings. Randomize call order across prompts and sessions where feasible. Distribute calls over time to reveal session or service-level effects; record timestamps and any available model or endpoint identifiers. Repeats estimate variability under the nominally fixed condition.\n\n**Controlled contrasts.** Where permitted, vary one factor at a time, such as sampling settings, conversation context, or tool availability. Keep the question itself unchanged within each contrast. These comparisons can identify associations with response differences, but causal interpretation is limited to factors that are genuinely controlled and not confounded with time or endpoint changes. Include repeated calls in each condition.\n\n**Blinding and evaluation.** Remove condition labels and randomize response order before annotation. Present responses in pairs or sets for comparison, without telling raters whether they came from the same or different conditions. Use at least two independent annotators per comparison, with expert review or adjudication for pre-specified high-impact disagreements. Keep a record of the original outputs for audit.\n\n**Preregistration.** Specify prompts, conditions, repetition counts, outcome definitions, annotation instructions, statistical models, priors, and decision criteria before collecting responses. If pilot data are used to refine the protocol, keep them separate from the confirmatory analysis.\n\n## 4. Data or evidence needed\n\nFor each call, retain:\n\n- Exact prompt and full supplied context, including system and developer instructions where available.\n- Model name and version, endpoint, interface, timestamp, and any reported service metadata.\n- Generation settings, tool configuration, and relevant session state.\n- Raw response, including refusals, formatting, citations, and tool traces where available.\n- Call failures, retries, and any deviations from the protocol.\n- Independent annotations, annotator confidence, and adjudication outcomes.\n- For objectively checkable questions, an external answer key or verification procedure established independently of the model output.\n\nDo not treat unrecorded provider-side changes as observed causes. Mark periods or calls with uncertain model identity and analyze them separately in sensitivity analyses.\n\n## 5. Measurement\n\nDefine a **meaningful difference** as a difference that changes at least one pre-specified, task-relevant property, such as:\n\n- Truth or correctness of a substantive claim.\n- The answer, recommendation, ranking, or decision.\n- Inclusion of a material qualification, safety warning, or uncertainty statement.\n- Coverage of a required element or omission of a consequential one.\n- Whether the response complies with the task or refuses it.\n- A factual contradiction or incompatible conclusion.\n\nDefine **ordinary wording variation** to include changes in style, sentence structure, ordering, or level of elaboration that do not alter those properties.\n\nFor each response or response pair, collect separate ratings for:\n\n1. Substantive equivalence or meaningful difference.\n2. Correctness or task adequacy against the relevant standard.\n3. Severity of any difference, using a preregistered ordinal scale.\n4. Confidence in the judgment.\n5. Observable wording or formatting variation, recorded separately from substance.\n\nUse task-specific rubrics and examples developed before the main annotations. Report individual ratings as well as adjudicated outcomes. Estimate inter-rater agreement; do not interpret agreement as proof that the rubric captures all relevant differences.\n\n## 6. Analysis\n\nUse Bayesian models to estimate the frequency and severity of meaningful differences while accounting for repeated measurements and uncertainty.\n\n- Estimate, for each task stratum and overall, the probability that two independently sampled responses under the same condition differ meaningfully. Report posterior intervals and the prior-to-posterior update.\n- Use hierarchical models with prompt-level effects and, where data support it, annotator and session effects. This allows prompts to vary in susceptibility rather than assuming one common instability rate.\n- Model condition contrasts directly to estimate changes in the probability of a meaningful difference, with uncertainty intervals. Avoid interpreting associations as causal when condition assignment, timing, or endpoint stability does not support that conclusion.\n- Analyze correctness and meaningful difference separately. Two responses can differ meaningfully while both are correct, or appear similar while both are wrong.\n- Account for annotation uncertainty where feasible, for example by modeling annotator-specific error or using a latent consensus outcome. Also provide a transparent analysis of raw ratings.\n- Conduct sensitivity analyses using reasonable alternative priors, alternative definitions of meaningful difference, adjudicated versus individual ratings, and exclusion of calls with uncertain model identity.\n- Report absolute rates and uncertainty, not only statistical evidence for differences. Preserve representative examples chosen by a pre-specified sampling rule, including cases of agreement and disagreement.\n\n## 7. Decision / stopping rule\n\nSet the practical threshold for meaningful instability before data collection. For example, define a minimum response-difference rate or severity level that would matter for the intended use; justify that threshold in the preregistration.\n\nChoose a fixed sample size or a Bayesian sequential design with explicit maximum sample size and review intervals. For sequential sampling, stop only when a pre-specified posterior criterion is met—for example, when the posterior probability that the instability rate exceeds the practical threshold is sufficiently high or sufficiently low—or when the maximum sample size is reached. Specify criteria for inconclusive results in advance. Do not stop based on informal inspection of outputs.\n\nConclude that evidence supports practically important instability only if the posterior evidence crosses the preregistered threshold and the result is robust to key sensitivity analyses. If it does not, report whether evidence favors a low rate, remains inconclusive, or depends on task or condition.\n\n## 8. Limitations\n\n- A finite set of prompts cannot establish a universal rate for all questions, users, or applications.\n- Model updates, hidden system changes, routing, and provider-side nondeterminism may be unobservable.\n- Repeated calls may not be independent, and a nominally fixed setup may still contain latent variation.\n- Human judgments of materiality, correctness, and equivalence are imperfect and may vary by domain or intended use.\n- Objective answer keys may be unavailable or incomplete for open-ended tasks.\n- Controlled settings may not match real-world use, where prompts, conversation histories, and user needs vary.\n- Observed differences identify behavioral variability, not necessarily its underlying technical mechanism. Mechanistic claims require additional evidence, such as reliable metadata or provider-side instrumentation."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 188,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1684,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1872
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

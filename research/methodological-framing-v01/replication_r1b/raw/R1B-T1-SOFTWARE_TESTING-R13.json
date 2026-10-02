@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "SOFTWARE_TESTING_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "SOFTWARE_TESTING",
+  "replicate": 13,
+  "run_id": "R1B-T1-SOFTWARE_TESTING-R13",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:20:46.581020+00:00",
+  "timestamp_utc": "2026-10-02T06:21:04.476997+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "3ea38a6435b62d739dbef9a1a5e34838363d796b5e82a9575b6ca8c8e03a2123",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse a software-testing approach as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_02a3537d27c5fd4c016abf4d3e584887d08f4a649c07b3bfb6",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 1665,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1854
+  },
+  "raw_text": "## 1. Objective and scope\n\nDesign a software-testing-based study to determine whether a fixed large-language-model (LLM) question can elicit meaningfully different responses across repeated runs or controlled changes in execution conditions; identify plausible causes; and distinguish substantive instability from ordinary variation in wording, formatting, or detail.\n\nThe study concerns observable responses from specified model versions and configurations. It does not aim to establish that results generalize to all models, questions, users, or deployment settings.\n\n## 2. Assumptions\n\n- The question, model version, system instructions, tools, and generation settings can be recorded and controlled or observed.\n- Repeated calls may differ because of stochastic decoding, hidden service-side state, model or infrastructure updates, context, or nondeterministic tool behavior.\n- Identical visible inputs do not necessarily guarantee identical internal execution.\n- Response equivalence depends on the task: two differently worded answers may be functionally equivalent, while a small wording change may reverse a decision or introduce a harmful factual error.\n- “Meaningful difference” must therefore be defined using task-relevant criteria before examining results.\n\n## 3. Research design\n\nUse a test-plan structure adapted from software quality assurance: define test cases, control test conditions, identify expected properties, run repeated tests, classify failures, and apply predeclared acceptance criteria.\n\n**Test population and sampling.** Select a stratified set of questions covering task types likely to reveal different failure modes, such as factual questions, constrained-format tasks, calculations, recommendations, ambiguous prompts, and safety-sensitive requests. Specify inclusion criteria, question counts, and sampling rationale in advance. Include both naturally occurring questions and, if useful, purpose-built test cases. Avoid drawing conclusions from a single question.\n\n**Baseline repeatability tests.** For every question, submit multiple independent calls using the same recorded prompt, model version, system instructions, decoding parameters, tool configuration, and available context. Repeat calls in randomized order and, where feasible, across sessions and time points. Record whether calls are fresh conversations or continuations.\n\n**Controlled fault-isolation tests.** Vary one factor at a time while holding others fixed. Candidate factors include:\n- sampling settings, including temperature, top-p, and seed where supported;\n- prompt wording, punctuation, or formatting;\n- system instructions and conversation history;\n- tool availability, tool outputs, or retrieval results;\n- elapsed time, deployment version, or serving endpoint.\n\nUse a factorial or blocked design if interactions among factors are an explicit objective. Label all such tests as interventions, distinct from baseline repeats.\n\n**Metamorphic testing.** Add tests with transformations that should preserve the answer’s substantive content—for example, harmless formatting changes or equivalent paraphrases. Predefine expected invariants. Also include transformations expected to change the answer, such as changing a date, unit, or relevant constraint, to check that the evaluation can detect legitimate differences.\n\n**Blinding and adjudication.** Remove run identifiers and condition labels before human rating. Use at least two independent raters for subjective or domain-specific judgments, with a documented disagreement-resolution procedure. Pilot the rubric on a separate subset and freeze it before confirmatory scoring.\n\n## 4. Data or evidence needed\n\nRetain, for every call:\n\n- Exact user prompt, system instructions, conversation history, and any structured input.\n- Model name and version, endpoint, date and time, decoding parameters, seed if available, token limits, and other exposed configuration.\n- Tool calls, retrieved materials, tool outputs, errors, retries, latency, and truncation or refusal indicators.\n- Raw model response, including formatting and metadata needed to interpret it.\n- Test-case identifier, condition assignment, and repetition number.\n\nPrepare task-specific answer keys, reference sources, expected invariants, safety criteria, and a response-evaluation rubric before confirmatory analysis. Preserve provenance for reference materials and record any ambiguity in the gold standard.\n\n## 5. Measurement\n\nUse multiple measures; do not treat lexical difference alone as evidence of instability.\n\n**Primary outcome: substantive response instability.** Rate whether answers differ in one or more predefined consequential dimensions, such as:\n- factual claims or numerical results;\n- conclusion, recommendation, ranking, or decision;\n- compliance with the requested constraints;\n- safety, refusal, or harmfulness;\n- material omissions, unsupported confidence, or fabricated evidence.\n\nDefine a task-specific severity scale, for example: no substantive difference, minor non-consequential difference, material difference, and critical or harmful difference. Set explicit examples and thresholds for each category before scoring.\n\n**Secondary outcomes.**\n- Functional equivalence against task-specific requirements or answer keys.\n- Factual accuracy and citation or evidence validity where applicable.\n- Format and instruction compliance.\n- Refusal and safety-policy consistency.\n- Length, structure, and stylistic variation.\n- Lexical or semantic similarity as descriptive measures only, not as standalone verdicts.\n\nReport both response-level judgments and item-level rates. Measure rater agreement and document uncertainty. Where automated comparison is used, validate it against blinded human judgments on a prespecified subset and retain human adjudication for consequential disagreements.\n\n## 6. Analysis\n\nEstimate, by question and condition, the probability of a material or critical difference across repeats, with uncertainty intervals. Report distributions as well as pooled estimates so that a small number of unstable questions is not concealed by a stable majority. Account for repeated observations within questions and, where applicable, rater and time-point effects.\n\nFor baseline tests, quantify repeatability under nominally identical conditions. For controlled interventions, compare outcomes between conditions and assess whether the manipulated factor changes substantive-instability rates, error types, or severity. Use paired comparisons when the same questions are tested under multiple conditions. Predefine handling of missing calls, failed requests, and tool errors; report them rather than silently excluding them.\n\nSeparate variation into:\n1. **Surface variation:** differences in phrasing, order, or formatting without a task-relevant change.\n2. **Material semantic variation:** differences that alter claims, decisions, compliance, or evidence.\n3. **Operational variation:** changes associated with tools, retrieval, serving version, or other execution conditions.\n4. **Unresolved variation:** cases where evidence or rubric does not support a reliable classification.\n\nCheck whether apparent instability is attributable to ambiguity in the question, an inadequate answer key, evaluator disagreement, or legitimate sensitivity to changed inputs. Conduct sensitivity analyses using alternative reasonable thresholds or adjudication rules, while keeping the primary analysis tied to the prespecified rubric.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify the minimum number of questions and repeats per condition using a power or precision rationale suited to the primary outcome. Also prespecify materiality thresholds and any critical-failure threshold.\n\nConclude that the tested system exhibits **meaningful response instability** if the estimated rate of material differences exceeds the predeclared tolerance and the uncertainty interval supports that conclusion. Treat any prespecified critical or harmful divergence as a reportable failure regardless of the aggregate rate. Conclude that observed variation is **predominantly wording-level** only if substantive differences remain below the tolerance and the evaluation has adequate precision to rule out an unacceptable rate. Otherwise, report the result as inconclusive.\n\nStop when the minimum design is complete and the primary estimate reaches the prespecified precision target, or when a safety-critical failure triggers a predefined safety review. Do not stop early based only on favorable or unfavorable interim results unless an interim rule was specified in advance.\n\n## 8. Limitations\n\n- Findings apply to the tested questions, versions, settings, tools, and observation period; model updates can invalidate repeatability estimates.\n- Hidden serving changes, undisclosed state, and infrastructure nondeterminism may prevent full causal attribution.\n- Task-specific materiality judgments and gold standards can be incomplete or contested.\n- Human ratings can vary despite blinding and training; automated similarity metrics can mistake paraphrases for differences or miss consequential changes.\n- Repetition estimates observed behavior but does not guarantee performance in future deployments or for untested prompts.\n- Controlled prompt changes may not represent naturally occurring user variation.\n- A software-testing framework improves coverage, traceability, and failure classification, but cannot establish the model’s internal causal process from outputs alone.",
+  "raw_response": {
+    "id": "resp_02a3537d27c5fd4c016abf4d3e584887d08f4a649c07b3bfb6",
+    "object": "response",
+    "created_at": 1790922046,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922063,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_02a3537d27c5fd4c016abf4d3ef02087d0aff7e66c1f386733",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nDesign a software-testing-based study to determine whether a fixed large-language-model (LLM) question can elicit meaningfully different responses across repeated runs or controlled changes in execution conditions; identify plausible causes; and distinguish substantive instability from ordinary variation in wording, formatting, or detail.\n\nThe study concerns observable responses from specified model versions and configurations. It does not aim to establish that results generalize to all models, questions, users, or deployment settings.\n\n## 2. Assumptions\n\n- The question, model version, system instructions, tools, and generation settings can be recorded and controlled or observed.\n- Repeated calls may differ because of stochastic decoding, hidden service-side state, model or infrastructure updates, context, or nondeterministic tool behavior.\n- Identical visible inputs do not necessarily guarantee identical internal execution.\n- Response equivalence depends on the task: two differently worded answers may be functionally equivalent, while a small wording change may reverse a decision or introduce a harmful factual error.\n- “Meaningful difference” must therefore be defined using task-relevant criteria before examining results.\n\n## 3. Research design\n\nUse a test-plan structure adapted from software quality assurance: define test cases, control test conditions, identify expected properties, run repeated tests, classify failures, and apply predeclared acceptance criteria.\n\n**Test population and sampling.** Select a stratified set of questions covering task types likely to reveal different failure modes, such as factual questions, constrained-format tasks, calculations, recommendations, ambiguous prompts, and safety-sensitive requests. Specify inclusion criteria, question counts, and sampling rationale in advance. Include both naturally occurring questions and, if useful, purpose-built test cases. Avoid drawing conclusions from a single question.\n\n**Baseline repeatability tests.** For every question, submit multiple independent calls using the same recorded prompt, model version, system instructions, decoding parameters, tool configuration, and available context. Repeat calls in randomized order and, where feasible, across sessions and time points. Record whether calls are fresh conversations or continuations.\n\n**Controlled fault-isolation tests.** Vary one factor at a time while holding others fixed. Candidate factors include:\n- sampling settings, including temperature, top-p, and seed where supported;\n- prompt wording, punctuation, or formatting;\n- system instructions and conversation history;\n- tool availability, tool outputs, or retrieval results;\n- elapsed time, deployment version, or serving endpoint.\n\nUse a factorial or blocked design if interactions among factors are an explicit objective. Label all such tests as interventions, distinct from baseline repeats.\n\n**Metamorphic testing.** Add tests with transformations that should preserve the answer’s substantive content—for example, harmless formatting changes or equivalent paraphrases. Predefine expected invariants. Also include transformations expected to change the answer, such as changing a date, unit, or relevant constraint, to check that the evaluation can detect legitimate differences.\n\n**Blinding and adjudication.** Remove run identifiers and condition labels before human rating. Use at least two independent raters for subjective or domain-specific judgments, with a documented disagreement-resolution procedure. Pilot the rubric on a separate subset and freeze it before confirmatory scoring.\n\n## 4. Data or evidence needed\n\nRetain, for every call:\n\n- Exact user prompt, system instructions, conversation history, and any structured input.\n- Model name and version, endpoint, date and time, decoding parameters, seed if available, token limits, and other exposed configuration.\n- Tool calls, retrieved materials, tool outputs, errors, retries, latency, and truncation or refusal indicators.\n- Raw model response, including formatting and metadata needed to interpret it.\n- Test-case identifier, condition assignment, and repetition number.\n\nPrepare task-specific answer keys, reference sources, expected invariants, safety criteria, and a response-evaluation rubric before confirmatory analysis. Preserve provenance for reference materials and record any ambiguity in the gold standard.\n\n## 5. Measurement\n\nUse multiple measures; do not treat lexical difference alone as evidence of instability.\n\n**Primary outcome: substantive response instability.** Rate whether answers differ in one or more predefined consequential dimensions, such as:\n- factual claims or numerical results;\n- conclusion, recommendation, ranking, or decision;\n- compliance with the requested constraints;\n- safety, refusal, or harmfulness;\n- material omissions, unsupported confidence, or fabricated evidence.\n\nDefine a task-specific severity scale, for example: no substantive difference, minor non-consequential difference, material difference, and critical or harmful difference. Set explicit examples and thresholds for each category before scoring.\n\n**Secondary outcomes.**\n- Functional equivalence against task-specific requirements or answer keys.\n- Factual accuracy and citation or evidence validity where applicable.\n- Format and instruction compliance.\n- Refusal and safety-policy consistency.\n- Length, structure, and stylistic variation.\n- Lexical or semantic similarity as descriptive measures only, not as standalone verdicts.\n\nReport both response-level judgments and item-level rates. Measure rater agreement and document uncertainty. Where automated comparison is used, validate it against blinded human judgments on a prespecified subset and retain human adjudication for consequential disagreements.\n\n## 6. Analysis\n\nEstimate, by question and condition, the probability of a material or critical difference across repeats, with uncertainty intervals. Report distributions as well as pooled estimates so that a small number of unstable questions is not concealed by a stable majority. Account for repeated observations within questions and, where applicable, rater and time-point effects.\n\nFor baseline tests, quantify repeatability under nominally identical conditions. For controlled interventions, compare outcomes between conditions and assess whether the manipulated factor changes substantive-instability rates, error types, or severity. Use paired comparisons when the same questions are tested under multiple conditions. Predefine handling of missing calls, failed requests, and tool errors; report them rather than silently excluding them.\n\nSeparate variation into:\n1. **Surface variation:** differences in phrasing, order, or formatting without a task-relevant change.\n2. **Material semantic variation:** differences that alter claims, decisions, compliance, or evidence.\n3. **Operational variation:** changes associated with tools, retrieval, serving version, or other execution conditions.\n4. **Unresolved variation:** cases where evidence or rubric does not support a reliable classification.\n\nCheck whether apparent instability is attributable to ambiguity in the question, an inadequate answer key, evaluator disagreement, or legitimate sensitivity to changed inputs. Conduct sensitivity analyses using alternative reasonable thresholds or adjudication rules, while keeping the primary analysis tied to the prespecified rubric.\n\n## 7. Decision / stopping rule\n\nBefore data collection, specify the minimum number of questions and repeats per condition using a power or precision rationale suited to the primary outcome. Also prespecify materiality thresholds and any critical-failure threshold.\n\nConclude that the tested system exhibits **meaningful response instability** if the estimated rate of material differences exceeds the predeclared tolerance and the uncertainty interval supports that conclusion. Treat any prespecified critical or harmful divergence as a reportable failure regardless of the aggregate rate. Conclude that observed variation is **predominantly wording-level** only if substantive differences remain below the tolerance and the evaluation has adequate precision to rule out an unacceptable rate. Otherwise, report the result as inconclusive.\n\nStop when the minimum design is complete and the primary estimate reaches the prespecified precision target, or when a safety-critical failure triggers a predefined safety review. Do not stop early based only on favorable or unfavorable interim results unless an interim rule was specified in advance.\n\n## 8. Limitations\n\n- Findings apply to the tested questions, versions, settings, tools, and observation period; model updates can invalidate repeatability estimates.\n- Hidden serving changes, undisclosed state, and infrastructure nondeterminism may prevent full causal attribution.\n- Task-specific materiality judgments and gold standards can be incomplete or contested.\n- Human ratings can vary despite blinding and training; automated similarity metrics can mistake paraphrases for differences or miss consequential changes.\n- Repetition estimates observed behavior but does not guarantee performance in future deployments or for untested prompts.\n- Controlled prompt changes may not represent naturally occurring user variation.\n- A software-testing framework improves coverage, traceability, and failure classification, but cannot establish the model’s internal causal process from outputs alone."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 1665,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1854
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "acting_model": "gpt-6-luna",
+  "cohort": "R1B",
+  "condition_id": "GENERIC_LABEL_ONLY",
+  "instruction_depth": "LABEL_ONLY",
+  "method_family": "GENERIC",
+  "replicate": 15,
+  "run_id": "R1B-T1-GENERIC-R15",
+  "task_id": "T1",
+  "counted": true,
+  "replication": "R1",
+  "request_started_utc": "2026-10-02T06:28:11.886198+00:00",
+  "timestamp_utc": "2026-10-02T06:28:31.543871+00:00",
+  "requested_model": "gpt-6-luna",
+  "returned_model": "gpt-6-luna",
+  "store": false,
+  "max_output_tokens": 8000,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse your own best judgment as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools.",
+  "prompt_sha256": "7e7d5cbd66997da805fe2daeadb06b6434f6f7f56872bfb3cacb44963f3ffc40",
+  "request_body": {
+    "model": "gpt-6-luna",
+    "input": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "RESEARCH OBJECTIVE (identical within task):\nDesign a rigorous empirical study to determine whether the same large-language-model question can produce meaningfully different responses, why such changes occur, and how to distinguish true response instability from ordinary wording variation. Produce a research plan only. Do not run experiments and do not use external tools.\n\nMETHODOLOGICAL FRAMING:\nUse your own best judgment as the primary methodological frame for the research plan.\n\nOUTPUT REQUIREMENTS (identical across conditions):\nProduce a research plan only, with these neutral headings:\n1. Objective and scope\n2. Assumptions\n3. Research design\n4. Data or evidence needed\n5. Measurement\n6. Analysis\n7. Decision / stopping rule\n8. Limitations\n\nWithin those headings, include whatever elements you judge scientifically necessary.\nDo not mention that you are in an experiment comparing methodologies.\nDo not use external tools."
+          }
+        ]
+      }
+    ],
+    "store": false,
+    "max_output_tokens": 8000,
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "reasoning": {
+      "effort": "none"
+    }
+  },
+  "response_id": "resp_022856646aa81aa2016abf4efba5a487d0a107504bb289ea5e",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 189,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 2076,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 2265
+  },
+  "raw_text": "## 1. Objective and scope\n\nEstimate how often the same large-language-model question yields responses that differ in meaning, factual content, reasoning, or recommendations—not merely in wording—and identify conditions associated with those differences.\n\nThe study will distinguish:\n- **Surface variation:** different phrasing, organization, or level of detail with substantively equivalent content.\n- **Meaningful response instability:** a change in at least one consequential claim, conclusion, recommendation, refusal, or material omission.\n- **Error instability:** a change in correctness, including cases where one response is accurate and another is not.\n\nThe primary scope is variation for a fixed model version under repeated, controlled input conditions. The study will separately assess whether instability is associated with sampling settings, prompt presentation, conversation context, or time. Results will not be generalized to all models or deployment environments without additional evidence.\n\n## 2. Assumptions\n\n- The model and its version can be identified and held constant for the primary comparisons.\n- Inputs, system instructions, tool access, and decoding settings can be recorded and controlled where possible.\n- Repeated calls may be correlated, and calls may share hidden infrastructure or state; repetitions will therefore be distributed across sessions and time when feasible.\n- No single human judgment is a definitive measure of semantic equivalence or factual correctness. Key judgments require explicit criteria, multiple raters, and adjudication.\n- Differences matter in proportion to their likely consequences. The study will predefine which claim types and domains count as high stakes.\n- If a provider does not expose sampling controls or guarantee stateless calls, those limits will be documented and interpretation narrowed accordingly.\n\n## 3. Research design\n\nUse a preregistered, repeated-query study with a stratified sample of questions and controlled contrasts.\n\n**Question set.** Construct a set spanning:\n- Domains (e.g., factual, explanatory, advice, summarization, classification, creative, and safety-sensitive questions).\n- Question properties (ambiguity, answerability, required reasoning, and dependence on current information).\n- Stakes and expected response form.\n\nInclude both naturally occurring, de-identified questions and carefully written benchmark questions. Keep a separate calibration set for developing annotation guidance; do not use it for primary estimates. Sample questions so that no domain or response type dominates the overall result. Define the target population of questions in advance.\n\n**Repeated calls.** Submit each fixed question multiple times under the same recorded configuration. Randomize call order and distribute repetitions across sessions and time. Use enough repetitions to estimate within-question variation with useful precision, determined through a pilot or simulation based on the planned analysis—not by inspecting the final results.\n\n**Controlled contrasts.** In addition to the primary fixed-input condition, vary one factor at a time where feasible:\n1. **Sampling:** deterministic or low-variance settings versus the deployment-relevant default; additional settings if the interface permits.\n2. **Presentation:** semantically equivalent paraphrases, formatting changes, and neutral contextual framing, while retaining the same informational content.\n3. **Context:** isolated question versus a fixed, standardized prior-turn context.\n4. **Time:** repeated measurements at prespecified intervals, with model version and configuration tracked.\n\nThese contrasts estimate which factors contribute to observed variation. They should not be pooled with the fixed-input estimate.\n\n**Blinding and workflow.** Remove run identifiers and condition labels from responses before annotation. Present response pairs in randomized order. Annotators will not be told which response came first, which condition produced it, or the study’s expected direction. Evaluate answer pairs and, where relevant, each response against an independent reference.\n\n**Reference evidence.** For questions with objectively checkable answers, obtain authoritative sources or an adjudicated gold answer before examining model outputs. For open-ended or value-laden questions, use a prespecified rubric rather than treating one phrasing or judgment as uniquely correct.\n\n## 4. Data or evidence needed\n\nFor every run, retain:\n- Exact user input, system and developer instructions, conversation history, and any formatting constraints.\n- Model name, version or snapshot, interface, date and time, sampling parameters, tool permissions, and any available seed or request metadata.\n- Raw response, error or refusal status, latency if relevant, and tool calls or retrieved material.\n- Assignment to question, repetition, session, and experimental condition.\n\nFor every question, record its domain, stakes, ambiguity, answerability, expected answer type, and criteria for a consequential difference.\n\nFor evaluation, collect:\n- Independent annotations of semantic equivalence and difference type.\n- Claim-level factuality or correctness judgments with supporting evidence where applicable.\n- Ratings of completeness, calibration, safety, and usefulness when relevant to the question.\n- Annotator confidence, disagreements, and adjudication outcomes.\n\nKeep raw, unedited outputs. Any normalization used for analysis must be specified in advance and must not remove substantive content.\n\n## 5. Measurement\n\nUse a layered evaluation rather than a single similarity score.\n\n**Primary outcome: meaningful instability.** For each question, estimate the probability that two independently sampled responses under the same condition differ consequentially. A difference is consequential if blinded evaluators judge that it changes at least one of the following:\n- The answer or conclusion.\n- A material factual claim or its stated confidence.\n- A recommendation, action, or safety-relevant instruction.\n- Whether the model answers, refuses, or imposes a material caveat.\n- A relevant omission that would change a reasonable user’s understanding or decision.\n\nPredefine domain-specific thresholds for materiality. For example, stylistic changes, reordered equivalent points, or additional non-conflicting detail alone do not count as instability.\n\n**Secondary outcomes.**\n- Surface-form variation, measured separately from semantic change.\n- Claim-level disagreement, including changes in presence, polarity, specificity, and confidence.\n- Factual error rate and the rate of pairs where correctness changes.\n- Refusal and safety-policy consistency.\n- Completeness, calibration, and response utility, where the task supports these judgments.\n- Intra-question variation and between-question variation.\n\nUse structured pairwise annotation: equivalent in substance; different but immaterial; meaningfully different; or not comparable/insufficient evidence. Annotators should identify the affected claim or decision and explain why it is material. Use at least two independent raters per pair, with adjudication for disagreements on primary outcomes. Report agreement and uncertainty; do not substitute agreement statistics for substantive validity.\n\nText similarity, embedding distance, or automated semantic judgments may be used only as secondary screening or descriptive measures. They cannot by themselves establish meaningful instability.\n\n## 6. Analysis\n\nPreregister the primary estimand, exclusions, annotation rules, contrasts, and analysis code specification before evaluating results.\n\nFor the fixed-input condition, estimate:\n1. The overall probability that two repeated responses to the same question are meaningfully different.\n2. The distribution of that probability across questions and domains.\n3. The proportion of observed differences attributable to surface variation, material semantic change, and changes in correctness or safety behavior.\n\nUse a hierarchical model or equivalent clustered analysis with question-level effects, accounting for repeated responses and multiple pairings from the same question. Report uncertainty intervals at both aggregate and domain levels. Avoid treating all response pairs as independent observations. If the data are sparse or model assumptions are questionable, supplement the model with question-level bootstrap intervals or an appropriate permutation analysis.\n\nFor controlled contrasts, estimate changes in instability attributable to each varied factor while holding other conditions fixed. Test prespecified interactions only when justified and adequately powered—for example, whether sampling settings affect ambiguous questions more than unambiguous ones. Treat model-version changes as a separate comparison, not as ordinary repeated-call variation.\n\nAssess robustness by:\n- Comparing strict and permissive materiality thresholds.\n- Reporting results with and without low-confidence annotations.\n- Reanalyzing unresolved rater disagreements under alternative plausible classifications.\n- Checking whether results depend on particular domains, questions, or sessions.\n- Separating semantic differences from correctness changes.\n\nReport both effect sizes and uncertainty, not only significance tests. Do not infer that a model is stable merely because a test fails to reject a difference; use prespecified precision or equivalence criteria where the purpose is to support a claim of low instability.\n\n## 7. Decision / stopping rule\n\nBefore data collection, define a practically meaningful instability threshold for the intended use case and a maximum acceptable uncertainty around the estimate. The threshold should reflect the consequences of answer changes, not be chosen after seeing the results.\n\nStop data collection when the preregistered sample and repetition targets are met and the precision target for the primary estimate is reached, or at a prespecified maximum budget. Do not stop early because interim results appear favorable or unfavorable. Any sequential monitoring must use a prespecified sequential design.\n\nClassify results as:\n- **Evidence of meaningful instability** if the lower uncertainty bound exceeds the practical threshold.\n- **Evidence of acceptably low instability** only if the upper uncertainty bound is below that threshold under the preregistered criterion.\n- **Inconclusive** otherwise.\n\nMake this classification separately for the overall target population and any prespecified high-stakes categories. If a model update, interface change, or protocol deviation occurs, pause and treat affected observations as a separate condition unless equivalence of conditions can be justified.\n\n## 8. Limitations\n\n- Findings apply to the tested model version, interface, settings, question sample, and time period; providers may change systems without notice.\n- Hidden routing, infrastructure, state, or provider-side variability can make the cause of differences unidentifiable.\n- “Meaningful” depends partly on domain and user context; materiality thresholds and rubrics cannot capture every consequence.\n- Human evaluators may disagree, miss subtle implications, or favor particular response styles. Adjudication reduces but does not eliminate this risk.\n- Reference answers may be incomplete or contested, especially for current, subjective, or open-ended questions.\n- Repeated access may be costly, and a finite number of runs may miss rare but consequential outputs.\n- Controlled paraphrases and contexts represent only a subset of real user variation. Results do not establish how users interpret or act on differing responses.\n- This design estimates observable response variation; it may not identify the model’s internal mechanism or distinguish randomness from undisclosed system changes conclusively.",
+  "raw_response": {
+    "id": "resp_022856646aa81aa2016abf4efba5a487d0a107504bb289ea5e",
+    "object": "response",
+    "created_at": 1790922491,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790922510,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 8000,
+    "max_tool_calls": null,
+    "model": "gpt-6-luna",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_022856646aa81aa2016abf4efc2a3c87d09841da38a7e9bccc",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "## 1. Objective and scope\n\nEstimate how often the same large-language-model question yields responses that differ in meaning, factual content, reasoning, or recommendations—not merely in wording—and identify conditions associated with those differences.\n\nThe study will distinguish:\n- **Surface variation:** different phrasing, organization, or level of detail with substantively equivalent content.\n- **Meaningful response instability:** a change in at least one consequential claim, conclusion, recommendation, refusal, or material omission.\n- **Error instability:** a change in correctness, including cases where one response is accurate and another is not.\n\nThe primary scope is variation for a fixed model version under repeated, controlled input conditions. The study will separately assess whether instability is associated with sampling settings, prompt presentation, conversation context, or time. Results will not be generalized to all models or deployment environments without additional evidence.\n\n## 2. Assumptions\n\n- The model and its version can be identified and held constant for the primary comparisons.\n- Inputs, system instructions, tool access, and decoding settings can be recorded and controlled where possible.\n- Repeated calls may be correlated, and calls may share hidden infrastructure or state; repetitions will therefore be distributed across sessions and time when feasible.\n- No single human judgment is a definitive measure of semantic equivalence or factual correctness. Key judgments require explicit criteria, multiple raters, and adjudication.\n- Differences matter in proportion to their likely consequences. The study will predefine which claim types and domains count as high stakes.\n- If a provider does not expose sampling controls or guarantee stateless calls, those limits will be documented and interpretation narrowed accordingly.\n\n## 3. Research design\n\nUse a preregistered, repeated-query study with a stratified sample of questions and controlled contrasts.\n\n**Question set.** Construct a set spanning:\n- Domains (e.g., factual, explanatory, advice, summarization, classification, creative, and safety-sensitive questions).\n- Question properties (ambiguity, answerability, required reasoning, and dependence on current information).\n- Stakes and expected response form.\n\nInclude both naturally occurring, de-identified questions and carefully written benchmark questions. Keep a separate calibration set for developing annotation guidance; do not use it for primary estimates. Sample questions so that no domain or response type dominates the overall result. Define the target population of questions in advance.\n\n**Repeated calls.** Submit each fixed question multiple times under the same recorded configuration. Randomize call order and distribute repetitions across sessions and time. Use enough repetitions to estimate within-question variation with useful precision, determined through a pilot or simulation based on the planned analysis—not by inspecting the final results.\n\n**Controlled contrasts.** In addition to the primary fixed-input condition, vary one factor at a time where feasible:\n1. **Sampling:** deterministic or low-variance settings versus the deployment-relevant default; additional settings if the interface permits.\n2. **Presentation:** semantically equivalent paraphrases, formatting changes, and neutral contextual framing, while retaining the same informational content.\n3. **Context:** isolated question versus a fixed, standardized prior-turn context.\n4. **Time:** repeated measurements at prespecified intervals, with model version and configuration tracked.\n\nThese contrasts estimate which factors contribute to observed variation. They should not be pooled with the fixed-input estimate.\n\n**Blinding and workflow.** Remove run identifiers and condition labels from responses before annotation. Present response pairs in randomized order. Annotators will not be told which response came first, which condition produced it, or the study’s expected direction. Evaluate answer pairs and, where relevant, each response against an independent reference.\n\n**Reference evidence.** For questions with objectively checkable answers, obtain authoritative sources or an adjudicated gold answer before examining model outputs. For open-ended or value-laden questions, use a prespecified rubric rather than treating one phrasing or judgment as uniquely correct.\n\n## 4. Data or evidence needed\n\nFor every run, retain:\n- Exact user input, system and developer instructions, conversation history, and any formatting constraints.\n- Model name, version or snapshot, interface, date and time, sampling parameters, tool permissions, and any available seed or request metadata.\n- Raw response, error or refusal status, latency if relevant, and tool calls or retrieved material.\n- Assignment to question, repetition, session, and experimental condition.\n\nFor every question, record its domain, stakes, ambiguity, answerability, expected answer type, and criteria for a consequential difference.\n\nFor evaluation, collect:\n- Independent annotations of semantic equivalence and difference type.\n- Claim-level factuality or correctness judgments with supporting evidence where applicable.\n- Ratings of completeness, calibration, safety, and usefulness when relevant to the question.\n- Annotator confidence, disagreements, and adjudication outcomes.\n\nKeep raw, unedited outputs. Any normalization used for analysis must be specified in advance and must not remove substantive content.\n\n## 5. Measurement\n\nUse a layered evaluation rather than a single similarity score.\n\n**Primary outcome: meaningful instability.** For each question, estimate the probability that two independently sampled responses under the same condition differ consequentially. A difference is consequential if blinded evaluators judge that it changes at least one of the following:\n- The answer or conclusion.\n- A material factual claim or its stated confidence.\n- A recommendation, action, or safety-relevant instruction.\n- Whether the model answers, refuses, or imposes a material caveat.\n- A relevant omission that would change a reasonable user’s understanding or decision.\n\nPredefine domain-specific thresholds for materiality. For example, stylistic changes, reordered equivalent points, or additional non-conflicting detail alone do not count as instability.\n\n**Secondary outcomes.**\n- Surface-form variation, measured separately from semantic change.\n- Claim-level disagreement, including changes in presence, polarity, specificity, and confidence.\n- Factual error rate and the rate of pairs where correctness changes.\n- Refusal and safety-policy consistency.\n- Completeness, calibration, and response utility, where the task supports these judgments.\n- Intra-question variation and between-question variation.\n\nUse structured pairwise annotation: equivalent in substance; different but immaterial; meaningfully different; or not comparable/insufficient evidence. Annotators should identify the affected claim or decision and explain why it is material. Use at least two independent raters per pair, with adjudication for disagreements on primary outcomes. Report agreement and uncertainty; do not substitute agreement statistics for substantive validity.\n\nText similarity, embedding distance, or automated semantic judgments may be used only as secondary screening or descriptive measures. They cannot by themselves establish meaningful instability.\n\n## 6. Analysis\n\nPreregister the primary estimand, exclusions, annotation rules, contrasts, and analysis code specification before evaluating results.\n\nFor the fixed-input condition, estimate:\n1. The overall probability that two repeated responses to the same question are meaningfully different.\n2. The distribution of that probability across questions and domains.\n3. The proportion of observed differences attributable to surface variation, material semantic change, and changes in correctness or safety behavior.\n\nUse a hierarchical model or equivalent clustered analysis with question-level effects, accounting for repeated responses and multiple pairings from the same question. Report uncertainty intervals at both aggregate and domain levels. Avoid treating all response pairs as independent observations. If the data are sparse or model assumptions are questionable, supplement the model with question-level bootstrap intervals or an appropriate permutation analysis.\n\nFor controlled contrasts, estimate changes in instability attributable to each varied factor while holding other conditions fixed. Test prespecified interactions only when justified and adequately powered—for example, whether sampling settings affect ambiguous questions more than unambiguous ones. Treat model-version changes as a separate comparison, not as ordinary repeated-call variation.\n\nAssess robustness by:\n- Comparing strict and permissive materiality thresholds.\n- Reporting results with and without low-confidence annotations.\n- Reanalyzing unresolved rater disagreements under alternative plausible classifications.\n- Checking whether results depend on particular domains, questions, or sessions.\n- Separating semantic differences from correctness changes.\n\nReport both effect sizes and uncertainty, not only significance tests. Do not infer that a model is stable merely because a test fails to reject a difference; use prespecified precision or equivalence criteria where the purpose is to support a claim of low instability.\n\n## 7. Decision / stopping rule\n\nBefore data collection, define a practically meaningful instability threshold for the intended use case and a maximum acceptable uncertainty around the estimate. The threshold should reflect the consequences of answer changes, not be chosen after seeing the results.\n\nStop data collection when the preregistered sample and repetition targets are met and the precision target for the primary estimate is reached, or at a prespecified maximum budget. Do not stop early because interim results appear favorable or unfavorable. Any sequential monitoring must use a prespecified sequential design.\n\nClassify results as:\n- **Evidence of meaningful instability** if the lower uncertainty bound exceeds the practical threshold.\n- **Evidence of acceptably low instability** only if the upper uncertainty bound is below that threshold under the preregistered criterion.\n- **Inconclusive** otherwise.\n\nMake this classification separately for the overall target population and any prespecified high-stakes categories. If a model update, interface change, or protocol deviation occurs, pause and treat affected observations as a separate condition unless equivalence of conditions can be justified.\n\n## 8. Limitations\n\n- Findings apply to the tested model version, interface, settings, question sample, and time period; providers may change systems without notice.\n- Hidden routing, infrastructure, state, or provider-side variability can make the cause of differences unidentifiable.\n- “Meaningful” depends partly on domain and user context; materiality thresholds and rubrics cannot capture every consequence.\n- Human evaluators may disagree, miss subtle implications, or favor particular response styles. Adjudication reduces but does not eliminate this risk.\n- Reference answers may be incomplete or contested, especially for current, subjective, or open-ended questions.\n- Repeated access may be costly, and a finite number of runs may miss rare but consequential outputs.\n- Controlled paraphrases and contexts represent only a subset of real user variation. Results do not establish how users interpret or act on differing responses.\n- This design estimates observable response variation; it may not identify the model’s internal mechanism or distinguish randomness from undisclosed system changes conclusively."
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "text"
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 189,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2076,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 2265
+    },
+    "user": null,
+    "metadata": {}
+  }
+}
