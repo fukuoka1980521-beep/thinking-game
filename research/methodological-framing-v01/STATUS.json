@@ -1,8 +1,8 @@
 {
   "project": "METHODOLOGICAL_FRAMING_V0_1",
   "branch": "research/methodological-framing-v01",
-  "status": "R1_EXTERNAL_REPLICATION_COMPLETE_SUCCESS",
-  "counted_empirical_runs": 714,
+  "status": "STUDY_C_COUNTED_PARTIAL_CREDIT_BLOCKED_AUTO_RESUME_ARMED",
+  "counted_empirical_runs_completed": 807,
   "preregistered": true,
   "claim_ceiling": "black-box observable research behavior; no hidden chain-of-thought, neural-mechanism, or methodology-superiority claim",
   "study_A": {
@@ -15,47 +15,69 @@
     "heterogeneity_note": "effect is not uniform across framing families"
   },
   "replication_R1": {
-    "status": "COMPLETE",
+    "status": "COMPLETE_SUCCESS",
     "validation": "PASS",
     "new_counted_runs": 378,
-    "R1A": {
-      "purpose": "new-task replication with original model",
-      "model": "gpt-5.6-sol",
-      "new_n": 126,
-      "T1_to_T3_accuracy": 0.6984126984126984,
-      "T3_to_T1_accuracy": 0.6349206349206349,
-      "T2_to_T3_accuracy": 0.8571428571428571,
-      "T3_to_T2_accuracy": 0.7380952380952381,
-      "combined_accuracy": 0.7321428571428571,
-      "permutation_p": 0.00009999000099990002,
-      "success": true
-    },
-    "R1B": {
-      "purpose": "second-model replication on original tasks",
-      "model": "gpt-6-luna",
-      "new_n": 252,
-      "T1_to_T2_accuracy": 0.5714285714285714,
-      "T2_to_T1_accuracy": 0.38095238095238093,
-      "combined_accuracy": 0.47619047619047616,
-      "permutation_p": 0.00009999000099990002,
-      "distance_excess": 0.0030557537828479475,
-      "success": true,
-      "pooled_recall": {
-        "GENERIC": 0.1111111111111111,
-        "DIFFERENTIAL": 0.0,
-        "BAYESIAN": 0.9166666666666666,
-        "FALSIFICATION": 0.4444444444444444,
-        "CAUSAL": 0.25,
-        "STATE_SPACE": 0.7222222222222222,
-        "SOFTWARE_TESTING": 0.8888888888888888
-      }
-    },
+    "R1A_combined_accuracy": 0.7321428571428571,
+    "R1A_permutation_p": 0.00009999000099990002,
+    "R1B_combined_accuracy": 0.47619047619047616,
+    "R1B_permutation_p": 0.00009999000099990002,
     "joint_external_replication_support": true,
     "final_commit": "bad55284c337b5bc8707d94f2503a67695be77d3"
   },
-  "study_B": "NEXT_DESIGN_TARGET",
-  "study_C": "DRAFT_AFTER_STUDY_B",
-  "next_gate": "FREEZE_STUDY_B_FIXED_EVIDENCE_DESIGN_BEFORE_COUNTED_COLLECTION",
+  "study_B": {
+    "status": "CALIBRATION_NO_GO_COUNTED_ZERO",
+    "calibration_v01_combined_accuracy": 0.14285714285714285,
+    "calibration_v02_combined_accuracy": 0.19047619047619047,
+    "conclusion": "two preregistered fixed-evidence interpretation instruments failed their GO gates; counted Study B remains zero"
+  },
+  "study_C": {
+    "calibration_v01": {
+      "status": "NO_GO",
+      "combined_accuracy": 0.16666666666666666,
+      "permutation_p": 0.383062
+    },
+    "calibration_v02": {
+      "status": "GO",
+      "C3_to_C4_accuracy": 0.5714285714285714,
+      "C4_to_C3_accuracy": 0.2857142857142857,
+      "combined_accuracy": 0.42857142857142855,
+      "permutation_p": 0.0003,
+      "recall_coverage_non_generic": "4/6",
+      "first_role_only_combined_accuracy": 0.42857142857142855,
+      "selected_set_only_combined_accuracy": 0.42857142857142855,
+      "distinct_first_roles": "6/8"
+    },
+    "counted": {
+      "status": "FROZEN_PARTIAL_EXECUTION",
+      "freeze_commit": "1991033",
+      "frozen_denominator": 252,
+      "counted_runs_at_freeze": 0,
+      "valid_raw_preserved": 93,
+      "remaining": 159,
+      "current_blocker": "OpenAI API credit_balance_exhausted",
+      "partial_data_interpretation": "PROHIBITED_UNTIL_252_COMPLETE_AND_VALIDATED",
+      "backup_path": "C:\\Users\\user\\ClaudeWork\\thinking-game-response-dynamics-v01\\research\\methodological-framing-v01\\study_c_partial_backup_20261003",
+      "auto_resume_task": "StudyC_AutoResume_HUKUOKA",
+      "auto_resume_interval_minutes": 30,
+      "interruption_note": "STUDY_C_EXECUTION_INTERRUPTION_20261003.md"
+    }
+  },
+  "infrastructure": {
+    "desktop_commander": {
+      "status": "CANONICAL_AUTO_START",
+      "task": "DesktopCommanderRemote_HUKUOKA",
+      "shortcut": "HUKUOKA接続（Desktop Commander）",
+      "package": "@wonderwhy-er/desktop-commander@0.2.52",
+      "duplicate_policy": "IgnoreNew"
+    },
+    "github_runner_thinking_game": {
+      "status": "REGISTERED_AUTO_START",
+      "runner_name": "HUKUOKA-thinking-game",
+      "task": "GitHubRunner_thinking-game_HUKUOKA"
+    }
+  },
+  "next_gate": "RESTORE_API_CREDITS_THEN_AUTO_RESUME_STUDY_C_93_TO_252_VALIDATE_ANALYZE",
   "common_index": "\\\\192.168.11.2\\share\\共有\\AI_COMMON\\REMOTE_DESKTOP_COMMON_INDEX.md",
   "t2_reality_grounding": "PASS_READ_ONLY_NO_PERSONAL_DATA_COPIED"
 }
