@@ -61,7 +61,39 @@ Primary source:
 
 NEW LIFE has six core NPCs, so million-agent scaling is not a current product requirement.
 
-## 5. What NEW LIFE should adopt now
+## 5. Concordia and SOTOPIA: two safeguards for NEW LIFE
+
+### 5.1 Concordia — separate natural-language agency from world authority
+
+Google DeepMind's **Concordia** introduces a Game Master (GM) that receives agents' natural-language intended actions, checks/grounds them in the simulated environment, and describes the resulting effects. Agents can therefore remain generative while the environment owns plausibility and consequences.
+
+This closely matches NEW LIFE's current direction:
+- NPC/model: understand, speak, propose;
+- deterministic authority gate: verify permissions / canonical facts / state transitions;
+- world state: changes only after that gate.
+
+This is a stronger fit for NEW LIFE than allowing the LLM to write canonical state directly.
+
+Primary source:
+- Vezhnevets et al. (2023), "Generative agent-based modeling with actions grounded in physical, social, or digital space using Concordia", Google DeepMind / arXiv.
+
+### 5.2 SOTOPIA — evaluate social behavior as social behavior
+
+**SOTOPIA** evaluates language agents in open-ended social scenarios with explicit social goals and holistic dimensions rather than treating natural conversation as an exact-string task. Its reported hard scenarios remain difficult even for strong language models, and later SOTOPIA-π work warns that LLM evaluators can overestimate socially-trained agents.
+
+Implication for NEW LIFE:
+- unit tests can validate contracts, safety, state authority, and regressions;
+- they cannot establish that the conversation feels natural, socially intelligent, or strategically coherent;
+- owner/human play remains a required product gate.
+
+This reinforces the existing NEW LIFE rule:
+**technical PASS ≠ product PASS**.
+
+Primary sources:
+- Zhou et al. (2023), "SOTOPIA: Interactive Evaluation for Social Intelligence in Language Agents", arXiv:2310.11667.
+- Wang et al. (2024), "SOTOPIA-π: Interactive Learning of Socially Intelligent Language Agents", arXiv:2403.08715.
+
+## 6. What NEW LIFE should adopt now
 
 ### Adopt A — durable per-NPC memory stream
 
@@ -126,7 +158,7 @@ Then generate **one** coherent NPC reply/proposal. State changes still go throug
 
 This is the NEW LIFE analogue of Project Sid's bottlenecked controller.
 
-## 6. What not to copy yet
+## 7. What not to copy yet
 
 Do not copy these merely because the papers demonstrate them:
 
@@ -139,7 +171,7 @@ Do not copy these merely because the papers demonstrate them:
 
 These would add scale/novelty before proving the current product experience.
 
-## 7. Target runtime pipeline
+## 8. Target runtime pipeline
 
 ```
 WORLD / PLAYER EVENT
@@ -174,7 +206,7 @@ TRUTH / AUTHORITY GATE
 canonical state mutation
 ```
 
-## 8. Validation criteria
+## 9. Validation criteria
 
 This adaptation only counts as useful if human play improves.
 
@@ -187,7 +219,7 @@ Required tests:
 - dialogue latency does not wait for background reflection.
 - deterministic state/authority remains the only path to canonical mutation.
 
-## 9. Research boundary
+## 10. Research boundary
 
 The cited research supports memory/reflection/planning/concurrency and multi-agent social dynamics in their tested environments. It does **not** establish that copying those architectures will automatically make NEW LIFE fun, natural, or commercially successful.
 
