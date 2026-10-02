@@ -50,13 +50,21 @@ const day3MiyokoMemories = day3Save?.agentMemory?.miyoko ?? [];
 
 await page.getByRole("button", { name: "次の日へ" }).click();
 await page.getByRole("button", { name: "次の日へ" }).click();
-await page.waitForTimeout(500);
+await page.waitForFunction(() => {
+  const raw = localStorage.getItem("newlife30_save_v1");
+  if (!raw) return false;
+  try { return JSON.parse(raw)?.state?.day === 5; } catch { return false; }
+}, null, { timeout: 10000 });
 
 // Reload to prove memory survives the browser/session persistence boundary.
 await page.reload({ waitUntil: "networkidle" });
 const continueButton = page.getByRole("button", { name: /続きから/ });
 if (await continueButton.count()) await continueButton.click();
 
+await page.waitForFunction(() => {
+  const select = document.querySelector("select");
+  return Boolean(select && [...select.options].some((option) => option.value === "miyoko"));
+}, null, { timeout: 10000 });
 await page.locator("select").selectOption("miyoko");
 const secondUtterance = "この前の待つ場所の話、どう考えてます？";
 await page.getByPlaceholder(/自由に話しかける/).fill(secondUtterance);
