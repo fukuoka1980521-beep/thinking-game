@@ -1,66 +1,61 @@
 {
   "project": "METHODOLOGICAL_FRAMING_V0_1",
   "branch": "research/methodological-framing-v01",
-  "status": "STUDY_A_COMPLETE_CONFIRMATORY_SUCCESS",
-  "counted_empirical_runs": 336,
+  "status": "R1_EXTERNAL_REPLICATION_COMPLETE_SUCCESS",
+  "counted_empirical_runs": 714,
   "preregistered": true,
-  "claim_ceiling": "black-box observable research-plan behavior; no hidden reasoning-state claim",
-  "acting_model": "gpt-5.6-sol",
-  "calibration_history": {
-    "v04": {
-      "gate": "NO_GO",
-      "structural_separation": 0.130511
-    },
-    "v05": {
-      "gate": "NO_GO",
-      "structural_separation": 0.095238
-    },
-    "v06": {
-      "gate": "NO_GO",
-      "green_artifacts": 1,
-      "usable_method_families": 0,
-      "structural_separation": -0.031746031746031744
-    },
-    "v07_frozen_instrument": {
-      "gate": "GO",
-      "measurement": "judge-free broad-lexicon-masked unigram+bigram TF-IDF cross-task nearest centroid",
-      "T1_to_T2": "8/21",
-      "T2_to_T1": "14/21",
-      "combined": "22/42",
-      "combined_accuracy": 0.5238095238095238,
-      "permutation_p": 0.0001,
-      "distance_excess": 0.006940709953
-    },
-    "v07_postfreeze_fresh_check": {
-      "status": "NON_COUNTED_SUPPORTING_VALIDATION",
-      "measurement": "delexicalized hashed unigram/bigram cosine nearest-centroid cross-task discriminability",
-      "combined_accuracy": 0.5,
-      "permutation_p": 0.00009999000099990002,
-      "gate": "GO",
-      "note": "not used to alter frozen Study A design"
-    }
-  },
+  "claim_ceiling": "black-box observable research behavior; no hidden chain-of-thought, neural-mechanism, or methodology-superiority claim",
   "study_A": {
-    "status": "COMPLETE",
+    "status": "COMPLETE_CONFIRMATORY_SUCCESS",
     "denominator": 336,
     "validation": "PASS",
-    "label_only": 252,
-    "operational": 84,
-    "counted_runs_at_freeze": 0,
-    "primary_confirmatory_success": true,
-    "primary_T1_to_T2_accuracy": 0.48412698412698413,
-    "primary_T2_to_T1_accuracy": 0.4603174603174603,
     "primary_combined_accuracy": 0.4722222222222222,
     "primary_permutation_p": 0.00009999000099990002,
-    "primary_distance_excess": 0.00471,
     "operational_combined_accuracy": 0.7857142857142857,
-    "operational_permutation_p": 0.00009999000099990002,
-    "operational_minus_label_only_accuracy": 0.313492,
-    "heterogeneity_note": "GENERIC and DIFFERENTIAL recall were 0 under the frozen primary classifier; effect is not uniform across framing families"
+    "heterogeneity_note": "effect is not uniform across framing families"
   },
-  "study_B": "DRAFT",
-  "study_C": "DRAFT",
-  "next_gate": "EXTERNAL_REPLICATION_OR_STUDY_B_DESIGN_FREEZE",
+  "replication_R1": {
+    "status": "COMPLETE",
+    "validation": "PASS",
+    "new_counted_runs": 378,
+    "R1A": {
+      "purpose": "new-task replication with original model",
+      "model": "gpt-5.6-sol",
+      "new_n": 126,
+      "T1_to_T3_accuracy": 0.6984126984126984,
+      "T3_to_T1_accuracy": 0.6349206349206349,
+      "T2_to_T3_accuracy": 0.8571428571428571,
+      "T3_to_T2_accuracy": 0.7380952380952381,
+      "combined_accuracy": 0.7321428571428571,
+      "permutation_p": 0.00009999000099990002,
+      "success": true
+    },
+    "R1B": {
+      "purpose": "second-model replication on original tasks",
+      "model": "gpt-6-luna",
+      "new_n": 252,
+      "T1_to_T2_accuracy": 0.5714285714285714,
+      "T2_to_T1_accuracy": 0.38095238095238093,
+      "combined_accuracy": 0.47619047619047616,
+      "permutation_p": 0.00009999000099990002,
+      "distance_excess": 0.0030557537828479475,
+      "success": true,
+      "pooled_recall": {
+        "GENERIC": 0.1111111111111111,
+        "DIFFERENTIAL": 0.0,
+        "BAYESIAN": 0.9166666666666666,
+        "FALSIFICATION": 0.4444444444444444,
+        "CAUSAL": 0.25,
+        "STATE_SPACE": 0.7222222222222222,
+        "SOFTWARE_TESTING": 0.8888888888888888
+      }
+    },
+    "joint_external_replication_support": true,
+    "final_commit": "bad55284c337b5bc8707d94f2503a67695be77d3"
+  },
+  "study_B": "NEXT_DESIGN_TARGET",
+  "study_C": "DRAFT_AFTER_STUDY_B",
+  "next_gate": "FREEZE_STUDY_B_FIXED_EVIDENCE_DESIGN_BEFORE_COUNTED_COLLECTION",
   "common_index": "\\\\192.168.11.2\\share\\共有\\AI_COMMON\\REMOTE_DESKTOP_COMMON_INDEX.md",
   "t2_reality_grounding": "PASS_READ_ONLY_NO_PERSONAL_DATA_COPIED"
 }
