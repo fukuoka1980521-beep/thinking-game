@@ -24,6 +24,7 @@ const {
   applyCors,
   createFixedWindowLimiter,
 } = require("./lib");
+const { canonicalStateFactsForCase } = require("./stateFacts");
 
 // Same no-secret pattern as functions/dialogue/ and functions/newlife-dialogue/:
 // the only identity this function ever uses is its own Cloud Run/Cloud
