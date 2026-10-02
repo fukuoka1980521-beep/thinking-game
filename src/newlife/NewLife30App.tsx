@@ -421,6 +421,8 @@ export function NewLife30App({ onExit }: Props) {
             }),
             importance: exchangeImportance,
             source: worldEffectApplied ? "WORLD_EFFECT" : "PLAYER_SPEECH",
+            focusSnapshot: scene.sceneFocus,
+            playerMeaning: live.understoodPlayerMeaning,
           });
           for (const continuation of live.continuations) {
             nextAgentMemory = appendAgentMemory(nextAgentMemory, {
