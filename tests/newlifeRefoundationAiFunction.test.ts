@@ -613,7 +613,8 @@ describe("functions/newlife-refoundation-ai/lib.js — background agent reflecti
     const prompt = lib.buildReflectAgentPrompt(body);
     expect(prompt).toContain("美代子");
     expect(prompt).toContain("喫茶の待機席");
-    expect(prompt).toContain("evidence");
+    expect(prompt).toContain("0始まりindex");
+    expect(lib.REFLECT_AGENT_SYSTEM_INSTRUCTION).toContain("evidenceIndexes");
     expect(lib.REFLECT_AGENT_SYSTEM_INSTRUCTION).toContain("過去の観測データ");
     expect(lib.REFLECT_AGENT_SYSTEM_INSTRUCTION).toContain("他人の内心・同意・権限を勝手に確定しない");
   });
