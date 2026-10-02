@@ -1079,6 +1079,24 @@ function normalizeConverseResponse(parsed, expectedNpc, caseId = "COMMUNITY_THEA
   };
 }
 
+function normalizeReflectAgentResponse(parsed, memoryCount) {
+  if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.insights)) return null;
+  const insights = parsed.insights
+    .filter((item) => item && typeof item === "object")
+    .map((item) => {
+      const text = isNonEmptyBoundedString(item.text, MAX_REFLECTION_INSIGHT_LENGTH) ? item.text.trim() : "";
+      const evidenceIndexes = Array.isArray(item.evidenceIndexes)
+        ? [...new Set(item.evidenceIndexes)]
+            .filter((index) => Number.isInteger(index) && index >= 0 && index < memoryCount)
+            .slice(0, MAX_REFLECTION_MEMORIES)
+        : [];
+      return { text, evidenceIndexes };
+    })
+    .filter((item) => item.text && item.evidenceIndexes.length > 0)
+    .slice(0, MAX_REFLECTION_INSIGHTS);
+  return insights.length > 0 ? { insights } : null;
+}
+
 function buildOrganizeThoughtResponseSchema(Type) {
   return {
     type: Type.OBJECT,
@@ -1379,6 +1397,7 @@ module.exports = {
   buildReflectAgentPrompt,
   normalizeSceneRevisionProposal,
   normalizeConverseResponse,
+  normalizeReflectAgentResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
   validateInput,
