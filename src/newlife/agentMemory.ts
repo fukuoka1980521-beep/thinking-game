@@ -38,7 +38,20 @@ export interface MemoryRetrievalResult {
 export const DEFAULT_REFLECTION_THRESHOLD = 20;
 
 export function createEmptyAgentMemoryStore(): AgentMemoryStore {
-  return Object.fromEntries(NPC_IDS.map((npc) => [npc, []])) as AgentMemoryStore;
+  return NPC_IDS.reduce<AgentMemoryStore>(
+    (store, npc) => {
+      store[npc] = [];
+      return store;
+    },
+    {
+      hina: [],
+      yohei: [],
+      daisuke: [],
+      jin: [],
+      miyoko: [],
+      fumiko: [],
+    },
+  );
 }
 
 function clampImportance(value: number): number {
