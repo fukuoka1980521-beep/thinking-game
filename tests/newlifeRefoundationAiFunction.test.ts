@@ -116,6 +116,28 @@ function validNpcExchangeBody(overrides: Partial<Record<string, unknown>> = {}) 
   };
 }
 
+function validReflectBody(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    operation: "reflect_agent",
+    caseId: "NEWLIFE_30DAY_V1",
+    targetNpc: "MIYOKO",
+    memories: [
+      "Day 3 [OBSERVATION] プレイヤーは喫茶の待機席を事前に決めた方がよいと話した。",
+      "Day 3 [OBSERVATION] 美代子は席の人数と条件を自分で決めたいと答えた。",
+    ],
+    dynamicState: {
+      day: 3,
+      sceneTitle: "担当という言葉",
+      sceneFocus: {
+        issue: "客がどこで待つか決まっていない。",
+        decision: "喫茶の席を何人まで使うか確認する。",
+        authority: "席を決めるのは美代子。",
+      },
+    },
+    ...overrides,
+  };
+}
+
 function validStreetConverseBody(overrides: Partial<Record<string, unknown>> = {}) {
   return {
     operation: "converse_turn",
@@ -570,6 +592,55 @@ describe("functions/newlife-refoundation-ai/lib.js — concrete scene anchoring"
     expect(prompt).toContain("sceneFocus");
     expect(prompt).toContain("客がどこで待つか");
     expect(prompt).toContain("喫茶の席を決めるのは美代子");
+  });
+});
+
+describe("functions/newlife-refoundation-ai/lib.js — background agent reflection", () => {
+  it("accepts bounded per-NPC reflection input and rejects empty/oversized memories", () => {
+    expect(lib.validateInput(validReflectBody())).toBeNull();
+    expect(lib.validateInput(validReflectBody({ memories: [] }))).toBe("invalid_reflection_memories");
+    expect(
+      lib.validateInput(
+        validReflectBody({
+          memories: Array.from({ length: lib.MAX_REFLECTION_MEMORIES + 1 }, (_, i) => `memory-${i}`),
+        }),
+      ),
+    ).toBe("invalid_reflection_memories");
+  });
+
+  it("builds reflection from server-owned canon plus bounded historical memories", () => {
+    const body = validReflectBody();
+    const prompt = lib.buildReflectAgentPrompt(body);
+    expect(prompt).toContain("美代子");
+    expect(prompt).toContain("喫茶の待機席");
+    expect(prompt).toContain("evidence");
+    expect(lib.REFLECT_AGENT_SYSTEM_INSTRUCTION).toContain("過去の観測データ");
+    expect(lib.REFLECT_AGENT_SYSTEM_INSTRUCTION).toContain("他人の内心・同意・権限を勝手に確定しない");
+  });
+
+  it("normalizes reflection only when each insight has valid evidence indexes", () => {
+    const normalized = lib.normalizeReflectAgentResponse(
+      {
+        insights: [
+          { text: "協力したいが、席の条件は事前に確認した方がよい。", evidenceIndexes: [0, 1] },
+          { text: "根拠なし", evidenceIndexes: [99] },
+        ],
+      },
+      2,
+    );
+    expect(normalized).toEqual({
+      insights: [
+        { text: "協力したいが、席の条件は事前に確認した方がよい。", evidenceIndexes: [0, 1] },
+      ],
+    });
+  });
+
+  it("reflection schema is insight-only and has no canonical state delta", () => {
+    const FakeType = { OBJECT: "OBJECT", STRING: "STRING", ARRAY: "ARRAY", NUMBER: "NUMBER" };
+    const schema = lib.buildReflectAgentResponseSchema(FakeType);
+    expect(Object.keys(schema.properties)).toEqual(["insights"]);
+    expect(JSON.stringify(schema)).not.toContain("canonicalState");
+    expect(JSON.stringify(schema)).not.toContain("candidateWorldEffects");
   });
 });
 
