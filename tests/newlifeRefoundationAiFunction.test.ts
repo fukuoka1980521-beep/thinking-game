@@ -599,6 +599,34 @@ describe("functions/newlife-refoundation-ai/lib.js — concrete scene anchoring"
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — context bottleneck for memory and scene focus", () => {
+  it("classifies memory evidence mode deterministically", () => {
+    expect(lib.memoryEpistemicMode([])).toBe("NONE");
+    expect(lib.memoryEpistemicMode(["Day 3 [OBSERVATION] x"])).toBe("OBSERVATION_ONLY");
+    expect(lib.memoryEpistemicMode(["Day 3 [REFLECTION] x"])).toBe("HAS_REFLECTION");
+    expect(lib.memoryEpistemicMode(["Day 3 [PLAN] x"])).toBe("HAS_PLAN");
+  });
+
+  it("surfaces sceneFocus and recalled memory as dedicated context lines instead of burying them", () => {
+    const body = validThirtyDayConverseBody({
+      targetNpc: "MIYOKO",
+      rawPlayerUtterance: "この前の待つ場所の話、どう考えてます？",
+      dynamicState: validDynamicState({
+        day: 5,
+        sceneFocus: { issue: "今日の別件", decision: "別件を決める", authority: "別の人" },
+        retrievedMemories: [
+          "Day 3 [OBSERVATION] 問題: 待機場所。未決: 喫茶の席を何人まで使うか。権限: 美代子。",
+        ],
+      }),
+    });
+    const prompt = lib.buildConversePrompt(body);
+    expect(prompt).toContain("現在の具体的争点（sceneFocus");
+    expect(prompt).toContain("検索された長期記憶");
+    expect(prompt).toContain("memoryEpistemicMode");
+    expect(prompt).toContain("OBSERVATION_ONLY");
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — durable recalled-memory bounds", () => {
   it("accepts bounded recalled memories and rejects oversized recall payloads", () => {
     const base = validThirtyDayConverseBody({
