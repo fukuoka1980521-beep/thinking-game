@@ -568,6 +568,10 @@ describe("functions/newlife-refoundation-ai/lib.js — concrete scene anchoring"
     expect(instruction).toContain("その判断権を持つ人物");
     expect(instruction).toContain("一般論のまま返さないこと");
     expect(instruction).toContain("現在の場面に存在する具体物へ結び直すこと");
+    expect(instruction).toContain("issue / decision / authority に実際に書かれている具体的な対象");
+    expect(instruction).toContain("抽象語だけで返した場合は不十分");
+    expect(instruction).toContain("一般的な原則・助言");
+    expect(instruction).toContain("具体的な未決事項へ1回だけ翻訳");
     expect(instruction).toContain("明確に別の話題へ移った場合");
     expect(instruction).toContain("無理に場面の争点へ引き戻さないこと");
   });
