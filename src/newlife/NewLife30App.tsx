@@ -23,6 +23,13 @@ import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
 import { converseWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
 import { applyConversationEffectGate } from "./conversationEffectGate";
+import {
+  appendAgentMemory,
+  createEmptyAgentMemoryStore,
+  formatRetrievedMemories,
+  retrieveAgentMemories,
+  type AgentMemoryStore,
+} from "./agentMemory";
 
 const NPC_ART: Partial<Record<NpcId, string>> = {
   hina: hinaArt,
@@ -93,6 +100,7 @@ interface SavedSession {
   state: NewLife30State;
   transcript: TranscriptLine[];
   memory: TranscriptLine[];
+  agentMemory?: AgentMemoryStore;
   addressee: NpcId;
   previousDayTrace: string | null;
   thinking: { important: string; unknown: string; next: string };
@@ -126,6 +134,7 @@ export function NewLife30App({ onExit }: Props) {
   const [state, setState] = useState<NewLife30State>(createInitialState);
   const [transcript, setTranscript] = useState<TranscriptLine[]>([]);
   const [memory, setMemory] = useState<TranscriptLine[]>([]);
+  const [agentMemory, setAgentMemory] = useState<AgentMemoryStore>(createEmptyAgentMemoryStore);
   const [addressee, setAddressee] = useState<NpcId>("hina");
   const [freeText, setFreeText] = useState("");
   const [thinkingOpen, setThinkingOpen] = useState(false);
@@ -177,14 +186,14 @@ export function NewLife30App({ onExit }: Props) {
 
   useEffect(() => {
     if (showIntro) return;
-    const save: SavedSession = { state, transcript, memory, addressee, previousDayTrace, thinking };
+    const save: SavedSession = { state, transcript, memory, agentMemory, addressee, previousDayTrace, thinking };
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(save));
       setSavedSession(save);
     } catch {
       // Saving is convenience only; gameplay must continue if storage is unavailable.
     }
-  }, [state, transcript, memory, addressee, previousDayTrace, thinking, showIntro]);
+  }, [state, transcript, memory, agentMemory, addressee, previousDayTrace, thinking, showIntro]);
 
   function resetTranscriptFor(nextState: NewLife30State) {
     setTranscript([]);
@@ -200,6 +209,7 @@ export function NewLife30App({ onExit }: Props) {
     setState(fresh);
     setTranscript([]);
     setMemory([]);
+    setAgentMemory(createEmptyAgentMemoryStore());
     setAddressee("hina");
     setPreviousDayTrace(null);
     setThinking({ important: "", unknown: "", next: "" });
@@ -220,6 +230,7 @@ export function NewLife30App({ onExit }: Props) {
     setState(savedSession.state);
     setTranscript(savedSession.transcript ?? []);
     setMemory(savedSession.memory ?? []);
+    setAgentMemory(savedSession.agentMemory ?? createEmptyAgentMemoryStore());
     setAddressee(savedSession.addressee ?? "hina");
     setPreviousDayTrace(savedSession.previousDayTrace ?? null);
     setThinking(savedSession.thinking ?? { important: "", unknown: "", next: "" });
@@ -268,11 +279,22 @@ export function NewLife30App({ onExit }: Props) {
       // No keyword/regex free-action routing runs before this model call.
       if (consentAccepted && supportsRefoundation(npc)) {
         try {
+          const memoryQuery = [
+            text,
+            scene.sceneFocus?.issue,
+            scene.sceneFocus?.decision,
+            scene.sceneFocus?.authority,
+            scene.text,
+          ].filter((part): part is string => Boolean(part)).join("\n");
+          const retrieval = retrieveAgentMemories(agentMemory, npc, memoryQuery, 6);
+          let nextAgentMemory = retrieval.store;
+
           const live = await converseWithRefoundation(npc, text, [...memory, ...transcript].slice(-12), {
             day: baseState.day,
             title: scene.title,
             text: scene.text,
             sceneFocus: scene.sceneFocus,
+            retrievedMemories: formatRetrievedMemories(retrieval.selected),
             canonicalState: {
               signVersion: baseState.signVersion,
               pickupPlan: baseState.pickupPlan,
@@ -289,10 +311,39 @@ export function NewLife30App({ onExit }: Props) {
             interactionKind: options?.skipFreeAction ? "ACTION" : "SPEECH",
           });
 
+          let worldEffectApplied = false;
           if (!options?.skipFreeAction) {
             const effect = applyConversationEffectGate(baseState, npc, live);
+            worldEffectApplied = effect.applied;
             if (effect.applied) setState(effect.state);
           }
+
+          const exchangeImportance = worldEffectApplied
+            ? 9
+            : live.candidateCommitments.length > 0
+              ? 8
+              : scene.sceneFocus
+                ? 5
+                : 3;
+          nextAgentMemory = appendAgentMemory(nextAgentMemory, {
+            owner: npc,
+            day: baseState.day,
+            kind: "OBSERVATION",
+            text: `プレイヤーが「${text}」と話した。私は「${live.text}」と答えた。`,
+            importance: exchangeImportance,
+            source: worldEffectApplied ? "WORLD_EFFECT" : "PLAYER_SPEECH",
+          });
+          for (const continuation of live.continuations) {
+            nextAgentMemory = appendAgentMemory(nextAgentMemory, {
+              owner: continuation.npc,
+              day: baseState.day,
+              kind: "OBSERVATION",
+              text: `プレイヤーが「${text}」と話し、${npcDisplayName(npc)}が「${live.text}」と答えた。私は「${continuation.text}」と返した。`,
+              importance: worldEffectApplied ? 8 : 5,
+              source: worldEffectApplied ? "WORLD_EFFECT" : "NPC_SPEECH",
+            });
+          }
+          setAgentMemory(nextAgentMemory);
 
           const lines: TranscriptLine[] = [
             { speaker: "\u3042\u306a\u305f", text: playerText },
@@ -328,6 +379,16 @@ export function NewLife30App({ onExit }: Props) {
       ];
       setTranscript((prev) => [...prev, ...lines]);
       appendMemory(lines);
+      setAgentMemory((current) =>
+        appendAgentMemory(current, {
+          owner: npc,
+          day: baseState.day,
+          kind: "OBSERVATION",
+          text: `プレイヤーが「${text}」と話した。私は「${result.text}」と答えた。`,
+          importance: freeAction ? 6 : 3,
+          source: freeAction ? "WORLD_EFFECT" : "PLAYER_SPEECH",
+        }),
+      );
     } finally {
       setPending(false);
     }
