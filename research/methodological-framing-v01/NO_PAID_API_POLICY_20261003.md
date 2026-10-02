@@ -30,6 +30,14 @@ The following GitHub Actions workflows are disabled manually:
 HUKUOKA scheduled task:
 - StudyC_AutoResume_HUKUOKA = DISABLED
 
+Machine-level execution control:
+- active `OPENAI_API_KEY` user environment entry = DISABLED on HUKUOKA;
+- a newly spawned child process reports no active API key;
+- `thinking-game` GitHub runner is consolidated to the single canonical runner `HUKUOKA-thinking-game`;
+- duplicate `HUKUOKA-thinking-game-2` runner/task was removed.
+
+This preserves frozen research code unchanged while preventing accidental paid API execution.
+
 ## Allowed work
 
 Without further authorization, continue only with:
