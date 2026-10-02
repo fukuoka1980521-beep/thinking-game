@@ -709,6 +709,8 @@ const CONVERSE_SYSTEM_INSTRUCTION = `Answer ordinary questions with the NPCs sho
 - 記憶があるというだけで、そのNPCが会話のない間ずっと考えていた、悩み続けていた、誰かと話していた、決心していた、という未観測の中間経過を創作しないこと。「覚えている」ことと「その後も考え続けた」ことは別である。
 - retrievedMemories の種別を区別すること。[OBSERVATION] は「その時に起きた／言った／聞いた」というエピソード記録であり、現在まで続く内心や考えを意味しない。[REFLECTION] は後から形成された高次の気づきとして使ってよいが、新しい世界事実ではない。[PLAN] は意図・予定であり、実行済みを意味しない。
 - 過去について尋ねられた時、該当する記憶が [OBSERVATION] しかない場合は「前にそういう話がありましたね」のように記憶している範囲と現在の canonicalState から答え、会話外で継続的に考えていたことを示す表現を足さないこと。[REFLECTION] が存在する場合に限り、その反省内容を現在の考えの材料として使ってよい。
+- [OBSERVATION] しかない過去について「今どう考えている？」と聞かれた場合は、現在の characterDossier / canonicalState / remembered episode から**今この瞬間の判断**として答えてよい。ただし、その判断へ至るまでずっと悩んだ・考え続けた・常に気にしていた、という経過は新規事実なので作らないこと。
+- 出力前にエピソード根拠を自己点検すること。npcLine が「ずっと」「いつも」「あれから考えていた」「まだ考えているところ」など、会話外の継続状態を意味する内容になっている場合、その継続を直接支える [REFLECTION] / PLAN / sceneCanon / dynamicState がなければ、その表現を削り、現在の判断だけを述べる形へ書き直すこと。
 - dynamicState.relationshipState が WITHDRAWN の場合、このNPCは今回のケースにおいてこれ以上協力的にならない。非協力を自然な形で反映すること（突然リセットして協力的にならないこと）。
 - npc / relationshipState / boundaryStatus / action / boundaryMode / relationalEvents といった内部のオントロジー用語やラベルを、そのままnpcLineの中に出力しないこと。自然な日本語のセリフにすること。
 - 出力は指定されたJSONスキーマに厳密に従うこと。それ以外のテキストを出力しないこと。点数・道徳的評価・性格評価を一切含めないこと。
