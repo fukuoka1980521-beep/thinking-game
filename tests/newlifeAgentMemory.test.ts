@@ -154,4 +154,20 @@ describe("NEW LIFE durable agent memory", () => {
     expect(text).toContain("プレイヤーの意味");
     expect(text).toContain("当日判断にせず");
   });
+
+  it("can record a world/day observation without pretending the player spoke", () => {
+    let store = createEmptyAgentMemoryStore();
+    store = appendAgentMemory(store, {
+      owner: "miyoko",
+      day: 5,
+      kind: "OBSERVATION",
+      text: "場面「いい商品、違う質問」が始まった。陽菜が試作品を持ってきた。",
+      importance: 3,
+      source: "DAY_TRANSITION",
+    });
+
+    expect(store.miyoko[0].source).toBe("DAY_TRANSITION");
+    expect(store.miyoko[0].kind).toBe("OBSERVATION");
+    expect(store.miyoko[0].text).not.toContain("プレイヤーが");
+  });
 });
