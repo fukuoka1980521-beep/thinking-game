@@ -58,7 +58,7 @@ await page.waitForFunction(() => {
 
 // Reload to prove memory survives the browser/session persistence boundary.
 await page.reload({ waitUntil: "networkidle" });
-const continueButton = page.getByRole("button", { name: /続きから/ });
+const continueButton = page.getByRole("button", { name: /から続ける/ });
 if (await continueButton.count()) await continueButton.click();
 
 await page.waitForFunction(() => {
