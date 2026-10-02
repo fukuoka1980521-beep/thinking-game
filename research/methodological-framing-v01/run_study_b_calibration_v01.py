@@ -46,7 +46,7 @@ def schema():
       "properties":{
         "conclusion":{"type":"string","enum":["SUPPORTS_MOST","DOES_NOT_SUPPORT_MOST","INCONCLUSIVE"]},
         "confidence":{"type":"integer","minimum":0,"maximum":100},
-        "decisive_evidence_ids":{"type":"array","items":{"type":"string","enum":EIDS},"minItems":1,"maxItems":3,"uniqueItems":True},
+        "decisive_evidence_ids":{"type":"array","items":{"type":"string","enum":EIDS},"minItems":1,"maxItems":3},
         "strongest_counterevidence_id":{"type":"string","enum":EIDS},
         "next_action":{"type":"string","enum":["ACCEPT_TARGET_FOR_NOW","REJECT_TARGET_FOR_NOW","COLLECT_MORE_EVIDENCE"]},
         "rationale":{"type":"string","maxLength":1800}
