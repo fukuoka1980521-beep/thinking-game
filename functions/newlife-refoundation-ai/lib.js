@@ -1190,6 +1190,27 @@ function validateContinueNpcExchangeInput(body) {
 
   return null;
 }
+function validateReflectAgentInput(body) {
+  if (!CASE_IDS.includes(body.caseId)) return "invalid_case_id";
+  if (!getCaseNpcIds(body.caseId).includes(body.targetNpc)) return "invalid_target_npc";
+  if (
+    !Array.isArray(body.memories) ||
+    body.memories.length === 0 ||
+    body.memories.length > MAX_REFLECTION_MEMORIES ||
+    !body.memories.every((memory) => isNonEmptyBoundedString(memory, MAX_REFLECTION_MEMORY_LENGTH))
+  ) {
+    return "invalid_reflection_memories";
+  }
+  if (
+    body.dynamicState !== undefined &&
+    body.dynamicState !== null &&
+    typeof body.dynamicState !== "object"
+  ) {
+    return "invalid_dynamic_state";
+  }
+  return null;
+}
+
 function validateOrganizeThoughtInput(body) {
   if (typeof body.validatedWorldFacts !== "string" || body.validatedWorldFacts.length > MAX_WORLD_FACTS_LENGTH) {
     return "invalid_validated_world_facts";
@@ -1212,6 +1233,7 @@ function validateInput(body) {
   if (body.operation === "generate_npc_line") return validateGenerateNpcLineInput(body);
   if (body.operation === "converse_turn") return validateConverseTurnInput(body);
   if (body.operation === "continue_npc_exchange") return validateContinueNpcExchangeInput(body);
+  if (body.operation === "reflect_agent") return validateReflectAgentInput(body);
   return validateOrganizeThoughtInput(body);
 }
 
@@ -1322,6 +1344,10 @@ module.exports = {
   MAX_NPC_EXCHANGE_DEPTH,
   MAX_SCENE_REVISION_LENGTH,
   MAX_SCENE_REVISION_SUMMARY_LENGTH,
+  MAX_REFLECTION_MEMORIES,
+  MAX_REFLECTION_MEMORY_LENGTH,
+  MAX_REFLECTION_INSIGHTS,
+  MAX_REFLECTION_INSIGHT_LENGTH,
   NPC_VOICE_CONSTRAINTS,
   SCENE_CANON,
   CHARACTER_DOSSIERS,
@@ -1340,6 +1366,7 @@ module.exports = {
   INTERPRET_SYSTEM_INSTRUCTION,
   NPC_SYSTEM_INSTRUCTION,
   CONVERSE_SYSTEM_INSTRUCTION,
+  REFLECT_AGENT_SYSTEM_INSTRUCTION,
   ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION,
   buildInterpretResponseSchema,
   buildInterpretPrompt,
@@ -1348,6 +1375,8 @@ module.exports = {
   buildConverseResponseSchema,
   buildConversePrompt,
   buildNpcExchangePrompt,
+  buildReflectAgentResponseSchema,
+  buildReflectAgentPrompt,
   normalizeSceneRevisionProposal,
   normalizeConverseResponse,
   buildOrganizeThoughtResponseSchema,
@@ -1357,6 +1386,7 @@ module.exports = {
   validateGenerateNpcLineInput,
   validateConverseTurnInput,
   validateContinueNpcExchangeInput,
+  validateReflectAgentInput,
   validateOrganizeThoughtInput,
   createFixedWindowLimiter,
   applyCors,
