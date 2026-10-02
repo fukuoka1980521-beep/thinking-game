@@ -86,7 +86,8 @@ def main():
 
     text_rows=[]
     for r in rows:
-        text_rows.append({"id":r["run_id"],"task_id":r["packet_id"],"condition":r["method_family"],"text":r["state"]["rationale"]})
+        mapped="T1" if r["packet_id"]=="B1" else "T2"
+        text_rows.append({"id":r["run_id"],"task_id":mapped,"condition":r["method_family"],"text":r["state"]["rationale"]})
     rationale_eval=tm.evaluate_cross_task(text_rows,n_perm=10000,seed=2026100204)
     rationale_dist=tm.cross_task_distance(text_rows)
 
