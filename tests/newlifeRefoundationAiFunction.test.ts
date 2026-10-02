@@ -627,6 +627,16 @@ describe("functions/newlife-refoundation-ai/lib.js — context bottleneck for me
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — episodic memory grounding", () => {
+  it("allows a current judgment from an observation without inventing off-screen continuous thought", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toContain("今この瞬間の判断");
+    expect(instruction).toContain("ずっと悩んだ・考え続けた");
+    expect(instruction).toContain("会話外の継続状態");
+    expect(instruction).toContain("現在の判断だけを述べる形へ書き直す");
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — durable recalled-memory bounds", () => {
   it("accepts bounded recalled memories and rejects oversized recall payloads", () => {
     const base = validThirtyDayConverseBody({
