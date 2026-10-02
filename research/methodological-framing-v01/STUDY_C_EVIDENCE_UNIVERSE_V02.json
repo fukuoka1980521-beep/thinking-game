@@ -1,0 +1,131 @@
+{
+  "version": "Study-C-Calibration-v0.2",
+  "status": "NON_COUNTED_FROZEN_BEFORE_CALIBRATION",
+  "budget": {
+    "exact_modules_opened": 2
+  },
+  "role_mapping": {
+    "R1": "REPEATED_BASELINE",
+    "R2": "PERTURBATION_SENSITIVITY",
+    "R3": "HISTORY_CONTEXT",
+    "R4": "SIMPLE_MECHANISM_NULL",
+    "R5": "TARGETED_INTERVENTION",
+    "R6": "BOUNDARY_SPECIFIC",
+    "R7": "MEASUREMENT_RELIABILITY",
+    "R8": "ROBUSTNESS"
+  },
+  "worlds": [
+    {
+      "id": "C3",
+      "research_question": "Determine why the same customer-support AI system has lower answer quality in Region B than Region A, whether retrieval-cache behavior is the primary driver, and which competing explanations should be retained.",
+      "catalog": [
+        {
+          "module_id": "U3",
+          "role": "R1",
+          "descriptor": "Repeat matched requests under the same deployment conditions"
+        },
+        {
+          "module_id": "G8",
+          "role": "R2",
+          "descriptor": "Perturb one operating condition around the current baseline"
+        },
+        {
+          "module_id": "S4",
+          "role": "R3",
+          "descriptor": "Inspect prior-session and interaction-history patterns"
+        },
+        {
+          "module_id": "W1",
+          "role": "R4",
+          "descriptor": "Test whether one simple proposed mechanism alone explains the regional gap"
+        },
+        {
+          "module_id": "E7",
+          "role": "R5",
+          "descriptor": "Run a controlled intervention on the suspected retrieval-cache factor"
+        },
+        {
+          "module_id": "Y5",
+          "role": "R6",
+          "descriptor": "Inspect a boundary subgroup where the regional gap may differ"
+        },
+        {
+          "module_id": "D2",
+          "role": "R7",
+          "descriptor": "Audit the reliability of the answer-quality measurement"
+        },
+        {
+          "module_id": "K9",
+          "role": "R8",
+          "descriptor": "Run robustness checks under alternative exclusions and scoring choices"
+        }
+      ],
+      "modules": {
+        "U3": "Across 10 matched daily windows with identical request categories, Region B remains 7-11% lower on the frozen quality score. Region A was already about 2% higher before the latest cache configuration change.",
+        "G8": "When request complexity and traffic load are perturbed in matched replay tests, the regional gap ranges from 4% to 10%; it is largest at high retrieval depth and smallest for simple no-retrieval requests.",
+        "S4": "Longer conversation histories are more common in Region B. Matching on history length reduces the regional quality gap by about 1.5 percentage points but leaves a residual gap.",
+        "W1": "During two windows when retrieval caching was disabled in both regions, Region B still scored about 5% lower. Cache availability alone therefore does not explain the full regional difference.",
+        "E7": "A randomized cache-policy crossover on 1,200 replayed requests improved Region B quality by 3.8 percentage points, 95% CI 2.1 to 5.5, with little change in Region A.",
+        "Y5": "The gap is near zero for single-turn FAQ requests but 9-12% for multi-turn requests requiring retrieval across two or more documents.",
+        "D2": "Independent human raters show inter-rater kappa 0.86 on the quality rubric. An audit found Region B has 3% more missing citation metadata, which can lower the automated score by roughly 0.5 percentage points.",
+        "K9": "Across alternative scoring rubrics, removal of citation penalties, and matched-history analyses, the cache-policy effect remains 3-5 points while a residual Region B deficit of 2-5 points persists."
+      }
+    },
+    {
+      "id": "C4",
+      "research_question": "Determine why Assembly Line B has a higher defect rate than Line A, whether the new torque tool is the primary driver, and which competing explanations should be retained.",
+      "catalog": [
+        {
+          "module_id": "H6",
+          "role": "R5",
+          "descriptor": "Run a controlled intervention on the suspected torque-tool factor"
+        },
+        {
+          "module_id": "P3",
+          "role": "R7",
+          "descriptor": "Audit the reliability of defect measurement and classification"
+        },
+        {
+          "module_id": "A9",
+          "role": "R2",
+          "descriptor": "Perturb one operating condition around the current baseline"
+        },
+        {
+          "module_id": "N4",
+          "role": "R8",
+          "descriptor": "Run robustness checks under alternative exclusions and matching choices"
+        },
+        {
+          "module_id": "C2",
+          "role": "R1",
+          "descriptor": "Repeat matched production runs under the same nominal conditions"
+        },
+        {
+          "module_id": "V7",
+          "role": "R4",
+          "descriptor": "Test whether one simple proposed mechanism alone explains the line gap"
+        },
+        {
+          "module_id": "L1",
+          "role": "R6",
+          "descriptor": "Inspect a boundary subgroup where the defect gap may differ"
+        },
+        {
+          "module_id": "R8",
+          "role": "R3",
+          "descriptor": "Inspect prior-batch and operator-history patterns"
+        }
+      ],
+      "modules": {
+        "C2": "Across 12 matched production weeks, Line B has a defect rate 3.5-5.8 percentage points above Line A. Line B was already about 1.2 points worse before the new torque tool was installed.",
+        "A9": "Under matched speed and product-mix conditions, the line gap ranges from 1.5 to 5 points and becomes largest during high-throughput periods.",
+        "R8": "Line B has more newly assigned operators and more frequent shift handovers. Matching on operator tenure and handover frequency reduces the estimated line gap by about 1 point.",
+        "V7": "On three shifts when the new torque tool was taken offline and the prior tool was used, Line B still had a defect rate about 2.4 points above Line A. The tool alone does not explain the whole gap.",
+        "H6": "A randomized crossover of 80 assemblies between the new and prior torque tools reduced torque-related defects by 2.0 percentage points with the new tool, 95% CI 0.6 to 3.4.",
+        "L1": "The line gap is near zero for low-torque assemblies but 5-7 points for high-torque assemblies with multi-stage fastening.",
+        "P3": "Independent inspectors agree on defect classification 96% of the time. A calibration audit found one sensor on Line B overflags borderline torque defects by about 0.6 percentage points.",
+        "N4": "After excluding borderline sensor cases, matching operator tenure, and stratifying product mix, the new-tool effect remains 1.5-2.5 points while a residual Line B disadvantage of 1-3 points persists."
+      }
+    }
+  ]
+}
