@@ -1,0 +1,37 @@
+name: Diagnose Study B v0.1 Calibration Failure
+
+on:
+  push:
+    branches:
+      - research/methodological-framing-v01
+    paths:
+      - '.github/workflows/study-b-v01-posthoc-diagnose.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: [self-hosted, HUKUOKA, research]
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/methodological-framing-v01
+          fetch-depth: 0
+          clean: true
+      - name: Run post-hoc decomposition
+        working-directory: research/methodological-framing-v01
+        run: |
+          python diagnose_study_b_v01_posthoc.py
+      - name: Commit diagnostic
+        run: |
+          git config user.name "methodological-framing-research-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add research/methodological-framing-v01/study_b_calibration_v01/analysis/STUDY_B_V01_POSTHOC_DIAG.*
+          git diff --cached --check
+          git commit -m "research diagnose Study B v01 calibration failure"
+          git push origin HEAD:research/methodological-framing-v01
