@@ -1422,7 +1422,7 @@ describe("functions/newlife-refoundation-ai/index.js — NPC-to-NPC continuation
   it("routes continue_npc_exchange through a dedicated prompt without pretending the player spoke again", () => {
     expect(source).toContain('req.body.operation === "continue_npc_exchange"');
     expect(source).toContain("attemptNpcExchangeTurn");
-    expect(source).toContain("buildNpcExchangePrompt(body)");
+    expect(source).toContain("buildNpcExchangePrompt(withCanonicalStateFacts(body))");
     expect(source).not.toMatch(/continue_npc_exchange[\s\S]{0,600}rawPlayerUtterance/);
   });
 });
