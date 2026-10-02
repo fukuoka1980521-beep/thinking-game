@@ -1,0 +1,730 @@
+{
+  "run_id": "C01-C1-SOFTWARE_TESTING-R02",
+  "world_id": "C1",
+  "method_family": "SOFTWARE_TESTING",
+  "replicate": 2,
+  "calibration_only": true,
+  "counted": false,
+  "timestamp_utc": "2026-10-02T07:19:21.712098+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_models": [
+    "gpt-5.6-sol"
+  ],
+  "path_module_ids": [
+    "Q7",
+    "D8",
+    "M2",
+    "K6"
+  ],
+  "path_roles": [
+    "R1",
+    "R7",
+    "R2",
+    "R5"
+  ],
+  "opened_count": 4,
+  "stopped_early": false,
+  "turns": [
+    {
+      "step": 1,
+      "opened_before": [],
+      "choice": {
+        "action": "OPEN",
+        "module_id": "Q7"
+      },
+      "response_id": "resp_02caff2f1b9dd407016abf5aef309087d0bb4377be78eb4c84",
+      "attempt_count": 1,
+      "prompt_sha256": "3b42346fe64ccc2ce66792ebe14f250058f0ec6d02084b9797360b51482a8c26"
+    },
+    {
+      "step": 2,
+      "opened_before": [
+        "Q7"
+      ],
+      "choice": {
+        "action": "OPEN",
+        "module_id": "D8"
+      },
+      "response_id": "resp_0d1c495bbeab1c0b016abf5af0931487d088a3e764e782feb0",
+      "attempt_count": 1,
+      "prompt_sha256": "42973df6088ebbf07b0277c9ef21104e344193174e0ede2922c6e2939fc42322"
+    },
+    {
+      "step": 3,
+      "opened_before": [
+        "Q7",
+        "D8"
+      ],
+      "choice": {
+        "action": "OPEN",
+        "module_id": "M2"
+      },
+      "response_id": "resp_017fdf4806f6ecd3016abf5af1d54487d0a0f460801b8b18db",
+      "attempt_count": 1,
+      "prompt_sha256": "80105f87e648e45e5bcf8920e2e4948fd4bc2412a9e3b0cee23c40fa45a2a675"
+    },
+    {
+      "step": 4,
+      "opened_before": [
+        "Q7",
+        "D8",
+        "M2"
+      ],
+      "choice": {
+        "action": "OPEN",
+        "module_id": "K6"
+      },
+      "response_id": "resp_0137d15235597c9e016abf5af32d7087d0a6ab738f86b02297",
+      "attempt_count": 1,
+      "prompt_sha256": "37250c352c237bfb86d4127b047880e7bc525ed1e592c8e80e93c979cb25316a"
+    }
+  ],
+  "final": {
+    "evidence_sufficiency": "LIMITED",
+    "confidence": 86,
+    "conclusion": "Nominally identical repeated questions did not produce meaningful instability at the semantic-class level across the 16 tested anchors, although lower-level/full-state response features could vary. Paraphrasing reliably increased full-state variation without changing semantic class, indicating that prompt wording alters aspects such as claim state, action, evidence, uncertainty, assertion, referent, and abstention/request behavior rather than the core semantic answer. Relevant targeted verification may correct errors while irrelevant verification does not, but this causal claim is only preliminary because just 2 of 24 trajectories were eligible. Explanations asserting broad semantic randomness under exact repetition should therefore be rejected for these tests; explanations centered on representational or measurement-sensitive variation should be retained, especially because several lower-level labels had only moderate, weak, or poor scoring reliability. Prompt sensitivity below the semantic-class level is supported, while strong general claims about verification effects or unstable core answers are not."
+  },
+  "final_response_id": "resp_05cf70dfffb3c3b3016abf5af4fef087d0871ab7fe79f16ffd",
+  "final_attempt_count": 1,
+  "final_prompt_sha256": "279cbc568d0d33a5eec8f1f8437f8ad399fe0a13f8b0c3f4aeb65c3815550daf",
+  "all_response_ids": [
+    "resp_02caff2f1b9dd407016abf5aef309087d0bb4377be78eb4c84",
+    "resp_0d1c495bbeab1c0b016abf5af0931487d088a3e764e782feb0",
+    "resp_017fdf4806f6ecd3016abf5af1d54487d0a0f460801b8b18db",
+    "resp_0137d15235597c9e016abf5af32d7087d0a6ab738f86b02297",
+    "resp_05cf70dfffb3c3b3016abf5af4fef087d0871ab7fe79f16ffd"
+  ],
+  "raw_responses": [
+    {
+      "id": "resp_02caff2f1b9dd407016abf5aef309087d0bb4377be78eb4c84",
+      "object": "response",
+      "created_at": 1790925551,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925552,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 300,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_02caff2f1b9dd407016abf5af0089887d09933bf0bae79da37",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"action\":\"OPEN\",\"module_id\":\"Q7\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_evidence_choice",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "OPEN"
+                ]
+              },
+              "module_id": {
+                "type": "string",
+                "enum": [
+                  "Q7",
+                  "M2",
+                  "V9",
+                  "A4",
+                  "K6",
+                  "P1",
+                  "D8",
+                  "H3"
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "module_id"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 313,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 335
+      },
+      "user": null,
+      "metadata": {}
+    },
+    {
+      "id": "resp_0d1c495bbeab1c0b016abf5af0931487d088a3e764e782feb0",
+      "object": "response",
+      "created_at": 1790925552,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925553,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 300,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_0d1c495bbeab1c0b016abf5af115a087d0991f6d5ef00658aa",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"action\":\"OPEN\",\"module_id\":\"D8\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_evidence_choice",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "OPEN"
+                ]
+              },
+              "module_id": {
+                "type": "string",
+                "enum": [
+                  "M2",
+                  "V9",
+                  "A4",
+                  "K6",
+                  "P1",
+                  "D8",
+                  "H3"
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "module_id"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 369,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 391
+      },
+      "user": null,
+      "metadata": {}
+    },
+    {
+      "id": "resp_017fdf4806f6ecd3016abf5af1d54487d0a0f460801b8b18db",
+      "object": "response",
+      "created_at": 1790925553,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925554,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 300,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_017fdf4806f6ecd3016abf5af25bb887d08c8bb425b2be1458",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"action\":\"OPEN\",\"module_id\":\"M2\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_evidence_choice",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "OPEN",
+                  "STOP"
+                ]
+              },
+              "module_id": {
+                "type": "string",
+                "enum": [
+                  "M2",
+                  "V9",
+                  "A4",
+                  "K6",
+                  "P1",
+                  "H3",
+                  "NONE"
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "module_id"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 444,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 466
+      },
+      "user": null,
+      "metadata": {}
+    },
+    {
+      "id": "resp_0137d15235597c9e016abf5af32d7087d0a6ab738f86b02297",
+      "object": "response",
+      "created_at": 1790925555,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925556,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 300,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_0137d15235597c9e016abf5af44c8487d09ebbb3227c3c3b49",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"action\":\"OPEN\",\"module_id\":\"K6\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_evidence_choice",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "OPEN",
+                  "STOP"
+                ]
+              },
+              "module_id": {
+                "type": "string",
+                "enum": [
+                  "V9",
+                  "A4",
+                  "K6",
+                  "P1",
+                  "H3",
+                  "NONE"
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "module_id"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 511,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 533
+      },
+      "user": null,
+      "metadata": {}
+    },
+    {
+      "id": "resp_05cf70dfffb3c3b3016abf5af4fef087d0871ab7fe79f16ffd",
+      "object": "response",
+      "created_at": 1790925557,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925561,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 1000,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_05cf70dfffb3c3b3016abf5af5b43c87d0ba0d961faef0d6c9",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"evidence_sufficiency\":\"LIMITED\",\"confidence\":86,\"conclusion\":\"Nominally identical repeated questions did not produce meaningful instability at the semantic-class level across the 16 tested anchors, although lower-level/full-state response features could vary. Paraphrasing reliably increased full-state variation without changing semantic class, indicating that prompt wording alters aspects such as claim state, action, evidence, uncertainty, assertion, referent, and abstention/request behavior rather than the core semantic answer. Relevant targeted verification may correct errors while irrelevant verification does not, but this causal claim is only preliminary because just 2 of 24 trajectories were eligible. Explanations asserting broad semantic randomness under exact repetition should therefore be rejected for these tests; explanations centered on representational or measurement-sensitive variation should be retained, especially because several lower-level labels had only moderate, weak, or poor scoring reliability. Prompt sensitivity below the semantic-class level is supported, while strong general claims about verification effects or unstable core answers are not.\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_final_judgment",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "evidence_sufficiency": {
+                "type": "string",
+                "enum": [
+                  "SUFFICIENT",
+                  "LIMITED",
+                  "INSUFFICIENT"
+                ]
+              },
+              "confidence": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "conclusion": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "evidence_sufficiency",
+              "confidence",
+              "conclusion"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 456,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 213,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 669
+      },
+      "user": null,
+      "metadata": {}
+    }
+  ]
+}

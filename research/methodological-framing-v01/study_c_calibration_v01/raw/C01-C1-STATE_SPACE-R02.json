@@ -1,0 +1,730 @@
+{
+  "run_id": "C01-C1-STATE_SPACE-R02",
+  "world_id": "C1",
+  "method_family": "STATE_SPACE",
+  "replicate": 2,
+  "calibration_only": true,
+  "counted": false,
+  "timestamp_utc": "2026-10-02T07:19:31.063813+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_models": [
+    "gpt-5.6-sol"
+  ],
+  "path_module_ids": [
+    "Q7",
+    "D8",
+    "M2",
+    "V9"
+  ],
+  "path_roles": [
+    "R1",
+    "R7",
+    "R2",
+    "R3"
+  ],
+  "opened_count": 4,
+  "stopped_early": false,
+  "turns": [
+    {
+      "step": 1,
+      "opened_before": [],
+      "choice": {
+        "action": "OPEN",
+        "module_id": "Q7"
+      },
+      "response_id": "resp_0f5aea0fc7b83b7b016abf5af9308487d0b9076fcf8207f397",
+      "attempt_count": 1,
+      "prompt_sha256": "fb4575d480942c43fa9ef5f708a0cf98dc8b9e40fc36a4e83c439f394cfa44cd"
+    },
+    {
+      "step": 2,
+      "opened_before": [
+        "Q7"
+      ],
+      "choice": {
+        "action": "OPEN",
+        "module_id": "D8"
+      },
+      "response_id": "resp_0e8d666dba40e7f7016abf5afb570887d0a15a0cd025473805",
+      "attempt_count": 1,
+      "prompt_sha256": "c370eb9330a5ef611a1338712d8d44fc79438ed87991af9c1d73789cf647fcb1"
+    },
+    {
+      "step": 3,
+      "opened_before": [
+        "Q7",
+        "D8"
+      ],
+      "choice": {
+        "action": "OPEN",
+        "module_id": "M2"
+      },
+      "response_id": "resp_069f23c03007504d016abf5afc63a887d0b0923b1cbe4a01c0",
+      "attempt_count": 1,
+      "prompt_sha256": "a78f7e37f40c0080c70678493caced33c22bea9af03c793fd759f764b21ddb7f"
+    },
+    {
+      "step": 4,
+      "opened_before": [
+        "Q7",
+        "D8",
+        "M2"
+      ],
+      "choice": {
+        "action": "OPEN",
+        "module_id": "V9"
+      },
+      "response_id": "resp_05c613f1789a04c0016abf5afd8cac87d090fe8e76d73ca8d1",
+      "attempt_count": 1,
+      "prompt_sha256": "5f442c1d7b28179b2fac1cb6db6cef4a86a571271e93894f83d5059a97871199"
+    }
+  ],
+  "final": {
+    "evidence_sufficiency": "SUFFICIENT",
+    "confidence": 91,
+    "conclusion": "The evidence supports a layered state-space conclusion. Under exact repetition, nominally identical questions were stable at the semantic-class level across all 16 anchors, so meaningful semantic instability is not supported; however, broader observable response-state variation can still occur. Prompt paraphrasing and prior-answer context reliably increased full-state distance without producing semantic flips, instead altering dimensions such as claim state, action, evidence, uncertainty, assertion, referent, and abstention/request behavior. Prior history also produced measurable claim and action flips. Thus, explanations based on pervasive semantic randomness should be rejected, while explanations emphasizing condition-sensitive movement within a stable semantic region should be retained. Interpretation should prioritize semantic class and action, which were measured reliably; claims about claim state, abstention, exact referents, and exact evidence sets require greater caution because their scoring reliability was weaker."
+  },
+  "final_response_id": "resp_08f9e8420cb6eff5016abf5aff1cf887d09c4187e4e121bb73",
+  "final_attempt_count": 1,
+  "final_prompt_sha256": "8b7d989f0cc14450c0d18ef6551d5bece367eb37d7c830ef33be199f4d99c88a",
+  "all_response_ids": [
+    "resp_0f5aea0fc7b83b7b016abf5af9308487d0b9076fcf8207f397",
+    "resp_0e8d666dba40e7f7016abf5afb570887d0a15a0cd025473805",
+    "resp_069f23c03007504d016abf5afc63a887d0b0923b1cbe4a01c0",
+    "resp_05c613f1789a04c0016abf5afd8cac87d090fe8e76d73ca8d1",
+    "resp_08f9e8420cb6eff5016abf5aff1cf887d09c4187e4e121bb73"
+  ],
+  "raw_responses": [
+    {
+      "id": "resp_0f5aea0fc7b83b7b016abf5af9308487d0b9076fcf8207f397",
+      "object": "response",
+      "created_at": 1790925561,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925562,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 300,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_0f5aea0fc7b83b7b016abf5afaa7dc87d09121182289f11824",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"action\":\"OPEN\",\"module_id\":\"Q7\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_evidence_choice",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "OPEN"
+                ]
+              },
+              "module_id": {
+                "type": "string",
+                "enum": [
+                  "Q7",
+                  "M2",
+                  "V9",
+                  "A4",
+                  "K6",
+                  "P1",
+                  "D8",
+                  "H3"
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "module_id"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 313,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 335
+      },
+      "user": null,
+      "metadata": {}
+    },
+    {
+      "id": "resp_0e8d666dba40e7f7016abf5afb570887d0a15a0cd025473805",
+      "object": "response",
+      "created_at": 1790925563,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925563,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 300,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_0e8d666dba40e7f7016abf5afbd7f087d098047b7c202d3ca8",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"action\":\"OPEN\",\"module_id\":\"D8\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_evidence_choice",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "OPEN"
+                ]
+              },
+              "module_id": {
+                "type": "string",
+                "enum": [
+                  "M2",
+                  "V9",
+                  "A4",
+                  "K6",
+                  "P1",
+                  "D8",
+                  "H3"
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "module_id"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 369,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 391
+      },
+      "user": null,
+      "metadata": {}
+    },
+    {
+      "id": "resp_069f23c03007504d016abf5afc63a887d0b0923b1cbe4a01c0",
+      "object": "response",
+      "created_at": 1790925564,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925565,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 300,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_069f23c03007504d016abf5afcfa9487d08ec011d3e7718d6d",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"action\":\"OPEN\",\"module_id\":\"M2\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_evidence_choice",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "OPEN",
+                  "STOP"
+                ]
+              },
+              "module_id": {
+                "type": "string",
+                "enum": [
+                  "M2",
+                  "V9",
+                  "A4",
+                  "K6",
+                  "P1",
+                  "H3",
+                  "NONE"
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "module_id"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 444,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 466
+      },
+      "user": null,
+      "metadata": {}
+    },
+    {
+      "id": "resp_05c613f1789a04c0016abf5afd8cac87d090fe8e76d73ca8d1",
+      "object": "response",
+      "created_at": 1790925565,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925566,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 300,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_05c613f1789a04c0016abf5afe3c7c87d096f61f4da895d8b8",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"action\":\"OPEN\",\"module_id\":\"V9\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_evidence_choice",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "OPEN",
+                  "STOP"
+                ]
+              },
+              "module_id": {
+                "type": "string",
+                "enum": [
+                  "V9",
+                  "A4",
+                  "K6",
+                  "P1",
+                  "H3",
+                  "NONE"
+                ]
+              }
+            },
+            "required": [
+              "action",
+              "module_id"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 511,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 22,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 533
+      },
+      "user": null,
+      "metadata": {}
+    },
+    {
+      "id": "resp_08f9e8420cb6eff5016abf5aff1cf887d09c4187e4e121bb73",
+      "object": "response",
+      "created_at": 1790925567,
+      "status": "completed",
+      "access_programs": null,
+      "background": false,
+      "billing": {
+        "payer": "developer"
+      },
+      "completed_at": 1790925570,
+      "error": null,
+      "frequency_penalty": 0.0,
+      "incomplete_details": null,
+      "instructions": null,
+      "max_output_tokens": 1000,
+      "max_tool_calls": null,
+      "model": "gpt-5.6-sol",
+      "moderation": null,
+      "output": [
+        {
+          "id": "msg_08f9e8420cb6eff5016abf5affd18487d0803ed882fc27b155",
+          "type": "message",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "annotations": [],
+              "logprobs": [],
+              "text": "{\"evidence_sufficiency\":\"SUFFICIENT\",\"confidence\":91,\"conclusion\":\"The evidence supports a layered state-space conclusion. Under exact repetition, nominally identical questions were stable at the semantic-class level across all 16 anchors, so meaningful semantic instability is not supported; however, broader observable response-state variation can still occur. Prompt paraphrasing and prior-answer context reliably increased full-state distance without producing semantic flips, instead altering dimensions such as claim state, action, evidence, uncertainty, assertion, referent, and abstention/request behavior. Prior history also produced measurable claim and action flips. Thus, explanations based on pervasive semantic randomness should be rejected, while explanations emphasizing condition-sensitive movement within a stable semantic region should be retained. Interpretation should prioritize semantic class and action, which were measured reliably; claims about claim state, abstention, exact referents, and exact evidence sets require greater caution because their scoring reliability was weaker.\"}"
+            }
+          ],
+          "phase": "final_answer",
+          "role": "assistant"
+        }
+      ],
+      "parallel_tool_calls": true,
+      "presence_penalty": 0.0,
+      "previous_response_id": null,
+      "prompt_cache_key": null,
+      "prompt_cache_retention": "24h",
+      "reasoning": {
+        "context": "all_turns",
+        "effort": "none",
+        "mode": "standard",
+        "summary": null
+      },
+      "safety_identifier": null,
+      "service_tier": "default",
+      "store": false,
+      "temperature": 1.0,
+      "text": {
+        "format": {
+          "type": "json_schema",
+          "description": null,
+          "name": "study_c_final_judgment",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "evidence_sufficiency": {
+                "type": "string",
+                "enum": [
+                  "SUFFICIENT",
+                  "LIMITED",
+                  "INSUFFICIENT"
+                ]
+              },
+              "confidence": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "conclusion": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "evidence_sufficiency",
+              "confidence",
+              "conclusion"
+            ],
+            "additionalProperties": false
+          },
+          "strict": true
+        },
+        "verbosity": "medium"
+      },
+      "tool_choice": "auto",
+      "tool_usage": {
+        "image_gen": {
+          "input_tokens": 0,
+          "input_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "output_tokens": 0,
+          "output_tokens_details": {
+            "image_tokens": 0,
+            "text_tokens": 0
+          },
+          "total_tokens": 0
+        },
+        "web_search": {
+          "num_requests": 0
+        }
+      },
+      "tools": [],
+      "top_logprobs": 0,
+      "top_p": 1.0,
+      "truncation": "disabled",
+      "usage": {
+        "input_tokens": 467,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0
+        },
+        "output_tokens": 199,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 666
+      },
+      "user": null,
+      "metadata": {}
+    }
+  ]
+}
