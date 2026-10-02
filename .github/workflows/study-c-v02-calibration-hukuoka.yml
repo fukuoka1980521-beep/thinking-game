@@ -1,0 +1,75 @@
+name: Study C v0.2 Calibration on HUKUOKA
+
+on:
+  push:
+    branches:
+      - research/methodological-framing-v01
+    paths:
+      - '.github/workflows/study-c-v02-calibration-hukuoka.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  calibrate:
+    runs-on: [self-hosted, HUKUOKA, research]
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/methodological-framing-v01
+          fetch-depth: 0
+          clean: true
+
+      - name: Confirm HUKUOKA
+        run: |
+          Write-Output "COMPUTERNAME=$env:COMPUTERNAME"
+          if ($env:COMPUTERNAME -ne 'HUKUOKA') { throw "Wrong runner" }
+          python --version
+
+      - name: Compile frozen code
+        working-directory: research/methodological-framing-v01
+        run: |
+          python -m py_compile run_study_c_calibration_v02.py analyze_study_c_calibration_v02.py freeze_study_c_calibration_v02.py
+
+      - name: Freeze calibration before data
+        working-directory: research/methodological-framing-v01
+        run: |
+          python freeze_study_c_calibration_v02.py
+
+      - name: Commit freeze before calibration collection
+        run: |
+          git config user.name "methodological-framing-research-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add research/methodological-framing-v01/FROZEN_STUDY_C_CALIBRATION_V02_MANIFEST.jsonl research/methodological-framing-v01/STUDY_C_CALIBRATION_V02_FREEZE.json
+          git diff --cached --check
+          git commit -m "research freeze Study C calibration v02 before data"
+          git push origin HEAD:research/methodological-framing-v01
+
+      - name: Collect fresh v0.2 trajectories
+        working-directory: research/methodological-framing-v01
+        run: |
+          python run_study_c_calibration_v02.py
+
+      - name: Analyze frozen v0.2 calibration
+        working-directory: research/methodological-framing-v01
+        run: |
+          python analyze_study_c_calibration_v02.py
+
+      - name: Secret scan
+        working-directory: research/methodological-framing-v01
+        run: |
+          $hits = Get-ChildItem study_c_calibration_v02 -Recurse -File | Select-String -Pattern 'sk-proj-|Bearer sk-' -ErrorAction SilentlyContinue
+          if ($hits) { $hits | Select-Object Path,LineNumber; throw "Secret-like material detected" }
+          Write-Output "SECRET_SCAN=PASS"
+
+      - name: Commit calibration results
+        run: |
+          git add research/methodological-framing-v01/study_c_calibration_v02
+          git diff --cached --check
+          git commit -m "research complete Study C calibration v02"
+          git push origin HEAD:research/methodological-framing-v01
