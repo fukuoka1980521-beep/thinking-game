@@ -159,6 +159,20 @@ export function shouldReflect(
   return reflectionImportanceSinceLastReflection(store, owner) >= threshold;
 }
 
+export function reflectionSourceMemories(
+  store: AgentMemoryStore,
+  owner: NpcId,
+  limit = 20,
+): AgentMemoryRecord[] {
+  const memories = store[owner] ?? [];
+  const lastReflectionSeq = [...memories]
+    .reverse()
+    .find((memory) => memory.kind === "REFLECTION")?.createdSeq ?? 0;
+  return memories
+    .filter((memory) => memory.createdSeq > lastReflectionSeq && memory.kind !== "REFLECTION")
+    .slice(-Math.max(1, limit));
+}
+
 export function formatRetrievedMemories(selected: RetrievedAgentMemory[]): string[] {
   return selected.map(({ record }) => `Day ${record.day} [${record.kind}] ${record.text}`);
 }
