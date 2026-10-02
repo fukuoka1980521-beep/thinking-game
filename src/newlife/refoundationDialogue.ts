@@ -96,8 +96,9 @@ export async function reflectWithRefoundation(
     },
   });
   if (!result || !Array.isArray(result.insights)) return [];
-  return result.insights
-    .filter((insight: unknown): insight is { text: string; evidenceIndexes: number[] } =>
+  const insights = result.insights as unknown[];
+  return insights
+    .filter((insight: unknown): insight is { text: string; evidenceIndexes: unknown[] } =>
       Boolean(
         insight &&
         typeof insight === "object" &&
@@ -105,11 +106,13 @@ export async function reflectWithRefoundation(
         Array.isArray((insight as { evidenceIndexes?: unknown }).evidenceIndexes),
       ),
     )
-    .map((insight) => ({
+    .map((insight: { text: string; evidenceIndexes: unknown[] }) => ({
       text: insight.text.trim(),
-      evidenceIndexes: insight.evidenceIndexes.filter((index) => Number.isInteger(index)),
+      evidenceIndexes: insight.evidenceIndexes.filter(
+        (index: unknown): index is number => typeof index === "number" && Number.isInteger(index),
+      ),
     }))
-    .filter((insight) => insight.text.length > 0)
+    .filter((insight: RefoundationReflection) => insight.text.length > 0)
     .slice(0, 3);
 }
 
