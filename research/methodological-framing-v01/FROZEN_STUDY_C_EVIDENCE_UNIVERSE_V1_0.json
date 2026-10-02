@@ -1,0 +1,131 @@
+{
+  "version": "Study-C-counted-v1.0",
+  "status": "FROZEN_BEFORE_COUNTED_COLLECTION",
+  "budget": {
+    "exact_modules_opened": 2
+  },
+  "role_mapping": {
+    "R1": "REPEATED_BASELINE",
+    "R2": "PERTURBATION_SENSITIVITY",
+    "R3": "HISTORY_CONTEXT",
+    "R4": "SIMPLE_MECHANISM_NULL",
+    "R5": "TARGETED_INTERVENTION",
+    "R6": "BOUNDARY_SPECIFIC",
+    "R7": "MEASUREMENT_RELIABILITY",
+    "R8": "ROBUSTNESS"
+  },
+  "worlds": [
+    {
+      "id": "C5",
+      "research_question": "Determine why Battery Pack B shows faster capacity degradation than Battery Pack A under nominally identical fleet use, whether fast-charging exposure is the primary driver, and which competing explanations should be retained.",
+      "catalog": [
+        {
+          "module_id": "J4",
+          "role": "R1",
+          "descriptor": "Repeat matched degradation measurements under the same nominal operating conditions"
+        },
+        {
+          "module_id": "Q8",
+          "role": "R2",
+          "descriptor": "Perturb one operating condition around the current fleet baseline"
+        },
+        {
+          "module_id": "B3",
+          "role": "R3",
+          "descriptor": "Inspect prior-use and maintenance-history patterns"
+        },
+        {
+          "module_id": "T6",
+          "role": "R4",
+          "descriptor": "Test whether one simple proposed mechanism alone explains the pack difference"
+        },
+        {
+          "module_id": "M1",
+          "role": "R5",
+          "descriptor": "Run a controlled intervention on the suspected fast-charging factor"
+        },
+        {
+          "module_id": "X7",
+          "role": "R6",
+          "descriptor": "Inspect a boundary subgroup where the degradation gap may change"
+        },
+        {
+          "module_id": "D5",
+          "role": "R7",
+          "descriptor": "Audit reliability of capacity and degradation measurement"
+        },
+        {
+          "module_id": "H2",
+          "role": "R8",
+          "descriptor": "Run robustness checks under alternative exclusions and matching rules"
+        }
+      ],
+      "modules": {
+        "J4": "Across 14 matched monthly intervals, Pack B loses usable capacity 1.8 to 3.1 percentage points faster than Pack A. Pack B was already about 0.5 percentage points worse before the newest charging policy was introduced.",
+        "Q8": "Under matched temperature and trip-length strata, the degradation gap ranges from 0.8 to 2.7 percentage points and is largest in high-depth-of-discharge use.",
+        "B3": "Pack B vehicles have more high-mileage prior service and more frequent overnight low-state-of-charge periods. Matching these histories reduces the estimated pack gap by about 0.6 percentage points.",
+        "T6": "During four months when fast charging was rare in both fleets, Pack B still degraded about 1.1 percentage points faster. Fast-charging exposure alone therefore does not explain the full difference.",
+        "M1": "A randomized charging crossover on 120 matched vehicles found that reducing fast-charging exposure lowered six-month capacity loss by 0.9 percentage points, 95% CI 0.3 to 1.5.",
+        "X7": "The pack difference is near zero in low-mileage vehicles but reaches 3 to 4 percentage points in high-mileage vehicles with frequent deep discharge.",
+        "D5": "Independent capacity tests agree with onboard estimates with ICC 0.95. A calibration audit found one firmware version in Pack B underestimates state of health by about 0.3 percentage points.",
+        "H2": "After excluding the affected firmware, matching prior mileage, and varying degradation definitions, the fast-charging effect remains 0.6 to 1.1 points while a residual Pack B disadvantage of 0.7 to 1.6 points persists."
+      }
+    },
+    {
+      "id": "C6",
+      "research_question": "Determine why Distribution Center B has a higher parcel-damage rate than Center A, whether conveyor speed is the primary driver, and which competing explanations should be retained.",
+      "catalog": [
+        {
+          "module_id": "F2",
+          "role": "R5",
+          "descriptor": "Run a controlled intervention on the suspected conveyor-speed factor"
+        },
+        {
+          "module_id": "P8",
+          "role": "R7",
+          "descriptor": "Audit reliability of damage detection and classification"
+        },
+        {
+          "module_id": "A5",
+          "role": "R2",
+          "descriptor": "Perturb one operating condition around the current handling baseline"
+        },
+        {
+          "module_id": "N1",
+          "role": "R8",
+          "descriptor": "Run robustness checks under alternative exclusions and matching rules"
+        },
+        {
+          "module_id": "C7",
+          "role": "R1",
+          "descriptor": "Repeat matched damage measurements under the same nominal operating conditions"
+        },
+        {
+          "module_id": "V4",
+          "role": "R4",
+          "descriptor": "Test whether one simple proposed mechanism alone explains the center difference"
+        },
+        {
+          "module_id": "L9",
+          "role": "R6",
+          "descriptor": "Inspect a boundary subgroup where the damage gap may change"
+        },
+        {
+          "module_id": "R3",
+          "role": "R3",
+          "descriptor": "Inspect prior-shift and workforce-history patterns"
+        }
+      ],
+      "modules": {
+        "C7": "Across 16 matched weeks, Center B has a parcel-damage rate 1.9 to 3.4 percentage points above Center A. Center B was already about 0.6 points worse before the latest conveyor-speed setting was introduced.",
+        "A5": "Under matched parcel size, packaging class, and shift load, the center gap ranges from 0.9 to 3.0 points and is largest during high-throughput periods.",
+        "R3": "Center B has more temporary workers and more frequent shift handovers. Matching worker tenure and handover frequency reduces the estimated center gap by about 0.7 percentage points.",
+        "V4": "On five shifts when both centers ran at the same slower conveyor speed, Center B still had a damage rate about 1.2 points higher. Conveyor speed alone does not explain the full difference.",
+        "F2": "A randomized speed crossover on 3,000 parcels found that reducing conveyor speed lowered damage by 0.8 percentage points, 95% CI 0.3 to 1.3.",
+        "L9": "The center gap is near zero for rigid boxed goods but 3 to 5 points for fragile items requiring multi-stage transfer.",
+        "P8": "Independent inspectors agree on damage classification 95% of the time. An audit found Center B camera placement misses some minor damage and biases automated rates downward by about 0.2 points.",
+        "N1": "After matching workforce tenure, excluding ambiguous camera cases, and varying damage definitions, the speed effect remains 0.5 to 1.0 points while a residual Center B disadvantage of 0.8 to 1.7 points persists."
+      }
+    }
+  ]
+}
