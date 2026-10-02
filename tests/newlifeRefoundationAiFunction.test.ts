@@ -627,6 +627,28 @@ describe("functions/newlife-refoundation-ai/lib.js — durable recalled-memory b
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — cross-day episodic recall", () => {
+  it("prioritizes a matching recalled episode over the current scene focus when the player explicitly asks about the past", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toContain("現在日の sceneFocus より先に");
+    expect(instruction).toContain("issue / decision / authority / player meaning");
+    expect(instruction).toContain("一般論へ薄めないこと");
+  });
+
+  it("does not turn memory existence into invented off-screen continuous thinking", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toContain("会話のない間ずっと考えていた");
+    expect(instruction).toContain("未観測の中間経過を創作しないこと");
+    expect(instruction).toContain("覚えている");
+    expect(instruction).toContain("考え続けた");
+  });
+
+  it("keeps current canonical state authoritative over an older recalled episode", () => {
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toContain("現在の canonicalState");
+    expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toContain("すでに解決済み");
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — background agent reflection", () => {
   it("accepts bounded per-NPC reflection input and rejects empty/oversized memories", () => {
     expect(lib.validateInput(validReflectBody())).toBeNull();
