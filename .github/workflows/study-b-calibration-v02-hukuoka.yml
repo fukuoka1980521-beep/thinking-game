@@ -1,0 +1,66 @@
+name: Study B Calibration v0.2 on HUKUOKA
+
+on:
+  push:
+    branches:
+      - research/methodological-framing-v01
+    paths:
+      - '.github/workflows/study-b-calibration-v02-hukuoka.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  calibrate:
+    runs-on: [self-hosted, HUKUOKA, research]
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/methodological-framing-v01
+          fetch-depth: 0
+          clean: true
+
+      - name: Confirm canonical HUKUOKA runner
+        run: |
+          Write-Output "COMPUTERNAME=$env:COMPUTERNAME"
+          if ($env:COMPUTERNAME -ne 'HUKUOKA') { throw "Wrong runner" }
+          python --version
+
+      - name: Compile frozen Study B v02 code
+        working-directory: research/methodological-framing-v01
+        run: |
+          python -m py_compile run_study_b_calibration_v02.py analyze_study_b_calibration_v02.py
+
+      - name: Collect 42 non-counted v02 states
+        working-directory: research/methodological-framing-v01
+        run: |
+          python run_study_b_calibration_v02.py
+
+      - name: Analyze frozen v02 gate
+        working-directory: research/methodological-framing-v01
+        run: |
+          python analyze_study_b_calibration_v02.py
+
+      - name: Secret scan
+        working-directory: research/methodological-framing-v01
+        run: |
+          $hits=Get-ChildItem study_b_calibration_v02 -Recurse -File | Select-String -Pattern 'sk-proj-|Bearer sk-' -ErrorAction SilentlyContinue
+          if ($hits) { $hits | Select-Object Path,LineNumber; throw "Secret-like material detected" }
+          Write-Output "SECRET_SCAN=PASS"
+
+      - name: Commit v02 calibration outputs
+        run: |
+          git config user.name "methodological-framing-research-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add research/methodological-framing-v01/study_b_calibration_v02
+          git diff --cached --check
+          if (git diff --cached --quiet) {
+            Write-Output "NO_CHANGES_TO_COMMIT"
+          } else {
+            git commit -m "research complete Study B calibration v02"
+            git push origin HEAD:research/methodological-framing-v01
+          }
