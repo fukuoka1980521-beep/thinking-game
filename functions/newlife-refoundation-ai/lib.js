@@ -169,6 +169,8 @@ const MAX_REFLECTION_MEMORIES = 20;
 const MAX_REFLECTION_MEMORY_LENGTH = 500;
 const MAX_REFLECTION_INSIGHTS = 3;
 const MAX_REFLECTION_INSIGHT_LENGTH = 300;
+const MAX_RETRIEVED_MEMORIES = 8;
+const MAX_RETRIEVED_MEMORY_LENGTH = 600;
 
 /**
  * V37 §1 CANONICAL WORLD MODEL. Authored, deterministic, server-owned.
@@ -1134,6 +1136,15 @@ function isValidRecentDialogue(value) {
   return Array.isArray(value) && value.length <= MAX_RECENT_DIALOGUE_ENTRIES && value.every(isValidDialogueEntry);
 }
 
+function isValidRetrievedMemories(value) {
+  if (value === undefined || value === null) return true;
+  return (
+    Array.isArray(value) &&
+    value.length <= MAX_RETRIEVED_MEMORIES &&
+    value.every((memory) => isNonEmptyBoundedString(memory, MAX_RETRIEVED_MEMORY_LENGTH))
+  );
+}
+
 function validateConverseTurnInput(body) {
   if (!CASE_IDS.includes(body.caseId)) return "invalid_case_id";
   if (!getCaseNpcIds(body.caseId).includes(body.targetNpc)) return "invalid_target_npc";
@@ -1142,6 +1153,7 @@ function validateConverseTurnInput(body) {
 
   const dynamicState = body.dynamicState;
   if (!dynamicState || typeof dynamicState !== "object") return "missing_dynamic_state";
+  if (!isValidRetrievedMemories(dynamicState.retrievedMemories)) return "invalid_retrieved_memories";
   if (!RELATIONSHIP_STATES.includes(dynamicState.relationshipState)) return "invalid_relationship_state";
   if (!BOUNDARY_STATUSES.includes(dynamicState.boundaryStatus)) return "invalid_boundary_status";
   if (
@@ -1366,6 +1378,8 @@ module.exports = {
   MAX_REFLECTION_MEMORY_LENGTH,
   MAX_REFLECTION_INSIGHTS,
   MAX_REFLECTION_INSIGHT_LENGTH,
+  MAX_RETRIEVED_MEMORIES,
+  MAX_RETRIEVED_MEMORY_LENGTH,
   NPC_VOICE_CONSTRAINTS,
   SCENE_CANON,
   CHARACTER_DOSSIERS,
