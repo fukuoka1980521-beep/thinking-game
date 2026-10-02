@@ -117,3 +117,62 @@ Therefore:
 - the remaining failure is not memory absence but **memory-to-reply re-anchoring fidelity**.
 
 This is consistent with the earlier Semantic Re-Anchoring Failure finding: retrieving the correct episode is necessary but not sufficient; the reply must preserve the episode's concrete object, unresolved decision, and authority.
+
+
+## Actual-game cross-day recall R2 — structured memory anchors
+
+A second browser-level probe was run after durable memories began storing a structured snapshot of:
+
+- scene issue;
+- unresolved decision;
+- authority owner;
+- understood player meaning.
+
+### Day 3 live reply
+
+Player:
+> 商売ですからね、できることとできないことは決めておいたほうが良いですよ
+
+Miyoko:
+> そうですね、おっしゃる通りです。特に、この喫茶の席を待機場所にするなら、何人までならお受けできるか、はっきりさせておかないとね。
+
+This is materially closer to the desired reasoning pattern:
+**player meaning -> cafe seats -> number limit -> Miyoko's authority/boundary**.
+
+The persisted memory now contains both human-readable text and structured fields:
+
+- `focusSnapshot.issue`
+- `focusSnapshot.decision`
+- `focusSnapshot.authority`
+- `playerMeaning`
+
+### Day 5 recall after full browser reload
+
+Player:
+> この前の待つ場所の話、どう考えてます？
+
+Miyoko:
+> そうですね、あの話は大事だと思ってますよ。ただ、何人までなら無理なくお受けできるか、まだ決めかねていて。
+
+Observed:
+- the Day 3 memory survived day transition + localStorage + full browser reload;
+- the relevant Day 3 memory's `lastAccessSeq` advanced again;
+- the answer preserved the concrete unresolved variable ("何人まで") instead of collapsing to generic "担当" or "線引き";
+- no unsupported claim such as "ずっと考えていた" appeared in this R2 reply;
+- the current canonical state remained unchanged by memory retrieval itself.
+
+### Interpretation
+
+This closes one important technical gap:
+
+**correct episode retrieval -> structured issue/decision/authority anchor -> concrete cross-day reply**
+
+The result is stronger than the earlier synthetic six-NPC probe because this R2 path uses the actual game memory writer and actual persisted session.
+
+Still not claimed:
+- full human product PASS;
+- uniform success for all six NPCs in natural multi-day play;
+- optimal memory ranking under dense histories;
+- optimal reflection threshold.
+
+The next high-value gate is therefore human multi-day play focused on whether the NPC feels like the same person remembering the player, not merely whether the correct text fragment was retrieved.
