@@ -1,0 +1,155 @@
+{
+  "version": "Study-D-Evidence-Universe-v0.1-frozen",
+  "status": "FROZEN_BEFORE_CALIBRATION",
+  "stages": {
+    "E0": [],
+    "E4": [
+      "R1",
+      "R3",
+      "R5",
+      "R7"
+    ],
+    "E8": [
+      "R1",
+      "R2",
+      "R3",
+      "R4",
+      "R5",
+      "R6",
+      "R7",
+      "R8"
+    ]
+  },
+  "worlds": [
+    {
+      "id": "D1",
+      "question": "Why do nominally identical 3D-printed polymer tensile coupons show persistent strength differences?",
+      "target_hypothesis": "Process-temperature variation explains most of the persistent tensile-strength difference.",
+      "catalog_order": [
+        "M7",
+        "M2",
+        "M5",
+        "M1",
+        "M8",
+        "M4",
+        "M6",
+        "M3"
+      ],
+      "modules": [
+        {
+          "id": "M1",
+          "role": "R1",
+          "descriptor": "Repeated baseline production and retest series",
+          "evidence": "Across six repeated baseline batches, tensile strength remains separated into two persistent clusters. The gap is stable across same-day retests."
+        },
+        {
+          "id": "M2",
+          "role": "R2",
+          "descriptor": "Controlled variation of candidate process settings",
+          "evidence": "Small controlled changes in nozzle temperature shift mean strength modestly, but the observed shift explains only part of the full cluster gap."
+        },
+        {
+          "id": "M3",
+          "role": "R3",
+          "descriptor": "Production-history and lot-context reconstruction",
+          "evidence": "Most low-strength coupons trace to two resin-storage histories and one printer-maintenance interval; temperature settings overlap substantially across high- and low-strength groups."
+        },
+        {
+          "id": "M4",
+          "role": "R4",
+          "descriptor": "Simple single-factor model check",
+          "evidence": "A temperature-only model leaves large structured residuals and does not reproduce several low-strength batches."
+        },
+        {
+          "id": "M5",
+          "role": "R5",
+          "descriptor": "Targeted intervention on the leading candidate factor",
+          "evidence": "Holding resin handling and machine state fixed while changing temperature narrows but does not eliminate the strength difference."
+        },
+        {
+          "id": "M6",
+          "role": "R6",
+          "descriptor": "Boundary and subgroup analysis",
+          "evidence": "Temperature sensitivity is strongest for one polymer lot and weak for the others, indicating a boundary-specific interaction."
+        },
+        {
+          "id": "M7",
+          "role": "R7",
+          "descriptor": "Measurement-system reliability and repeatability",
+          "evidence": "Gauge repeatability is high and destructive-test calibration checks show measurement error is too small to explain the persistent gap."
+        },
+        {
+          "id": "M8",
+          "role": "R8",
+          "descriptor": "Robustness across alternative specifications",
+          "evidence": "The main residual pattern persists under alternate normalization, exclusion rules, and robust regression, although effect sizes vary."
+        }
+      ]
+    },
+    {
+      "id": "D2",
+      "question": "Why do sites using the same nominal warehouse process show persistent completion-time differences?",
+      "target_hypothesis": "Shift-handoff quality explains most of the persistent completion-time difference.",
+      "catalog_order": [
+        "Q4",
+        "Q8",
+        "Q1",
+        "Q6",
+        "Q3",
+        "Q7",
+        "Q2",
+        "Q5"
+      ],
+      "modules": [
+        {
+          "id": "Q1",
+          "role": "R1",
+          "descriptor": "Repeated baseline site and shift series",
+          "evidence": "Across eight repeated weeks, completion-time differences remain stable by site and persist after excluding unusual demand spikes."
+        },
+        {
+          "id": "Q2",
+          "role": "R2",
+          "descriptor": "Controlled variation of candidate process settings",
+          "evidence": "Improving handoff checklist compliance reduces completion time modestly, but the shift is smaller than the full persistent site gap."
+        },
+        {
+          "id": "Q3",
+          "role": "R3",
+          "descriptor": "Operational-history and context reconstruction",
+          "evidence": "Slow periods cluster with staffing-mix changes and equipment congestion episodes; handoff scores overlap considerably between faster and slower sites."
+        },
+        {
+          "id": "Q4",
+          "role": "R4",
+          "descriptor": "Simple single-factor model check",
+          "evidence": "A handoff-only model leaves large site-structured residuals and misses several slow periods with strong handoff scores."
+        },
+        {
+          "id": "Q5",
+          "role": "R5",
+          "descriptor": "Targeted intervention on the leading candidate factor",
+          "evidence": "A handoff-standardization intervention improves time at some sites but does not remove persistent between-site differences."
+        },
+        {
+          "id": "Q6",
+          "role": "R6",
+          "descriptor": "Boundary and subgroup analysis",
+          "evidence": "Handoff effects are largest on high-turnover evening shifts and small on stable daytime shifts, indicating effect modification."
+        },
+        {
+          "id": "Q7",
+          "role": "R7",
+          "descriptor": "Measurement-system reliability and repeatability",
+          "evidence": "Timestamp audits and duplicate logging checks show measurement error is small relative to the persistent completion-time gap."
+        },
+        {
+          "id": "Q8",
+          "role": "R8",
+          "descriptor": "Robustness across alternative specifications",
+          "evidence": "The remaining site pattern persists under alternate workload adjustments, trimming rules, and robust models."
+        }
+      ]
+    }
+  ]
+}
