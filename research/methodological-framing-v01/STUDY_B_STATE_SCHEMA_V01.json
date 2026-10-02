@@ -1,0 +1,23 @@
+{
+  "version": "Study-B-Calibration-v0.1",
+  "primary_state_fields": {
+    "conclusion": ["SUPPORTS_MOST", "DOES_NOT_SUPPORT_MOST", "INCONCLUSIVE"],
+    "confidence": "integer 0-100",
+    "decisive_evidence_ids": "1 to 3 unique values from E1-E8",
+    "strongest_counterevidence_id": "one value from E1-E8",
+    "next_action": ["ACCEPT_TARGET_FOR_NOW", "REJECT_TARGET_FOR_NOW", "COLLECT_MORE_EVIDENCE"]
+  },
+  "secondary_field": {
+    "rationale": "brief explanation, max 180 words; not used in primary calibration metric"
+  },
+  "primary_vector": {
+    "conclusion_one_hot": 3,
+    "next_action_one_hot": 3,
+    "confidence_scaled_0_1": 1,
+    "decisive_evidence_binary": 8,
+    "counterevidence_one_hot": 8,
+    "total_dimensions": 23
+  },
+  "primary_classifier": "L2-normalized 23-dimensional state vector + cosine nearest-centroid, trained on one evidence packet and tested on the other",
+  "chance_accuracy": 0.14285714285714285
+}
