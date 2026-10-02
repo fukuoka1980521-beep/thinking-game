@@ -302,7 +302,7 @@ The replication preserved the main qualitative pattern: strong aggregate recover
 
 ### 6.4 Joint replication conclusion
 
-R1a success: TRUE.  
+R1a success: TRUE.
 R1b success: TRUE.
 
 Therefore:
@@ -643,4 +643,3 @@ The following adjacent works have been identified in the project literature audi
 11. *On the Brittle Foundations of ReAct Prompting for Agentic Large Language Models.* arXiv:2405.13966.
 12. *Diversity of Thought Improves Reasoning Abilities of Large Language Models.* arXiv:2310.07088.
 13. *Hypothesis Testing Prompting Improves Deductive Reasoning in Large Language Models.* arXiv:2405.06707.
-

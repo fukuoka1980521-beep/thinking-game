@@ -1,7 +1,7 @@
 # Publication Gate — Methodological Framing v1.0
 
-Status: CONTENT COMPLETE / PUBLIC RELEASE NOT YET EXECUTED  
-Date: 2026-10-03  
+Status: CONTENT COMPLETE / PUBLIC RELEASE NOT YET EXECUTED
+Date: 2026-10-03
 New paid model calls required: **0**
 
 ## Scientific content gate
