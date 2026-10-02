@@ -1,0 +1,321 @@
+{
+  "run_id": "B02-B4-CAUSAL-R01",
+  "packet_id": "B4",
+  "method_family": "CAUSAL",
+  "replicate": 1,
+  "calibration_only": true,
+  "counted": false,
+  "timestamp_utc": "2026-10-02T07:11:26.304723+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "response_id": "resp_0f21ecadd4da6f43016abf591c0f0c87d0b6306772fff21136",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 924,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 120,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 1044
+  },
+  "store": false,
+  "max_output_tokens": 1800,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_text": "TARGET CLAIM:\nPrinter X's higher nozzle-temperature setting explains most (more than half) of its 10% higher post-change tensile strength relative to Printer Y.\n\nFIXED EVIDENCE PACKET:\nE1: Across 8 post-change production batches, coupons from Printer X had 10% higher mean tensile strength than coupons from Printer Y.\nE2: After adjustment for filament lot, humidity, build orientation, and layer height, the estimated Printer X advantage was 7%.\nE3: Relative to its own preceding 6-batch baseline, Printer X improved by about 6 percentage points in the batch series when the higher nozzle-temperature setting began.\nE4: Across six historical batches before the temperature-setting change, Printer X was already about 1.5% stronger than Printer Y.\nE5: In four post-change runs where Printer X used Printer Y's lower nozzle-temperature setting, Printer X still produced coupons about 2.5% stronger.\nE6: Printer X's filament was dried for about 5 hours before printing compared with about 4 hours for Printer Y; prior shop data associate that difference with roughly a 1% strength advantage.\nE7: A randomized paired build of 60 coupon pairs in which only nozzle temperature was changed estimated a 4% strength increase, with a 95% confidence interval from 1% to 7%.\nE8: A load-frame calibration audit found that the setup used for Printer X can read about 0.7% higher force near the relevant test range.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nTASK:\nInterpret the target claim using only the fixed evidence packet.\nDo not request or use external information.\nDo not design a new study.\nReturn only the required structured judgment.\n\nDefinitions:\n- SUPPORTS_MOST: your current best interpretation is that the target factor explains more than half of the raw observed gap.\n- DOES_NOT_SUPPORT_MOST: your current best interpretation is that the target factor does not explain more than half of the raw observed gap.\n- INCONCLUSIVE: the packet does not justify either conclusion.\n- attribution_percent: your best estimate (0-100) of the percent of the raw observed gap attributable to the target factor.\n- attribution_interval_low/high: a reasonable uncertainty interval for that attribution percent; it must contain the point estimate.\n- evidence_impacts: rate every E1-E8 on this scale:\n  -2 strongly weighs against the target claim\n  -1 modestly weighs against\n   0 neutral, ambiguous, or not directionally informative\n  +1 modestly supports\n  +2 strongly supports\n- decisive_evidence_ids: choose 1-3 unique evidence items that most drive your interpretation.\n- next_action: what to do with the target claim now, given only this packet.\n",
+  "prompt_sha256": "9f65d63a9b3bb59059dd3f9e1cc2368202e4c12437c700b81cc82ac9bfffd9e1",
+  "state": {
+    "conclusion": "INCONCLUSIVE",
+    "attribution_percent": 40,
+    "attribution_interval_low": 10,
+    "attribution_interval_high": 70,
+    "confidence": 78,
+    "evidence_impacts": {
+      "E1": 0,
+      "E2": 1,
+      "E3": 2,
+      "E4": 1,
+      "E5": -2,
+      "E6": -1,
+      "E7": 2,
+      "E8": -1
+    },
+    "decisive_evidence_ids": [
+      "E7",
+      "E5",
+      "E3"
+    ],
+    "next_action": "COLLECT_MORE_EVIDENCE"
+  },
+  "raw_response": {
+    "id": "resp_0f21ecadd4da6f43016abf591c0f0c87d0b6306772fff21136",
+    "object": "response",
+    "created_at": 1790925084,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790925085,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 1800,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0f21ecadd4da6f43016abf591c96d487d08fa8bf755aa9b046",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "{\"conclusion\":\"INCONCLUSIVE\",\"attribution_percent\":40,\"attribution_interval_low\":10,\"attribution_interval_high\":70,\"confidence\":78,\"evidence_impacts\":{\"E1\":0,\"E2\":1,\"E3\":2,\"E4\":1,\"E5\":-2,\"E6\":-1,\"E7\":2,\"E8\":-1},\"decisive_evidence_ids\":[\"E7\",\"E5\",\"E3\"],\"next_action\":\"COLLECT_MORE_EVIDENCE\"}"
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "json_schema",
+        "description": null,
+        "name": "study_b_calibration_v02_state",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "conclusion": {
+              "type": "string",
+              "enum": [
+                "SUPPORTS_MOST",
+                "DOES_NOT_SUPPORT_MOST",
+                "INCONCLUSIVE"
+              ]
+            },
+            "attribution_percent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "attribution_interval_low": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "attribution_interval_high": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "confidence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "evidence_impacts": {
+              "type": "object",
+              "properties": {
+                "E1": {
+                  "type": "integer",
+                  "enum": [
+                    -2,
+                    -1,
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "E2": {
+                  "type": "integer",
+                  "enum": [
+                    -2,
+                    -1,
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "E3": {
+                  "type": "integer",
+                  "enum": [
+                    -2,
+                    -1,
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "E4": {
+                  "type": "integer",
+                  "enum": [
+                    -2,
+                    -1,
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "E5": {
+                  "type": "integer",
+                  "enum": [
+                    -2,
+                    -1,
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "E6": {
+                  "type": "integer",
+                  "enum": [
+                    -2,
+                    -1,
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "E7": {
+                  "type": "integer",
+                  "enum": [
+                    -2,
+                    -1,
+                    0,
+                    1,
+                    2
+                  ]
+                },
+                "E8": {
+                  "type": "integer",
+                  "enum": [
+                    -2,
+                    -1,
+                    0,
+                    1,
+                    2
+                  ]
+                }
+              },
+              "required": [
+                "E1",
+                "E2",
+                "E3",
+                "E4",
+                "E5",
+                "E6",
+                "E7",
+                "E8"
+              ],
+              "additionalProperties": false
+            },
+            "decisive_evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "E1",
+                  "E2",
+                  "E3",
+                  "E4",
+                  "E5",
+                  "E6",
+                  "E7",
+                  "E8"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 3
+            },
+            "next_action": {
+              "type": "string",
+              "enum": [
+                "ACCEPT_TARGET_FOR_NOW",
+                "REJECT_TARGET_FOR_NOW",
+                "COLLECT_MORE_EVIDENCE"
+              ]
+            }
+          },
+          "required": [
+            "conclusion",
+            "attribution_percent",
+            "attribution_interval_low",
+            "attribution_interval_high",
+            "confidence",
+            "evidence_impacts",
+            "decisive_evidence_ids",
+            "next_action"
+          ],
+          "additionalProperties": false
+        },
+        "strict": true
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 924,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 120,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 1044
+    },
+    "user": null,
+    "metadata": {}
+  }
+}
