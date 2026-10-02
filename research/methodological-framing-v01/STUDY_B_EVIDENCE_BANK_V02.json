@@ -1,0 +1,47 @@
+{
+  "version": "Study-B-Calibration-v0.2",
+  "status": "NON_COUNTED_FROZEN_BEFORE_CALIBRATION",
+  "design_note": "Packets are deliberately near the >50% attribution boundary so that evidence-weighting choices, rather than an overwhelmingly dominant conclusion, can be observed.",
+  "structural_role_mapping": {
+    "E1": "raw observed gap",
+    "E2": "covariate-adjusted gap",
+    "E3": "temporal change aligned with target-factor change",
+    "E4": "pre-existing baseline difference",
+    "E5": "negative-control-like target-off condition",
+    "E6": "plausible competing factor",
+    "E7": "controlled/randomized target-factor estimate",
+    "E8": "measurement-system bias estimate"
+  },
+  "packets": [
+    {
+      "id": "B3",
+      "domain": "warehouse operations",
+      "target_claim": "The new picking-assistance scanner explains most (more than half) of Site A's 12% lower post-rollout order-completion time relative to Site B.",
+      "evidence": {
+        "E1": "Across the 8 post-rollout weeks, Site A's mean order-completion time was 12% lower than Site B's.",
+        "E2": "After adjustment for order size, product mix, shift, and staffing level, Site A's estimated advantage was 8%.",
+        "E3": "Relative to its own preceding 6-week baseline, Site A improved by about 7 percentage points in the week the scanner rollout began.",
+        "E4": "During the 6 weeks before rollout, Site A was already about 2% faster than Site B.",
+        "E5": "During four post-rollout shifts when the scanner was unavailable, Site A remained about 3% faster than Site B.",
+        "E6": "Mean worker tenure was 2.0 years at Site A and 1.6 years at Site B; historical internal data associate this tenure difference with roughly a 1-2% completion-time advantage.",
+        "E7": "A randomized crossover involving 60 workers estimated that scanner use reduced individual picking time by 5%, with a 95% confidence interval from 1% to 9%.",
+        "E8": "A timestamp audit found a workflow configuration difference that could make Site A appear about 1 percentage point faster."
+      }
+    },
+    {
+      "id": "B4",
+      "domain": "additive manufacturing",
+      "target_claim": "Printer X's higher nozzle-temperature setting explains most (more than half) of its 10% higher post-change tensile strength relative to Printer Y.",
+      "evidence": {
+        "E1": "Across 8 post-change production batches, coupons from Printer X had 10% higher mean tensile strength than coupons from Printer Y.",
+        "E2": "After adjustment for filament lot, humidity, build orientation, and layer height, the estimated Printer X advantage was 7%.",
+        "E3": "Relative to its own preceding 6-batch baseline, Printer X improved by about 6 percentage points in the batch series when the higher nozzle-temperature setting began.",
+        "E4": "Across six historical batches before the temperature-setting change, Printer X was already about 1.5% stronger than Printer Y.",
+        "E5": "In four post-change runs where Printer X used Printer Y's lower nozzle-temperature setting, Printer X still produced coupons about 2.5% stronger.",
+        "E6": "Printer X's filament was dried for about 5 hours before printing compared with about 4 hours for Printer Y; prior shop data associate that difference with roughly a 1% strength advantage.",
+        "E7": "A randomized paired build of 60 coupon pairs in which only nozzle temperature was changed estimated a 4% strength increase, with a 95% confidence interval from 1% to 7%.",
+        "E8": "A load-frame calibration audit found that the setup used for Printer X can read about 0.7% higher force near the relevant test range."
+      }
+    }
+  ]
+}
