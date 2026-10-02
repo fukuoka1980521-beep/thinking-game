@@ -115,7 +115,7 @@ function withCanonicalStateFacts(body) {
 async function attemptConverseTurn(client, body) {
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
-    prompt: buildConversePrompt(body),
+    prompt: buildConversePrompt(withCanonicalStateFacts(body)),
     responseSchema: buildConverseResponseSchema(Type, body.caseId),
   });
   if (!text) return null;
@@ -134,7 +134,7 @@ async function attemptConverseTurn(client, body) {
 async function attemptNpcExchangeTurn(client, body) {
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
-    prompt: buildNpcExchangePrompt(body),
+    prompt: buildNpcExchangePrompt(withCanonicalStateFacts(body)),
     responseSchema: buildConverseResponseSchema(Type, body.caseId),
   });
   if (!text) return null;
