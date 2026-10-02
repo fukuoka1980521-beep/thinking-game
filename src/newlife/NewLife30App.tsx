@@ -316,7 +316,31 @@ export function NewLife30App({ onExit }: Props) {
     const actionTrace = latestAction ? scene.options.find((o) => latestAction.endsWith(`:${o.id}`))?.label : undefined;
     setPreviousDayTrace(lastPlayerLine?.text ?? immediateActionTrace.current ?? actionTrace ?? null);
     immediateActionTrace.current = null;
-    resetTranscriptFor(advanceDay(state));
+
+    const nextState = advanceDay(state);
+    if (!nextState.finished) {
+      const nextScene = getScene(nextState.day, nextState.day11Phase, nextState.day24Outcome);
+      setAgentMemory((current) =>
+        nextScene.npcsPresent.reduce(
+          (store, npc) =>
+            appendAgentMemory(store, {
+              owner: npc,
+              day: nextState.day,
+              kind: "OBSERVATION",
+              text: [
+                `場面「${nextScene.title}」が始まった。`,
+                nextScene.sceneFocus ? `問題: ${nextScene.sceneFocus.issue}` : "",
+                nextScene.sceneFocus ? `未決: ${nextScene.sceneFocus.decision}` : "",
+                nextScene.text,
+              ].filter(Boolean).join(" "),
+              importance: nextScene.sceneFocus ? 5 : 3,
+              source: "DAY_TRANSITION",
+            }),
+          current,
+        ),
+      );
+    }
+    resetTranscriptFor(nextState);
   }
 
   async function submitFreeText(
