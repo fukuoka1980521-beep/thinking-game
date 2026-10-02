@@ -88,3 +88,32 @@ Not yet established:
 - that automatic reflection frequency is optimal.
 
 Therefore this evidence is **not** a product PASS.
+
+
+## Six-NPC cross-day recall probe
+
+A six-NPC isolated-backend probe was then run with one grounded memory per character.
+
+Transport/shape result:
+- Hina: PASS
+- Yohei: PASS
+- Daisuke: PASS
+- Jin: PASS
+- Miyoko: PASS
+- Fumiko: PASS
+
+Semantic review found a mixed but useful result:
+
+- **Yohei** preserved the actual issue: the problem was not 12/18 themselves but how the reservation/walk-in split reached customers.
+- **Daisuke** correctly recalled the workshop-use question as still unresolved.
+- **Jin** correctly separated the completed two-hour job from any additional work.
+- **Hina** recalled the reservation/storefront distinction and proposed clearer storefront labeling; this is a present proposal, not evidence that the action already occurred.
+- **Miyoko** correctly recalled the cafe-seat issue, but one run still added an unsupported external justification about lunch-time seat occupancy. A later grounding rule now forbids persona/style vocabulary from becoming current world facts.
+- **Fumiko** remembered that the earlier confirmation was vague, but her reply still tended to compress the concrete requirement ("confirm Miyoko's seat conditions before posting") into generic role/confirmation language.
+
+Therefore:
+- six-NPC **technical recall is established**;
+- six-NPC **semantic recall is not yet uniformly product-ready**;
+- the remaining failure is not memory absence but **memory-to-reply re-anchoring fidelity**.
+
+This is consistent with the earlier Semantic Re-Anchoring Failure finding: retrieving the correct episode is necessary but not sufficient; the reply must preserve the episode's concrete object, unresolved decision, and authority.
