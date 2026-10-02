@@ -21,13 +21,15 @@ import shoppingStreetArt from "../assets/newlife/locations/shopping-street.png";
 import yoheiShopArt from "../assets/newlife/locations/yohei-shop.png";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
-import { converseWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
+import { converseWithRefoundation, reflectWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
 import { applyConversationEffectGate } from "./conversationEffectGate";
 import {
   appendAgentMemory,
   createEmptyAgentMemoryStore,
   formatRetrievedMemories,
+  reflectionSourceMemories,
   retrieveAgentMemories,
+  shouldReflect,
   type AgentMemoryStore,
 } from "./agentMemory";
 
@@ -143,6 +145,7 @@ export function NewLife30App({ onExit }: Props) {
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [previousDayTrace, setPreviousDayTrace] = useState<string | null>(null);
   const immediateActionTrace = useRef<string | null>(null);
+  const reflectionInFlightRef = useRef<Set<NpcId>>(new Set());
   const optionDetailsRef = useRef<HTMLDetailsElement | null>(null);
   const transcriptEndRef = useRef<HTMLDivElement | null>(null);
   const [pending, setPending] = useState(false);
@@ -202,6 +205,59 @@ export function NewLife30App({ onExit }: Props) {
 
   function appendMemory(lines: TranscriptLine[]) {
     setMemory((prev) => [...prev, ...lines].slice(-12));
+  }
+
+  function scheduleBackgroundReflection(
+    npc: NpcId,
+    sourceStore: AgentMemoryStore,
+    day: number,
+    canonicalState: NewLife30State,
+  ) {
+    if (!shouldReflect(sourceStore, npc) || reflectionInFlightRef.current.has(npc)) return;
+    const sourceRecords = reflectionSourceMemories(sourceStore, npc, 20);
+    if (sourceRecords.length === 0) return;
+
+    reflectionInFlightRef.current.add(npc);
+    const sourceTexts = sourceRecords.map((record) => `Day ${record.day} [${record.kind}] ${record.text}`);
+    void reflectWithRefoundation(npc, sourceTexts, {
+      day,
+      title: scene.title,
+      text: scene.text,
+      sceneFocus: scene.sceneFocus,
+      canonicalState: {
+        signVersion: canonicalState.signVersion,
+        pickupPlan: canonicalState.pickupPlan,
+        mSeats: canonicalState.mSeats,
+        jWork: canonicalState.jWork,
+        dWorkshop: canonicalState.dWorkshop,
+        fEditor: canonicalState.fEditor,
+        hyFactCheck: canonicalState.hyFactCheck,
+        playerReport: canonicalState.playerReport,
+        publicBlame: canonicalState.publicBlame,
+        encouragementOnly: canonicalState.encouragementOnly,
+        day24Outcome: canonicalState.day24Outcome,
+      },
+    }).then((insights) => {
+      if (insights.length === 0) return;
+      setAgentMemory((current) =>
+        insights.reduce(
+          (next, insight) =>
+            appendAgentMemory(next, {
+              owner: npc,
+              day,
+              kind: "REFLECTION",
+              text: insight.text,
+              importance: 8,
+              source: "REFLECTION",
+            }),
+          current,
+        ),
+      );
+    }).catch(() => {
+      // Reflection is background cognition only. A failure must never block dialogue.
+    }).finally(() => {
+      reflectionInFlightRef.current.delete(npc);
+    });
   }
 
   function startFresh() {
@@ -344,6 +400,7 @@ export function NewLife30App({ onExit }: Props) {
             });
           }
           setAgentMemory(nextAgentMemory);
+          scheduleBackgroundReflection(npc, nextAgentMemory, baseState.day, baseState);
 
           const lines: TranscriptLine[] = [
             { speaker: "\u3042\u306a\u305f", text: playerText },
