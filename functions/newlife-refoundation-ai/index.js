@@ -8,13 +8,17 @@ const {
   buildConverseResponseSchema,
   buildConversePrompt,
   buildNpcExchangePrompt,
+  buildReflectAgentResponseSchema,
+  buildReflectAgentPrompt,
   normalizeConverseResponse,
+  normalizeReflectAgentResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
   buildHealthResponse,
   INTERPRET_SYSTEM_INSTRUCTION,
   NPC_SYSTEM_INSTRUCTION,
   CONVERSE_SYSTEM_INSTRUCTION,
+  REFLECT_AGENT_SYSTEM_INSTRUCTION,
   ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION,
   validateInput,
   applyCors,
@@ -40,6 +44,7 @@ const modelCallLimiter = createFixedWindowLimiter(MAX_MODEL_CALLS_PER_MINUTE, 60
 const INTERPRET_RESPONSE_SCHEMA = buildInterpretResponseSchema(Type);
 const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
 const ORGANIZE_THOUGHT_RESPONSE_SCHEMA = buildOrganizeThoughtResponseSchema(Type);
+const REFLECT_AGENT_RESPONSE_SCHEMA = buildReflectAgentResponseSchema(Type);
 
 let genAiClient;
 function getClient() {
@@ -130,11 +135,29 @@ async function attemptNpcExchangeTurn(client, body) {
   return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
 }
 
+async function attemptReflectAgent(client, body) {
+  const text = await callModel(client, {
+    systemInstruction: REFLECT_AGENT_SYSTEM_INSTRUCTION,
+    prompt: buildReflectAgentPrompt(body),
+    responseSchema: REFLECT_AGENT_RESPONSE_SCHEMA,
+  });
+  if (!text) return null;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+
+  return normalizeReflectAgentResponse(parsed, body.memories.length);
+}
+
 
 /**
  * HTTP Cloud Function (Gen 2). POST-only, stateless. One operation
  * discriminator (`interpret_turn` / `generate_npc_line` / `converse_turn` /
- * `continue_npc_exchange` / `organize_thought`), each returning only the closed shape its client-side
+ * `continue_npc_exchange` / `reflect_agent` / `organize_thought`), each returning only the closed shape its client-side
  * contract validates (`isValidRawTurnClassification` / `isValidRawNpcLine` /
  * `isValidRawConverseResult` / `isValidRawThoughtOrganizerResult`) — never a
  * state delta, never a score. Never logs the request body or player free
@@ -224,6 +247,15 @@ exports.newlifeRefoundationAi = async (req, res) => {
       }
       if (!normalized) {
         res.status(502).json({ error: "unusable_model_response" });
+        return;
+      }
+      res.status(200).json(normalized);
+      return;
+    } else if (req.body.operation === "reflect_agent") {
+      let normalized = await attemptReflectAgent(client, req.body);
+      if (!normalized) normalized = await attemptReflectAgent(client, req.body);
+      if (!normalized) {
+        res.status(502).json({ error: "unusable_reflection_response" });
         return;
       }
       res.status(200).json(normalized);
