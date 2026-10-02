@@ -34,6 +34,11 @@ export interface RefoundationReply {
   uncertainty: RefoundationUncertainty;
 }
 
+export interface RefoundationReflection {
+  text: string;
+  evidenceIndexes: number[];
+}
+
 function localNpc(api: unknown): NpcId | null {
   if (typeof api !== "string") return null;
   const e = Object.entries(API_NPC).find(([, v]) => v === api);
@@ -69,6 +74,45 @@ export interface LiveSceneContext {
 export function supportsRefoundation(npc: NpcId): boolean {
   return Boolean(API_NPC[npc]);
 }
+export async function reflectWithRefoundation(
+  npc: NpcId,
+  memories: string[],
+  scene: LiveSceneContext,
+): Promise<RefoundationReflection[]> {
+  if (!supportsRefoundation(npc) || memories.length === 0) return [];
+  const caseId = CASE_ID;
+  const targetNpc = API_NPC[npc];
+  const result = await post({
+    operation: "reflect_agent",
+    caseId,
+    targetNpc,
+    memories: memories.slice(-20),
+    dynamicState: {
+      day: scene.day,
+      sceneTitle: scene.title,
+      sceneText: scene.text,
+      sceneFocus: scene.sceneFocus ?? null,
+      canonicalState: scene.canonicalState,
+    },
+  });
+  if (!result || !Array.isArray(result.insights)) return [];
+  return result.insights
+    .filter((insight: unknown): insight is { text: string; evidenceIndexes: number[] } =>
+      Boolean(
+        insight &&
+        typeof insight === "object" &&
+        typeof (insight as { text?: unknown }).text === "string" &&
+        Array.isArray((insight as { evidenceIndexes?: unknown }).evidenceIndexes),
+      ),
+    )
+    .map((insight) => ({
+      text: insight.text.trim(),
+      evidenceIndexes: insight.evidenceIndexes.filter((index) => Number.isInteger(index)),
+    }))
+    .filter((insight) => insight.text.length > 0)
+    .slice(0, 3);
+}
+
 export async function converseWithRefoundation(
   npc: NpcId, utterance: string, transcript: DialogueLine[], scene: LiveSceneContext,
 ): Promise<RefoundationReply> {
