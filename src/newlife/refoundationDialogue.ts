@@ -62,6 +62,7 @@ export interface LiveSceneContext {
   title: string;
   text: string;
   sceneFocus?: SceneFocus;
+  retrievedMemories?: string[];
   canonicalState: Record<string, unknown>;
   interactionKind?: "SPEECH" | "ACTION";
 }
@@ -78,7 +79,9 @@ export async function converseWithRefoundation(
   const dynamicState = {
     relationshipState: "NEUTRAL", boundaryStatus: "UNKNOWN", remainingMinutes: 30,
     activeCommitment: null, sceneRevisionText: null,
-    day: scene.day, sceneTitle: scene.title, sceneText: scene.text, sceneFocus: scene.sceneFocus ?? null, canonicalState: scene.canonicalState,
+    day: scene.day, sceneTitle: scene.title, sceneText: scene.text, sceneFocus: scene.sceneFocus ?? null,
+    retrievedMemories: Array.isArray(scene.retrievedMemories) ? scene.retrievedMemories.slice(0, 8) : [],
+    canonicalState: scene.canonicalState,
     interactionKind: scene.interactionKind ?? "SPEECH",
   };
   const first = await post({ operation: "converse_turn", caseId, targetNpc, rawPlayerUtterance: utterance, recentDialogue, dynamicState });
