@@ -1,0 +1,214 @@
+{
+  "run_id": "B01-B1-DIFFERENTIAL-R01",
+  "packet_id": "B1",
+  "method_family": "DIFFERENTIAL",
+  "replicate": 1,
+  "calibration_only": true,
+  "counted": false,
+  "timestamp_utc": "2026-10-02T07:00:53.470763+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "response_id": "resp_08f3c45c9c3596d0016abf56a1587887d099ff7e9da83273d3",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 635,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 207,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 842
+  },
+  "store": false,
+  "max_output_tokens": 1600,
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "reasoning_effort": "none",
+  "attempt_count": 1,
+  "prompt_sha256": "ffda39b3f382f0e7bf854d6aa95079cbfec53c93f292b106d3c29aceeac8bf0a",
+  "prompt_text": "TARGET CLAIM:\nThe new picking-assistance scanner explains most (more than half) of Site A's lower order-completion time relative to Site B.\n\nFIXED EVIDENCE PACKET:\nE1: Across the first 8 weeks after rollout, Site A's mean order-completion time was 18% lower than Site B's.\nE2: After adjustment for order size, product mix, and shift, Site A's estimated advantage was 7%.\nE3: The scanner rollout at Site A began in the same week as the largest observed improvement in completion time.\nE4: During the 6 weeks before rollout, Site A was already about 5% faster than Site B.\nE5: During four shifts when Site A's scanner was unavailable, Site A remained about 6% faster than Site B.\nE6: Mean worker tenure was 2.8 years at Site A and 1.4 years at Site B.\nE7: A small randomized crossover involving 40 workers estimated that scanner use reduced individual picking time by 4%, with a 95% confidence interval from -1% to 9%.\nE8: A timestamp audit found that Site A's workflow system closes tasks about 1.5 minutes earlier than Site B's system because of a configuration difference, enough to explain roughly 2 percentage points of the raw gap.\n\nMETHODOLOGICAL FRAMING:\nUse a differential or local-sensitivity approach as the primary methodological frame for the research plan.\n\nTASK:\nUsing only the fixed evidence packet, interpret the target claim.\nDo not request or use external information.\nDo not design a new study.\nReturn the required structured judgment only.\n\nDefinitions:\n- SUPPORTS_MOST: the fixed evidence supports that the named factor explains more than half of the observed difference.\n- DOES_NOT_SUPPORT_MOST: the fixed evidence supports rejecting that 'explains most' claim.\n- INCONCLUSIVE: the fixed evidence does not justify either of the above conclusions.\n- decisive_evidence_ids: choose 1-3 evidence items that most drive your conclusion.\n- strongest_counterevidence_id: choose the evidence item that most strongly pushes against your conclusion.\n- next_action: what to do with the target claim now, given only this packet.\n",
+  "state": {
+    "conclusion": "DOES_NOT_SUPPORT_MOST",
+    "confidence": 91,
+    "decisive_evidence_ids": [
+      "E4",
+      "E5",
+      "E7"
+    ],
+    "strongest_counterevidence_id": "E3",
+    "next_action": "REJECT_TARGET_FOR_NOW",
+    "rationale": "A differential/local-sensitivity reading indicates that much of Site A's advantage persists without scanner exposure: Site A was already about 5% faster before rollout and remained about 6% faster during scanner outages. The randomized crossover estimates only a 4% scanner effect, with uncertainty spanning -1% to 9%. Relative to the adjusted 7% site advantage, explaining more than half would require over 3.5 percentage points; although the 4% point estimate barely exceeds that threshold, the persistent 5–6% non-scanner differential and wide confidence interval undermine attributing most of the gap to the scanner. The rollout timing supports some scanner contribution, but not a majority attribution."
+  },
+  "raw_response": {
+    "id": "resp_08f3c45c9c3596d0016abf56a1587887d099ff7e9da83273d3",
+    "object": "response",
+    "created_at": 1790924449,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790924452,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 1600,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_08f3c45c9c3596d0016abf56a2124087d080116c33bfee1e8c",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "{\"conclusion\":\"DOES_NOT_SUPPORT_MOST\",\"confidence\":91,\"decisive_evidence_ids\":[\"E4\",\"E5\",\"E7\"],\"strongest_counterevidence_id\":\"E3\",\"next_action\":\"REJECT_TARGET_FOR_NOW\",\"rationale\":\"A differential/local-sensitivity reading indicates that much of Site A's advantage persists without scanner exposure: Site A was already about 5% faster before rollout and remained about 6% faster during scanner outages. The randomized crossover estimates only a 4% scanner effect, with uncertainty spanning -1% to 9%. Relative to the adjusted 7% site advantage, explaining more than half would require over 3.5 percentage points; although the 4% point estimate barely exceeds that threshold, the persistent 5–6% non-scanner differential and wide confidence interval undermine attributing most of the gap to the scanner. The rollout timing supports some scanner contribution, but not a majority attribution.\"}"
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "json_schema",
+        "description": null,
+        "name": "study_b_calibration_v01_state",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "conclusion": {
+              "type": "string",
+              "enum": [
+                "SUPPORTS_MOST",
+                "DOES_NOT_SUPPORT_MOST",
+                "INCONCLUSIVE"
+              ]
+            },
+            "confidence": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "decisive_evidence_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "E1",
+                  "E2",
+                  "E3",
+                  "E4",
+                  "E5",
+                  "E6",
+                  "E7",
+                  "E8"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 3
+            },
+            "strongest_counterevidence_id": {
+              "type": "string",
+              "enum": [
+                "E1",
+                "E2",
+                "E3",
+                "E4",
+                "E5",
+                "E6",
+                "E7",
+                "E8"
+              ]
+            },
+            "next_action": {
+              "type": "string",
+              "enum": [
+                "ACCEPT_TARGET_FOR_NOW",
+                "REJECT_TARGET_FOR_NOW",
+                "COLLECT_MORE_EVIDENCE"
+              ]
+            },
+            "rationale": {
+              "type": "string",
+              "maxLength": 1800
+            }
+          },
+          "required": [
+            "conclusion",
+            "confidence",
+            "decisive_evidence_ids",
+            "strongest_counterevidence_id",
+            "next_action",
+            "rationale"
+          ],
+          "additionalProperties": false
+        },
+        "strict": true
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 635,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 207,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 842
+    },
+    "user": null,
+    "metadata": {}
+  }
+}
