@@ -25,6 +25,7 @@ import { converseWithRefoundation, reflectWithRefoundation, supportsRefoundation
 import { applyConversationEffectGate } from "./conversationEffectGate";
 import {
   appendAgentMemory,
+  buildAgentObservationText,
   createEmptyAgentMemoryStore,
   formatRetrievedMemories,
   reflectionSourceMemories,
@@ -385,7 +386,13 @@ export function NewLife30App({ onExit }: Props) {
             owner: npc,
             day: baseState.day,
             kind: "OBSERVATION",
-            text: `プレイヤーが「${text}」と話した。私は「${live.text}」と答えた。`,
+            text: buildAgentObservationText({
+              sceneTitle: scene.title,
+              sceneFocus: scene.sceneFocus,
+              playerMeaning: live.understoodPlayerMeaning,
+              playerText: text,
+              selfReply: live.text,
+            }),
             importance: exchangeImportance,
             source: worldEffectApplied ? "WORLD_EFFECT" : "PLAYER_SPEECH",
           });
@@ -394,7 +401,13 @@ export function NewLife30App({ onExit }: Props) {
               owner: continuation.npc,
               day: baseState.day,
               kind: "OBSERVATION",
-              text: `プレイヤーが「${text}」と話し、${npcDisplayName(npc)}が「${live.text}」と答えた。私は「${continuation.text}」と返した。`,
+              text: buildAgentObservationText({
+                sceneTitle: scene.title,
+                sceneFocus: scene.sceneFocus,
+                playerMeaning: live.understoodPlayerMeaning,
+                playerText: text,
+                selfReply: `${npcDisplayName(npc)}が「${live.text}」と答えた後、私は「${continuation.text}」と返した。`,
+              }),
               importance: worldEffectApplied ? 8 : 5,
               source: worldEffectApplied ? "WORLD_EFFECT" : "NPC_SPEECH",
             });
@@ -441,7 +454,12 @@ export function NewLife30App({ onExit }: Props) {
           owner: npc,
           day: baseState.day,
           kind: "OBSERVATION",
-          text: `プレイヤーが「${text}」と話した。私は「${result.text}」と答えた。`,
+          text: buildAgentObservationText({
+            sceneTitle: scene.title,
+            sceneFocus: scene.sceneFocus,
+            playerText: text,
+            selfReply: result.text,
+          }),
           importance: freeAction ? 6 : 3,
           source: freeAction ? "WORLD_EFFECT" : "PLAYER_SPEECH",
         }),
