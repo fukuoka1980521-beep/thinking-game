@@ -28,6 +28,7 @@ import {
   buildAgentObservationText,
   createEmptyAgentMemoryStore,
   formatRetrievedMemories,
+  formatRetrievedMemoryAnchors,
   reflectionSourceMemories,
   retrieveAgentMemories,
   shouldReflect,
