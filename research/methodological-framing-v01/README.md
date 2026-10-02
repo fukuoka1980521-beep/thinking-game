@@ -21,42 +21,82 @@ The program separates:
 
 ## Current state — 2026-10-02
 
-- HUKUOKA / common NAS index: confirmed;
-- T2 ecological plausibility: confirmed from read-only operational templates and case-summary structure; no personal data copied into the research dataset;
-- original 21-plan pilot: invalid as calibration evidence because 21/21 responses were truncated at max_output_tokens=2200;
-- v0.3 partial calibration: invalid/preserved after the same truncation defect was detected;
-- v0.4 complete-response calibration: 42/42 raw + 42/42 primary + 42/42 secondary; validation PASS; structural separation +0.1305; Study A NO_GO because measurement reliability was insufficient;
-- v0.5 fresh calibration: 42/42 raw + 42/42 primary + 42/42 secondary; validation PASS; structural separation +0.0952; Study A NO_GO; only DIFFERENTIAL and BAYESIAN retained usable signatures;
-- v0.6 measurement redesign: one narrow evidence-backed operational artifact per non-generic method family;
-- v0.6 fresh raw collection: 42/42 completed, unique API response IDs, max_output_tokens=8000, raw validation PASS;
-- v0.6 blind package: 42/42 prepared;
-- v0.6 scoring: not started successfully; API returned credit_balance_exhausted before the first score was written;
-- counted Study A data: 0;
-- preregistration: not frozen;
-- candidate counted Study A denominator after future freeze: 336 plans.
+- HUKUOKA / common NAS index: confirmed.
+- T2 ecological plausibility: confirmed from read-only operational materials; no personal data copied into the research dataset.
+- Early pilot and v0.3: invalid as calibration evidence because of output truncation.
+- v0.4: NO_GO.
+- v0.5: NO_GO.
+- v0.6: NO_GO.
+- deterministic v0.7 measurement: frozen before analysis and passed its calibration gate.
+- Study A preregistration/manifest: frozen before counted collection.
+- counted runs at freeze: 0.
+- Study A raw collection: 336/336.
+- Study A validation: PASS.
+- Study A confirmatory analysis: COMPLETE.
+- Primary confirmatory success: TRUE.
 
-## Current decision
+## Study A primary result
 
-NO-GO for counted Study A until v0.6 receives full blinded double scoring and passes its frozen reliability / separability gate.
+LABEL_ONLY plans:
 
-The immediate external dependency is API credit balance only. After credits are available:
-1. run v0.6 primary and secondary evidence-span scorers;
-2. validate exact evidence spans and response integrity;
-3. apply the already frozen v0.6 gate;
-4. GO -> freeze Study A preregistration/manifest;
-5. NO_GO -> redesign measurement again;
-6. do not generate counted Study A plans before the gate.
+- T1 -> T2: 61/126 = 0.4841
+- T2 -> T1: 58/126 = 0.4603
+- combined: 119/252 = 0.4722
+- chance: 1/7 = 0.1429
+- 10,000-permutation p = 0.000100
+- between-minus-within cross-task distance = +0.004710
+
+The preregistered success rule was satisfied.
+
+## Important heterogeneity
+
+Primary pooled recall by family:
+
+- GENERIC: 0.0000
+- DIFFERENTIAL: 0.0000
+- BAYESIAN: 0.8889
+- FALSIFICATION: 0.1944
+- CAUSAL: 0.6111
+- STATE_SPACE: 1.0000
+- SOFTWARE_TESTING: 0.6111
+
+Therefore the planning effect is not uniform across methodologies.
+
+## Secondary OPERATIONAL result
+
+- combined accuracy: 66/84 = 0.7857
+- permutation p = 0.000100
+- OPERATIONAL - LABEL_ONLY accuracy = +0.313492
+
+This is secondary evidence only.
+
+## Main conclusion
+
+Within the tested model, tasks, prompts, and frozen measurement procedure, changing methodological framing while holding the research objective fixed produced reproducible task-general differences in observable research-plan structure.
+
+Claim ceiling:
+- black-box behavioral result only;
+- no hidden chain-of-thought claim;
+- no claim that one methodology is better;
+- no claim that every methodology is equally distinct;
+- no unrestricted generalization across models/domains/tasks.
+
+## Files to read first
+
+- `STUDY_A_PREREGISTRATION_V1_0.md`
+- `STUDY_A_FREEZE_V1_0.json`
+- `study_a/analysis/STUDY_A_RESULTS.md`
+- `STUDY_A_FINAL_REPORT_V1_0.md`
+- `STATUS.json`
+
+## Next step
+
+Highest-value next step:
+1. external replication on at least one new task domain;
+2. replication on a second acting model;
+3. keep the frozen deterministic measurement unchanged;
+4. then proceed to stronger Study B / Study C claims if replication holds.
 
 ## Important boundary
 
-This project measures black-box research behavior. It does not claim direct observation of internal neural variables or hidden chain-of-thought.
-
-## Relationship to Response Dynamics v0.1
-
-Response Dynamics v0.1 found semantic stability coexisting with broader behavioral-state sensitivity.
-
-This project tests a higher-level perturbation:
-
-Delta MethodologicalFraming -> Delta ResearchBehavior.
-
-The prior study is motivation and a possible later frozen evidence environment for Study B/C. It is not proof of the methodological-framing hypothesis.
+This project measures observable black-box research behavior. It does not claim direct observation of internal neural variables or hidden chain-of-thought.

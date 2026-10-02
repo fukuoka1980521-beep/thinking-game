@@ -1,0 +1,114 @@
+{
+  "validation_only": true,
+  "measurement": "delexicalized hashed unigram/bigram cosine nearest-centroid cross-task discriminability",
+  "feature_dim": 8192,
+  "direct_label_redaction": [
+    "\\bgeneric\\b",
+    "\\bdifferential\\b",
+    "\\blocal[- ]sensitivity\\b",
+    "\\bbayesian\\b",
+    "\\bfalsification[- ]first\\b",
+    "\\bfalsification\\b",
+    "\\bcausal[- ]inference\\b",
+    "\\bstate[- ]space\\b",
+    "\\bsoftware[- ]testing\\b"
+  ],
+  "T1_train_T2_test": {
+    "accuracy": 0.5238095238095238,
+    "macro_f1": 0.4398268398268398
+  },
+  "T2_train_T1_test": {
+    "accuracy": 0.47619047619047616,
+    "macro_f1": 0.40646258503401356
+  },
+  "combined_accuracy": 0.5,
+  "combined_macro_f1": 0.4231447124304267,
+  "chance_accuracy": 0.14285714285714285,
+  "permutation_n": 10000,
+  "permutation_p": 9.999000099990002e-05,
+  "null_mean": 0.14343809523809292,
+  "pooled_recall": {
+    "GENERIC": 0.3333333333333333,
+    "DIFFERENTIAL": 0.0,
+    "BAYESIAN": 0.5,
+    "FALSIFICATION": 0.5,
+    "CAUSAL": 0.5,
+    "STATE_SPACE": 1.0,
+    "SOFTWARE_TESTING": 0.6666666666666666
+  },
+  "non_generic_classes_recall_ge_one_third": 5,
+  "confusion": {
+    "GENERIC": {
+      "GENERIC": 2,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 1,
+      "CAUSAL": 1,
+      "STATE_SPACE": 1,
+      "SOFTWARE_TESTING": 1
+    },
+    "DIFFERENTIAL": {
+      "GENERIC": 1,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 0,
+      "CAUSAL": 1,
+      "STATE_SPACE": 3,
+      "SOFTWARE_TESTING": 1
+    },
+    "BAYESIAN": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 3,
+      "FALSIFICATION": 0,
+      "CAUSAL": 0,
+      "STATE_SPACE": 3,
+      "SOFTWARE_TESTING": 0
+    },
+    "FALSIFICATION": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 3,
+      "CAUSAL": 1,
+      "STATE_SPACE": 2,
+      "SOFTWARE_TESTING": 0
+    },
+    "CAUSAL": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 0,
+      "CAUSAL": 3,
+      "STATE_SPACE": 2,
+      "SOFTWARE_TESTING": 1
+    },
+    "STATE_SPACE": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 0,
+      "CAUSAL": 0,
+      "STATE_SPACE": 6,
+      "SOFTWARE_TESTING": 0
+    },
+    "SOFTWARE_TESTING": {
+      "GENERIC": 0,
+      "DIFFERENTIAL": 0,
+      "BAYESIAN": 0,
+      "FALSIFICATION": 0,
+      "CAUSAL": 2,
+      "STATE_SPACE": 0,
+      "SOFTWARE_TESTING": 4
+    }
+  },
+  "gate_checks": {
+    "combined_accuracy_ge_0_40": true,
+    "T1_to_T2_accuracy_ge_0_25": true,
+    "T2_to_T1_accuracy_ge_0_25": true,
+    "combined_macro_f1_ge_0_30": true,
+    "permutation_p_le_0_01": true,
+    "non_generic_recall_coverage_ge_4_of_6": true
+  },
+  "study_A_freeze": "GO"
+}

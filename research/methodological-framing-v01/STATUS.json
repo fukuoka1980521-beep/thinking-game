@@ -1,8 +1,8 @@
 {
   "project": "METHODOLOGICAL_FRAMING_V0_1",
   "branch": "research/methodological-framing-v01",
-  "status": "STUDY_A_FROZEN_READY_TO_COLLECT",
-  "counted_empirical_runs": 0,
+  "status": "STUDY_A_COMPLETE_CONFIRMATORY_SUCCESS",
+  "counted_empirical_runs": 336,
   "preregistered": true,
   "claim_ceiling": "black-box observable research-plan behavior; no hidden reasoning-state claim",
   "acting_model": "gpt-5.6-sol",
@@ -21,7 +21,7 @@
       "usable_method_families": 0,
       "structural_separation": -0.031746031746031744
     },
-    "v07": {
+    "v07_frozen_instrument": {
       "gate": "GO",
       "measurement": "judge-free broad-lexicon-masked unigram+bigram TF-IDF cross-task nearest centroid",
       "T1_to_T2": "8/21",
@@ -30,23 +30,37 @@
       "combined_accuracy": 0.5238095238095238,
       "permutation_p": 0.0001,
       "distance_excess": 0.006940709953
+    },
+    "v07_postfreeze_fresh_check": {
+      "status": "NON_COUNTED_SUPPORTING_VALIDATION",
+      "measurement": "delexicalized hashed unigram/bigram cosine nearest-centroid cross-task discriminability",
+      "combined_accuracy": 0.5,
+      "permutation_p": 0.00009999000099990002,
+      "gate": "GO",
+      "note": "not used to alter frozen Study A design"
     }
   },
   "study_A": {
-    "status": "FROZEN_BEFORE_COUNTED_COLLECTION",
+    "status": "COMPLETE",
     "denominator": 336,
+    "validation": "PASS",
     "label_only": 252,
     "operational": 84,
-    "manifest_seed": 20261002,
     "counted_runs_at_freeze": 0,
-    "primary_success_rule": "LABEL_ONLY combined permutation p <= 0.01 and both cross-task directional accuracies > 1/7",
-    "raw_first_writer": true,
-    "max_output_tokens": 8000,
-    "max_workers": 8
+    "primary_confirmatory_success": true,
+    "primary_T1_to_T2_accuracy": 0.48412698412698413,
+    "primary_T2_to_T1_accuracy": 0.4603174603174603,
+    "primary_combined_accuracy": 0.4722222222222222,
+    "primary_permutation_p": 0.00009999000099990002,
+    "primary_distance_excess": 0.00471,
+    "operational_combined_accuracy": 0.7857142857142857,
+    "operational_permutation_p": 0.00009999000099990002,
+    "operational_minus_label_only_accuracy": 0.313492,
+    "heterogeneity_note": "GENERIC and DIFFERENTIAL recall were 0 under the frozen primary classifier; effect is not uniform across framing families"
   },
   "study_B": "DRAFT",
   "study_C": "DRAFT",
-  "next_gate": "COMMIT_AND_PUSH_FREEZE_THEN_COLLECT_EXACTLY_336",
+  "next_gate": "EXTERNAL_REPLICATION_OR_STUDY_B_DESIGN_FREEZE",
   "common_index": "\\\\192.168.11.2\\share\\共有\\AI_COMMON\\REMOTE_DESKTOP_COMMON_INDEX.md",
   "t2_reality_grounding": "PASS_READ_ONLY_NO_PERSONAL_DATA_COPIED"
 }
