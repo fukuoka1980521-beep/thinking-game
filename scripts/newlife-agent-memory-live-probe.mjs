@@ -15,7 +15,10 @@ const browser = await chromium.launch({
 });
 const context = await browser.newContext({ viewport: { width: 1280, height: 960 } });
 await context.addInitScript(() => {
-  localStorage.removeItem("newlife30_save_v1");
+  if (!sessionStorage.getItem("newlife-memory-probe-initialized")) {
+    localStorage.removeItem("newlife30_save_v1");
+    sessionStorage.setItem("newlife-memory-probe-initialized", "1");
+  }
   localStorage.setItem(
     "thinking-game:newlife-ai-dialogue-consent:v1",
     JSON.stringify({ status: "accepted", respondedAt: new Date().toISOString() }),
