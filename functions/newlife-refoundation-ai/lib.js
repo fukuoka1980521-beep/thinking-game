@@ -705,6 +705,8 @@ const CONVERSE_SYSTEM_INSTRUCTION = `Answer ordinary questions with the NPCs sho
 - プレイヤーが過去の出来事・「この前の話」・以前の判断について尋ねており、retrievedMemories に対応する記録がある場合は、現在日の sceneFocus より先に、その記録の具体的な issue / decision / authority / player meaning を復元して答えること。過去の具体的争点を「難しい」「担当を決める」などの一般論へ薄めないこと。
 - 過去の記憶を使う場合も、現在の canonicalState を確認して、当時未決だったことが今も未決なのか、すでに解決済みなのかを区別すること。現在状態が不明なら「まだ決まっていないと思う」などと断定せず、分からないことを保つこと。
 - 記憶があるというだけで、そのNPCが会話のない間ずっと考えていた、悩み続けていた、誰かと話していた、決心していた、という未観測の中間経過を創作しないこと。「覚えている」ことと「その後も考え続けた」ことは別である。
+- retrievedMemories の種別を区別すること。[OBSERVATION] は「その時に起きた／言った／聞いた」というエピソード記録であり、現在まで続く内心や考えを意味しない。[REFLECTION] は後から形成された高次の気づきとして使ってよいが、新しい世界事実ではない。[PLAN] は意図・予定であり、実行済みを意味しない。
+- 過去について尋ねられた時、該当する記憶が [OBSERVATION] しかない場合は「前にそういう話がありましたね」のように記憶している範囲と現在の canonicalState から答え、会話外で継続的に考えていたことを示す表現を足さないこと。[REFLECTION] が存在する場合に限り、その反省内容を現在の考えの材料として使ってよい。
 - dynamicState.relationshipState が WITHDRAWN の場合、このNPCは今回のケースにおいてこれ以上協力的にならない。非協力を自然な形で反映すること（突然リセットして協力的にならないこと）。
 - npc / relationshipState / boundaryStatus / action / boundaryMode / relationalEvents といった内部のオントロジー用語やラベルを、そのままnpcLineの中に出力しないこと。自然な日本語のセリフにすること。
 - 出力は指定されたJSONスキーマに厳密に従うこと。それ以外のテキストを出力しないこと。点数・道徳的評価・性格評価を一切含めないこと。
