@@ -1,4 +1,4 @@
-import { NPC_IDS, type NpcId } from "./types";
+import { NPC_IDS, type NpcId, type SceneFocus } from "./types";
 
 export type AgentMemoryKind = "OBSERVATION" | "REFLECTION" | "PLAN";
 export type AgentMemorySource =
@@ -184,6 +184,29 @@ export function reflectionSourceMemories(
   return memories
     .filter((memory) => memory.createdSeq > lastReflectionSeq && memory.kind !== "REFLECTION")
     .slice(-Math.max(1, limit));
+}
+
+export function buildAgentObservationText(input: {
+  sceneTitle: string;
+  sceneFocus?: SceneFocus;
+  playerMeaning?: string;
+  playerText: string;
+  selfReply: string;
+}): string {
+  const parts = [`場面「${input.sceneTitle}」`];
+  if (input.sceneFocus) {
+    parts.push(`問題: ${input.sceneFocus.issue}`);
+    parts.push(`未決: ${input.sceneFocus.decision}`);
+    parts.push(`権限: ${input.sceneFocus.authority}`);
+  }
+  const meaning = input.playerMeaning?.trim();
+  parts.push(
+    meaning && meaning !== "構造化された意味メタデータは未確定。"
+      ? `プレイヤーの意味: ${meaning}`
+      : `プレイヤー発言: ${input.playerText}`,
+  );
+  parts.push(`私の返答: ${input.selfReply}`);
+  return parts.join(" ");
 }
 
 export function formatRetrievedMemories(selected: RetrievedAgentMemory[]): string[] {
