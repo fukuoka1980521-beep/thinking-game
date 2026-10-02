@@ -1,0 +1,64 @@
+name: Diagnose Study B Structured Output API
+
+on:
+  push:
+    branches:
+      - research/methodological-framing-v01
+    paths:
+      - '.github/workflows/study-b-api-diagnose.yml'
+
+jobs:
+  diagnose:
+    runs-on: [self-hosted, HUKUOKA, research]
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/methodological-framing-v01
+          fetch-depth: 1
+          clean: true
+
+      - name: Reproduce one structured-output request and print API error body
+        working-directory: research/methodological-framing-v01
+        run: |
+          @'
+          import json, os, urllib.request, urllib.error
+          from run_study_b_calibration_v01 import schema, prompt
+
+          key=os.environ.get("OPENAI_API_KEY","").strip()
+          if not key:
+              import winreg
+              with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment") as h:
+                  key=str(winreg.QueryValueEx(h,"OPENAI_API_KEY")[0]).strip()
+
+          methods=json.loads(open("FROZEN_STUDY_A_METHOD_BANK_V1_0.json",encoding="utf-8").read())
+          inst={x["family"]:x["instruction"] for x in methods["conditions"] if x["depth"]=="LABEL_ONLY"}["GENERIC"]
+          packets={x["id"]:x for x in json.loads(open("STUDY_B_EVIDENCE_BANK_V01.json",encoding="utf-8").read())["packets"]}
+          pr=prompt(packets["B1"],inst)
+          body={
+            "model":"gpt-5.6-sol",
+            "input":[{"role":"user","content":[{"type":"input_text","text":pr}]}],
+            "store":False,
+            "max_output_tokens":1600,
+            "temperature":1.0,
+            "top_p":1.0,
+            "reasoning":{"effort":"none"},
+            "text":{"format":{"type":"json_schema","name":"study_b_calibration_v01_state_diag","strict":True,"schema":schema()}}
+          }
+          req=urllib.request.Request(
+              "https://api.openai.com/v1/responses",
+              data=json.dumps(body).encode("utf-8"),
+              headers={"Authorization":f"Bearer {key}","Content-Type":"application/json"},
+              method="POST")
+          try:
+              with urllib.request.urlopen(req,timeout=120) as h:
+                  r=json.loads(h.read().decode())
+                  print("HTTP=200")
+                  print("STATUS="+str(r.get("status")))
+          except urllib.error.HTTPError as e:
+              print("HTTP="+str(e.code))
+              print(e.read().decode("utf-8",errors="replace")[:5000])
+          '@ | python -
