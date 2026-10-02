@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   appendAgentMemory,
+  buildAgentObservationText,
   createEmptyAgentMemoryStore,
   formatRetrievedMemories,
   memoryRelevance,
@@ -132,5 +133,25 @@ describe("NEW LIFE durable agent memory", () => {
     });
     expect(reflectionImportanceSinceLastReflection(store, "miyoko")).toBe(0);
     expect(shouldReflect(store, "miyoko", 20)).toBe(false);
+  });
+
+  it("stores player meaning together with the concrete issue, decision, and authority", () => {
+    const text = buildAgentObservationText({
+      sceneTitle: "担当という言葉",
+      sceneFocus: {
+        issue: "会館前が混んだ時、客がどこで待つか決まっていない。",
+        decision: "喫茶の席を何人まで使えるか事前に確認する。",
+        authority: "席を決めるのは美代子。文子は掲示を担当する。",
+      },
+      playerMeaning: "当日判断にせず、対応できる範囲を先に決めた方がよい。",
+      playerText: "商売ですから、できることとできないことは決めておいた方が良いですよ",
+      selfReply: "人数や条件を先に決めておいた方がよさそうですね。",
+    });
+
+    expect(text).toContain("客がどこで待つか");
+    expect(text).toContain("何人まで");
+    expect(text).toContain("席を決めるのは美代子");
+    expect(text).toContain("プレイヤーの意味");
+    expect(text).toContain("当日判断にせず");
   });
 });
