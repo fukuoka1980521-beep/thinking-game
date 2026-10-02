@@ -647,6 +647,17 @@ describe("functions/newlife-refoundation-ai/lib.js — cross-day episodic recall
     expect(instruction).toContain("考え続けた");
   });
 
+  it("gives OBSERVATION, REFLECTION, and PLAN different epistemic meanings", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toContain("[OBSERVATION]");
+    expect(instruction).toContain("現在まで続く内心や考えを意味しない");
+    expect(instruction).toContain("[REFLECTION]");
+    expect(instruction).toContain("高次の気づき");
+    expect(instruction).toContain("[PLAN]");
+    expect(instruction).toContain("実行済みを意味しない");
+    expect(instruction).toContain("該当する記憶が [OBSERVATION] しかない場合");
+  });
+
   it("keeps current canonical state authoritative over an older recalled episode", () => {
     expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toContain("現在の canonicalState");
     expect(lib.CONVERSE_SYSTEM_INSTRUCTION).toContain("すでに解決済み");
