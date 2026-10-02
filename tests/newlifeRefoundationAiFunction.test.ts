@@ -631,6 +631,22 @@ describe("functions/newlife-refoundation-ai/lib.js — durable recalled-memory b
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — persona versus episodic evidence", () => {
+  it("treats personality models as behavioral priors, not evidence that events happened", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toContain("行動傾向");
+    expect(instruction).toContain("特定の日に実際に起きた出来事の証拠ではない");
+    expect(instruction).toContain("personality prior");
+    expect(instruction).toContain("episodic evidence");
+  });
+
+  it("requires observed sources for concrete past/current event claims", () => {
+    const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
+    expect(instruction).toContain("sceneCanon / dynamicState / recentDialogue / retrievedMemories");
+    expect(instruction).toContain("観測根拠が必要");
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — cross-day episodic recall", () => {
   it("prioritizes a matching recalled episode over the current scene focus when the player explicitly asks about the past", () => {
     const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
