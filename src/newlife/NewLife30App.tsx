@@ -377,6 +377,7 @@ export function NewLife30App({ onExit }: Props) {
             text: scene.text,
             sceneFocus: scene.sceneFocus,
             retrievedMemories: formatRetrievedMemories(retrieval.selected),
+            retrievedMemoryAnchors: formatRetrievedMemoryAnchors(retrieval.selected),
             canonicalState: {
               signVersion: baseState.signVersion,
               pickupPlan: baseState.pickupPlan,
