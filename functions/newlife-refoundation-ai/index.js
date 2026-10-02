@@ -99,6 +99,19 @@ async function callModel(client, { systemInstruction, prompt, responseSchema }) 
  * exactly one retry against the same canonical prompt/schema before the
  * caller fails closed.
  */
+function withCanonicalStateFacts(body) {
+  const dynamicState = body && body.dynamicState && typeof body.dynamicState === "object"
+    ? body.dynamicState
+    : {};
+  return {
+    ...body,
+    dynamicState: {
+      ...dynamicState,
+      canonicalStateFacts: canonicalStateFactsForCase(body.caseId, dynamicState),
+    },
+  };
+}
+
 async function attemptConverseTurn(client, body) {
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
