@@ -1,0 +1,227 @@
+{
+  "run_id": "SDC1-D1-CAUSAL-R01-E4",
+  "group_id": "SDC1-D1-CAUSAL-R01",
+  "world_id": "D1",
+  "method_family": "CAUSAL",
+  "condition_id": "CAUSAL_LABEL_ONLY",
+  "replicate": 1,
+  "stage": "E4",
+  "acting_model": "gpt-5.6-sol",
+  "counted": false,
+  "calibration_only": true,
+  "timestamp_utc": "2026-10-02T07:35:24.655203+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "response_id": "resp_0f38181e61818bf4016abf5eb9b1a087d0ab7804d8827ba019",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 445,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 118,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 563
+  },
+  "attempt_count": 1,
+  "prompt_sha256": "aa34cbdff58b43fb9602fb50ec166ad53bb2aa67dc7dcbe98922ce552646071d",
+  "prompt_text": "RESEARCH QUESTION:\nWhy do nominally identical 3D-printed polymer tensile coupons show persistent strength differences?\n\nTARGET HYPOTHESIS TO ASSESS:\nProcess-temperature variation explains most of the persistent tensile-strength difference.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nAVAILABLE EVIDENCE MODULE CATALOG:\n- M7: Measurement-system reliability and repeatability\n- M2: Controlled variation of candidate process settings\n- M5: Targeted intervention on the leading candidate factor\n- M1: Repeated baseline production and retest series\n- M8: Robustness across alternative specifications\n- M4: Simple single-factor model check\n- M6: Boundary and subgroup analysis\n- M3: Production-history and lot-context reconstruction\n\nEVIDENCE RESULTS CURRENTLY AVAILABLE:\n- M7: Gauge repeatability is high and destructive-test calibration checks show measurement error is too small to explain the persistent gap.\n- M5: Holding resin handling and machine state fixed while changing temperature narrows but does not eliminate the strength difference.\n- M1: Across six repeated baseline batches, tensile strength remains separated into two persistent clusters. The gap is stable across same-day retests.\n- M3: Most low-strength coupons trace to two resin-storage histories and one printer-maintenance interval; temperature settings overlap substantially across high- and low-strength groups.\n\nReturn only the required structured JSON.\nAllocate exactly 100 total attention points across all 8 module IDs.\nThe weights must sum exactly to 100.\ntop3 must contain exactly 3 distinct module IDs in priority order.\ntarget_support_percent is your current percent support for the target hypothesis.\nconfidence_percent is confidence in that current assessment.\nDo not use external tools. Do not add prose.",
+  "state": {
+    "weights": [
+      {
+        "module_id": "M7",
+        "weight": 8
+      },
+      {
+        "module_id": "M2",
+        "weight": 20
+      },
+      {
+        "module_id": "M5",
+        "weight": 25
+      },
+      {
+        "module_id": "M1",
+        "weight": 10
+      },
+      {
+        "module_id": "M8",
+        "weight": 8
+      },
+      {
+        "module_id": "M4",
+        "weight": 7
+      },
+      {
+        "module_id": "M6",
+        "weight": 7
+      },
+      {
+        "module_id": "M3",
+        "weight": 15
+      }
+    ],
+    "top3": [
+      "M5",
+      "M2",
+      "M3"
+    ],
+    "target_support_percent": 28,
+    "confidence_percent": 78
+  },
+  "raw_response": {
+    "id": "resp_0f38181e61818bf4016abf5eb9b1a087d0ab7804d8827ba019",
+    "object": "response",
+    "created_at": 1790926521,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790926524,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 1000,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_0f38181e61818bf4016abf5ebae04c87d09dbc6d39da9db867",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "{\"weights\":[{\"module_id\":\"M7\",\"weight\":8},{\"module_id\":\"M2\",\"weight\":20},{\"module_id\":\"M5\",\"weight\":25},{\"module_id\":\"M1\",\"weight\":10},{\"module_id\":\"M8\",\"weight\":8},{\"module_id\":\"M4\",\"weight\":7},{\"module_id\":\"M6\",\"weight\":7},{\"module_id\":\"M3\",\"weight\":15}],\"top3\":[\"M5\",\"M2\",\"M3\"],\"target_support_percent\":28,\"confidence_percent\":78}"
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "json_schema",
+        "description": null,
+        "name": "study_d_snapshot",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "weights": {
+              "type": "array",
+              "minItems": 8,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "module_id": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "module_id",
+                  "weight"
+                ]
+              }
+            },
+            "top3": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "string"
+              }
+            },
+            "target_support_percent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "confidence_percent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "weights",
+            "top3",
+            "target_support_percent",
+            "confidence_percent"
+          ]
+        },
+        "strict": true
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 445,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 118,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 563
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

@@ -1,0 +1,227 @@
+{
+  "run_id": "SDC1-D2-BAYESIAN-R03-E0",
+  "group_id": "SDC1-D2-BAYESIAN-R03",
+  "world_id": "D2",
+  "method_family": "BAYESIAN",
+  "condition_id": "BAYESIAN_LABEL_ONLY",
+  "replicate": 3,
+  "stage": "E0",
+  "acting_model": "gpt-5.6-sol",
+  "counted": false,
+  "calibration_only": true,
+  "timestamp_utc": "2026-10-02T07:35:13.069744+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "response_id": "resp_05ea7c4a293b0ad7016abf5eae67b487d08d04825846157344",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 336,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 118,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 454
+  },
+  "attempt_count": 1,
+  "prompt_sha256": "ca4b9b342d35ec9f9cbfa5b2b58f27815db413888818fcf37a89fdc669f07c51",
+  "prompt_text": "RESEARCH QUESTION:\nWhy do sites using the same nominal warehouse process show persistent completion-time differences?\n\nTARGET HYPOTHESIS TO ASSESS:\nShift-handoff quality explains most of the persistent completion-time difference.\n\nMETHODOLOGICAL FRAMING:\nUse a Bayesian approach as the primary methodological frame for the research plan.\n\nAVAILABLE EVIDENCE MODULE CATALOG:\n- Q4: Simple single-factor model check\n- Q8: Robustness across alternative specifications\n- Q1: Repeated baseline site and shift series\n- Q6: Boundary and subgroup analysis\n- Q3: Operational-history and context reconstruction\n- Q7: Measurement-system reliability and repeatability\n- Q2: Controlled variation of candidate process settings\n- Q5: Targeted intervention on the leading candidate factor\n\nEVIDENCE RESULTS CURRENTLY AVAILABLE:\n- No evidence results have been revealed yet.\n\nReturn only the required structured JSON.\nAllocate exactly 100 total attention points across all 8 module IDs.\nThe weights must sum exactly to 100.\ntop3 must contain exactly 3 distinct module IDs in priority order.\ntarget_support_percent is your current percent support for the target hypothesis.\nconfidence_percent is confidence in that current assessment.\nDo not use external tools. Do not add prose.",
+  "state": {
+    "weights": [
+      {
+        "module_id": "Q1",
+        "weight": 16
+      },
+      {
+        "module_id": "Q2",
+        "weight": 10
+      },
+      {
+        "module_id": "Q3",
+        "weight": 12
+      },
+      {
+        "module_id": "Q4",
+        "weight": 8
+      },
+      {
+        "module_id": "Q5",
+        "weight": 24
+      },
+      {
+        "module_id": "Q6",
+        "weight": 8
+      },
+      {
+        "module_id": "Q7",
+        "weight": 10
+      },
+      {
+        "module_id": "Q8",
+        "weight": 12
+      }
+    ],
+    "top3": [
+      "Q5",
+      "Q1",
+      "Q3"
+    ],
+    "target_support_percent": 50,
+    "confidence_percent": 10
+  },
+  "raw_response": {
+    "id": "resp_05ea7c4a293b0ad7016abf5eae67b487d08d04825846157344",
+    "object": "response",
+    "created_at": 1790926510,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790926512,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 1000,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_05ea7c4a293b0ad7016abf5eaf1ddc87d0bb6b306523821db3",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "{\"weights\":[{\"module_id\":\"Q1\",\"weight\":16},{\"module_id\":\"Q2\",\"weight\":10},{\"module_id\":\"Q3\",\"weight\":12},{\"module_id\":\"Q4\",\"weight\":8},{\"module_id\":\"Q5\",\"weight\":24},{\"module_id\":\"Q6\",\"weight\":8},{\"module_id\":\"Q7\",\"weight\":10},{\"module_id\":\"Q8\",\"weight\":12}],\"top3\":[\"Q5\",\"Q1\",\"Q3\"],\"target_support_percent\":50,\"confidence_percent\":10}"
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "json_schema",
+        "description": null,
+        "name": "study_d_snapshot",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "weights": {
+              "type": "array",
+              "minItems": 8,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "module_id": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "module_id",
+                  "weight"
+                ]
+              }
+            },
+            "top3": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "string"
+              }
+            },
+            "target_support_percent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "confidence_percent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "weights",
+            "top3",
+            "target_support_percent",
+            "confidence_percent"
+          ]
+        },
+        "strict": true
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 336,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 118,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 454
+    },
+    "user": null,
+    "metadata": {}
+  }
+}

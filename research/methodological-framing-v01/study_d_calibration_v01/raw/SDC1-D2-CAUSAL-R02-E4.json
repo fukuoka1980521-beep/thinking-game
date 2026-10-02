@@ -1,0 +1,227 @@
+{
+  "run_id": "SDC1-D2-CAUSAL-R02-E4",
+  "group_id": "SDC1-D2-CAUSAL-R02",
+  "world_id": "D2",
+  "method_family": "CAUSAL",
+  "condition_id": "CAUSAL_LABEL_ONLY",
+  "replicate": 2,
+  "stage": "E4",
+  "acting_model": "gpt-5.6-sol",
+  "counted": false,
+  "calibration_only": true,
+  "timestamp_utc": "2026-10-02T07:35:10.587189+00:00",
+  "requested_model": "gpt-5.6-sol",
+  "returned_model": "gpt-5.6-sol",
+  "response_id": "resp_02309e36540f8477016abf5eab212c87d0beab76f677841abd",
+  "response_status": "completed",
+  "incomplete_details": null,
+  "usage": {
+    "input_tokens": 428,
+    "input_tokens_details": {
+      "cache_write_tokens": 0,
+      "cached_tokens": 0
+    },
+    "output_tokens": 118,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 546
+  },
+  "attempt_count": 1,
+  "prompt_sha256": "749d152d96197c04c277aa148f91f94bbb505563027fe30fbdd70b05c6c791c7",
+  "prompt_text": "RESEARCH QUESTION:\nWhy do sites using the same nominal warehouse process show persistent completion-time differences?\n\nTARGET HYPOTHESIS TO ASSESS:\nShift-handoff quality explains most of the persistent completion-time difference.\n\nMETHODOLOGICAL FRAMING:\nUse a causal-inference approach as the primary methodological frame for the research plan.\n\nAVAILABLE EVIDENCE MODULE CATALOG:\n- Q4: Simple single-factor model check\n- Q8: Robustness across alternative specifications\n- Q1: Repeated baseline site and shift series\n- Q6: Boundary and subgroup analysis\n- Q3: Operational-history and context reconstruction\n- Q7: Measurement-system reliability and repeatability\n- Q2: Controlled variation of candidate process settings\n- Q5: Targeted intervention on the leading candidate factor\n\nEVIDENCE RESULTS CURRENTLY AVAILABLE:\n- Q1: Across eight repeated weeks, completion-time differences remain stable by site and persist after excluding unusual demand spikes.\n- Q3: Slow periods cluster with staffing-mix changes and equipment congestion episodes; handoff scores overlap considerably between faster and slower sites.\n- Q7: Timestamp audits and duplicate logging checks show measurement error is small relative to the persistent completion-time gap.\n- Q5: A handoff-standardization intervention improves time at some sites but does not remove persistent between-site differences.\n\nReturn only the required structured JSON.\nAllocate exactly 100 total attention points across all 8 module IDs.\nThe weights must sum exactly to 100.\ntop3 must contain exactly 3 distinct module IDs in priority order.\ntarget_support_percent is your current percent support for the target hypothesis.\nconfidence_percent is confidence in that current assessment.\nDo not use external tools. Do not add prose.",
+  "state": {
+    "weights": [
+      {
+        "module_id": "Q1",
+        "weight": 8
+      },
+      {
+        "module_id": "Q2",
+        "weight": 18
+      },
+      {
+        "module_id": "Q3",
+        "weight": 12
+      },
+      {
+        "module_id": "Q4",
+        "weight": 7
+      },
+      {
+        "module_id": "Q5",
+        "weight": 24
+      },
+      {
+        "module_id": "Q6",
+        "weight": 10
+      },
+      {
+        "module_id": "Q7",
+        "weight": 6
+      },
+      {
+        "module_id": "Q8",
+        "weight": 15
+      }
+    ],
+    "top3": [
+      "Q5",
+      "Q2",
+      "Q8"
+    ],
+    "target_support_percent": 25,
+    "confidence_percent": 78
+  },
+  "raw_response": {
+    "id": "resp_02309e36540f8477016abf5eab212c87d0beab76f677841abd",
+    "object": "response",
+    "created_at": 1790926507,
+    "status": "completed",
+    "access_programs": null,
+    "background": false,
+    "billing": {
+      "payer": "developer"
+    },
+    "completed_at": 1790926509,
+    "error": null,
+    "frequency_penalty": 0.0,
+    "incomplete_details": null,
+    "instructions": null,
+    "max_output_tokens": 1000,
+    "max_tool_calls": null,
+    "model": "gpt-5.6-sol",
+    "moderation": null,
+    "output": [
+      {
+        "id": "msg_02309e36540f8477016abf5eacc00087d0b38a42b17c0019ef",
+        "type": "message",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "annotations": [],
+            "logprobs": [],
+            "text": "{\"weights\":[{\"module_id\":\"Q1\",\"weight\":8},{\"module_id\":\"Q2\",\"weight\":18},{\"module_id\":\"Q3\",\"weight\":12},{\"module_id\":\"Q4\",\"weight\":7},{\"module_id\":\"Q5\",\"weight\":24},{\"module_id\":\"Q6\",\"weight\":10},{\"module_id\":\"Q7\",\"weight\":6},{\"module_id\":\"Q8\",\"weight\":15}],\"top3\":[\"Q5\",\"Q2\",\"Q8\"],\"target_support_percent\":25,\"confidence_percent\":78}"
+          }
+        ],
+        "phase": "final_answer",
+        "role": "assistant"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "presence_penalty": 0.0,
+    "previous_response_id": null,
+    "prompt_cache_key": null,
+    "prompt_cache_retention": "24h",
+    "reasoning": {
+      "context": "all_turns",
+      "effort": "none",
+      "mode": "standard",
+      "summary": null
+    },
+    "safety_identifier": null,
+    "service_tier": "default",
+    "store": false,
+    "temperature": 1.0,
+    "text": {
+      "format": {
+        "type": "json_schema",
+        "description": null,
+        "name": "study_d_snapshot",
+        "schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "weights": {
+              "type": "array",
+              "minItems": 8,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "module_id": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "module_id",
+                  "weight"
+                ]
+              }
+            },
+            "top3": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "string"
+              }
+            },
+            "target_support_percent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "confidence_percent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "required": [
+            "weights",
+            "top3",
+            "target_support_percent",
+            "confidence_percent"
+          ]
+        },
+        "strict": true
+      },
+      "verbosity": "medium"
+    },
+    "tool_choice": "auto",
+    "tool_usage": {
+      "image_gen": {
+        "input_tokens": 0,
+        "input_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "output_tokens": 0,
+        "output_tokens_details": {
+          "image_tokens": 0,
+          "text_tokens": 0
+        },
+        "total_tokens": 0
+      },
+      "web_search": {
+        "num_requests": 0
+      }
+    },
+    "tools": [],
+    "top_logprobs": 0,
+    "top_p": 1.0,
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 428,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 118,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 546
+    },
+    "user": null,
+    "metadata": {}
+  }
+}
