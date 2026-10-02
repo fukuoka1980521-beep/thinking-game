@@ -18,6 +18,8 @@ export interface AgentMemoryRecord {
   createdSeq: number;
   lastAccessSeq: number;
   source: AgentMemorySource;
+  focusSnapshot?: SceneFocus;
+  playerMeaning?: string;
 }
 
 export type AgentMemoryStore = Record<NpcId, AgentMemoryRecord[]>;
@@ -207,6 +209,26 @@ export function buildAgentObservationText(input: {
   );
   parts.push(`私の返答: ${input.selfReply}`);
   return parts.join(" ");
+}
+
+export interface RetrievedMemoryAnchor {
+  day: number;
+  kind: AgentMemoryKind;
+  issue?: string;
+  decision?: string;
+  authority?: string;
+  playerMeaning?: string;
+}
+
+export function formatRetrievedMemoryAnchors(selected: RetrievedAgentMemory[]): RetrievedMemoryAnchor[] {
+  return selected.map(({ record }) => ({
+    day: record.day,
+    kind: record.kind,
+    issue: record.focusSnapshot?.issue,
+    decision: record.focusSnapshot?.decision,
+    authority: record.focusSnapshot?.authority,
+    playerMeaning: record.playerMeaning,
+  }));
 }
 
 export function formatRetrievedMemories(selected: RetrievedAgentMemory[]): string[] {
