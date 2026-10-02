@@ -68,6 +68,14 @@ export interface LiveSceneContext {
   text: string;
   sceneFocus?: SceneFocus;
   retrievedMemories?: string[];
+  retrievedMemoryAnchors?: Array<{
+    day: number;
+    kind: string;
+    issue?: string;
+    decision?: string;
+    authority?: string;
+    playerMeaning?: string;
+  }>;
   canonicalState: Record<string, unknown>;
   interactionKind?: "SPEECH" | "ACTION";
 }
@@ -128,6 +136,7 @@ export async function converseWithRefoundation(
     activeCommitment: null, sceneRevisionText: null,
     day: scene.day, sceneTitle: scene.title, sceneText: scene.text, sceneFocus: scene.sceneFocus ?? null,
     retrievedMemories: Array.isArray(scene.retrievedMemories) ? scene.retrievedMemories.slice(0, 8) : [],
+    retrievedMemoryAnchors: Array.isArray(scene.retrievedMemoryAnchors) ? scene.retrievedMemoryAnchors.slice(0, 8) : [],
     canonicalState: scene.canonicalState,
     interactionKind: scene.interactionKind ?? "SPEECH",
   };
