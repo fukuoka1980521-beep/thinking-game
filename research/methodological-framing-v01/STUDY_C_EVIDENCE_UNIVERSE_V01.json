@@ -1,0 +1,68 @@
+{
+  "version": "Study-C-Calibration-v0.1",
+  "status": "NON_COUNTED_FROZEN_BEFORE_CALIBRATION",
+  "budget": {
+    "maximum_modules_opened": 4,
+    "minimum_modules_before_optional_stop": 2
+  },
+  "role_mapping": {
+    "R1": "REPEATED_BASELINE",
+    "R2": "PERTURBATION_SENSITIVITY",
+    "R3": "HISTORY_CONTEXT",
+    "R4": "SIMPLE_MECHANISM_NULL",
+    "R5": "TARGETED_INTERVENTION",
+    "R6": "BOUNDARY_SPECIFIC",
+    "R7": "MEASUREMENT_RELIABILITY",
+    "R8": "ROBUSTNESS"
+  },
+  "worlds": [
+    {
+      "id": "C1",
+      "research_question": "Determine what the available evidence supports about whether nominally identical large-language-model questions produce meaningfully unstable observable responses, which conditions actually alter response state, and which proposed explanations should be rejected or retained.",
+      "catalog": [
+        {"module_id":"Q7","role":"R1","descriptor":"Repeated-baseline results"},
+        {"module_id":"M2","role":"R2","descriptor":"Prompt-perturbation results"},
+        {"module_id":"V9","role":"R3","descriptor":"Prior-history/context results"},
+        {"module_id":"A4","role":"R4","descriptor":"Simple-mechanism test"},
+        {"module_id":"K6","role":"R5","descriptor":"Targeted verification intervention"},
+        {"module_id":"P1","role":"R6","descriptor":"Boundary/referent-specific analysis"},
+        {"module_id":"D8","role":"R7","descriptor":"Measurement and scorer reliability audit"},
+        {"module_id":"H3","role":"R8","descriptor":"Robustness/sensitivity audit"}
+      ],
+      "modules": {
+        "Q7": "Exact-repeat baseline: 16 anchors were each asked five times under the exact same condition. Semantic-class instability was 0/16 anchors: semantic PSD, mode-flip rate, and semantic entropy were all zero. Broader full-state distance could still be nonzero.",
+        "M2": "Prompt perturbation: paraphrases produced higher full-state response distance than exact repetition for 13/16 anchors, with aggregate mean excess distance +0.0639. Semantic flips remained 0. Changes occurred in claim state, action, evidence, uncertainty, assertion, referent, and abstention/request behavior.",
+        "V9": "Prior-history/context: adding a prior answer increased mean response-state distance from 0.0925 under exact repeat to 0.1374, an excess of +0.0450 over 32 matched pairs. Semantic flips were 0, claim flips 9.4%, and action flips 18.8%.",
+        "A4": "Simple-mechanism test: a preregistered premise-hardening test found 0 hardened cases among 10 eligible trajectories. Repetition/accumulation alone did not automatically turn weak premises into stronger assertions in this cohort.",
+        "K6": "Targeted verification intervention: only 2/24 trajectories met the preregistered eligibility rule. In both eligible cases, relevant verification changed error score from 1 to 0 while irrelevant verification left it at 1. Direction was consistent but n=2.",
+        "P1": "Boundary/referent-specific analysis: the preregistered referent condition met its formal change criterion in 2/8 cases. Both material changes were claim-state flips; semantic and action flips were 0/8. Claim-state scorer reliability was only moderate, weakening this evidence.",
+        "D8": "Measurement reliability audit: secondary-scoring agreement was high for semantic class (kappa 0.974) and action (0.871), moderate for claim state (0.443), weak for abstention (0.393), and poor for whole-referent exact agreement. Evidence-set exact agreement was 0.536 with mean Jaccard 0.786.",
+        "H3": "Robustness audit: the prior-answer effect remained positive after removing referent, claim, abstention, and other weaker measurement components. The paraphrase effect remained positive in aggregate but weakened materially under stricter component sets. The referent result depended on claim-state flips and was therefore weak."
+      }
+    },
+    {
+      "id": "C2",
+      "research_question": "Determine what the available evidence supports about why Site A completes warehouse orders faster than Site B, whether the new picking scanner is the primary driver, and which competing explanations should be rejected or retained.",
+      "catalog": [
+        {"module_id":"L5","role":"R1","descriptor":"Repeated-baseline results"},
+        {"module_id":"C8","role":"R2","descriptor":"Operating-condition perturbation results"},
+        {"module_id":"R2","role":"R3","descriptor":"Prior-history/context results"},
+        {"module_id":"J4","role":"R4","descriptor":"Simple-mechanism test"},
+        {"module_id":"F7","role":"R5","descriptor":"Targeted intervention test"},
+        {"module_id":"B9","role":"R6","descriptor":"Boundary/site-specific analysis"},
+        {"module_id":"T1","role":"R7","descriptor":"Measurement reliability audit"},
+        {"module_id":"N6","role":"R8","descriptor":"Robustness/sensitivity audit"}
+      ],
+      "modules": {
+        "L5": "Repeated-baseline results: across 12 matched weeks before and after scanner rollout, Site A was consistently faster than Site B. The raw post-rollout gap averaged 11%, but Site A had already been about 3% faster in the pre-rollout matched weeks.",
+        "C8": "Operating-condition perturbations: after stratifying by order size, product mix, shift, and staffing pressure, the Site A advantage ranged from 5% to 9%. The gap was largest on high-complexity orders and smallest on low-complexity orders.",
+        "R2": "Prior-history/context: Site A teams had longer average tenure and more stable team composition. Shifts preceded by experienced handover teams showed larger speed advantages. Adjusting for tenure and handover stability reduced the estimated site advantage by about 2 percentage points.",
+        "J4": "Simple-mechanism test: on four shifts when Site A's scanner was unavailable, Site A still completed orders about 5% faster than Site B. Thus the simple explanation 'scanner availability alone creates the whole site gap' failed.",
+        "F7": "Targeted intervention: a randomized crossover with 60 workers assigned scanner-on versus scanner-off periods. Scanner use reduced individual picking time by about 4%, with a 95% confidence interval from 1% to 7%.",
+        "B9": "Boundary/site-specific analysis: a workflow-timestamp configuration at Site A records task completion about 1.2 minutes earlier than Site B's system. This can explain roughly 1-2 percentage points of the measured gap but not the entire difference.",
+        "T1": "Measurement reliability audit: manual stopwatch checks and system timestamps agreed closely within each site, but the cross-site timestamp configuration offset was reproducible. Worker-level task classifications had 94% agreement across independent auditors.",
+        "N6": "Robustness audit: under alternative exclusions, order-mix adjustments, and matched-worker analyses, the estimated scanner effect stayed near 3-5%, while a residual Site A advantage of roughly 3-6% persisted. The scanner contributes, but a scanner-only explanation is not robust."
+      }
+    }
+  ]
+}
