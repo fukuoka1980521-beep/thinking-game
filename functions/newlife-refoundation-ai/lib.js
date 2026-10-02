@@ -13,7 +13,7 @@
  * response ontology or character set, and neither of those functions
  * imports anything from here.
  *
- * One function, five operations:
+ * One function, six operations:
  *  - `interpret_turn` returns only a `TurnClassification` (+ optional
  *    `personalTrackSignal`) — never a state delta, never an NPC line.
  *    Retained for compatibility/testing (V37 §7); no longer the primary
@@ -34,6 +34,9 @@
  *  - `continue_npc_exchange` (V41) continues a bounded NPC-to-NPC exchange
  *    only when the characters can make concrete progress without inventing
  *    player consent or authority.
+ *  - `reflect_agent` performs background-only per-NPC reflection over bounded
+ *    durable memories. It returns higher-level insights with evidence indexes
+ *    and never mutates canonical state or speaks to the player.
  *  - `organize_thought` (V37 §5, a separate layer) never speaks as an NPC
  *    and never invents facts; returns `{known, possible, unknown, options,
  *    nextCheck}` problem-solving support, distinct from character dialogue.
@@ -114,7 +117,7 @@ const MAX_UTTERANCE_LENGTH = 400;
 const MAX_CASE_CONTEXT_LENGTH = 2000;
 const MAX_SCENE_CONTEXT_LENGTH = 2000;
 
-const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "continue_npc_exchange", "organize_thought"];
+const OPERATIONS = ["interpret_turn", "generate_npc_line", "converse_turn", "continue_npc_exchange", "reflect_agent", "organize_thought"];
 
 // V40. Deployment identity/health surface for the permanent GitHub Actions ->
 // isolated-backend route: lets a client (e.g. the human-test page) confirm
@@ -162,6 +165,10 @@ const MAX_NEXT_CHECK_LENGTH = 200;
 const MAX_NPC_EXCHANGE_DEPTH = 3;
 const MAX_SCENE_REVISION_LENGTH = 1400;
 const MAX_SCENE_REVISION_SUMMARY_LENGTH = 300;
+const MAX_REFLECTION_MEMORIES = 20;
+const MAX_REFLECTION_MEMORY_LENGTH = 500;
+const MAX_REFLECTION_INSIGHTS = 3;
+const MAX_REFLECTION_INSIGHT_LENGTH = 300;
 
 /**
  * V37 §1 CANONICAL WORLD MODEL. Authored, deterministic, server-owned.
