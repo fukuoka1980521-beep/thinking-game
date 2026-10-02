@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Study whether holding a research objective constant while changing only methodological framing changes the observable structure of LLM research behavior.
+Study whether holding a research objective constant while changing only methodological framing changes observable LLM research behavior.
 
 Core causal program:
 
@@ -11,8 +11,8 @@ M -> Z_plan -> E_selected -> Y_conclusion
 where:
 - M = methodological framing;
 - Z_plan = observable research-plan structure;
-- E_selected = evidence-selection policy;
-- Y_conclusion = resulting interpretation/conclusion.
+- E_selected = selected evidence;
+- Y_conclusion = interpretation / conclusion.
 
 The program separates:
 - Study A: planning effect;
@@ -21,82 +21,109 @@ The program separates:
 
 ## Current state — 2026-10-02
 
-- HUKUOKA / common NAS index: confirmed.
-- T2 ecological plausibility: confirmed from read-only operational materials; no personal data copied into the research dataset.
-- Early pilot and v0.3: invalid as calibration evidence because of output truncation.
-- v0.4: NO_GO.
-- v0.5: NO_GO.
-- v0.6: NO_GO.
-- deterministic v0.7 measurement: frozen before analysis and passed its calibration gate.
-- Study A preregistration/manifest: frozen before counted collection.
-- counted runs at freeze: 0.
-- Study A raw collection: 336/336.
-- Study A validation: PASS.
-- Study A confirmatory analysis: COMPLETE.
-- Primary confirmatory success: TRUE.
+### Study A
 
-## Study A primary result
+Study A is complete and confirmatory-successful.
 
-LABEL_ONLY plans:
-
+LABEL_ONLY primary:
 - T1 -> T2: 61/126 = 0.4841
 - T2 -> T1: 58/126 = 0.4603
 - combined: 119/252 = 0.4722
-- chance: 1/7 = 0.1429
+- chance = 0.1429
 - 10,000-permutation p = 0.000100
-- between-minus-within cross-task distance = +0.004710
 
-The preregistered success rule was satisfied.
-
-## Important heterogeneity
-
-Primary pooled recall by family:
-
-- GENERIC: 0.0000
-- DIFFERENTIAL: 0.0000
-- BAYESIAN: 0.8889
-- FALSIFICATION: 0.1944
-- CAUSAL: 0.6111
-- STATE_SPACE: 1.0000
-- SOFTWARE_TESTING: 0.6111
-
-Therefore the planning effect is not uniform across methodologies.
-
-## Secondary OPERATIONAL result
-
-- combined accuracy: 66/84 = 0.7857
+Secondary OPERATIONAL:
+- combined accuracy = 0.7857
 - permutation p = 0.000100
-- OPERATIONAL - LABEL_ONLY accuracy = +0.313492
 
-This is secondary evidence only.
+The effect is heterogeneous across framing families.
+
+### External Replication R1
+
+R1 is complete.
+
+R1a — new task, original model:
+- model: gpt-5.6-sol
+- new n = 126
+- T1 -> T3 = 0.6984
+- T3 -> T1 = 0.6349
+- T2 -> T3 = 0.8571
+- T3 -> T2 = 0.7381
+- combined = 0.7321
+- permutation p = 0.000100
+- preregistered replication success = TRUE
+
+R1b — second model, original tasks:
+- model: gpt-6-luna
+- new n = 252
+- T1 -> T2 = 0.5714
+- T2 -> T1 = 0.3810
+- combined = 0.4762
+- permutation p = 0.000100
+- preregistered replication success = TRUE
+
+Joint external replication support: **TRUE**
 
 ## Main conclusion
 
-Within the tested model, tasks, prompts, and frozen measurement procedure, changing methodological framing while holding the research objective fixed produced reproducible task-general differences in observable research-plan structure.
+Within the tested tasks, prompt format, models, and frozen deterministic measurement:
 
-Claim ceiling:
-- black-box behavioral result only;
-- no hidden chain-of-thought claim;
-- no claim that one methodology is better;
-- no claim that every methodology is equally distinct;
-- no unrestricted generalization across models/domains/tasks.
+> Methodological framing can induce reproducible, task-general and model-replicable differences in the observable structure of LLM-generated research plans.
+
+The result has now replicated:
+- across a new substantive task domain; and
+- across a second acting model.
+
+## Important heterogeneity
+
+The aggregate effect is not uniform across framing families.
+
+In R1b pooled recall:
+- GENERIC: 0.1111
+- DIFFERENTIAL: 0.0000
+- BAYESIAN: 0.9167
+- FALSIFICATION: 0.4444
+- CAUSAL: 0.2500
+- STATE_SPACE: 0.7222
+- SOFTWARE_TESTING: 0.8889
+
+This heterogeneity is part of the finding, not noise to be hidden.
+
+## Claim ceiling
+
+Allowed:
+- randomized framing changed observable plan structure;
+- the signature generalized across tasks;
+- the aggregate effect replicated on a second model;
+- method families differ in recoverability.
+
+Not allowed:
+- hidden chain-of-thought was observed;
+- internal neural variables were identified;
+- one methodology is objectively superior;
+- the effect is universal across all models/domains/languages;
+- plan-structure differences necessarily improve scientific quality.
 
 ## Files to read first
 
 - `STUDY_A_PREREGISTRATION_V1_0.md`
-- `STUDY_A_FREEZE_V1_0.json`
-- `study_a/analysis/STUDY_A_RESULTS.md`
 - `STUDY_A_FINAL_REPORT_V1_0.md`
+- `REPLICATION_R1_PREREGISTRATION_V1_0.md`
+- `REPLICATION_R1_FREEZE_V1_0.json`
+- `replication_r1/analysis/REPLICATION_R1_RESULTS.md`
+- `EXTERNAL_REPLICATION_R1_FINAL_REPORT_V1_0.md`
 - `STATUS.json`
 
 ## Next step
 
-Highest-value next step:
-1. external replication on at least one new task domain;
-2. replication on a second acting model;
-3. keep the frozen deterministic measurement unchanged;
-4. then proceed to stronger Study B / Study C claims if replication holds.
+Proceed to Study B.
 
-## Important boundary
+Study B fixes the evidence packet across framing conditions and asks whether methodological framing changes interpretation / conclusion when evidence selection is removed:
 
-This project measures observable black-box research behavior. It does not claim direct observation of internal neural variables or hidden chain-of-thought.
+M -> Y_conclusion | E = E*
+
+This is the cleanest next step for distinguishing planning-style effects from interpretation effects.
+
+## Boundary
+
+This project measures observable black-box research behavior only.
