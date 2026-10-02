@@ -1,0 +1,141 @@
+name: External Replication R1 on HUKUOKA
+
+on:
+  push:
+    branches:
+      - research/methodological-framing-v01
+    paths:
+      - '.github/workflows/replication-r1-hukuoka.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  replicate:
+    runs-on: self-hosted
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/methodological-framing-v01
+          fetch-depth: 0
+          clean: true
+
+      - name: Confirm canonical runner
+        run: |
+          Write-Output "COMPUTERNAME=$env:COMPUTERNAME"
+          if ($env:COMPUTERNAME -ne 'HUKUOKA') { throw "Wrong runner: $env:COMPUTERNAME" }
+          python --version
+
+      - name: Generate frozen manifests and freeze record
+        working-directory: research/methodological-framing-v01
+        run: |
+          @'
+          from pathlib import Path
+          from datetime import datetime, timezone
+          import hashlib, json, random
+
+          B=Path(".")
+          for p in (B/"replication_r1a"/"raw", B/"replication_r1b"/"raw"):
+              if p.exists() and any(p.glob("*.json")):
+                  raise SystemExit("refuse freeze: counted R1 raw already exists")
+
+          families=["GENERIC","DIFFERENTIAL","BAYESIAN","FALSIFICATION","CAUSAL","STATE_SPACE","SOFTWARE_TESTING"]
+          condition={f:f+"_LABEL_ONLY" for f in families}
+
+          a=[]
+          for fam in families:
+              for rep in range(1,19):
+                  a.append({"acting_model":"gpt-5.6-sol","cohort":"R1A","condition_id":condition[fam],"instruction_depth":"LABEL_ONLY","method_family":fam,"replicate":rep,"run_id":f"R1A-T3-{fam}-R{rep:02d}","task_id":"T3"})
+          random.Random(2026100201).shuffle(a)
+
+          b=[]
+          for task in ("T1","T2"):
+              for fam in families:
+                  for rep in range(1,19):
+                      b.append({"acting_model":"gpt-6-luna","cohort":"R1B","condition_id":condition[fam],"instruction_depth":"LABEL_ONLY","method_family":fam,"replicate":rep,"run_id":f"R1B-{task}-{fam}-R{rep:02d}","task_id":task})
+          random.Random(2026100202).shuffle(b)
+
+          def write_jsonl(path, rows):
+              path.write_text("\n".join(json.dumps(x,sort_keys=True,separators=(",",":")) for x in rows)+"\n",encoding="utf-8")
+          m1=B/"FROZEN_REPLICATION_R1A_MANIFEST_V1_0.jsonl"
+          m2=B/"FROZEN_REPLICATION_R1B_MANIFEST_V1_0.jsonl"
+          write_jsonl(m1,a); write_jsonl(m2,b)
+
+          def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+          study_freeze=json.loads((B/"STUDY_A_FREEZE_V1_0.json").read_text(encoding="utf-8"))
+          freeze={
+              "version":"Replication-R1-v1.0",
+              "status":"FROZEN_BEFORE_COUNTED_COLLECTION",
+              "freeze_timestamp_utc":datetime.now(timezone.utc).isoformat(),
+              "counted_runs_at_freeze":0,
+              "r1a_manifest_n":126,
+              "r1b_manifest_n":252,
+              "total_new_n":378,
+              "r1a_manifest_seed":2026100201,
+              "r1b_manifest_seed":2026100202,
+              "method_bank_sha256":sha(B/"FROZEN_STUDY_A_METHOD_BANK_V1_0.json"),
+              "task_bank_sha256":sha(B/"FROZEN_REPLICATION_R1_TASK_BANK_V1_0.json"),
+              "measurement_code_sha256":sha(B/"FROZEN_STUDY_A_MEASUREMENT_V1_0.py"),
+              "preregistration_sha256":sha(B/"REPLICATION_R1_PREREGISTRATION_V1_0.md"),
+              "r1a_manifest_sha256":sha(m1),
+              "r1b_manifest_sha256":sha(m2),
+              "bundle_code_sha256":sha(B/"REPLICATION_R1_FROZEN_V1_0.py"),
+              "study_a_measurement_sha256_at_replication_freeze":study_freeze["measurement_code_sha256"],
+              "gpt_6_luna_precount_smoke":"HTTP 200 / completed / model gpt-6-luna; non-research dummy only"
+          }
+          if freeze["measurement_code_sha256"] != study_freeze["measurement_code_sha256"]:
+              raise SystemExit("Study A measurement changed before replication freeze")
+          (B/"REPLICATION_R1_FREEZE_V1_0.json").write_text(json.dumps(freeze,indent=2)+"\n",encoding="utf-8")
+          print("R1_FREEZE_FILES_CREATED")
+          print("R1A=126 R1B=252 TOTAL=378")
+          '@ | python -
+
+      - name: Verify and commit freeze before counted collection
+        working-directory: research/methodological-framing-v01
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py verify-freeze
+          git config user.name "methodological-framing-research-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add FROZEN_REPLICATION_R1A_MANIFEST_V1_0.jsonl FROZEN_REPLICATION_R1B_MANIFEST_V1_0.jsonl REPLICATION_R1_FREEZE_V1_0.json
+          git diff --cached --check
+          git commit -m "research freeze external replication R1 before collection"
+          git push origin HEAD:research/methodological-framing-v01
+
+      - name: Collect R1a new-task replication
+        working-directory: research/methodological-framing-v01
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py collect --cohort R1A
+
+      - name: Collect R1b second-model replication
+        working-directory: research/methodological-framing-v01
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py collect --cohort R1B
+
+      - name: Validate counted replication
+        working-directory: research/methodological-framing-v01
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py validate
+
+      - name: Analyze frozen replication
+        working-directory: research/methodological-framing-v01
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py analyze
+
+      - name: Secret scan
+        working-directory: research/methodological-framing-v01
+        run: |
+          $hits = Get-ChildItem replication_r1a,replication_r1b -Recurse -File | Select-String -Pattern 'sk-proj-|Bearer sk-' -ErrorAction SilentlyContinue
+          if ($hits) { $hits | Select-Object Path,LineNumber; throw "Secret-like material detected" }
+          Write-Output "SECRET_SCAN=PASS"
+
+      - name: Commit counted replication and results
+        run: |
+          git add research/methodological-framing-v01/replication_r1a research/methodological-framing-v01/replication_r1b research/methodological-framing-v01/replication_r1
+          git diff --cached --check
+          git commit -m "research complete external replication R1"
+          git push origin HEAD:research/methodological-framing-v01
