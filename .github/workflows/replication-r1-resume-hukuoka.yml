@@ -1,0 +1,70 @@
+name: Resume External Replication R1 on HUKUOKA
+
+on:
+  push:
+    branches:
+      - research/methodological-framing-v01
+    paths:
+      - '.github/workflows/replication-r1-resume-hukuoka.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  resume:
+    runs-on: self-hosted
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: powershell
+        working-directory: C:\Users\user\AppData\Local\OpenAIOrchestratorRunner\thinking-game\_work\thinking-game\thinking-game\research\methodological-framing-v01
+
+    steps:
+      - name: Confirm HUKUOKA and preserved workspace
+        run: |
+          Write-Output "COMPUTERNAME=$env:COMPUTERNAME"
+          if ($env:COMPUTERNAME -ne 'HUKUOKA') { throw "Wrong runner" }
+          if (-not (Test-Path '.\REPLICATION_R1_FREEZE_V1_0.json')) { throw "R1 freeze missing from preserved workspace" }
+          $a=(Get-ChildItem '.\replication_r1a\raw' -File -Filter *.json -ErrorAction SilentlyContinue).Count
+          $b=(Get-ChildItem '.\replication_r1b\raw' -File -Filter *.json -ErrorAction SilentlyContinue).Count
+          Write-Output "R1A_RAW=$a"
+          Write-Output "R1B_RAW=$b"
+          if ($a -ne 126) { throw "R1A preserved denominator mismatch: $a" }
+
+      - name: Verify frozen R1 hashes before resume
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py verify-freeze
+
+      - name: Resume R1b from first-missing run only
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py collect --cohort R1B
+
+      - name: Validate counted replication
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py validate
+
+      - name: Analyze frozen replication
+        run: |
+          python REPLICATION_R1_FROZEN_V1_0.py analyze
+
+      - name: Secret scan
+        run: |
+          $hits = Get-ChildItem replication_r1a,replication_r1b -Recurse -File | Select-String -Pattern 'sk-proj-|Bearer sk-' -ErrorAction SilentlyContinue
+          if ($hits) { $hits | Select-Object Path,LineNumber; throw "Secret-like material detected" }
+          Write-Output "SECRET_SCAN=PASS"
+
+      - name: Fast-forward to remote branch without cleaning raw
+        working-directory: C:\Users\user\AppData\Local\OpenAIOrchestratorRunner\thinking-game\_work\thinking-game\thinking-game
+        run: |
+          git fetch origin research/methodological-framing-v01
+          git merge --ff-only origin/research/methodological-framing-v01
+
+      - name: Commit counted replication and results
+        working-directory: C:\Users\user\AppData\Local\OpenAIOrchestratorRunner\thinking-game\_work\thinking-game\thinking-game
+        run: |
+          git config user.name "methodological-framing-research-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add research/methodological-framing-v01/replication_r1a research/methodological-framing-v01/replication_r1b research/methodological-framing-v01/replication_r1
+          git diff --cached --check
+          git commit -m "research complete external replication R1"
+          git push origin HEAD:research/methodological-framing-v01
