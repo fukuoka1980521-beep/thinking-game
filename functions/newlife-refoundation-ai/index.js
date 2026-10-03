@@ -38,9 +38,14 @@ const LOCATION = process.env.NEWLIFE_REFOUNDATION_AI_LOCATION || "asia-northeast
 const MODEL = process.env.NEWLIFE_REFOUNDATION_AI_MODEL || "gemini-2.5-flash";
 const MAX_MODEL_CALLS_PER_MINUTE = Math.max(
   1,
-  Number.parseInt(process.env.NEWLIFE_REFOUNDATION_AI_MAX_CALLS_PER_MINUTE || "20", 10) || 20
+  Number.parseInt(process.env.NEWLIFE_REFOUNDATION_AI_MAX_CALLS_PER_MINUTE || "40", 10) || 40
+);
+const MAX_REFLECTION_CALLS_PER_MINUTE = Math.max(
+  1,
+  Number.parseInt(process.env.NEWLIFE_REFOUNDATION_AI_MAX_REFLECTION_CALLS_PER_MINUTE || "6", 10) || 6
 );
 const modelCallLimiter = createFixedWindowLimiter(MAX_MODEL_CALLS_PER_MINUTE, 60_000);
+const reflectionCallLimiter = createFixedWindowLimiter(MAX_REFLECTION_CALLS_PER_MINUTE, 60_000);
 
 const INTERPRET_RESPONSE_SCHEMA = buildInterpretResponseSchema(Type);
 const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
@@ -55,9 +60,9 @@ function getClient() {
   return genAiClient;
 }
 
-async function callModel(client, { systemInstruction, prompt, responseSchema }) {
+async function callModel(client, { systemInstruction, prompt, responseSchema, limiter = modelCallLimiter }) {
   const generateOnce = () => {
-    if (!modelCallLimiter.consume()) {
+    if (!limiter.consume()) {
       const error = new Error("local_model_rate_limit");
       error.code = "LOCAL_MODEL_RATE_LIMIT";
       throw error;
@@ -154,6 +159,7 @@ async function attemptReflectAgent(client, body) {
     systemInstruction: REFLECT_AGENT_SYSTEM_INSTRUCTION,
     prompt: buildReflectAgentPrompt(body),
     responseSchema: REFLECT_AGENT_RESPONSE_SCHEMA,
+    limiter: reflectionCallLimiter,
   });
   if (!text) return null;
 
