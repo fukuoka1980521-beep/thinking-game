@@ -519,8 +519,15 @@ def ensure_pilot(state):
     g = json.loads(gate.read_text(encoding="utf-8"))
     decision = g.get("status")
     if decision == "GO":
+        design = ROOT / "confirmatory_v1_0" / "CONFIRMATORY_FREEZE_V1_0.json"
+        if not design.exists():
+            rc = subprocess.run([str(PYTHON), str(ROOT / "build_confirmatory_design_v1_0.py")], cwd=ROOT).returncode
+            log(f"CONFIRMATORY_DESIGN_BUILD rc={rc}")
+            if rc != 0:
+                return False
         state["status"] = "PILOT_COMPLETE_GO"
-        log("PILOT_COMPLETE_GO n=72")
+        state["confirmatory_design_ready"] = design.exists()
+        log("PILOT_COMPLETE_GO n=72 confirmatory_design_ready=1")
     else:
         state["status"] = "PILOT_COMPLETE_NO_GO"
         log(f"PILOT_COMPLETE_NO_GO n=72 failed={[k for k,v in g.get('gates',{}).items() if not v]}")
