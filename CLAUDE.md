@@ -322,3 +322,17 @@ source/version・freshness・context contamination・unsupported inference・com
 tool-result misread 等を複数視点で継続観測する。
 
 <!-- END AUTONOMY-MANAGED-BLOCK v1 -->
+
+
+## AI Runtime Cost/Performance
+
+生成AIを利用する実装・設計では、`docs/AI_RUNTIME_PROFILE.md` をプロジェクト固有の実行方針として参照する。
+共通思想は Development OS `docs/AI_RUNTIME_COST_PERFORMANCE_STANDARD.md` v1.0 に従う。
+
+原則:
+- deterministic に解けるものへ LLM を使わない。
+- 生成が必要なら Luna-first、難所だけ Sol へ escalation。
+- Astra は routine production では使わず、offline benchmark/research を基本とする。
+- full-history replay を避け、structured state + relevant context を使う。
+- 生成文は state ではない。validator/gate を通して初めて canonical state へ反映する。
+- cost/latency/verification/escalation reason を計測し、quality-adjusted cost で評価する。
