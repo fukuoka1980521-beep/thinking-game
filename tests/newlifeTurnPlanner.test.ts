@@ -456,6 +456,57 @@ describe("NEW LIFE turn planner", () => {
     expect(plan?.accountabilityOwner).toBeNull();
   });
 
+  it("allows advice to remain unknown when the player has not provided enough personal context", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        mode: "CASUAL",
+        playerMeaning: "自分に向く商売について助言を求めている。",
+        directAnswer: "今の情報だけでは何が向いているか分からない。",
+        explicitQuestion: "何の商売が自分に向いているか。",
+        explicitAnswer: "今の情報だけでは分からない。",
+        questionType: "ADVICE",
+        answerGrounding: "UNKNOWN",
+        answerEvidenceIds: [],
+        impactQuestion: false,
+        accountabilityQuestion: false,
+        responsibilityStatus: "NOT_APPLICABLE",
+        playerProposal: null,
+        proposalDisposition: "NONE",
+        responseMove: "ANSWER",
+        requiredContent: ["今の情報だけでは分からない"],
+      }),
+      "YOHEI",
+      enums,
+    );
+    expect(plan?.questionType).toBe("ADVICE");
+    expect(plan?.answerGrounding).toBe("UNKNOWN");
+  });
+
+  it("allows one question to ask both who is impacted and who is accountable", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        explicitQuestion: "待機客で通常客が入れなくなったら、その責任は誰が負うのか。",
+        explicitAnswer: "責任の所在は未確定で、通常客と店に負担が出る。",
+        questionType: "NORMATIVE",
+        answerGrounding: "OPINION",
+        impactQuestion: true,
+        accountabilityQuestion: true,
+        responsibilityStatus: "UNRESOLVED",
+        accountabilityOwner: null,
+        impactBearers: ["美代子の店", "通常客"],
+        playerProposal: null,
+        proposalDisposition: "NONE",
+        responseMove: "ANSWER",
+        requiredContent: ["責任の所在は未確定", "通常客と店に負担が出る"],
+      }),
+      "FUMIKO",
+      enums,
+    );
+    expect(plan?.impactQuestion).toBe(true);
+    expect(plan?.accountabilityQuestion).toBe(true);
+    expect(plan?.responsibilityStatus).toBe("UNRESOLVED");
+  });
+
   it("recovers proposal and required-content metadata conservatively", () => {
     const plan = planner.normalizeTurnPlan(
       validPlan({
