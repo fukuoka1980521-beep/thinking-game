@@ -152,7 +152,9 @@ try {
     }
   }
 
-  Write-Status "DEPLOY_TEST" "PASS" ($backendNeedsDeploy ? "test backend deployed" : "test backend reused; backend source unchanged") @{
+  $deployDetail = "test backend reused; backend source unchanged"
+  if ($backendNeedsDeploy) { $deployDetail = "test backend deployed" }
+  Write-Status "DEPLOY_TEST" "PASS" $deployDetail @{
     head = $head
     buildSha = $health.buildSha
     backendSourceSha = $backendSourceSha
