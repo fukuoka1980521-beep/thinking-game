@@ -20,6 +20,9 @@ function validPlan(overrides: Record<string, unknown> = {}) {
     mode: "SCENE_PROBLEM",
     playerMeaning: "喫茶の席に負担をかける案を外した方がよいという提案。",
     directAnswer: "その案なら喫茶を待機場所から外し、会館側で待機場所を考え直せる。",
+    explicitQuestion: null,
+    explicitAnswer: null,
+    answerGrounding: "NOT_APPLICABLE",
     referents: ["喫茶の席", "会館側の待機場所"],
     activeIssue: "待機場所が未決。",
     underlyingGoal: "試売客の待機を混乱なく処理し、他人の商売へ無断の負担をかけない。",
@@ -69,6 +72,9 @@ describe("NEW LIFE turn planner", () => {
         mode: "CASUAL",
         playerMeaning: "今日の予定を聞いている。",
         directAnswer: "今日はいつも通りの予定だ。",
+        explicitQuestion: "今日の予定は何か。",
+        explicitAnswer: "特別な予定はなく、いつも通りの予定だ。",
+        answerGrounding: "CANONICAL",
         referents: ["今日の予定"],
         activeIssue: null,
         underlyingGoal: "今日の予定について普通に答える。",
@@ -130,5 +136,43 @@ describe("NEW LIFE turn planner", () => {
         2,
       ),
     ).toContain("喫茶は外して");
+  });
+
+  it("rejects a direct question when the plan omits the explicit answer", () => {
+    expect(
+      planner.normalizeTurnPlan(
+        validPlan({
+          explicitQuestion: "このコーヒーは深煎りか。",
+          explicitAnswer: null,
+          answerGrounding: "UNKNOWN",
+        }),
+        "MIYOKO",
+        enums,
+      ),
+    ).toBeNull();
+  });
+
+  it("allows unknown factual questions only when the plan explicitly answers with uncertainty", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        mode: "TOPIC_SHIFT",
+        playerMeaning: "コーヒーの焙煎度を尋ねている。",
+        directAnswer: "焙煎度は今の情報では確定できないと答える。",
+        explicitQuestion: "このコーヒーは深煎りか。",
+        explicitAnswer: "焙煎度は今の情報では確定できない。",
+        answerGrounding: "UNKNOWN",
+        activeIssue: null,
+        unresolvedDecision: null,
+        authorityOwner: null,
+        playerProposal: null,
+        proposalDisposition: "NONE",
+        responseMove: "ANSWER",
+        requiredContent: ["焙煎度は確定できない"],
+      }),
+      "MIYOKO",
+      enums,
+    );
+    expect(plan?.answerGrounding).toBe("UNKNOWN");
+    expect(plan?.explicitAnswer).toContain("確定できない");
   });
 });
