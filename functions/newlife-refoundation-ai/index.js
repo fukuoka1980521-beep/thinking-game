@@ -213,11 +213,16 @@ async function attemptPlannedTurn(client, body, continuation = false) {
   const npcLine = normalizeRenderedLine(rawRender);
   if (!npcLine) return null;
 
+  const candidateTurn =
+    plan.mode === "CLARIFY" || plan.uncertainty === "HIGH"
+      ? { action: "CLARIFY", boundaryMode: "UNKNOWN", relationalEvents: [], needsClarification: true }
+      : { action: "OBSERVE", boundaryMode: "NOT_RELEVANT", relationalEvents: [], needsClarification: false };
+
   const normalized = normalizeConverseResponse(
     {
       npcLine,
       understoodPlayerMeaning: plan.playerMeaning,
-      candidateTurn: plan.candidateTurn,
+      candidateTurn,
       candidateFactRevealIds: plan.candidateFactRevealIds,
       candidateCommitments: plan.candidateCommitments,
       candidateWorldEffects: plan.candidateWorldEffects,
