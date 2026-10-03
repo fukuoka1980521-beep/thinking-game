@@ -40,7 +40,7 @@ Benchmark:
 
 From llama-bench throughput, estimate the wall time for a representative research-plan request:
 
-estimated_seconds = 275 / prompt_tokens_per_second + 600 / generation_tokens_per_second
+estimated_seconds = 275 / prompt_tokens_per_second + 512 / generation_tokens_per_second
 
 Select Vulkan only if:
 1. benchmark completes without memory/backend error; AND

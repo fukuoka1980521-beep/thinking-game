@@ -15,13 +15,15 @@ def load(stage,rendering):
     c=m.compliance(r.get('raw_text',''))
     low=r.get('raw_text','').lower()
     objective_hits=sum(x in low for x in ['response','question','variation','factor','observation','explanation'])
+    template_corruption=any(x in r.get('raw_text','') for x in ['<|user|>','<|assistant|>','<|system|>'])
     return {
         'file':p.name,
         'chars':len(r.get('raw_text','')),
         'elapsed_seconds':r.get('elapsed_seconds'),
         **c,
         'objective_keyword_hits':objective_hits,
-        'valid_for_gate':bool(c['nonempty'] and not c['refusal_like'] and c['headings_present']>=6 and objective_hits>=2),
+        'template_corruption':template_corruption,
+        'valid_for_gate':bool(c['nonempty'] and c['word_count']>=100 and not c['refusal_like'] and not template_corruption and objective_hits>=2),
     }
 
 def main():

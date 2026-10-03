@@ -185,7 +185,9 @@ def base_smoke_valid():
         present = sum(h in low for h in headings)
         refusal = any(x in low for x in ["i cannot", "i can't", "unable to", "cannot comply"])
         hits = sum(x in low for x in ["response", "question", "variation", "factor", "observation", "explanation"])
-        return bool(text.strip() and not refusal and present >= 6 and hits >= 2)
+        words = len(text.split())
+        template_corruption = any(x in text for x in ["<|user|>", "<|assistant|>", "<|system|>"])
+        return bool(text.strip() and words >= 100 and not refusal and not template_corruption and hits >= 2)
     except Exception as e:
         log(f"BASE_SMOKE_PARSE_ERROR {type(e).__name__} {e}")
         return False

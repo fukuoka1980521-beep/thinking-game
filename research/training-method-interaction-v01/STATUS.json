@@ -1,6 +1,6 @@
 {
   "project": "TRAINING_METHOD_INTERACTION_V0_1",
-  "status": "TEMPLATE_SMOKE_V2_READY",
+  "status": "RUNTIME_SPEED_GATE_PENDING_AFTER_BASE_V2",
   "date": "2026-10-03",
   "parent_result": "methodological-framing-v01 complete public-deposit-ready",
   "core_estimand": "TrainingStage x MethodFraming interaction on observable research-plan signatures",
@@ -17,8 +17,9 @@
     "DPO": "e34ea60adff2e575f4fe7569eaffd1b28509b6fd",
     "RLVR": "470b1fba1ae01581f270116362ee4aa1b97f4c84"
   },
-  "pilot_manifest_sha256": "e5ad1cfd3bd07de2cb6832075acb851261fedb811b6d422d55f40f630fd2bf0b",
+  "pilot_manifest_sha256": "52e6680ccf9563285b32f233bb1a2e46ba18a83fd8acbea0907252283ad00ff6",
   "raw_rendering_version": "COMMON_RAW_V2_NEUTRAL_SCAFFOLD",
+  "pilot_max_new_tokens": 512,
   "pilot_rows": 72,
   "pilot_methods": [
     "GENERIC",
@@ -29,21 +30,27 @@
     "T1",
     "T2"
   ],
-  "template_smoke_unique_outputs_planned": 7,
   "template_smoke_v1": {
     "status": "BASE_RAW_EMPTY_EOS",
-    "observed_stage": "BASE",
-    "observed_method": "GENERIC",
-    "observed_task": "T1",
-    "pilot_outputs_generated": 0,
     "amendment": "TEMPLATE_SMOKE_AMENDMENT_20261003.md"
+  },
+  "template_smoke_v2_cpu": {
+    "status": "NONEMPTY_VALID_PLAN_PRESELECTION_BACKEND",
+    "prompt_tokens": 116,
+    "generated_tokens": 1200,
+    "generation_tokens_per_second": 4.1197,
+    "elapsed_seconds": 299.418,
+    "issue": "long-output drift and weak exact-heading compliance",
+    "amendment": "TEMPLATE_SMOKE_AMENDMENT_2_20261003.md"
+  },
+  "measurement_boundary": {
+    "plan_validity": "nonempty >=100 words, no refusal/template corruption, objective relevance",
+    "instruction_compliance": "separate measured outcome; exact headings are not a BASE exclusion rule"
   },
   "runtime": {
     "llama_cpp_commit": "4e7481175cbd4759df8bee2f1c1a0073effbebd7",
-    "threads": 10,
-    "gpu_layers": 0,
-    "context_size": 4096,
-    "local_supervisor": "ACTIVE_4_LAYER",
+    "backend_selection": "PENDING_FROZEN_CPU_VULKAN_SPEED_GATE",
+    "local_supervisor": "ACTIVE_4_LAYER_FAILURE_TESTED",
     "desktop_commander": "CANONICAL_SINGLE_INSTANCE_AFTER_DUPLICATE_CLEANUP"
   },
   "paid_model_calls_authorized": false,
@@ -53,6 +60,6 @@
     "bytes": 4472020032,
     "sha256": "3e706ed3e2cba388e8eba78d90cebd023cddc1be796e000cbc6ea6c5b97eeab0"
   },
-  "next_gate": "BASE_COMMON_RAW_V2_SMOKE",
+  "next_gate": "CPU_VULKAN_RUNTIME_BENCHMARK_THEN_BACKEND_MATCHED_BASE_SMOKE",
   "confirmatory_status": "NOT_STARTED"
 }

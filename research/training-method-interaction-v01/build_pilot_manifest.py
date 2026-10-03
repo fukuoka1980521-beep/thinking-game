@@ -47,7 +47,7 @@ for stage in STAGES:
             'temperature':1.0,'top_p':1.0,'top_k':0,'min_p':0.0,'typical_p':1.0,
             'repeat_penalty':1.0,'presence_penalty':0.0,'frequency_penalty':0.0,
             'dry_multiplier':0.0,'xtc_probability':0.0,'dynatemp_range':0.0,
-            'context_size':4096,'max_new_tokens':1200,'threads':10,'gpu_layers':0,
+            'context_size':4096,'max_new_tokens':512,'threads':10,'gpu_layers':0,
             'cache_prompt':False,'stream':False,'n_cmpl':1,'seed':seed,
           },
           'generation_status':'NOT_RUN',

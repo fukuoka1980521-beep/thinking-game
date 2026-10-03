@@ -29,8 +29,8 @@ def run(label,extra):
         result['rows']=rows
         return result
     pp_ts=float(pp[-1]['avg_ts']); tg_ts=float(tg[-1]['avg_ts'])
-    est=275.0/pp_ts+600.0/tg_ts
-    result.update({'prompt_tps':pp_ts,'generation_tps':tg_ts,'estimated_275p_600g_seconds':est,'rows':rows})
+    est=275.0/pp_ts+512.0/tg_ts
+    result.update({'prompt_tps':pp_ts,'generation_tps':tg_ts,'estimated_275p_512g_seconds':est,'rows':rows})
     return result
 
 cpu=run('cpu',['-ngl','0'])
@@ -38,17 +38,18 @@ vulkan=run('vulkan',['-ngl','99','-dev','Vulkan0'])
 cpu_ok='error' not in cpu
 vk_ok='error' not in vulkan
 selected='cpu'
-if cpu_ok and vk_ok and vulkan['estimated_275p_600g_seconds'] <= 0.80*cpu['estimated_275p_600g_seconds']:
+if cpu_ok and vk_ok and vulkan['estimated_275p_512g_seconds'] <= 0.80*cpu['estimated_275p_512g_seconds']:
     selected='vulkan'
 elif (not cpu_ok) and vk_ok:
     selected='vulkan'
 
 selection={
  'status':'RUNTIME_SPEED_GATE_COMPLETE',
- 'selection_rule':'vulkan iff successful and estimated_275p_600g_seconds <= 0.80 * CPU; CPU fallback',
+ 'selection_rule':'vulkan iff successful and estimated_275p_512g_seconds <= 0.80 * CPU; CPU fallback',
  'selected_backend':selected,
  'gpu_layers':99 if selected=='vulkan' else 0,
  'device':'Vulkan0' if selected=='vulkan' else 'none',
+ 'representative_workload':{'prompt_tokens':275,'generation_tokens':512},
  'cpu':cpu,
  'vulkan':vulkan,
  'llama_cpp_commit':'4e7481175cbd4759df8bee2f1c1a0073effbebd7',
@@ -60,7 +61,7 @@ for x in (cpu,vulkan):
     if 'error' in x:
         lines.append(f"- {x['label']}: ERROR {x['error']}")
     else:
-        lines.append(f"- {x['label']}: prompt {x['prompt_tps']:.2f} tok/s; generation {x['generation_tps']:.2f} tok/s; estimated 275p+600g {x['estimated_275p_600g_seconds']:.1f} s")
+        lines.append(f"- {x['label']}: prompt {x['prompt_tps']:.2f} tok/s; generation {x['generation_tps']:.2f} tok/s; estimated 275p+512g {x['estimated_275p_512g_seconds']:.1f} s")
 (OUT/'RUNTIME_SPEED_GATE_RESULT.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
 print('RUNTIME_SPEED_GATE=PASS')
 print('SELECTED='+selected.upper())
