@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
 
 const endpoint =
   process.env.NEW_LIFE_ENDPOINT ||
@@ -283,6 +284,9 @@ function structuralChecks(c, reply) {
 }
 
 const caseSignature = createHash("sha256").update(JSON.stringify(cases)).digest("hex");
+const scriptSignature = createHash("sha256")
+  .update(fs.readFileSync(fileURLToPath(import.meta.url)))
+  .digest("hex");
 let backendBuildSha = null;
 try {
   const healthRes = await fetch(endpoint, { method: "GET" });
@@ -300,6 +304,7 @@ if (fs.existsSync(checkpoint)) {
     const sameIdentity =
       saved &&
       saved.caseSignature === caseSignature &&
+      saved.scriptSignature === scriptSignature &&
       saved.endpoint === endpoint &&
       saved.backendBuildSha === backendBuildSha &&
       Array.isArray(saved.results) &&
@@ -310,8 +315,14 @@ if (fs.existsSync(checkpoint)) {
       sameIdentity &&
       saved.results.slice(0, saved.completed).every((result, index) => result?.id === cases[index]?.id);
     if (ordered) {
-      results = saved.results.slice(0, saved.completed);
-      startIndex = saved.completed;
+      let resumablePrefix = 0;
+      for (let i = 0; i < saved.completed; i += 1) {
+        const result = saved.results[i];
+        if (result?.status !== 200 || result?.semantic?.pass !== true) break;
+        resumablePrefix += 1;
+      }
+      results = saved.results.slice(0, resumablePrefix);
+      startIndex = resumablePrefix;
     }
   } catch {}
 }
@@ -342,6 +353,7 @@ for (let i = startIndex; i < cases.length; i += 1) {
       endpoint,
       backendBuildSha,
       caseSignature,
+      scriptSignature,
       completed: i + 1,
       total: cases.length,
       results,
@@ -355,6 +367,7 @@ const report = {
   endpoint,
   backendBuildSha,
   caseSignature,
+  scriptSignature,
   generatedAt: new Date().toISOString(),
   total: results.length,
   structuralPasses: results.filter((r) => r.semantic.pass).length,
