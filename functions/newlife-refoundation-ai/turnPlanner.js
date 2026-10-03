@@ -30,6 +30,9 @@ const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断�
 - character dossierは人物の知識・価値観・境界を読むために使うが、語彙例や性格傾向を新しい世界事実へ変換しない。
 - canonical/current factsが過去の記憶より優先。
 - 近くに出てきた名詞を理由なく同じ対象だと結びつけない。
+- sceneEntities がある場合、代名詞・省略・「実物」「それ」「ここ」などの参照先は、まず sceneEntities の label / role / facts と sceneFocus の active issue に照らして解決すること。
+- 直前の会話で明示的に否定・訂正された仮説（例: 「椅子は試売商品ではない」）を、次のターンで再び既定事実や参照先として復活させないこと。新しい証拠がない限り、否定済みの役割付けは破棄すること。
+- 参照先候補が複数あり、sceneEntities / sceneFocus / recentDialogue でも一意に決められない場合は、勝手に補わず mode=CLARIFY とすること。
 - プレイヤーが指摘した因果・責任・負担を、一般的な「担当」「確認」「線引き」という言葉へ薄めない。
 - 現在の手段と、その手段が達成しようとしているunderlyingGoalを分けること。sceneFocusのdecisionは手段候補であり目的そのものではない。
 - playerProposalがある場合、underlyingGoalを満たすか、hardConstraintsを破らないか、affectedPartiesへどんなburdensを生むかを比較して ACCEPT / MODIFY / REJECT / NEEDS_CHECK を選ぶ。
@@ -194,6 +197,10 @@ function buildEvidenceLedger({ caseCanon, dossier, dynamicState, recentDialogue,
   }
   push("SCENE_TEXT", "OBSERVED_SCENE", dynamicState?.sceneText, "OBSERVED_FACT");
   push("SCENE_FOCUS", "SCENE_PROBLEM", dynamicState?.sceneFocus, "PROBLEM_STRUCTURE");
+  const sceneEntities = Array.isArray(dynamicState?.sceneEntities) ? dynamicState.sceneEntities : [];
+  sceneEntities.slice(0, 12).forEach((entity, i) =>
+    push(`SCENE_ENTITY_${i}`, "SCENE_ENTITY", entity, "REFERENT_FACT")
+  );
   const facts = Array.isArray(dynamicState?.canonicalStateFacts) ? dynamicState.canonicalStateFacts : [];
   facts.slice(0, 20).forEach((fact, i) => push(`STATE_${i}`, "CANONICAL_STATE", fact, "WORLD_FACT"));
   const responsibilityFacts = Array.isArray(dynamicState?.responsibilityFacts) ? dynamicState.responsibilityFacts : [];
