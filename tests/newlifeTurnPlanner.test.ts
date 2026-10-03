@@ -31,6 +31,8 @@ function validPlan(overrides: Record<string, unknown> = {}) {
     underlyingGoal: "試売客の待機を混乱なく処理し、他人の商売へ無断の負担をかけない。",
     unresolvedDecision: "喫茶を使うか会館側だけにするか。",
     authorityOwner: "喫茶席は美代子、会館側は文子。",
+    impactQuestion: false,
+    accountabilityQuestion: false,
     responsibilityStatus: "NOT_APPLICABLE",
     accountabilityOwner: null,
     accountabilityEvidenceIds: [],
@@ -263,7 +265,9 @@ describe("NEW LIFE turn planner", () => {
         questionType: "NORMATIVE",
         answerGrounding: "OPINION",
         answerEvidenceIds: [],
-        responsibilityStatus: "UNRESOLVED",
+        impactQuestion: true,
+        accountabilityQuestion: false,
+        responsibilityStatus: "NOT_APPLICABLE",
         accountabilityOwner: null,
         impactBearers: ["美代子", "喫茶の通常客"],
         playerProposal: null,
@@ -274,7 +278,9 @@ describe("NEW LIFE turn planner", () => {
       "FUMIKO",
       enums,
     );
-    expect(plan?.responsibilityStatus).toBe("UNRESOLVED");
+    expect(plan?.impactQuestion).toBe(true);
+    expect(plan?.accountabilityQuestion).toBe(false);
+    expect(plan?.responsibilityStatus).toBe("NOT_APPLICABLE");
     expect(plan?.accountabilityOwner).toBeNull();
     expect(plan?.impactBearers).toEqual(expect.arrayContaining(["美代子", "喫茶の通常客"]));
   });
@@ -286,6 +292,8 @@ describe("NEW LIFE turn planner", () => {
         explicitAnswer: "美代子が責任を負う。",
         questionType: "NORMATIVE",
         answerGrounding: "OPINION",
+        impactQuestion: false,
+        accountabilityQuestion: true,
         responsibilityStatus: "KNOWN",
         accountabilityOwner: "美代子",
         accountabilityEvidenceIds: [],
@@ -338,6 +346,8 @@ describe("NEW LIFE turn planner", () => {
         questionType: "FACTUAL",
         answerGrounding: "CANONICAL",
         answerEvidenceIds: ["RESPONSIBILITY_0"],
+        impactQuestion: false,
+        accountabilityQuestion: true,
         responsibilityStatus: "KNOWN",
         accountabilityOwner: "会館側の運営責任者",
         accountabilityEvidenceIds: ["RESPONSIBILITY_0"],
@@ -424,6 +434,26 @@ describe("NEW LIFE turn planner", () => {
     expect(plan).not.toBeNull();
     expect(plan.mode).toBe("CLARIFY");
     expect(plan.uncertainty).toBe("HIGH");
+  });
+
+  it("does not invent accountability analysis when the player did not ask about responsibility", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        explicitQuestion: "当日に電話で確認すればよいのでは？",
+        explicitAnswer: "事前に確認した方がよい。",
+        questionType: "HYPOTHETICAL",
+        impactQuestion: false,
+        accountabilityQuestion: false,
+        responsibilityStatus: "UNRESOLVED",
+        accountabilityOwner: "文子",
+        accountabilityEvidenceIds: [],
+      }),
+      "FUMIKO",
+      enums,
+    );
+    expect(plan?.accountabilityQuestion).toBe(false);
+    expect(plan?.responsibilityStatus).toBe("NOT_APPLICABLE");
+    expect(plan?.accountabilityOwner).toBeNull();
   });
 
   it("recovers proposal and required-content metadata conservatively", () => {
