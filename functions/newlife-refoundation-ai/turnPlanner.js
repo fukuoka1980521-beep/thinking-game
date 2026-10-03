@@ -28,7 +28,9 @@ const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断�
 - canonical/current factsが過去の記憶より優先。
 - 近くに出てきた名詞を理由なく同じ対象だと結びつけない。
 - プレイヤーが指摘した因果・責任・負担を、一般的な「担当」「確認」「線引き」という言葉へ薄めない。
-- playerProposalがある場合、goalへの適合、他人への不要な負担、権限を見て ACCEPT / MODIFY / REJECT / NEEDS_CHECK を選ぶ。
+- 現在の手段と、その手段が達成しようとしているunderlyingGoalを分けること。sceneFocusのdecisionは手段候補であり目的そのものではない。
+- playerProposalがある場合、underlyingGoalを満たすか、hardConstraintsを破らないか、affectedPartiesへどんなburdensを生むかを比較して ACCEPT / MODIFY / REJECT / NEEDS_CHECK を選ぶ。
+- 提案の一部だけ修正すれば成立する場合はREJECTではなくMODIFYを優先し、成立条件をdirectAnswerに含める。
 - directAnswerは、キャラクター口調にする前の「何と答えるべきか」の意味内容を1〜2文で書く。
 - requiredContentには、最終セリフで落としてはいけない具体要素を最大4件入れる。
 - unknownsには、根拠がなく断定してはいけない点を書く。
@@ -64,9 +66,12 @@ function buildTurnPlanSchema(Type, enums) {
       directAnswer: { type: Type.STRING },
       referents: { type: Type.ARRAY, items: { type: Type.STRING } },
       activeIssue: { type: Type.STRING, nullable: true },
+      underlyingGoal: { type: Type.STRING },
       unresolvedDecision: { type: Type.STRING, nullable: true },
       authorityOwner: { type: Type.STRING, nullable: true },
-      burdenOwner: { type: Type.STRING, nullable: true },
+      hardConstraints: { type: Type.ARRAY, items: { type: Type.STRING } },
+      affectedParties: { type: Type.ARRAY, items: { type: Type.STRING } },
+      burdens: { type: Type.ARRAY, items: { type: Type.STRING } },
       playerProposal: { type: Type.STRING, nullable: true },
       proposalDisposition: { type: Type.STRING, enum: PROPOSAL_DISPOSITIONS },
       responseMove: { type: Type.STRING, enum: RESPONSE_MOVES },
@@ -82,8 +87,9 @@ function buildTurnPlanSchema(Type, enums) {
     },
     required: [
       "mode", "playerMeaning", "directAnswer", "referents", "activeIssue",
-      "unresolvedDecision", "authorityOwner", "burdenOwner", "playerProposal",
-      "proposalDisposition", "responseMove", "requiredContent", "unknowns",
+      "underlyingGoal", "unresolvedDecision", "authorityOwner", "hardConstraints",
+      "affectedParties", "burdens", "playerProposal", "proposalDisposition",
+      "responseMove", "requiredContent", "unknowns",
       "candidateFactRevealIds", "candidateCommitments",
       "candidateWorldEffects", "uncertainty", "thoughtSupportSignal",
       "sceneStatus", "nextNpc",
@@ -136,7 +142,8 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   if (!PROPOSAL_DISPOSITIONS.includes(parsed.proposalDisposition)) return null;
   const playerMeaning = boundedString(parsed.playerMeaning);
   const directAnswer = boundedString(parsed.directAnswer);
-  if (!playerMeaning || !directAnswer) return null;
+  const underlyingGoal = boundedString(parsed.underlyingGoal);
+  if (!playerMeaning || !directAnswer || !underlyingGoal) return null;
   if (!enums.uncertaintyLevels.includes(parsed.uncertainty)) return null;
   if (!enums.sceneStatuses.includes(parsed.sceneStatus)) return null;
 
@@ -152,9 +159,12 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     directAnswer,
     referents: boundedArray(parsed.referents, 8),
     activeIssue: boundedString(parsed.activeIssue),
+    underlyingGoal,
     unresolvedDecision: boundedString(parsed.unresolvedDecision),
     authorityOwner: boundedString(parsed.authorityOwner, 200),
-    burdenOwner: boundedString(parsed.burdenOwner, 200),
+    hardConstraints: boundedArray(parsed.hardConstraints, 6),
+    affectedParties: boundedArray(parsed.affectedParties, 6, 200),
+    burdens: boundedArray(parsed.burdens, 6),
     playerProposal: boundedString(parsed.playerProposal),
     proposalDisposition: parsed.proposalDisposition,
     responseMove: parsed.responseMove,
