@@ -128,6 +128,26 @@ const scenarios = [
       decision: "大輔の工房を一時的な受け取り場所に使えるか確認する。",
       authority: "工房を貸すかは大輔が決める。椅子は修理品で試売の商品ではない。",
     },
+    sceneEntities: [
+      {
+        id: "repair_chair",
+        label: "大輔が修理中の椅子",
+        role: "工房で大輔が修理している依頼品",
+        facts: ["陽菜の試売商品ではない", "焼き菓子の受け取り対象ではない"],
+      },
+      {
+        id: "hina_baked_goods",
+        label: "陽菜の焼き菓子",
+        role: "試売商品であり予約客が受け取る対象",
+        facts: ["椅子とは別件"],
+      },
+      {
+        id: "daisuke_workshop",
+        label: "大輔の工房",
+        role: "焼き菓子の予約品を一時的に受け渡す場所の候補",
+        facts: ["貸すかどうかを決めるのは大輔"],
+      },
+    ],
     canonicalState: { dWorkshop: "pending" },
     turns: [
       {
@@ -204,6 +224,7 @@ for (const scenario of scenarios) {
         sceneTitle: scenario.sceneTitle,
         sceneText: scenario.sceneText,
         sceneFocus: scenario.sceneFocus,
+        sceneEntities: scenario.sceneEntities ?? [],
         retrievedMemories: [],
         canonicalState: scenario.canonicalState,
         interactionKind: "SPEECH",
