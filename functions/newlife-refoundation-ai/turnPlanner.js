@@ -321,8 +321,8 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const playerMeaning = boundedString(parsed.playerMeaning);
   const directAnswer = boundedString(parsed.directAnswer);
   const explicitQuestion = boundedString(parsed.explicitQuestion);
-  const explicitAnswer = boundedString(parsed.explicitAnswer);
-  const questionType = parsed.questionType;
+  let explicitAnswer = boundedString(parsed.explicitAnswer);
+  let questionType = parsed.questionType;
   const responsibilityStatus = parsed.responsibilityStatus;
   const accountabilityOwner = boundedString(parsed.accountabilityOwner, 200);
   const allowedAccountabilityEvidence = new Set(enums.accountabilityEvidenceIds || []);
@@ -344,18 +344,33 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   if (!QUESTION_TYPES.includes(questionType)) return null;
   if (!RESPONSIBILITY_STATUSES.includes(responsibilityStatus)) return null;
   if (!ANSWER_GROUNDINGS.includes(parsed.answerGrounding)) return null;
-  if (explicitQuestion && !explicitAnswer) return null;
-  if (!explicitQuestion && explicitAnswer) return null;
-  if (!explicitQuestion && questionType !== "NONE") return null;
-  if (explicitQuestion && questionType === "NONE") return null;
-  if (questionType === "FACTUAL") {
-    if (!["CANONICAL", "OBSERVED", "MEMORY", "INFERRED", "UNKNOWN"].includes(parsed.answerGrounding)) return null;
-    if (["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(parsed.answerGrounding) &&
-        answerEvidenceIds.length === 0) return null;
-  } else if (explicitQuestion && !["NOT_APPLICABLE", "OPINION", "UNKNOWN", "INFERRED"].includes(parsed.answerGrounding)) {
-    return null;
+
+  // Recover semantic metadata conservatively instead of discarding an otherwise
+  // usable reasoning plan. These repairs never create a new world fact.
+  if (explicitQuestion && !explicitAnswer) explicitAnswer = directAnswer;
+  if (!explicitQuestion) {
+    explicitAnswer = null;
+    questionType = "NONE";
+  } else if (questionType === "NONE") {
+    questionType = "ANALYTICAL";
   }
-  if (parsed.answerGrounding === "UNKNOWN" && answerEvidenceIds.length > 0) return null;
+
+  let answerGrounding = parsed.answerGrounding;
+  let normalizedAnswerEvidenceIds = answerEvidenceIds;
+  if (questionType === "FACTUAL") {
+    if (!["CANONICAL", "OBSERVED", "MEMORY", "INFERRED", "UNKNOWN"].includes(answerGrounding)) {
+      answerGrounding = "UNKNOWN";
+      normalizedAnswerEvidenceIds = [];
+    }
+    if (["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(answerGrounding) &&
+        normalizedAnswerEvidenceIds.length === 0) {
+      answerGrounding = "UNKNOWN";
+    }
+  } else if (explicitQuestion && !["NOT_APPLICABLE", "OPINION", "UNKNOWN", "INFERRED"].includes(answerGrounding)) {
+    answerGrounding = "OPINION";
+    normalizedAnswerEvidenceIds = [];
+  }
+  if (answerGrounding === "UNKNOWN") normalizedAnswerEvidenceIds = [];
   const responsibilityDowngraded =
     (responsibilityStatus === "KNOWN" && (!accountabilityOwner || accountabilityEvidenceIds.length === 0)) ||
     (responsibilityStatus !== "KNOWN" && accountabilityEvidenceIds.length > 0) ||
@@ -364,12 +379,24 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const normalizedResponsibilityStatus = responsibilityDowngraded ? "UNRESOLVED" : responsibilityStatus;
   const normalizedAccountabilityOwner = responsibilityDowngraded ? null : accountabilityOwner;
   const normalizedAccountabilityEvidenceIds = responsibilityDowngraded ? [] : accountabilityEvidenceIds;
-  if (parsed.mode === "SCENE_PROBLEM" && referents.length === 0) return null;
-  if (playerProposal && parsed.proposalDisposition === "NONE") return null;
-  if (!playerProposal && parsed.proposalDisposition !== "NONE") return null;
-  if (["ACCEPT", "MODIFY", "REJECT"].includes(parsed.proposalDisposition) && affectedParties.length === 0) return null;
-  if (requiredContent.length === 0) return null;
-  if (!enums.uncertaintyLevels.includes(parsed.uncertainty)) return null;
+  let mode = parsed.mode;
+  let proposalDisposition = parsed.proposalDisposition;
+  let uncertainty = parsed.uncertainty;
+  let normalizedReferents = referents;
+  let normalizedAffectedParties = affectedParties;
+  let normalizedRequiredContent = requiredContent;
+
+  if (mode === "SCENE_PROBLEM" && normalizedReferents.length === 0) {
+    mode = "CLARIFY";
+    uncertainty = "HIGH";
+  }
+  if (playerProposal && proposalDisposition === "NONE") proposalDisposition = "NEEDS_CHECK";
+  if (!playerProposal && proposalDisposition !== "NONE") proposalDisposition = "NONE";
+  if (["ACCEPT", "MODIFY", "REJECT"].includes(proposalDisposition) && normalizedAffectedParties.length === 0) {
+    normalizedAffectedParties = [...new Set([...impactBearers, ...(accountabilityOwner ? [accountabilityOwner] : [])])].slice(0, 6);
+  }
+  if (normalizedRequiredContent.length === 0) normalizedRequiredContent = [directAnswer];
+  if (!enums.uncertaintyLevels.includes(uncertainty)) return null;
   if (!enums.sceneStatuses.includes(parsed.sceneStatus)) return null;
 
   let nextNpc = null;
@@ -379,15 +406,15 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
 
   const allowedWorld = new Set(enums.worldEffects || []);
   return {
-    mode: parsed.mode,
+    mode,
     playerMeaning,
     directAnswer,
     explicitQuestion,
     explicitAnswer,
     questionType,
-    answerGrounding: parsed.answerGrounding,
-    answerEvidenceIds,
-    referents,
+    answerGrounding,
+    answerEvidenceIds: normalizedAnswerEvidenceIds,
+    referents: normalizedReferents,
     activeIssue: boundedString(parsed.activeIssue),
     underlyingGoal,
     unresolvedDecision: boundedString(parsed.unresolvedDecision),
@@ -398,19 +425,19 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     responsibilityDowngraded,
     impactBearers,
     hardConstraints,
-    affectedParties,
+    affectedParties: normalizedAffectedParties,
     burdens,
     playerProposal,
-    proposalDisposition: parsed.proposalDisposition,
+    proposalDisposition,
     responseMove: parsed.responseMove,
-    requiredContent,
+    requiredContent: normalizedRequiredContent,
     unknowns,
     candidateFactRevealIds: boundedArray(parsed.candidateFactRevealIds, 5, 200),
     candidateCommitments: boundedArray(parsed.candidateCommitments, 5, 200),
     candidateWorldEffects: Array.isArray(parsed.candidateWorldEffects)
       ? parsed.candidateWorldEffects.filter((x) => allowedWorld.has(x))
       : [],
-    uncertainty: parsed.uncertainty,
+    uncertainty,
     thoughtSupportSignal: parsed.thoughtSupportSignal === true,
     sceneStatus: nextNpc ? "NPC_EXCHANGE" : (parsed.sceneStatus === "NPC_EXCHANGE" ? "AWAIT_PLAYER" : parsed.sceneStatus),
     nextNpc,
