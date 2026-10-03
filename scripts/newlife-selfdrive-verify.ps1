@@ -58,7 +58,7 @@ function Deploy-Test([string]$sha) {
     Log "DEPLOY attempt $i head=$sha"
     $args = @(
       "functions","deploy",$FunctionName,
-      "--gen2","--runtime=nodejs20","--region=$Region",
+      "--gen2","--runtime=nodejs22","--region=$Region",
       "--source=functions/newlife-refoundation-ai",
       "--entry-point=newlifeRefoundationAi","--trigger-http",
       "--allow-unauthenticated","--memory=256Mi","--timeout=45s",
