@@ -159,3 +159,25 @@ Impact on research:
 
 Recovery rule added:
 Before loading any TMI stage, `run_pilot_stage.py` terminates only stale `llama*.exe` processes whose command line points to `_research_runtime\\models\\tmi-pilot`. This prevents stage-switch RAM retention while leaving unrelated llama workloads untouched.
+
+## RLVR pilot long-session memory pressure — observed during 72-run pilot
+
+Observed during RLVR pilot execution:
+- server after startup / early request: private memory approximately 6.9 GB;
+- after additional completed requests in the same server session: private memory approximately 7.7 GB;
+- the first long RLVR pilot server session saved five complete outputs, then the HTTP connection reset;
+- Windows event logs did not provide a definitive OOM/application-crash record;
+- therefore the exact low-level crash mechanism is not proven, but long-session memory pressure/retention is the leading operational explanation.
+
+Operational recovery:
+- every completed run is atomically saved before advancing;
+- restarted jobs skip all existing output files;
+- failed/incomplete requests are rerun with the same frozen run_id, seed, prompt, model and sampler settings;
+- pilot retry limit increased from 4 to 12 to allow repeated server-session recovery;
+- no scientific generation parameter was changed.
+
+Scientific impact:
+- none on already completed outputs;
+- failed partial generations are never counted;
+- server process lifecycle is an execution property, not a treatment variable;
+- if later evidence shows server lifecycle changes deterministic outputs despite identical frozen inputs/settings, this would become a quantifiable runtime limitation and must be reported.
