@@ -1,11 +1,17 @@
 const { GoogleGenAI, Type } = require("@google/genai");
 const {
   NPC_IDS,
+  ACTION_TYPES,
+  BOUNDARY_MODES,
+  RELATIONAL_EVENTS,
+  SCENE_STATUSES,
+  UNCERTAINTY_LEVELS,
   buildInterpretResponseSchema,
   buildInterpretPrompt,
   buildNpcResponseSchema,
   buildNpcPrompt,
   buildConverseResponseSchema,
+  buildConversationContextText,
   buildConversePrompt,
   buildNpcExchangePrompt,
   buildReflectAgentResponseSchema,
@@ -15,6 +21,8 @@ const {
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
   buildHealthResponse,
+  getCaseDossiers,
+  worldEffectsForCase,
   INTERPRET_SYSTEM_INSTRUCTION,
   NPC_SYSTEM_INSTRUCTION,
   CONVERSE_SYSTEM_INSTRUCTION,
@@ -25,6 +33,16 @@ const {
   createFixedWindowLimiter,
 } = require("./lib");
 const { canonicalStateFactsForCase } = require("./stateFacts");
+const {
+  TURN_PLAN_SYSTEM_INSTRUCTION,
+  RENDER_SYSTEM_INSTRUCTION,
+  buildTurnPlanSchema,
+  buildRenderSchema,
+  buildTurnPlanPrompt,
+  buildRenderPrompt,
+  normalizeTurnPlan,
+  normalizeRenderedLine,
+} = require("./turnPlanner");
 
 // Same no-secret pattern as functions/dialogue/ and functions/newlife-dialogue/:
 // the only identity this function ever uses is its own Cloud Run/Cloud
@@ -51,6 +69,7 @@ const INTERPRET_RESPONSE_SCHEMA = buildInterpretResponseSchema(Type);
 const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
 const ORGANIZE_THOUGHT_RESPONSE_SCHEMA = buildOrganizeThoughtResponseSchema(Type);
 const REFLECT_AGENT_RESPONSE_SCHEMA = buildReflectAgentResponseSchema(Type);
+const RENDER_RESPONSE_SCHEMA = buildRenderSchema(Type);
 
 let genAiClient;
 function getClient() {
