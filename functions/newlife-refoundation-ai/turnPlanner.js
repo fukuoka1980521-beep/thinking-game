@@ -191,6 +191,10 @@ function buildEvidenceLedger({ caseCanon, dossier, dynamicState, recentDialogue,
   push("SCENE_FOCUS", "SCENE_PROBLEM", dynamicState?.sceneFocus, "PROBLEM_STRUCTURE");
   const facts = Array.isArray(dynamicState?.canonicalStateFacts) ? dynamicState.canonicalStateFacts : [];
   facts.slice(0, 20).forEach((fact, i) => push(`STATE_${i}`, "CANONICAL_STATE", fact, "WORLD_FACT"));
+  const responsibilityFacts = Array.isArray(dynamicState?.responsibilityFacts) ? dynamicState.responsibilityFacts : [];
+  responsibilityFacts.slice(0, 12).forEach((fact, i) =>
+    push(`RESPONSIBILITY_${i}`, "ACCOUNTABILITY_FACT", fact, "ACCOUNTABILITY_FACT")
+  );
   const memories = Array.isArray(dynamicState?.retrievedMemories) ? dynamicState.retrievedMemories : [];
   memories.slice(0, 8).forEach((memory, i) => {
     const kind = typeof memory === "string" && memory.includes("[REFLECTION]") ? "MEMORY_REFLECTION" : "MEMORY_OBSERVATION";
@@ -297,6 +301,9 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const questionType = parsed.questionType;
   const responsibilityStatus = parsed.responsibilityStatus;
   const accountabilityOwner = boundedString(parsed.accountabilityOwner, 200);
+  const allowedAccountabilityEvidence = new Set(enums.accountabilityEvidenceIds || []);
+  const accountabilityEvidenceIds = boundedArray(parsed.accountabilityEvidenceIds, 8, 100)
+    .filter((id) => allowedAccountabilityEvidence.has(id));
   const impactBearers = boundedArray(parsed.impactBearers, 6, 200);
   const allowedEvidenceIds = new Set(enums.evidenceIds || []);
   const answerEvidenceIds = boundedArray(parsed.answerEvidenceIds, 12, 100)
@@ -325,7 +332,8 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     return null;
   }
   if (parsed.answerGrounding === "UNKNOWN" && answerEvidenceIds.length > 0) return null;
-  if (responsibilityStatus === "KNOWN" && !accountabilityOwner) return null;
+  if (responsibilityStatus === "KNOWN" && (!accountabilityOwner || accountabilityEvidenceIds.length === 0)) return null;
+  if (responsibilityStatus !== "KNOWN" && accountabilityEvidenceIds.length > 0) return null;
   if (responsibilityStatus === "UNRESOLVED" && accountabilityOwner) return null;
   if (responsibilityStatus === "NOT_APPLICABLE" && accountabilityOwner) return null;
   if (parsed.mode === "SCENE_PROBLEM" && referents.length === 0) return null;
@@ -358,6 +366,7 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     authorityOwner: boundedString(parsed.authorityOwner, 200),
     responsibilityStatus,
     accountabilityOwner,
+    accountabilityEvidenceIds,
     impactBearers,
     hardConstraints,
     affectedParties,
