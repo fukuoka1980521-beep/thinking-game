@@ -365,3 +365,20 @@ For any change touching `src/newlife/**`, `functions/newlife-*/**`, `public/newl
 NEW_LIFE_ROOT_DECISION = CHAT_FIRST
 NEW_LIFE_RESPONSE_ROOT = PLAN_THEN_RENDER
 
+### NEW LIFE long-run self-drive reliability
+
+For NEW LIFE validation/deploy/test work that can exceed one remote-command window:
+
+1. Use `scripts/newlife-selfdrive-verify.ps1` instead of a chain of manual PID polls.
+2. Treat Remote Desktop Commander PID/session handles as ephemeral transport handles, not durable job state.
+3. Read `NEWLIFE_SELFDRIVE_STATUS.json`, the self-drive log, and the live-regression checkpoint before declaring that work stopped.
+4. A disappearing remote PID is not a failure by itself.
+5. TEST deploy may automatically retry bounded transient 409 contention.
+6. External-tool warnings written to stderr must be logged and judged by process exit code, not treated as automatic failure.
+7. JSON artifacts written by Node must be read as UTF-8 explicitly from Windows PowerShell.
+8. Background reflection must not consume the foreground dialogue budget.
+9. Do not ask the owner to restart or re-run a gate that the checkpointed runner can resume or repeat itself.
+10. Production deployment remains outside this self-drive verifier and still requires the existing production approval boundary.
+
+NEW_LIFE_SELFDRIVE_ROOT = DURABLE_CHECKPOINTS_NOT_PID
+
