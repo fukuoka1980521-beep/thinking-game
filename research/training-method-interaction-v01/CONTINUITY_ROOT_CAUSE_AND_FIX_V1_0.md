@@ -108,3 +108,28 @@ On 2026-10-03 the active supervisor was deliberately terminated while the resear
 The periodic recovery path restarted the supervisor (new SUPERVISOR_START recorded at 10:50:24 JST) and continued the persisted state into SFT download without regenerating the completed BASE smoke.
 
 Result: supervisor-process failover path verified.
+
+## Root-cause correction from remote tool history
+
+Remote Desktop Commander history was inspected after the resilience work. The three observed supervisor restarts were not spontaneous supervisor crashes:
+
+- 2026-10-03 10:27:34: supervisor PID 11624 was explicitly terminated by a Remote `kill_process` call.
+- 2026-10-03 10:27:57: replacement supervisor PID 14944 was explicitly terminated by another Remote `kill_process` call.
+- 2026-10-03 10:50:08: supervisor PID 14632 was explicitly terminated as the deliberate failover test documented above.
+
+Therefore there is **no observed evidence in this session that `tmi_supervisor.py` crashed on its own**. The larger operational root cause was controller-side misinterpretation: long-running or detached local work was sometimes treated as stale merely because the remote tool session had ended or because multiple helper processes were visible.
+
+### New controller rule
+
+Do not terminate a TMI research process based only on:
+- `No session found for PID` from Desktop Commander;
+- absence of new console output;
+- long elapsed wall time that is still below the frozen watchdog limit;
+- a large number of Python processes without first resolving their command lines and ownership.
+
+Before any manual kill, require all three:
+1. inspect `AUTORUN_STATE.json`;
+2. inspect heartbeat / last-progress timestamp and durable output count;
+3. confirm that the watchdog has failed to recover the condition or that the process is outside tracked ownership.
+
+This rule prevents the operator from becoming the primary source of interruptions.
