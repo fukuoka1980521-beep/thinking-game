@@ -167,19 +167,26 @@ def ensure_download(stage, state):
     pid = ds.get("pid")
     if process_alive(pid):
         ds["status"] = "DOWNLOADING"
-        current_bytes = partial.stat().st_size if partial.exists() else 0
+        stat = partial.stat() if partial.exists() else None
+        current_bytes = stat.st_size if stat else 0
+        current_mtime_ns = stat.st_mtime_ns if stat else 0
         previous_bytes = int(ds.get("partial_bytes", 0) or 0)
-        if current_bytes > previous_bytes:
+        previous_mtime_ns = int(ds.get("partial_mtime_ns", 0) or 0)
+        # aria2 range downloads can create a near-final logical file size before all
+        # ranges are present. Treat either size growth OR file mtime change as progress.
+        if current_bytes != previous_bytes or current_mtime_ns != previous_mtime_ns:
             ds["last_progress_at"] = now()
             ds["partial_bytes"] = current_bytes
+            ds["partial_mtime_ns"] = current_mtime_ns
         elif not ds.get("last_progress_at"):
             ds["last_progress_at"] = now()
             ds["partial_bytes"] = current_bytes
+            ds["partial_mtime_ns"] = current_mtime_ns
         elif age_seconds(ds.get("last_progress_at")) > 600:
             terminate_tree(pid, f"download_stale_{stage}")
             ds["pid"] = None
             ds["status"] = "STALE_RESTART_PENDING"
-            log(f"DOWNLOAD_STALE {stage} bytes={current_bytes}")
+            log(f"DOWNLOAD_STALE {stage} bytes={current_bytes} mtime_ns={current_mtime_ns}")
         return False
     if shutil.disk_usage(MODEL_DIR).free < 6_000_000_000:
         state["status"] = "STOPPED_DISK_LOW"
@@ -194,10 +201,12 @@ def ensure_download(stage, state):
         "-d", MODEL_DIR, "-o", partial.name, url,
     ]
     pid = start_detached(cmd, ROOT / "autorun_logs" / f"download_{stage}.log")
-    existing = partial.stat().st_size if partial.exists() else 0
+    stat = partial.stat() if partial.exists() else None
+    existing = stat.st_size if stat else 0
+    mtime_ns = stat.st_mtime_ns if stat else 0
     ds.update({
         "status": "DOWNLOADING", "pid": pid, "started_at": now(), "url": url,
-        "partial_bytes": existing, "last_progress_at": now()
+        "partial_bytes": existing, "partial_mtime_ns": mtime_ns, "last_progress_at": now()
     })
     log(f"DOWNLOAD_START {stage} pid={pid} existing={existing}")
     return False
