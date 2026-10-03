@@ -1382,9 +1382,10 @@ describe("functions/newlife-refoundation-ai/index.js — prior real Vertex AI le
   it("uses the proven 2048 output-token budget and one empty-response retry pattern", () => {
     const fs = require("node:fs");
     const source = fs.readFileSync(join(__dirname, "..", "functions", "newlife-refoundation-ai", "index.js"), "utf-8");
-    expect(source).toContain("maxOutputTokens: 2048");
-    expect(source).toContain("const generateOnce = () =>");
-    expect(source).toMatch(/if \(!text\)[\s\S]*response = await generateOnce\(\)/);
+    expect(source).toContain("maxOutputTokens = 2048");
+    expect(source).toContain("const generateOnce = async (attempt) =>");
+    expect(source).toMatch(/if \(!text\)[\s\S]*response = await generateOnce\(2\)/);
+    expect(source).toContain('event: "newlife_model_stage"');
   });
 
   it("never logs the request body or player free text on error", () => {
