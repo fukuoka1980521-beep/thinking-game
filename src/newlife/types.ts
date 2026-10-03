@@ -73,6 +73,17 @@ export interface SceneFocus {
   authority: string;
 }
 
+export interface SceneEntity {
+  /** Stable scene-local identity used to keep nearby objects/tasks separate. */
+  id: string;
+  /** Player-facing canonical label. */
+  label: string;
+  /** What this entity is doing/for in the current scene. */
+  role: string;
+  /** Explicit facts that must not be overwritten by conversational proximity. */
+  facts?: string[];
+}
+
 export interface DayScene {
   day: number;
   phase?: "morning" | "afternoon";
@@ -81,4 +92,5 @@ export interface DayScene {
   npcsPresent: NpcId[];
   options: DayOption[];
   sceneFocus?: SceneFocus;
+  sceneEntities?: SceneEntity[];
 }
