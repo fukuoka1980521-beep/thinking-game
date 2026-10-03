@@ -282,6 +282,10 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const directAnswer = boundedString(parsed.directAnswer);
   const explicitQuestion = boundedString(parsed.explicitQuestion);
   const explicitAnswer = boundedString(parsed.explicitAnswer);
+  const questionType = parsed.questionType;
+  const responsibilityStatus = parsed.responsibilityStatus;
+  const accountabilityOwner = boundedString(parsed.accountabilityOwner, 200);
+  const impactBearers = boundedArray(parsed.impactBearers, 6, 200);
   const allowedEvidenceIds = new Set(enums.evidenceIds || []);
   const answerEvidenceIds = boundedArray(parsed.answerEvidenceIds, 12, 100)
     .filter((id) => allowedEvidenceIds.has(id));
@@ -294,13 +298,24 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const unknowns = boundedArray(parsed.unknowns, 6);
   const playerProposal = boundedString(parsed.playerProposal);
   if (!playerMeaning || !directAnswer || !underlyingGoal) return null;
+  if (!QUESTION_TYPES.includes(questionType)) return null;
+  if (!RESPONSIBILITY_STATUSES.includes(responsibilityStatus)) return null;
   if (!ANSWER_GROUNDINGS.includes(parsed.answerGrounding)) return null;
   if (explicitQuestion && !explicitAnswer) return null;
   if (!explicitQuestion && explicitAnswer) return null;
-  if (parsed.answerGrounding === "UNKNOWN" && !explicitQuestion) return null;
-  if (["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(parsed.answerGrounding) &&
-      explicitQuestion && answerEvidenceIds.length === 0) return null;
+  if (!explicitQuestion && questionType !== "NONE") return null;
+  if (explicitQuestion && questionType === "NONE") return null;
+  if (questionType === "FACTUAL") {
+    if (!["CANONICAL", "OBSERVED", "MEMORY", "INFERRED", "UNKNOWN"].includes(parsed.answerGrounding)) return null;
+    if (["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(parsed.answerGrounding) &&
+        answerEvidenceIds.length === 0) return null;
+  } else if (explicitQuestion && !["NOT_APPLICABLE", "OPINION", "UNKNOWN", "INFERRED"].includes(parsed.answerGrounding)) {
+    return null;
+  }
   if (parsed.answerGrounding === "UNKNOWN" && answerEvidenceIds.length > 0) return null;
+  if (responsibilityStatus === "KNOWN" && !accountabilityOwner) return null;
+  if (responsibilityStatus === "UNRESOLVED" && accountabilityOwner) return null;
+  if (responsibilityStatus === "NOT_APPLICABLE" && accountabilityOwner) return null;
   if (parsed.mode === "SCENE_PROBLEM" && referents.length === 0) return null;
   if (playerProposal && parsed.proposalDisposition === "NONE") return null;
   if (!playerProposal && parsed.proposalDisposition !== "NONE") return null;
@@ -321,6 +336,7 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     directAnswer,
     explicitQuestion,
     explicitAnswer,
+    questionType,
     answerGrounding: parsed.answerGrounding,
     answerEvidenceIds,
     referents,
@@ -328,6 +344,9 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     underlyingGoal,
     unresolvedDecision: boundedString(parsed.unresolvedDecision),
     authorityOwner: boundedString(parsed.authorityOwner, 200),
+    responsibilityStatus,
+    accountabilityOwner,
+    impactBearers,
     hardConstraints,
     affectedParties,
     burdens,
@@ -368,6 +387,8 @@ module.exports = {
   RESPONSE_MOVES,
   PROPOSAL_DISPOSITIONS,
   ANSWER_GROUNDINGS,
+  QUESTION_TYPES,
+  RESPONSIBILITY_STATUSES,
   TURN_PLAN_SYSTEM_INSTRUCTION,
   RENDER_SYSTEM_INSTRUCTION,
   EVIDENCE_VERIFY_SYSTEM_INSTRUCTION,
