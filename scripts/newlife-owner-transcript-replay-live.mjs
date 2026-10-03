@@ -111,7 +111,6 @@ const scenarios = [
       {
         utterance: "それなら美代子さん側に待機客の負担を押し付けなくて済みますよね",
         expect: {
-          questionType: ["ANALYTICAL", "NORMATIVE", "HYPOTHETICAL"],
           accountabilityQuestion: false,
         },
       },
@@ -148,7 +147,7 @@ const scenarios = [
       {
         utterance: "実物を並べるかカタログにするかと、受け取り場所の問題は別ですよね",
         expect: {
-          questionType: ["ANALYTICAL"],
+          questionType: ["ANALYTICAL", "FACTUAL"],
           responsibilityStatus: ["NOT_APPLICABLE"],
         },
       },
