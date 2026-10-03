@@ -198,6 +198,34 @@ try {
     throw "live kernel structural pass $($report.structuralPasses)/$($report.total)"
   }
 
+  $ownerReplayOut = "$env:USERPROFILE\Downloads\NEWLIFE_OWNER_TRANSCRIPT_REPLAY_LIVE.json"
+  $ownerReplayCheckpoint = "$env:USERPROFILE\Downloads\NEWLIFE_OWNER_TRANSCRIPT_REPLAY_LIVE.checkpoint.json"
+  $env:NEW_LIFE_OWNER_REPLAY_OUT = $ownerReplayOut
+  $env:NEW_LIFE_OWNER_REPLAY_CHECKPOINT = $ownerReplayCheckpoint
+
+  Run-Step "LIVE_OWNER_REPLAY" {
+    $ownerExit = 1
+    for ($ownerAttempt = 1; $ownerAttempt -le 3; $ownerAttempt++) {
+      Log "LIVE_OWNER_REPLAY attempt $ownerAttempt/3"
+      & node scripts/newlife-owner-transcript-replay-live.mjs
+      $ownerExit = $LASTEXITCODE
+      if ($ownerExit -eq 0) { break }
+      Log "LIVE_OWNER_REPLAY process exit=$ownerExit; retrying"
+      Start-Sleep -Seconds (5 * $ownerAttempt)
+    }
+    if ($ownerExit -ne 0) {
+      throw "LIVE_OWNER_REPLAY failed after retries; exit=$ownerExit"
+    }
+  }
+
+  $ownerReport = Get-Content -Raw -Encoding utf8 $ownerReplayOut | ConvertFrom-Json
+  if ($ownerReport.transportFailures -ne 0) {
+    throw "owner replay transport failures=$($ownerReport.transportFailures)"
+  }
+  if ($ownerReport.structuralPasses -lt $ownerReport.turnCount) {
+    throw "owner replay structural pass $($ownerReport.structuralPasses)/$($ownerReport.turnCount)"
+  }
+
   Write-Status "COMPLETE" "PASS" "all self-drive gates passed" @{
     head = $head
     buildSha = $health.buildSha
@@ -208,6 +236,11 @@ try {
     transportFailures = $report.transportFailures
     report = $kernelOut
     checkpoint = $kernelCheckpoint
+    ownerReplayTotal = $ownerReport.turnCount
+    ownerReplayStructuralPasses = $ownerReport.structuralPasses
+    ownerReplayTransportFailures = $ownerReport.transportFailures
+    ownerReplayReport = $ownerReplayOut
+    ownerReplayCheckpoint = $ownerReplayCheckpoint
   }
   Log "COMPLETE PASS"
 } catch {
