@@ -318,7 +318,10 @@ function buildRenderPrompt({ npc, dossier, plan, recentDialogue, rawPlayerUttera
 }
 
 function boundedString(value, max = 500) {
-  return typeof value === "string" && value.trim() && value.length <= max ? value.trim() : null;
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  return trimmed.slice(0, max);
 }
 function boundedArray(value, maxItems = 6, maxLength = 300) {
   if (!Array.isArray(value)) return [];

@@ -22,6 +22,7 @@ async function postJson(body) {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
+        signal: AbortSignal.timeout(100_000),
       });
       const raw = await res.text();
       let data = null;
