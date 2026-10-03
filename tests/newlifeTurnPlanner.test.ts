@@ -147,19 +147,19 @@ describe("NEW LIFE turn planner", () => {
     ).toContain("喫茶は外して");
   });
 
-  it("rejects a direct question when the plan omits the explicit answer", () => {
-    expect(
-      planner.normalizeTurnPlan(
-        validPlan({
-          explicitQuestion: "このコーヒーは深煎りか。",
-          explicitAnswer: null,
-          questionType: "FACTUAL",
-          answerGrounding: "UNKNOWN",
-        }),
-        "MIYOKO",
-        enums,
-      ),
-    ).toBeNull();
+  it("recovers a direct question when the planner omits the explicit answer", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        explicitQuestion: "このコーヒーは深煎りか。",
+        explicitAnswer: null,
+        questionType: "FACTUAL",
+        answerGrounding: "UNKNOWN",
+      }),
+      "MIYOKO",
+      enums,
+    );
+    expect(plan).not.toBeNull();
+    expect(plan.explicitAnswer).toBe(plan.directAnswer);
   });
 
   it("allows unknown factual questions only when the plan explicitly answers with uncertainty", () => {
@@ -188,23 +188,24 @@ describe("NEW LIFE turn planner", () => {
     expect(plan?.explicitAnswer).toContain("確定できない");
   });
 
-  it("rejects a factual answer whose cited evidence id does not exist", () => {
-    expect(
-      planner.normalizeTurnPlan(
-        validPlan({
-          mode: "CASUAL",
-          explicitQuestion: "今日は特別な予定があるか。",
-          explicitAnswer: "今日は特別な予定はない。",
-          questionType: "FACTUAL",
-          answerGrounding: "CANONICAL",
-          answerEvidenceIds: ["NOT_A_REAL_SOURCE"],
-          playerProposal: null,
-          proposalDisposition: "NONE",
-        }),
-        "YOHEI",
-        enums,
-      ),
-    ).toBeNull();
+  it("downgrades a factual answer whose cited evidence id does not exist", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        mode: "CASUAL",
+        explicitQuestion: "今日は特別な予定があるか。",
+        explicitAnswer: "今日は特別な予定はない。",
+        questionType: "FACTUAL",
+        answerGrounding: "CANONICAL",
+        answerEvidenceIds: ["NOT_A_REAL_SOURCE"],
+        playerProposal: null,
+        proposalDisposition: "NONE",
+      }),
+      "YOHEI",
+      enums,
+    );
+    expect(plan).not.toBeNull();
+    expect(plan.answerGrounding).toBe("UNKNOWN");
+    expect(plan.answerEvidenceIds).toEqual([]);
   });
 
   it("downgrades an unsupported factual answer to an explicit unknown without state proposals", () => {
