@@ -21,6 +21,7 @@ const {
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
   buildHealthResponse,
+  getCaseCanon,
   getCaseDossiers,
   worldEffectsForCase,
   INTERPRET_SYSTEM_INSTRUCTION,
@@ -36,12 +37,18 @@ const { canonicalStateFactsForCase } = require("./stateFacts");
 const {
   TURN_PLAN_SYSTEM_INSTRUCTION,
   RENDER_SYSTEM_INSTRUCTION,
+  EVIDENCE_VERIFY_SYSTEM_INSTRUCTION,
   buildTurnPlanSchema,
   buildRenderSchema,
+  buildEvidenceVerificationSchema,
+  buildEvidenceLedger,
+  buildEvidenceVerificationPrompt,
   buildTurnPlanPrompt,
   buildRenderPrompt,
   normalizeTurnPlan,
   normalizeRenderedLine,
+  normalizeEvidenceVerification,
+  downgradeUnsupportedFactPlan,
 } = require("./turnPlanner");
 
 // Same no-secret pattern as functions/dialogue/ and functions/newlife-dialogue/:
@@ -70,6 +77,7 @@ const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
 const ORGANIZE_THOUGHT_RESPONSE_SCHEMA = buildOrganizeThoughtResponseSchema(Type);
 const REFLECT_AGENT_RESPONSE_SCHEMA = buildReflectAgentResponseSchema(Type);
 const RENDER_RESPONSE_SCHEMA = buildRenderSchema(Type);
+const EVIDENCE_VERIFY_RESPONSE_SCHEMA = buildEvidenceVerificationSchema(Type);
 
 let genAiClient;
 function getClient() {
