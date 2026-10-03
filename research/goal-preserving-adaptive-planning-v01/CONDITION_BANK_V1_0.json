@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "conditions": [
+    {
+      "id": "CTRL",
+      "type": "none",
+      "description": "No reinjection after the initial transcript."
+    },
+    {
+      "id": "GOAL10",
+      "type": "goal_fixed",
+      "turns": [
+        10,
+        20
+      ],
+      "description": "Short current-goal reminder at turns 10 and 20."
+    },
+    {
+      "id": "FULL10",
+      "type": "full_original_fixed",
+      "turns": [
+        10,
+        20
+      ],
+      "description": "Repeat the original goal/done/constraints at turns 10 and 20, even if a later authoritative event changes them."
+    },
+    {
+      "id": "STATE10",
+      "type": "dynamic_state_fixed",
+      "turns": [
+        10,
+        20
+      ],
+      "description": "Inject the compact dynamic Goal State Block at turns 10 and 20."
+    },
+    {
+      "id": "STATE_EVENT",
+      "type": "dynamic_state_event",
+      "max_gap": 10,
+      "description": "Inject the dynamic Goal State Block immediately after the key event and otherwise no more than 10 turns apart."
+    }
+  ]
+}
