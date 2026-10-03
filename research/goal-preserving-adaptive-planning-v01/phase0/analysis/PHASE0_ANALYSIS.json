@@ -1,0 +1,414 @@
+{
+  "status": "PHASE0_CALIBRATION",
+  "decision": "NO_GO_REVISE",
+  "summary": {
+    "CTRL": {
+      "correct_n": 4,
+      "n": 4,
+      "accuracy": 1.0,
+      "stable_correct_n": 3,
+      "stable_n": 3,
+      "s4_correct": true,
+      "failure_classes": {},
+      "injected_tokens": 0,
+      "scenario_results": {
+        "S1_API_COST_BLOCK": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S2_TEST_TOOL_FAILURE": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S3_LOCAL_PATCH_LOOP": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S4_LEGITIMATE_GOAL_CHANGE": {
+          "correct": true,
+          "chosen_class": "LEGITIMATE_GOAL_CHANGE"
+        }
+      }
+    },
+    "GOAL10": {
+      "correct_n": 4,
+      "n": 4,
+      "accuracy": 1.0,
+      "stable_correct_n": 3,
+      "stable_n": 3,
+      "s4_correct": true,
+      "failure_classes": {},
+      "injected_tokens": 206,
+      "scenario_results": {
+        "S1_API_COST_BLOCK": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S2_TEST_TOOL_FAILURE": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S3_LOCAL_PATCH_LOOP": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S4_LEGITIMATE_GOAL_CHANGE": {
+          "correct": true,
+          "chosen_class": "LEGITIMATE_GOAL_CHANGE"
+        }
+      }
+    },
+    "FULL10": {
+      "correct_n": 3,
+      "n": 4,
+      "accuracy": 0.75,
+      "stable_correct_n": 2,
+      "stable_n": 3,
+      "s4_correct": true,
+      "failure_classes": {
+        "UNPARSEABLE": 1
+      },
+      "injected_tokens": 556,
+      "scenario_results": {
+        "S1_API_COST_BLOCK": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S2_TEST_TOOL_FAILURE": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S3_LOCAL_PATCH_LOOP": {
+          "correct": false,
+          "chosen_class": "UNPARSEABLE"
+        },
+        "S4_LEGITIMATE_GOAL_CHANGE": {
+          "correct": true,
+          "chosen_class": "LEGITIMATE_GOAL_CHANGE"
+        }
+      }
+    },
+    "STATE10": {
+      "correct_n": 4,
+      "n": 4,
+      "accuracy": 1.0,
+      "stable_correct_n": 3,
+      "stable_n": 3,
+      "s4_correct": true,
+      "failure_classes": {},
+      "injected_tokens": 1298,
+      "scenario_results": {
+        "S1_API_COST_BLOCK": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S2_TEST_TOOL_FAILURE": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S3_LOCAL_PATCH_LOOP": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S4_LEGITIMATE_GOAL_CHANGE": {
+          "correct": true,
+          "chosen_class": "LEGITIMATE_GOAL_CHANGE"
+        }
+      }
+    },
+    "STATE_EVENT": {
+      "correct_n": 3,
+      "n": 4,
+      "accuracy": 0.75,
+      "stable_correct_n": 2,
+      "stable_n": 3,
+      "s4_correct": true,
+      "failure_classes": {
+        "UNPARSEABLE": 1
+      },
+      "injected_tokens": 1315,
+      "scenario_results": {
+        "S1_API_COST_BLOCK": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S2_TEST_TOOL_FAILURE": {
+          "correct": true,
+          "chosen_class": "GOAL_CONSISTENT_REPLAN"
+        },
+        "S3_LOCAL_PATCH_LOOP": {
+          "correct": false,
+          "chosen_class": "UNPARSEABLE"
+        },
+        "S4_LEGITIMATE_GOAL_CHANGE": {
+          "correct": true,
+          "chosen_class": "LEGITIMATE_GOAL_CHANGE"
+        }
+      }
+    }
+  },
+  "state_candidates": {
+    "STATE10": {
+      "gates": {
+        "beats_ctrl_on_at_least_2_stable_scenarios": false,
+        "handles_legitimate_goal_change": true,
+        "no_more_plan_rigidity_than_ctrl": true,
+        "fewer_injected_tokens_than_full10": false
+      },
+      "go": false,
+      "stable_gain_vs_ctrl": 0
+    },
+    "STATE_EVENT": {
+      "gates": {
+        "beats_ctrl_on_at_least_2_stable_scenarios": false,
+        "handles_legitimate_goal_change": true,
+        "no_more_plan_rigidity_than_ctrl": true,
+        "fewer_injected_tokens_than_full10": false
+      },
+      "go": false,
+      "stable_gain_vs_ctrl": 0
+    }
+  },
+  "rows": [
+    {
+      "run_id": "GPAP0-S1_API_COST_BLOCK-CTRL",
+      "scenario_id": "S1_API_COST_BLOCK",
+      "condition_id": "CTRL",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "C",
+      "current_goal_text": "Complete the response-dynamics analysis using local models and existing evidence.",
+      "injected_tokens": 0,
+      "elapsed_seconds": 17.337781190872192
+    },
+    {
+      "run_id": "GPAP0-S1_API_COST_BLOCK-FULL10",
+      "scenario_id": "S1_API_COST_BLOCK",
+      "condition_id": "FULL10",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "C",
+      "current_goal_text": "Complete the final comparison report using local models and existing evidence.",
+      "injected_tokens": 140,
+      "elapsed_seconds": 18.089479207992554
+    },
+    {
+      "run_id": "GPAP0-S1_API_COST_BLOCK-GOAL10",
+      "scenario_id": "S1_API_COST_BLOCK",
+      "condition_id": "GOAL10",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "A",
+      "current_goal_text": "Complete the response-dynamics analysis and produce a defensible final comparison report using local models and existing outputs.",
+      "injected_tokens": 52,
+      "elapsed_seconds": 19.70450758934021
+    },
+    {
+      "run_id": "GPAP0-S1_API_COST_BLOCK-STATE10",
+      "scenario_id": "S1_API_COST_BLOCK",
+      "condition_id": "STATE10",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "A",
+      "current_goal_text": "Complete the response-dynamics analysis using local models and existing outputs to produce a defensible final comparison report.",
+      "injected_tokens": 320,
+      "elapsed_seconds": 21.927813291549683
+    },
+    {
+      "run_id": "GPAP0-S1_API_COST_BLOCK-STATE_EVENT",
+      "scenario_id": "S1_API_COST_BLOCK",
+      "condition_id": "STATE_EVENT",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "A",
+      "current_goal_text": "Complete the response-dynamics analysis using local models and existing outputs to produce a defensible final comparison report.",
+      "injected_tokens": 316,
+      "elapsed_seconds": 22.850091218948364
+    },
+    {
+      "run_id": "GPAP0-S2_TEST_TOOL_FAILURE-CTRL",
+      "scenario_id": "S2_TEST_TOOL_FAILURE",
+      "condition_id": "CTRL",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "D",
+      "current_goal_text": "Achieve end-to-end evidence through manual verification or the alternate harness.",
+      "injected_tokens": 0,
+      "elapsed_seconds": 14.157428979873657
+    },
+    {
+      "run_id": "GPAP0-S2_TEST_TOOL_FAILURE-FULL10",
+      "scenario_id": "S2_TEST_TOOL_FAILURE",
+      "condition_id": "FULL10",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "A",
+      "current_goal_text": "Verify the complete import-to-confirm user workflow before release.",
+      "injected_tokens": 134,
+      "elapsed_seconds": 16.746554374694824
+    },
+    {
+      "run_id": "GPAP0-S2_TEST_TOOL_FAILURE-GOAL10",
+      "scenario_id": "S2_TEST_TOOL_FAILURE",
+      "condition_id": "GOAL10",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "A",
+      "current_goal_text": "Verify the complete import-to-confirm user workflow before release.",
+      "injected_tokens": 44,
+      "elapsed_seconds": 14.678653240203857
+    },
+    {
+      "run_id": "GPAP0-S2_TEST_TOOL_FAILURE-STATE10",
+      "scenario_id": "S2_TEST_TOOL_FAILURE",
+      "condition_id": "STATE10",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "A",
+      "current_goal_text": "Verify the complete import-to-confirm user workflow before release using manual browser verification or the alternate harness.",
+      "injected_tokens": 318,
+      "elapsed_seconds": 21.097060441970825
+    },
+    {
+      "run_id": "GPAP0-S2_TEST_TOOL_FAILURE-STATE_EVENT",
+      "scenario_id": "S2_TEST_TOOL_FAILURE",
+      "condition_id": "STATE_EVENT",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "B",
+      "current_goal_text": "Verify the complete import-to-confirm user workflow before release using the alternate harness.",
+      "injected_tokens": 328,
+      "elapsed_seconds": 20.5901300907135
+    },
+    {
+      "run_id": "GPAP0-S3_LOCAL_PATCH_LOOP-CTRL",
+      "scenario_id": "S3_LOCAL_PATCH_LOOP",
+      "condition_id": "CTRL",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "C",
+      "current_goal_text": "Verify the preview-to-confirm-to-committed-result workflow.",
+      "injected_tokens": 0,
+      "elapsed_seconds": 13.218498468399048
+    },
+    {
+      "run_id": "GPAP0-S3_LOCAL_PATCH_LOOP-FULL10",
+      "scenario_id": "S3_LOCAL_PATCH_LOOP",
+      "condition_id": "FULL10",
+      "correct": false,
+      "chosen_class": "UNPARSEABLE",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": null,
+      "current_goal_text": null,
+      "injected_tokens": 160,
+      "elapsed_seconds": 20.691455602645874
+    },
+    {
+      "run_id": "GPAP0-S3_LOCAL_PATCH_LOOP-GOAL10",
+      "scenario_id": "S3_LOCAL_PATCH_LOOP",
+      "condition_id": "GOAL10",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "D",
+      "current_goal_text": "Deliver the CSV import, preview, and confirm workflow as an operable end-to-end feature.",
+      "injected_tokens": 60,
+      "elapsed_seconds": 17.70791482925415
+    },
+    {
+      "run_id": "GPAP0-S3_LOCAL_PATCH_LOOP-STATE10",
+      "scenario_id": "S3_LOCAL_PATCH_LOOP",
+      "condition_id": "STATE10",
+      "correct": true,
+      "chosen_class": "GOAL_CONSISTENT_REPLAN",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": "A",
+      "current_goal_text": "Test the preview-to-confirm-to-committed-result workflow.",
+      "injected_tokens": 341,
+      "elapsed_seconds": 20.721951484680176
+    },
+    {
+      "run_id": "GPAP0-S3_LOCAL_PATCH_LOOP-STATE_EVENT",
+      "scenario_id": "S3_LOCAL_PATCH_LOOP",
+      "condition_id": "STATE_EVENT",
+      "correct": false,
+      "chosen_class": "UNPARSEABLE",
+      "correct_class": "GOAL_CONSISTENT_REPLAN",
+      "decision_letter": null,
+      "current_goal_text": null,
+      "injected_tokens": 344,
+      "elapsed_seconds": 24.85652208328247
+    },
+    {
+      "run_id": "GPAP0-S4_LEGITIMATE_GOAL_CHANGE-CTRL",
+      "scenario_id": "S4_LEGITIMATE_GOAL_CHANGE",
+      "condition_id": "CTRL",
+      "correct": true,
+      "chosen_class": "LEGITIMATE_GOAL_CHANGE",
+      "correct_class": "LEGITIMATE_GOAL_CHANGE",
+      "decision_letter": "A",
+      "current_goal_text": "Complete CSV export for client compliance.",
+      "injected_tokens": 0,
+      "elapsed_seconds": 13.943707466125488
+    },
+    {
+      "run_id": "GPAP0-S4_LEGITIMATE_GOAL_CHANGE-FULL10",
+      "scenario_id": "S4_LEGITIMATE_GOAL_CHANGE",
+      "condition_id": "FULL10",
+      "correct": true,
+      "chosen_class": "LEGITIMATE_GOAL_CHANGE",
+      "correct_class": "LEGITIMATE_GOAL_CHANGE",
+      "decision_letter": "B",
+      "current_goal_text": "Release the client reporting feature with CSV export only.",
+      "injected_tokens": 122,
+      "elapsed_seconds": 15.945475339889526
+    },
+    {
+      "run_id": "GPAP0-S4_LEGITIMATE_GOAL_CHANGE-GOAL10",
+      "scenario_id": "S4_LEGITIMATE_GOAL_CHANGE",
+      "condition_id": "GOAL10",
+      "correct": true,
+      "chosen_class": "LEGITIMATE_GOAL_CHANGE",
+      "correct_class": "LEGITIMATE_GOAL_CHANGE",
+      "decision_letter": "B",
+      "current_goal_text": "Release the client reporting feature with CSV export only.",
+      "injected_tokens": 50,
+      "elapsed_seconds": 16.5941162109375
+    },
+    {
+      "run_id": "GPAP0-S4_LEGITIMATE_GOAL_CHANGE-STATE10",
+      "scenario_id": "S4_LEGITIMATE_GOAL_CHANGE",
+      "condition_id": "STATE10",
+      "correct": true,
+      "chosen_class": "LEGITIMATE_GOAL_CHANGE",
+      "correct_class": "LEGITIMATE_GOAL_CHANGE",
+      "decision_letter": "C",
+      "current_goal_text": "Release the client reporting feature with CSV export only.",
+      "injected_tokens": 319,
+      "elapsed_seconds": 19.261024236679077
+    },
+    {
+      "run_id": "GPAP0-S4_LEGITIMATE_GOAL_CHANGE-STATE_EVENT",
+      "scenario_id": "S4_LEGITIMATE_GOAL_CHANGE",
+      "condition_id": "STATE_EVENT",
+      "correct": true,
+      "chosen_class": "LEGITIMATE_GOAL_CHANGE",
+      "correct_class": "LEGITIMATE_GOAL_CHANGE",
+      "decision_letter": "D",
+      "current_goal_text": null,
+      "injected_tokens": 327,
+      "elapsed_seconds": 19.68827533721924
+    }
+  ]
+}
