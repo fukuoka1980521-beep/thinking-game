@@ -11,7 +11,7 @@ const RESPONSE_MOVES = [
   "CLARIFY",
 ];
 const PROPOSAL_DISPOSITIONS = ["NONE", "ACCEPT", "MODIFY", "REJECT", "NEEDS_CHECK"];
-const ANSWER_GROUNDINGS = ["NOT_APPLICABLE", "CANONICAL", "OBSERVED", "MEMORY", "OPINION", "UNKNOWN"];
+const ANSWER_GROUNDINGS = ["NOT_APPLICABLE", "CANONICAL", "OBSERVED", "MEMORY", "INFERRED", "OPINION", "UNKNOWN"];
 
 const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断プランナー」です。セリフは書きません。プレイヤーの発言を理解し、返答に必要な意味要素を落とさないためのResponse PlanだけをJSONで作ります。
 
@@ -33,7 +33,9 @@ const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断�
 - playerProposalがある場合、underlyingGoalを満たすか、hardConstraintsを破らないか、affectedPartiesへどんなburdensを生むかを比較して ACCEPT / MODIFY / REJECT / NEEDS_CHECK を選ぶ。
 - 提案の一部だけ修正すれば成立する場合はREJECTではなくMODIFYを優先し、成立条件をdirectAnswerに含める。
 - プレイヤーが明示的な質問をしている場合、explicitQuestion にその質問の意味、explicitAnswer にその質問へ直接返す答えを必ず入れること。「誰が」と聞かれたら誰か／未確定かを答え、「なぜ」と聞かれたら理由を答える。周辺論点だけで質問をかわさないこと。
-- factualな explicitAnswer を sceneCanon / canonicalState / recentDialogue / retrievedMemories で裏付けられない場合は answerGrounding="UNKNOWN" とし、知らない具体事実を作らないこと。character dossierの雰囲気や職業から事実を補わない。
+- factualな explicitAnswer を evidenceLedger で裏付けられない場合は answerGrounding="UNKNOWN" とし、知らない具体事実を作らないこと。character dossierの雰囲気や職業から事実を補わない。
+- answerGrounding が CANONICAL / OBSERVED / MEMORY / INFERRED の場合は、explicitAnswerを支える evidenceLedger の id を answerEvidenceIds に必ず入れること。根拠にならない近接情報を引用してはいけない。
+- INFERRED は、提示された証拠から自然に導けるが明文ではない推論だけに使う。新しい商品仕様・時間・人数・感情・習慣を作るためには使わない。
 - directAnswerは、キャラクター口調にする前の「何と答えるべきか」の意味内容を1〜2文で書く。explicitQuestionがある場合は explicitAnswer を先に含める。
 - requiredContentには、最終セリフで落としてはいけない具体要素を最大4件入れる。explicitQuestionがある場合、explicitAnswerの意味内容を最初のrequiredContentに含める。
 - unknownsには、根拠がなく断定してはいけない点を書く。
@@ -73,6 +75,7 @@ function buildTurnPlanSchema(Type, enums) {
       explicitQuestion: { type: Type.STRING, nullable: true },
       explicitAnswer: { type: Type.STRING, nullable: true },
       answerGrounding: { type: Type.STRING, enum: ANSWER_GROUNDINGS },
+      answerEvidenceIds: { type: Type.ARRAY, items: { type: Type.STRING } },
       referents: { type: Type.ARRAY, items: { type: Type.STRING } },
       activeIssue: { type: Type.STRING, nullable: true },
       underlyingGoal: { type: Type.STRING },
@@ -96,7 +99,7 @@ function buildTurnPlanSchema(Type, enums) {
     },
     required: [
       "mode", "playerMeaning", "directAnswer", "explicitQuestion", "explicitAnswer",
-      "answerGrounding", "referents", "activeIssue",
+      "answerGrounding", "answerEvidenceIds", "referents", "activeIssue",
       "underlyingGoal", "unresolvedDecision", "authorityOwner", "hardConstraints",
       "affectedParties", "burdens", "playerProposal", "proposalDisposition",
       "responseMove", "requiredContent", "unknowns",
