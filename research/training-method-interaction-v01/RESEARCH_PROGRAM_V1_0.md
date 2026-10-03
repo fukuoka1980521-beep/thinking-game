@@ -26,15 +26,15 @@ This is a behavioral model. Internal mechanism claims require separate mechanist
 
 Use one model lineage with staged checkpoints while holding architecture and pretraining origin as constant as practicable.
 
-Preferred lineage: Llama 3.1 8B → Tülu 3 SFT → Tülu 3 DPO → Tülu 3 final RLVR.
+Preferred lineage: OLMo 2 7B → OLMo 2 SFT → OLMo 2 DPO → OLMo 2 Instruct/RLVR.
 
 Stages:
-- BASE: meta-llama/Llama-3.1-8B
-- SFT: allenai/Llama-3.1-Tulu-3-8B-SFT
-- DPO: allenai/Llama-3.1-Tulu-3-8B-DPO
-- RLVR: allenai/Llama-3.1-Tulu-3-8B
+- BASE: allenai/OLMo-2-1124-7B
+- SFT: allenai/OLMo-2-1124-7B-SFT
+- DPO: allenai/OLMo-2-1124-7B-DPO
+- RLVR: allenai/OLMo-2-1124-7B-Instruct
 
-Tülu 3 is suitable because its post-training recipe is open and explicitly includes SFT, DPO and RLVR.
+OLMo 2 is preferred over the earlier Llama/Tülu candidate because the full 7B lineage is openly available under Apache 2.0, the model cards explicitly document SFT → DPO → RLVR, and BASE access does not require a gated license workflow.
 
 ## Factorial design
 

@@ -49,3 +49,15 @@ Current local runtime check:
 - LM Studio: not detected
 
 Decision: do not install or download models yet. Freeze prompts, measurement and pilot gate first.
+
+## Quantization scientific control
+
+Recent studies report that low-bit quantization can degrade reasoning and instruction-following non-uniformly, with planning/numerical reasoning particularly vulnerable in some settings. Therefore Q4 inference is not assumed behaviorally equivalent to BF16.
+
+Required if Q4_K_M is used:
+1. every compared training stage must use the same Q4_K_M conversion convention and runtime;
+2. no stage may use BF16 while another uses Q4;
+3. before interpreting TrainingStage effects, run a small precision-sensitivity bridge on at least two representative stages using a higher-precision quantization or BF16 reference where feasible;
+4. if quantization changes method recoverability materially, the local Q4 study is exploratory and cannot support a clean training-stage causal claim.
+
+A third-party BASE quantization from a different conversion pipeline must not be silently mixed with Tülu quantizations. Prefer one conversion source/pipeline for all stages, or locally quantize each canonical checkpoint with one frozen llama.cpp revision.

@@ -1,12 +1,43 @@
 {
   "project": "TRAINING_METHOD_INTERACTION_V0_1",
-  "status": "DESIGN_ZERO_COST",
+  "status": "PRE_SMOKE_DESIGN_LOCK_CANDIDATE",
   "date": "2026-10-03",
   "parent_result": "methodological-framing-v01 complete public-deposit-ready",
   "core_estimand": "TrainingStage x MethodFraming interaction on observable research-plan signatures",
-  "preferred_lineage": "Llama-3.1-8B -> Tulu-3-8B-SFT -> Tulu-3-8B-DPO -> Tulu-3-8B-RLVR",
+  "primary_lineage": "OLMo-2-1124-7B -> SFT -> DPO -> Instruct(RLVR)",
+  "stage_labels": [
+    "BASE",
+    "SFT",
+    "DPO",
+    "RLVR"
+  ],
+  "canonical_revisions": {
+    "BASE": "7df9a82518afdecae4e8c026b27adccc8c1f0032",
+    "SFT": "1de02c0175118a9de5854aec80a1f970e701e928",
+    "DPO": "e34ea60adff2e575f4fe7569eaffd1b28509b6fd",
+    "RLVR": "470b1fba1ae01581f270116362ee4aa1b97f4c84"
+  },
+  "pilot_manifest_sha256": "d3bb46637662ba20144c251ef5b61e5598866134570fe6390442e32fe55f157c",
+  "pilot_rows": 72,
+  "pilot_methods": [
+    "GENERIC",
+    "BAYESIAN",
+    "SOFTWARE_TESTING"
+  ],
+  "pilot_tasks": [
+    "T1",
+    "T2"
+  ],
+  "template_smoke_unique_outputs_planned": 7,
+  "runtime": {
+    "llama_cpp_commit": "4e7481175cbd4759df8bee2f1c1a0073effbebd7",
+    "threads": 10,
+    "gpu_layers": 0,
+    "context_size": 4096
+  },
   "paid_model_calls_authorized": false,
-  "large_checkpoint_download_authorized": false,
-  "next_gate": "MEASUREMENT_AND_SIMULATION_BEFORE_MODEL_EXECUTION",
-  "pilot_confirmatory_status": "NOT_STARTED"
+  "paid_compute_authorized": false,
+  "pilot_model_download": "BASE_Q4_K_M_IN_PROGRESS_FREE_HTTP",
+  "next_gate": "TEMPLATE_SMOKE_THEN_RENDERING_DECISION",
+  "confirmatory_status": "NOT_STARTED"
 }
