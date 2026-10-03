@@ -1,4 +1,4 @@
-import type { NpcId, SceneFocus } from "./types";
+import type { NpcId, SceneEntity, SceneFocus } from "./types";
 import { postDialogueJson } from "./semantic/httpInterpreter";
 
 export const REFOUNDATION_ENDPOINT = "https://newlife-refoundation-ai-zqtk74q2ra-an.a.run.app";
@@ -67,6 +67,7 @@ export interface LiveSceneContext {
   title: string;
   text: string;
   sceneFocus?: SceneFocus;
+  sceneEntities?: SceneEntity[];
   retrievedMemories?: string[];
   retrievedMemoryAnchors?: Array<{
     day: number;
@@ -100,6 +101,7 @@ export async function reflectWithRefoundation(
       sceneTitle: scene.title,
       sceneText: scene.text,
       sceneFocus: scene.sceneFocus ?? null,
+      sceneEntities: Array.isArray(scene.sceneEntities) ? scene.sceneEntities.slice(0, 12) : [],
       canonicalState: scene.canonicalState,
     },
   });
@@ -135,6 +137,7 @@ export async function converseWithRefoundation(
     relationshipState: "NEUTRAL", boundaryStatus: "UNKNOWN", remainingMinutes: 30,
     activeCommitment: null, sceneRevisionText: null,
     day: scene.day, sceneTitle: scene.title, sceneText: scene.text, sceneFocus: scene.sceneFocus ?? null,
+    sceneEntities: Array.isArray(scene.sceneEntities) ? scene.sceneEntities.slice(0, 12) : [],
     retrievedMemories: Array.isArray(scene.retrievedMemories) ? scene.retrievedMemories.slice(0, 8) : [],
     retrievedMemoryAnchors: Array.isArray(scene.retrievedMemoryAnchors) ? scene.retrievedMemoryAnchors.slice(0, 8) : [],
     canonicalState: scene.canonicalState,
