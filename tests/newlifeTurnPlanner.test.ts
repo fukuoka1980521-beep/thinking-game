@@ -33,6 +33,7 @@ function validPlan(overrides: Record<string, unknown> = {}) {
     authorityOwner: "喫茶席は美代子、会館側は文子。",
     responsibilityStatus: "NOT_APPLICABLE",
     accountabilityOwner: null,
+    accountabilityEvidenceIds: [],
     impactBearers: ["美代子", "喫茶の通常客"],
     hardConstraints: ["喫茶席は美代子の同意なしに使えない。"],
     affectedParties: ["美代子", "喫茶の通常客", "文子"],
@@ -277,25 +278,33 @@ describe("NEW LIFE turn planner", () => {
     expect(plan?.impactBearers).toEqual(expect.arrayContaining(["美代子", "喫茶の通常客"]));
   });
 
-  it("rejects an unresolved responsibility plan that silently assigns an accountability owner", () => {
-    expect(
-      planner.normalizeTurnPlan(
-        validPlan({
-          explicitQuestion: "誰が責任を負うのか。",
-          explicitAnswer: "責任は未確定。",
-          questionType: "NORMATIVE",
-          answerGrounding: "OPINION",
-          responsibilityStatus: "UNRESOLVED",
-          accountabilityOwner: "美代子",
-          playerProposal: null,
-          proposalDisposition: "NONE",
-          responseMove: "ANSWER",
-          requiredContent: ["責任は未確定"],
-        }),
-        "FUMIKO",
-        enums,
-      ),
-    ).toBeNull();
+  it("downgrades an unsupported accountability assignment instead of failing the whole dialogue", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        explicitQuestion: "誰が責任を負うのか。",
+        explicitAnswer: "美代子が責任を負う。",
+        questionType: "NORMATIVE",
+        answerGrounding: "OPINION",
+        responsibilityStatus: "KNOWN",
+        accountabilityOwner: "美代子",
+        accountabilityEvidenceIds: [],
+        playerProposal: null,
+        proposalDisposition: "NONE",
+        responseMove: "ANSWER",
+        requiredContent: ["美代子が責任を負う"],
+      }),
+      "FUMIKO",
+      enums,
+    );
+    expect(plan?.responsibilityStatus).toBe("UNRESOLVED");
+    expect(plan?.accountabilityOwner).toBeNull();
+    expect(plan?.responsibilityDowngraded).toBe(true);
+
+    const safe = planner.downgradeUnsupportedResponsibilityPlan(plan);
+    expect(safe.directAnswer).toContain("責任の所在");
+    expect(safe.directAnswer).toContain("決まっていません");
+    expect(safe.candidateCommitments).toEqual([]);
+    expect(safe.candidateWorldEffects).toEqual([]);
   });
 
   it("exposes persona identity without exposing the whole persona model as factual evidence", () => {
@@ -313,5 +322,60 @@ describe("NEW LIFE turn planner", () => {
     expect(ids).toContain("PERSONA_IDENTITY");
     expect(ids).not.toContain("DOSSIER");
     expect(ledger.find((x: { id: string }) => x.id === "PERSONA_IDENTITY")?.text).toContain("runs the café");
+  });
+
+  it("allows known accountability only with typed accountability evidence", () => {
+    const localEnums = {
+      ...enums,
+      evidenceIds: [...enums.evidenceIds, "RESPONSIBILITY_0"],
+      accountabilityEvidenceIds: ["RESPONSIBILITY_0"],
+    };
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        explicitQuestion: "誰が責任を負うのか。",
+        explicitAnswer: "会館側の運営責任者が負う。",
+        questionType: "FACTUAL",
+        answerGrounding: "CANONICAL",
+        answerEvidenceIds: ["RESPONSIBILITY_0"],
+        responsibilityStatus: "KNOWN",
+        accountabilityOwner: "会館側の運営責任者",
+        accountabilityEvidenceIds: ["RESPONSIBILITY_0"],
+        playerProposal: null,
+        proposalDisposition: "NONE",
+        responseMove: "ANSWER",
+        requiredContent: ["会館側の運営責任者が負う"],
+      }),
+      "FUMIKO",
+      localEnums,
+    );
+    expect(plan?.responsibilityStatus).toBe("KNOWN");
+    expect(plan?.accountabilityOwner).toBe("会館側の運営責任者");
+    expect(plan?.responsibilityDowngraded).toBe(false);
+  });
+
+  it("supports analytical questions without pretending they are missing world facts", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        mode: "SCENE_PROBLEM",
+        playerMeaning: "展示方法と受け取り場所の因果関係を確認している。",
+        directAnswer: "展示方法と受け取り場所は別の論点として扱える。",
+        explicitQuestion: "実物展示かカタログかと受け取り場所は別問題か。",
+        explicitAnswer: "別問題として扱える。",
+        questionType: "ANALYTICAL",
+        answerGrounding: "INFERRED",
+        answerEvidenceIds: [],
+        responsibilityStatus: "NOT_APPLICABLE",
+        accountabilityOwner: null,
+        accountabilityEvidenceIds: [],
+        playerProposal: null,
+        proposalDisposition: "NONE",
+        responseMove: "ANSWER",
+        requiredContent: ["展示方法と受け取り場所は別の論点"],
+      }),
+      "FUMIKO",
+      enums,
+    );
+    expect(plan?.questionType).toBe("ANALYTICAL");
+    expect(plan?.answerGrounding).toBe("INFERRED");
   });
 });
