@@ -13,7 +13,7 @@ const enums = {
   sceneStatuses: ["AWAIT_PLAYER", "NPC_EXCHANGE", "RESOLVED", "STALLED"],
   uncertaintyLevels: ["LOW", "MEDIUM", "HIGH"],
   worldEffects: ["MIYOKO_WAITING_CAPACITY_STATED"],
-  evidenceIds: ["SCENE_TEXT", "SCENE_FOCUS", "STATE_0", "DOSSIER"],
+  evidenceIds: ["SCENE_TEXT", "SCENE_FOCUS", "STATE_0", "PERSONA_IDENTITY", "PLAYER_INPUT"],
 };
 
 function validPlan(overrides: Record<string, unknown> = {}) {
@@ -23,6 +23,7 @@ function validPlan(overrides: Record<string, unknown> = {}) {
     directAnswer: "その案なら喫茶を待機場所から外し、会館側で待機場所を考え直せる。",
     explicitQuestion: null,
     explicitAnswer: null,
+    questionType: "NONE",
     answerGrounding: "NOT_APPLICABLE",
     answerEvidenceIds: [],
     referents: ["喫茶の席", "会館側の待機場所"],
@@ -30,6 +31,9 @@ function validPlan(overrides: Record<string, unknown> = {}) {
     underlyingGoal: "試売客の待機を混乱なく処理し、他人の商売へ無断の負担をかけない。",
     unresolvedDecision: "喫茶を使うか会館側だけにするか。",
     authorityOwner: "喫茶席は美代子、会館側は文子。",
+    responsibilityStatus: "NOT_APPLICABLE",
+    accountabilityOwner: null,
+    impactBearers: ["美代子", "喫茶の通常客"],
     hardConstraints: ["喫茶席は美代子の同意なしに使えない。"],
     affectedParties: ["美代子", "喫茶の通常客", "文子"],
     burdens: ["喫茶席を待機に使うと通常客の席を圧迫する可能性がある。"],
@@ -76,6 +80,7 @@ describe("NEW LIFE turn planner", () => {
         directAnswer: "今日はいつも通りの予定だ。",
         explicitQuestion: "今日の予定は何か。",
         explicitAnswer: "特別な予定はなく、いつも通りの予定だ。",
+        questionType: "FACTUAL",
         answerGrounding: "CANONICAL",
         answerEvidenceIds: ["SCENE_TEXT"],
         referents: ["今日の予定"],
@@ -147,6 +152,7 @@ describe("NEW LIFE turn planner", () => {
         validPlan({
           explicitQuestion: "このコーヒーは深煎りか。",
           explicitAnswer: null,
+          questionType: "FACTUAL",
           answerGrounding: "UNKNOWN",
         }),
         "MIYOKO",
@@ -163,6 +169,7 @@ describe("NEW LIFE turn planner", () => {
         directAnswer: "焙煎度は今の情報では確定できないと答える。",
         explicitQuestion: "このコーヒーは深煎りか。",
         explicitAnswer: "焙煎度は今の情報では確定できない。",
+        questionType: "FACTUAL",
         answerGrounding: "UNKNOWN",
         answerEvidenceIds: [],
         activeIssue: null,
@@ -187,6 +194,7 @@ describe("NEW LIFE turn planner", () => {
           mode: "CASUAL",
           explicitQuestion: "今日は特別な予定があるか。",
           explicitAnswer: "今日は特別な予定はない。",
+          questionType: "FACTUAL",
           answerGrounding: "CANONICAL",
           answerEvidenceIds: ["NOT_A_REAL_SOURCE"],
           playerProposal: null,
@@ -204,6 +212,7 @@ describe("NEW LIFE turn planner", () => {
         mode: "TOPIC_SHIFT",
         explicitQuestion: "コーヒーは深煎りか。",
         explicitAnswer: "深煎りです。",
+        questionType: "FACTUAL",
         answerGrounding: "OBSERVED",
         answerEvidenceIds: ["SCENE_TEXT"],
         playerProposal: null,
@@ -234,9 +243,75 @@ describe("NEW LIFE turn planner", () => {
         retrievedMemories: ["Day 2 [OBSERVATION] 椅子を見た。"],
       },
       recentDialogue: [{ speaker: "PLAYER", text: "深煎りですか" }],
+      rawPlayerUtterance: "このコーヒーは深煎りですか",
     });
     expect(ledger.map((x: { id: string }) => x.id)).toEqual(
-      expect.arrayContaining(["CASE_CANON", "DOSSIER", "SCENE_TEXT", "SCENE_FOCUS", "STATE_0", "MEMORY_0", "DIALOGUE_0"]),
+      expect.arrayContaining(["CASE_CANON", "SCENE_TEXT", "SCENE_FOCUS", "STATE_0", "MEMORY_0", "DIALOGUE_0", "PLAYER_INPUT"]),
     );
+    expect(ledger.map((x: { id: string }) => x.id)).not.toContain("DOSSIER");
+  });
+
+  it("does not equate decision authority with accountability", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        playerMeaning: "喫茶客が座れなくなる場合の責任主体を尋ねている。",
+        directAnswer: "実際の負担は美代子の店と通常客に出るが、誰が責任を負うかは今の情報では決まっていない。",
+        explicitQuestion: "通常客が座れなくなった場合、誰が責任を負うのか。",
+        explicitAnswer: "誰が責任を負うかは今の情報では決まっていない。",
+        questionType: "NORMATIVE",
+        answerGrounding: "OPINION",
+        answerEvidenceIds: [],
+        responsibilityStatus: "UNRESOLVED",
+        accountabilityOwner: null,
+        impactBearers: ["美代子", "喫茶の通常客"],
+        playerProposal: null,
+        proposalDisposition: "NONE",
+        responseMove: "ANSWER",
+        requiredContent: ["責任の所在は未確定", "負担は美代子の店と通常客に出る"],
+      }),
+      "FUMIKO",
+      enums,
+    );
+    expect(plan?.responsibilityStatus).toBe("UNRESOLVED");
+    expect(plan?.accountabilityOwner).toBeNull();
+    expect(plan?.impactBearers).toEqual(expect.arrayContaining(["美代子", "喫茶の通常客"]));
+  });
+
+  it("rejects an unresolved responsibility plan that silently assigns an accountability owner", () => {
+    expect(
+      planner.normalizeTurnPlan(
+        validPlan({
+          explicitQuestion: "誰が責任を負うのか。",
+          explicitAnswer: "責任は未確定。",
+          questionType: "NORMATIVE",
+          answerGrounding: "OPINION",
+          responsibilityStatus: "UNRESOLVED",
+          accountabilityOwner: "美代子",
+          playerProposal: null,
+          proposalDisposition: "NONE",
+          responseMove: "ANSWER",
+          requiredContent: ["責任は未確定"],
+        }),
+        "FUMIKO",
+        enums,
+      ),
+    ).toBeNull();
+  });
+
+  it("exposes persona identity without exposing the whole persona model as factual evidence", () => {
+    const ledger = planner.buildEvidenceLedger({
+      caseCanon: { setting: "町" },
+      dossier: {
+        displayName: "美代子",
+        canonicalCharacterModel: "**IDENTITY:** 60s, runs the café.\n**SPEECH MODEL:** warm host.",
+      },
+      dynamicState: {},
+      recentDialogue: [],
+      rawPlayerUtterance: "何の仕事をしているの？",
+    });
+    const ids = ledger.map((x: { id: string }) => x.id);
+    expect(ids).toContain("PERSONA_IDENTITY");
+    expect(ids).not.toContain("DOSSIER");
+    expect(ledger.find((x: { id: string }) => x.id === "PERSONA_IDENTITY")?.text).toContain("runs the café");
   });
 });
