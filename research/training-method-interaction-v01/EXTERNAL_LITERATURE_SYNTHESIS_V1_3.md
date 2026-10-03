@@ -98,3 +98,12 @@ Only after behavioral replication:
 - compare whether stage transitions rotate/reweight the same representation versus create a new one.
 
 This would move the program from black-box behavioral evidence toward a mechanistic account.
+
+## Source identifiers verified 2026-10-03
+
+- Yue et al. (2025), *Does Reinforcement Learning Really Incentivize Reasoning Capacity in LLMs Beyond the Base Model?* — arXiv:2504.13837.
+- Bigoulaeva et al. (2026), *Patches of Nonlinearity: Instruction Vectors in Large Language Models* — arXiv:2602.07930.
+- Wu et al. (2023), *From Language Modeling to Instruction Following: Understanding the Behavior Shift in LLMs after Instruction Tuning* — arXiv:2310.00492.
+- Lambert et al. (2024), *Tulu 3: Pushing Frontiers in Open Language Model Post-Training* — arXiv:2411.15124.
+
+These sources are background/interpretive evidence only and are not used to alter the frozen pilot design.
