@@ -99,6 +99,8 @@ const cases = [
     utterance: "当日必要になったら美代子さんに電話して聞けばよいのでは？",
     expectedDisposition: ["REJECT", "MODIFY"],
     expectedResponsibilityStatus: "NOT_APPLICABLE",
+    expectedImpactQuestion: false,
+    expectedAccountabilityQuestion: false,
   },
   {
     id: "burden_reasoning",
@@ -113,8 +115,10 @@ const cases = [
     },
     canonicalState: { mSeats: "assumed" },
     utterance: "待機客のせいで喫茶の普通のお客さんが座れなくなる負担は誰が持つんですか？",
-    expectedQuestionType: ["HYPOTHETICAL", "NORMATIVE", "ANALYTICAL"],
-    expectedResponsibilityStatus: "UNRESOLVED",
+    expectedQuestionType: ["FACTUAL", "HYPOTHETICAL", "NORMATIVE", "ANALYTICAL"],
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
+    expectedImpactQuestion: true,
+    expectedAccountabilityQuestion: false,
     requireNullAccountabilityOwner: true,
     minImpactBearers: 1,
   },
@@ -133,6 +137,8 @@ const cases = [
     utterance: "もし待機客のせいで喫茶の普通のお客さんが入れなくなったら、その責任は誰が負うんですか？",
     expectedQuestionType: ["HYPOTHETICAL", "NORMATIVE"],
     expectedResponsibilityStatus: "UNRESOLVED",
+    expectedImpactQuestion: false,
+    expectedAccountabilityQuestion: true,
     requireNullAccountabilityOwner: true,
     minImpactBearers: 1,
   },
@@ -151,6 +157,8 @@ const cases = [
     utterance: "それなら喫茶を待機場所から外して、会館側だけで考えた方がよくないですか？",
     expectedDisposition: ["ACCEPT", "MODIFY"],
     expectedResponsibilityStatus: "NOT_APPLICABLE",
+    expectedImpactQuestion: false,
+    expectedAccountabilityQuestion: false,
   },
   {
     id: "alternative_accept_2",
@@ -238,6 +246,8 @@ function structuralChecks(c, reply) {
     questionType: matchesExpected(p?.questionType, c.expectedQuestionType),
     grounding: matchesExpected(p?.answerGrounding, c.expectedGrounding),
     responsibilityStatus: matchesExpected(p?.responsibilityStatus, c.expectedResponsibilityStatus),
+    impactQuestion: matchesExpected(p?.impactQuestion, c.expectedImpactQuestion),
+    accountabilityQuestion: matchesExpected(p?.accountabilityQuestion, c.expectedAccountabilityQuestion),
     accountabilityOwner:
       !c.requireNullAccountabilityOwner || p?.accountabilityOwner === null,
     impactBearers:
