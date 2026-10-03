@@ -72,16 +72,6 @@ function buildTurnPlanSchema(Type, enums) {
       responseMove: { type: Type.STRING, enum: RESPONSE_MOVES },
       requiredContent: { type: Type.ARRAY, items: { type: Type.STRING } },
       unknowns: { type: Type.ARRAY, items: { type: Type.STRING } },
-      candidateTurn: {
-        type: Type.OBJECT,
-        properties: {
-          action: { type: Type.STRING, enum: enums.actionTypes },
-          boundaryMode: { type: Type.STRING, enum: enums.boundaryModes },
-          relationalEvents: { type: Type.ARRAY, items: { type: Type.STRING, enum: enums.relationalEvents } },
-          needsClarification: { type: Type.BOOLEAN },
-        },
-        required: ["action", "boundaryMode", "relationalEvents", "needsClarification"],
-      },
       candidateFactRevealIds: { type: Type.ARRAY, items: { type: Type.STRING } },
       candidateCommitments: { type: Type.ARRAY, items: { type: Type.STRING } },
       candidateWorldEffects: worldEffectProperty,
@@ -94,7 +84,7 @@ function buildTurnPlanSchema(Type, enums) {
       "mode", "playerMeaning", "directAnswer", "referents", "activeIssue",
       "unresolvedDecision", "authorityOwner", "burdenOwner", "playerProposal",
       "proposalDisposition", "responseMove", "requiredContent", "unknowns",
-      "candidateTurn", "candidateFactRevealIds", "candidateCommitments",
+      "candidateFactRevealIds", "candidateCommitments",
       "candidateWorldEffects", "uncertainty", "thoughtSupportSignal",
       "sceneStatus", "nextNpc",
     ],
@@ -147,13 +137,6 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const playerMeaning = boundedString(parsed.playerMeaning);
   const directAnswer = boundedString(parsed.directAnswer);
   if (!playerMeaning || !directAnswer) return null;
-  const candidateTurn = parsed.candidateTurn;
-  if (!candidateTurn || typeof candidateTurn !== "object") return null;
-  if (!enums.actionTypes.includes(candidateTurn.action)) return null;
-  if (!enums.boundaryModes.includes(candidateTurn.boundaryMode)) return null;
-  if (!Array.isArray(candidateTurn.relationalEvents) ||
-      !candidateTurn.relationalEvents.every((x) => enums.relationalEvents.includes(x))) return null;
-  if (typeof candidateTurn.needsClarification !== "boolean") return null;
   if (!enums.uncertaintyLevels.includes(parsed.uncertainty)) return null;
   if (!enums.sceneStatuses.includes(parsed.sceneStatus)) return null;
 
@@ -177,12 +160,6 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     responseMove: parsed.responseMove,
     requiredContent: boundedArray(parsed.requiredContent, 4),
     unknowns: boundedArray(parsed.unknowns, 6),
-    candidateTurn: {
-      action: candidateTurn.action,
-      boundaryMode: candidateTurn.boundaryMode,
-      relationalEvents: candidateTurn.relationalEvents,
-      needsClarification: candidateTurn.needsClarification,
-    },
     candidateFactRevealIds: boundedArray(parsed.candidateFactRevealIds, 5, 200),
     candidateCommitments: boundedArray(parsed.candidateCommitments, 5, 200),
     candidateWorldEffects: Array.isArray(parsed.candidateWorldEffects)
