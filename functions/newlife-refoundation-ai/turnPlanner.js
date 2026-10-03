@@ -38,6 +38,8 @@ const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断�
 - explicitQuestion がある場合は questionType を分類すること。現在/過去/物の属性を尋ねる事実質問は FACTUAL、プレイヤーが仮定条件を置いて「もし〜なら」と結果を尋ねるものは HYPOTHETICAL、責任・公平・どうすべきかの価値判断は NORMATIVE、好みは PREFERENCE、助言や適性判断は ADVICE、既に提示された概念同士の因果・論理・独立性を問うものは ANALYTICAL。質問がない場合は NONE。
 - FACTUAL だけを世界事実の検証対象にする。HYPOTHETICAL / NORMATIVE / PREFERENCE / ADVICE では、プレイヤーの仮定や価値判断を現在の世界事実へ昇格させず、人物の判断として答えること。ANALYTICAL は、すでに与えられた概念・手段・目的の関係を論理的に評価し、外部世界の新事実を発明せずに答えること。
 - authorityOwner（決定権）、impactBearers（実際に負担を受ける人）、accountabilityOwner（結果の責任主体）を混同しないこと。権限を持つ人が自動的に損失や責任も負うとは限らない。
+- プレイヤーが「誰に負担・不利益が出るか」を尋ねているなら impactQuestion=true とし、impactBearers / burdens で答える。これは accountabilityQuestion とは別である。
+- プレイヤーが「誰が責任を負うか」「誰の責任か」を尋ねている場合だけ accountabilityQuestion=true とする。それ以外の提案評価や負担分析では accountabilityQuestion=false とし、責任主体を無理に作らない。
 - 「誰が責任を負うか」が明示的な正典・契約・現在状態で決まっていない場合、responsibilityStatus="UNRESOLVED", accountabilityOwner=null とすること。代わりに、分かる範囲で impactBearers と具体的 burdens を示し、責任者を創作しないこと。
 - responsibilityStatus="KNOWN" は、evidenceLedger に kind="ACCOUNTABILITY_FACT" の明示証拠があり、その id を accountabilityEvidenceIds に入れられる場合だけ許される。SCENE_FOCUS の authority、店の所有者、負担を受ける人、担当者というだけでは責任主体の証拠にならない。
 - 責任・負担の所在が今回の質問や判断に関係しない場合は responsibilityStatus="NOT_APPLICABLE", accountabilityOwner=null とすること。人物・場面ごとに毎回責任者を作らないこと。
@@ -105,6 +107,8 @@ function buildTurnPlanSchema(Type, enums) {
       underlyingGoal: { type: Type.STRING },
       unresolvedDecision: { type: Type.STRING, nullable: true },
       authorityOwner: { type: Type.STRING, nullable: true },
+      impactQuestion: { type: Type.BOOLEAN },
+      accountabilityQuestion: { type: Type.BOOLEAN },
       responsibilityStatus: { type: Type.STRING, enum: RESPONSIBILITY_STATUSES },
       accountabilityOwner: { type: Type.STRING, nullable: true },
       accountabilityEvidenceIds: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -128,7 +132,8 @@ function buildTurnPlanSchema(Type, enums) {
     required: [
       "mode", "playerMeaning", "directAnswer", "explicitQuestion", "explicitAnswer",
       "questionType", "answerGrounding", "answerEvidenceIds", "referents", "activeIssue",
-      "underlyingGoal", "unresolvedDecision", "authorityOwner", "responsibilityStatus",
+      "underlyingGoal", "unresolvedDecision", "authorityOwner", "impactQuestion",
+      "accountabilityQuestion", "responsibilityStatus",
       "accountabilityOwner", "accountabilityEvidenceIds", "impactBearers", "hardConstraints",
       "affectedParties", "burdens", "playerProposal", "proposalDisposition",
       "responseMove", "requiredContent", "unknowns",
@@ -324,6 +329,8 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   let explicitAnswer = boundedString(parsed.explicitAnswer);
   let questionType = parsed.questionType;
   const responsibilityStatus = parsed.responsibilityStatus;
+  let impactQuestion = parsed.impactQuestion === true;
+  let accountabilityQuestion = parsed.accountabilityQuestion === true;
   const accountabilityOwner = boundedString(parsed.accountabilityOwner, 200);
   const allowedAccountabilityEvidence = new Set(enums.accountabilityEvidenceIds || []);
   const accountabilityEvidenceIds = boundedArray(parsed.accountabilityEvidenceIds, 8, 100)
@@ -351,6 +358,8 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   if (!explicitQuestion) {
     explicitAnswer = null;
     questionType = "NONE";
+    impactQuestion = false;
+    accountabilityQuestion = false;
   } else if (questionType === "NONE") {
     questionType = "ANALYTICAL";
   }
@@ -371,14 +380,24 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     normalizedAnswerEvidenceIds = [];
   }
   if (answerGrounding === "UNKNOWN") normalizedAnswerEvidenceIds = [];
-  const responsibilityDowngraded =
-    (responsibilityStatus === "KNOWN" && (!accountabilityOwner || accountabilityEvidenceIds.length === 0)) ||
-    (responsibilityStatus !== "KNOWN" && accountabilityEvidenceIds.length > 0) ||
-    (responsibilityStatus === "UNRESOLVED" && Boolean(accountabilityOwner)) ||
-    (responsibilityStatus === "NOT_APPLICABLE" && Boolean(accountabilityOwner));
-  const normalizedResponsibilityStatus = responsibilityDowngraded ? "UNRESOLVED" : responsibilityStatus;
-  const normalizedAccountabilityOwner = responsibilityDowngraded ? null : accountabilityOwner;
-  const normalizedAccountabilityEvidenceIds = responsibilityDowngraded ? [] : accountabilityEvidenceIds;
+  let responsibilityDowngraded = false;
+  let normalizedResponsibilityStatus = "NOT_APPLICABLE";
+  let normalizedAccountabilityOwner = null;
+  let normalizedAccountabilityEvidenceIds = [];
+
+  if (accountabilityQuestion) {
+    responsibilityDowngraded =
+      (responsibilityStatus === "KNOWN" && (!accountabilityOwner || accountabilityEvidenceIds.length === 0)) ||
+      (responsibilityStatus !== "KNOWN" && accountabilityEvidenceIds.length > 0) ||
+      (responsibilityStatus === "UNRESOLVED" && Boolean(accountabilityOwner)) ||
+      responsibilityStatus === "NOT_APPLICABLE";
+
+    normalizedResponsibilityStatus = responsibilityDowngraded ? "UNRESOLVED" : responsibilityStatus;
+    normalizedAccountabilityOwner =
+      normalizedResponsibilityStatus === "KNOWN" ? accountabilityOwner : null;
+    normalizedAccountabilityEvidenceIds =
+      normalizedResponsibilityStatus === "KNOWN" ? accountabilityEvidenceIds : [];
+  }
   let mode = parsed.mode;
   let proposalDisposition = parsed.proposalDisposition;
   let uncertainty = parsed.uncertainty;
@@ -419,6 +438,8 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     underlyingGoal,
     unresolvedDecision: boundedString(parsed.unresolvedDecision),
     authorityOwner: boundedString(parsed.authorityOwner, 200),
+    impactQuestion,
+    accountabilityQuestion,
     responsibilityStatus: normalizedResponsibilityStatus,
     accountabilityOwner: normalizedAccountabilityOwner,
     accountabilityEvidenceIds: normalizedAccountabilityEvidenceIds,
