@@ -47,11 +47,13 @@ if ($existing.Count -eq 1) {
     Log-Line "STALE_SUPERVISOR_TERMINATED pid=$pidToKill heartbeat_age_sec=$([math]::Round($heartbeatAge,1))"
     Start-Sleep -Seconds 2
   } else {
-    Log-Line "HEALTHY pid=$($existing[0].ProcessId) heartbeat_age_sec=$([math]::Round(($heartbeatAge ?? 0),1))"
+    $hb = if ($heartbeatAge -eq $null) { 0 } else { $heartbeatAge }
+    Log-Line "HEALTHY pid=$($existing[0].ProcessId) heartbeat_age_sec=$([math]::Round($hb,1))"
     exit 0
   }
 }
 
 $arg = '"{0}"' -f $supervisor
 $p = Start-Process -FilePath $python -ArgumentList $arg -WorkingDirectory $root -WindowStyle Hidden -PassThru
-Log-Line "RESTARTED pid=$($p.Id) prior_heartbeat_age_sec=$([math]::Round(($heartbeatAge ?? 0),1))"
+$hb = if ($heartbeatAge -eq $null) { 0 } else { $heartbeatAge }
+Log-Line "RESTARTED pid=$($p.Id) prior_heartbeat_age_sec=$([math]::Round($hb,1))"
