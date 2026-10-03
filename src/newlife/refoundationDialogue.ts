@@ -46,6 +46,7 @@ function localNpc(api: unknown): NpcId | null {
 }
 const RETRYABLE_STATUSES = new Set([0, 429, 502, 503, 504]);
 const RETRY_DELAYS_MS = [500, 1400];
+const FOREGROUND_REQUEST_TIMEOUT_MS = 80_000;
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -53,7 +54,7 @@ function wait(ms: number): Promise<void> {
 
 async function post(body: unknown): Promise<any> {
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
-    const result = await postDialogueJson(REFOUNDATION_ENDPOINT, body, 45_000);
+    const result = await postDialogueJson(REFOUNDATION_ENDPOINT, body, FOREGROUND_REQUEST_TIMEOUT_MS);
     if (result.ok) return result.data;
     if (!RETRYABLE_STATUSES.has(result.status) || attempt === RETRY_DELAYS_MS.length) {
       throw new Error("refoundation_" + (result.status || result.reason || "unavailable"));
