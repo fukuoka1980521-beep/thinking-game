@@ -370,9 +370,10 @@ def clear_finished_job(state):
 def start_stage_job(stage, rendering, mode, state):
     key = f"{mode}:{stage}:{rendering}"
     tries = state["retries"].get(key, 0)
-    if tries >= 4:
+    retry_limit = 12 if mode == "pilot" else 4
+    if tries >= retry_limit:
         state["status"] = "STOPPED_RETRY_LIMIT"
-        log(f"STOP_RETRY_LIMIT {key}")
+        log(f"STOP_RETRY_LIMIT {key} limit={retry_limit}")
         return False
     cmd = [PYTHON, ROOT / "run_pilot_stage.py", "--stage", stage, "--rendering", rendering, "--mode", mode]
     pid = start_detached(cmd, ROOT / "autorun_logs" / f"{mode}_{stage}_{rendering}.log")
