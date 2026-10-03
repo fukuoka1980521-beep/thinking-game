@@ -48,6 +48,7 @@ const {
   normalizeTurnPlan,
   normalizeRenderedLine,
   normalizeEvidenceVerification,
+  downgradeUnsupportedResponsibilityPlan,
   downgradeUnsupportedFactPlan,
 } = require("./turnPlanner");
 
@@ -209,6 +210,9 @@ async function attemptPlannedTurn(client, body, continuation = false) {
   }
   let plan = normalizeTurnPlan(rawPlan, body.targetNpc, enums);
   if (!plan || !dossier) return null;
+  if (plan.responsibilityDowngraded) {
+    plan = downgradeUnsupportedResponsibilityPlan(plan);
+  }
 
   let answerVerification = null;
   if (
