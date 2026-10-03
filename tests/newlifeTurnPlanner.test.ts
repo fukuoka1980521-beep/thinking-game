@@ -13,6 +13,7 @@ const enums = {
   sceneStatuses: ["AWAIT_PLAYER", "NPC_EXCHANGE", "RESOLVED", "STALLED"],
   uncertaintyLevels: ["LOW", "MEDIUM", "HIGH"],
   worldEffects: ["MIYOKO_WAITING_CAPACITY_STATED"],
+  evidenceIds: ["SCENE_TEXT", "SCENE_FOCUS", "STATE_0", "DOSSIER"],
 };
 
 function validPlan(overrides: Record<string, unknown> = {}) {
@@ -23,6 +24,7 @@ function validPlan(overrides: Record<string, unknown> = {}) {
     explicitQuestion: null,
     explicitAnswer: null,
     answerGrounding: "NOT_APPLICABLE",
+    answerEvidenceIds: [],
     referents: ["喫茶の席", "会館側の待機場所"],
     activeIssue: "待機場所が未決。",
     underlyingGoal: "試売客の待機を混乱なく処理し、他人の商売へ無断の負担をかけない。",
@@ -75,6 +77,7 @@ describe("NEW LIFE turn planner", () => {
         explicitQuestion: "今日の予定は何か。",
         explicitAnswer: "特別な予定はなく、いつも通りの予定だ。",
         answerGrounding: "CANONICAL",
+        answerEvidenceIds: ["SCENE_TEXT"],
         referents: ["今日の予定"],
         activeIssue: null,
         underlyingGoal: "今日の予定について普通に答える。",
@@ -161,6 +164,7 @@ describe("NEW LIFE turn planner", () => {
         explicitQuestion: "このコーヒーは深煎りか。",
         explicitAnswer: "焙煎度は今の情報では確定できない。",
         answerGrounding: "UNKNOWN",
+        answerEvidenceIds: [],
         activeIssue: null,
         unresolvedDecision: null,
         authorityOwner: null,
@@ -174,5 +178,65 @@ describe("NEW LIFE turn planner", () => {
     );
     expect(plan?.answerGrounding).toBe("UNKNOWN");
     expect(plan?.explicitAnswer).toContain("確定できない");
+  });
+
+  it("rejects a factual answer whose cited evidence id does not exist", () => {
+    expect(
+      planner.normalizeTurnPlan(
+        validPlan({
+          mode: "CASUAL",
+          explicitQuestion: "今日は特別な予定があるか。",
+          explicitAnswer: "今日は特別な予定はない。",
+          answerGrounding: "CANONICAL",
+          answerEvidenceIds: ["NOT_A_REAL_SOURCE"],
+          playerProposal: null,
+          proposalDisposition: "NONE",
+        }),
+        "YOHEI",
+        enums,
+      ),
+    ).toBeNull();
+  });
+
+  it("downgrades an unsupported factual answer to an explicit unknown without state proposals", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        mode: "TOPIC_SHIFT",
+        explicitQuestion: "コーヒーは深煎りか。",
+        explicitAnswer: "深煎りです。",
+        answerGrounding: "OBSERVED",
+        answerEvidenceIds: ["SCENE_TEXT"],
+        playerProposal: null,
+        proposalDisposition: "NONE",
+        candidateCommitments: ["深煎りを出す"],
+        candidateWorldEffects: ["MIYOKO_WAITING_CAPACITY_STATED"],
+      }),
+      "MIYOKO",
+      enums,
+    );
+    expect(plan).not.toBeNull();
+    const safe = planner.downgradeUnsupportedFactPlan(plan);
+    expect(safe.answerGrounding).toBe("UNKNOWN");
+    expect(safe.explicitAnswer).toContain("確定できません");
+    expect(safe.answerEvidenceIds).toEqual([]);
+    expect(safe.candidateCommitments).toEqual([]);
+    expect(safe.candidateWorldEffects).toEqual([]);
+  });
+
+  it("builds a bounded evidence ledger that separates scene, state, memory, and dialogue", () => {
+    const ledger = planner.buildEvidenceLedger({
+      caseCanon: { setting: "町" },
+      dossier: { displayName: "美代子" },
+      dynamicState: {
+        sceneText: "喫茶で話している。",
+        sceneFocus: { issue: "席", decision: "未決", authority: "美代子" },
+        canonicalStateFacts: ["席数は未確認。"],
+        retrievedMemories: ["Day 2 [OBSERVATION] 椅子を見た。"],
+      },
+      recentDialogue: [{ speaker: "PLAYER", text: "深煎りですか" }],
+    });
+    expect(ledger.map((x: { id: string }) => x.id)).toEqual(
+      expect.arrayContaining(["CASE_CANON", "DOSSIER", "SCENE_TEXT", "SCENE_FOCUS", "STATE_0", "MEMORY_0", "DIALOGUE_0"]),
+    );
   });
 });
