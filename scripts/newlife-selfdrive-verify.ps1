@@ -176,7 +176,18 @@ try {
   $env:NEW_LIFE_KERNEL_CHECKPOINT = $kernelCheckpoint
 
   Run-Step "LIVE_KERNEL" {
-    node scripts/newlife-response-kernel-live-regression.mjs
+    $liveExit = 1
+    for ($liveAttempt = 1; $liveAttempt -le 3; $liveAttempt++) {
+      Log "LIVE_KERNEL attempt $liveAttempt/3"
+      & node scripts/newlife-response-kernel-live-regression.mjs
+      $liveExit = $LASTEXITCODE
+      if ($liveExit -eq 0) { break }
+      Log "LIVE_KERNEL process exit=$liveExit; retrying from durable checkpoint"
+      Start-Sleep -Seconds (5 * $liveAttempt)
+    }
+    if ($liveExit -ne 0) {
+      throw "LIVE_KERNEL failed after checkpointed retries; exit=$liveExit"
+    }
   }
 
   $report = Get-Content -Raw -Encoding utf8 $kernelOut | ConvertFrom-Json
