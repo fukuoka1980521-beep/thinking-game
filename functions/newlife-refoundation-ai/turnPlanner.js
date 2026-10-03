@@ -12,7 +12,7 @@ const RESPONSE_MOVES = [
 ];
 const PROPOSAL_DISPOSITIONS = ["NONE", "ACCEPT", "MODIFY", "REJECT", "NEEDS_CHECK"];
 const ANSWER_GROUNDINGS = ["NOT_APPLICABLE", "CANONICAL", "OBSERVED", "MEMORY", "INFERRED", "OPINION", "UNKNOWN"];
-const QUESTION_TYPES = ["NONE", "FACTUAL", "HYPOTHETICAL", "NORMATIVE", "PREFERENCE", "ADVICE"];
+const QUESTION_TYPES = ["NONE", "FACTUAL", "HYPOTHETICAL", "NORMATIVE", "PREFERENCE", "ADVICE", "ANALYTICAL"];
 const RESPONSIBILITY_STATUSES = ["NOT_APPLICABLE", "KNOWN", "UNRESOLVED", "OPINION"];
 
 const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断プランナー」です。セリフは書きません。プレイヤーの発言を理解し、返答に必要な意味要素を落とさないためのResponse PlanだけをJSONで作ります。
@@ -35,10 +35,11 @@ const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断�
 - playerProposalがある場合、underlyingGoalを満たすか、hardConstraintsを破らないか、affectedPartiesへどんなburdensを生むかを比較して ACCEPT / MODIFY / REJECT / NEEDS_CHECK を選ぶ。
 - 提案の一部だけ修正すれば成立する場合はREJECTではなくMODIFYを優先し、成立条件をdirectAnswerに含める。
 - プレイヤーが明示的な質問をしている場合、explicitQuestion にその質問の意味、explicitAnswer にその質問へ直接返す答えを必ず入れること。「誰が」と聞かれたら誰か／未確定かを答え、「なぜ」と聞かれたら理由を答える。周辺論点だけで質問をかわさないこと。
-- explicitQuestion がある場合は questionType を分類すること。現在/過去/物の属性を尋ねる事実質問は FACTUAL、プレイヤーが仮定条件を置いて「もし〜なら」と結果を尋ねるものは HYPOTHETICAL、責任・公平・どうすべきかの価値判断は NORMATIVE、好みは PREFERENCE、助言や適性判断は ADVICE。質問がない場合は NONE。
-- FACTUAL だけを世界事実の検証対象にする。HYPOTHETICAL / NORMATIVE / PREFERENCE / ADVICE では、プレイヤーの仮定や価値判断を現在の世界事実へ昇格させず、人物の判断として答えること。
+- explicitQuestion がある場合は questionType を分類すること。現在/過去/物の属性を尋ねる事実質問は FACTUAL、プレイヤーが仮定条件を置いて「もし〜なら」と結果を尋ねるものは HYPOTHETICAL、責任・公平・どうすべきかの価値判断は NORMATIVE、好みは PREFERENCE、助言や適性判断は ADVICE、既に提示された概念同士の因果・論理・独立性を問うものは ANALYTICAL。質問がない場合は NONE。
+- FACTUAL だけを世界事実の検証対象にする。HYPOTHETICAL / NORMATIVE / PREFERENCE / ADVICE では、プレイヤーの仮定や価値判断を現在の世界事実へ昇格させず、人物の判断として答えること。ANALYTICAL は、すでに与えられた概念・手段・目的の関係を論理的に評価し、外部世界の新事実を発明せずに答えること。
 - authorityOwner（決定権）、impactBearers（実際に負担を受ける人）、accountabilityOwner（結果の責任主体）を混同しないこと。権限を持つ人が自動的に損失や責任も負うとは限らない。
 - 「誰が責任を負うか」が明示的な正典・契約・現在状態で決まっていない場合、responsibilityStatus="UNRESOLVED", accountabilityOwner=null とすること。代わりに、分かる範囲で impactBearers と具体的 burdens を示し、責任者を創作しないこと。
+- 責任・負担の所在が今回の質問や判断に関係しない場合は responsibilityStatus="NOT_APPLICABLE", accountabilityOwner=null とすること。人物・場面ごとに毎回責任者を作らないこと。
 - factualな explicitAnswer を evidenceLedger で裏付けられない場合は answerGrounding="UNKNOWN" とし、知らない具体事実を作らないこと。character dossierの雰囲気や職業から事実を補わない。
 - answerGrounding が CANONICAL / OBSERVED / MEMORY / INFERRED の場合は、explicitAnswerを支える evidenceLedger の id を answerEvidenceIds に必ず入れること。根拠にならない近接情報を引用してはいけない。
 - INFERRED は、提示された証拠から自然に導けるが明文ではない推論だけに使う。新しい商品仕様・時間・人数・感情・習慣を作るためには使わない。
