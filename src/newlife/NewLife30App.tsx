@@ -226,6 +226,7 @@ export function NewLife30App({ onExit }: Props) {
       title: scene.title,
       text: scene.text,
       sceneFocus: scene.sceneFocus,
+      sceneEntities: scene.sceneEntities,
       canonicalState: {
         signVersion: canonicalState.signVersion,
         pickupPlan: canonicalState.pickupPlan,
@@ -366,6 +367,11 @@ export function NewLife30App({ onExit }: Props) {
             scene.sceneFocus?.issue,
             scene.sceneFocus?.decision,
             scene.sceneFocus?.authority,
+            ...(scene.sceneEntities ?? []).flatMap((entity) => [
+              entity.label,
+              entity.role,
+              ...(entity.facts ?? []),
+            ]),
             scene.text,
           ].filter((part): part is string => Boolean(part)).join("\n");
           const retrieval = retrieveAgentMemories(agentMemory, npc, memoryQuery, 6);
@@ -376,6 +382,7 @@ export function NewLife30App({ onExit }: Props) {
             title: scene.title,
             text: scene.text,
             sceneFocus: scene.sceneFocus,
+            sceneEntities: scene.sceneEntities,
             retrievedMemories: formatRetrievedMemories(retrieval.selected),
             retrievedMemoryAnchors: formatRetrievedMemoryAnchors(retrieval.selected),
             canonicalState: {
