@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 
 const endpoint =
   process.env.NEW_LIFE_ENDPOINT ||
@@ -15,22 +16,31 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function postJson(body) {
   let last = null;
   for (let attempt = 0; attempt < 4; attempt += 1) {
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const raw = await res.text();
-    let data = null;
-    try { data = JSON.parse(raw); } catch {}
-    if (res.ok) return { status: res.status, data };
-    last = { status: res.status, raw: raw.slice(0, 300) };
-    if (res.status !== 429 && res.status < 500) break;
-    const retryHeader = Number(res.headers.get("retry-after"));
-    const waitMs = Number.isFinite(retryHeader) && retryHeader > 0
-      ? Math.min(65_000, retryHeader * 1000 + 500)
-      : [2500, 7000, 15000][attempt] ?? 15000;
-    await sleep(waitMs);
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const raw = await res.text();
+      let data = null;
+      try { data = JSON.parse(raw); } catch {}
+      if (res.ok) return { status: res.status, data };
+      last = { status: res.status, raw: raw.slice(0, 300) };
+      if (res.status !== 429 && res.status < 500) break;
+      const retryHeader = Number(res.headers.get("retry-after"));
+      const waitMs = Number.isFinite(retryHeader) && retryHeader > 0
+        ? Math.min(65_000, retryHeader * 1000 + 500)
+        : [2500, 7000, 15000][attempt] ?? 15000;
+      await sleep(waitMs);
+    } catch (error) {
+      last = {
+        status: 0,
+        raw: error instanceof Error ? error.message.slice(0, 300) : "network_exception",
+      };
+      const waitMs = [2500, 7000, 15000][attempt] ?? 15000;
+      await sleep(waitMs);
+    }
   }
   return { status: last?.status ?? 0, error: last?.raw ?? "request_failed" };
 }
@@ -257,8 +267,41 @@ function structuralChecks(c, reply) {
   return { checks, pass: Object.values(checks).every(Boolean) };
 }
 
-const results = [];
-for (let i = 0; i < cases.length; i += 1) {
+const caseSignature = createHash("sha256").update(JSON.stringify(cases)).digest("hex");
+let backendBuildSha = null;
+try {
+  const healthRes = await fetch(endpoint, { method: "GET" });
+  if (healthRes.ok) {
+    const health = await healthRes.json();
+    backendBuildSha = typeof health?.buildSha === "string" ? health.buildSha : null;
+  }
+} catch {}
+
+let results = [];
+let startIndex = 0;
+if (fs.existsSync(checkpoint)) {
+  try {
+    const saved = JSON.parse(fs.readFileSync(checkpoint, "utf8"));
+    const sameIdentity =
+      saved &&
+      saved.caseSignature === caseSignature &&
+      saved.endpoint === endpoint &&
+      saved.backendBuildSha === backendBuildSha &&
+      Array.isArray(saved.results) &&
+      Number.isInteger(saved.completed) &&
+      saved.completed >= 0 &&
+      saved.completed <= cases.length;
+    const ordered =
+      sameIdentity &&
+      saved.results.slice(0, saved.completed).every((result, index) => result?.id === cases[index]?.id);
+    if (ordered) {
+      results = saved.results.slice(0, saved.completed);
+      startIndex = saved.completed;
+    }
+  } catch {}
+}
+
+for (let i = startIndex; i < cases.length; i += 1) {
   const c = cases[i];
   const result = await postJson({
     operation: "converse_turn",
@@ -277,12 +320,25 @@ for (let i = 0; i < cases.length; i += 1) {
   });
   const semantic = result.data ? structuralChecks(c, result.data) : { checks: {}, pass: false };
   results.push({ id: c.id, input: c, status: result.status, error: result.error, semantic, reply: result.data ?? null });
-  fs.writeFileSync(checkpoint, JSON.stringify({ completed: i + 1, total: cases.length, results }, null, 2), "utf8");
+  fs.writeFileSync(
+    checkpoint,
+    JSON.stringify({
+      endpoint,
+      backendBuildSha,
+      caseSignature,
+      completed: i + 1,
+      total: cases.length,
+      results,
+    }, null, 2),
+    "utf8",
+  );
   await sleep(3500);
 }
 
 const report = {
   endpoint,
+  backendBuildSha,
+  caseSignature,
   generatedAt: new Date().toISOString(),
   total: results.length,
   structuralPasses: results.filter((r) => r.semantic.pass).length,
