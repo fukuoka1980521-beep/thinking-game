@@ -431,6 +431,12 @@ def ensure_pilot(state):
         log(f"PILOT_GATE_EVAL rc={rc}")
         if rc != 0:
             return False
+    interpretation = ROOT / "pilot_v01" / "analysis" / "PILOT_INTERPRETATION.md"
+    if not interpretation.exists():
+        rc = subprocess.run([str(PYTHON), str(ROOT / "build_pilot_interpretation.py")], cwd=ROOT).returncode
+        log(f"PILOT_INTERPRETATION rc={rc}")
+        if rc != 0:
+            return False
     g = json.loads(gate.read_text(encoding="utf-8"))
     decision = g.get("status")
     if decision == "GO":
