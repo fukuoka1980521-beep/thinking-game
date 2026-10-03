@@ -61,7 +61,7 @@ function Deploy-Test([string]$sha) {
       "--gen2","--runtime=nodejs22","--region=$Region",
       "--source=functions/newlife-refoundation-ai",
       "--entry-point=newlifeRefoundationAi","--trigger-http",
-      "--allow-unauthenticated","--memory=256Mi","--timeout=45s",
+      "--allow-unauthenticated","--memory=256Mi","--timeout=90s",
       "--max-instances=1","--project=$Project",
       "--service-account=1030414900193-compute@developer.gserviceaccount.com",
       "--set-env-vars=GCP_PROJECT=$Project,NEWLIFE_REFOUNDATION_BUILD_SHA=$sha,NEWLIFE_REFOUNDATION_AI_MAX_CALLS_PER_MINUTE=120,NEWLIFE_REFOUNDATION_AI_MAX_REFLECTION_CALLS_PER_MINUTE=6",
