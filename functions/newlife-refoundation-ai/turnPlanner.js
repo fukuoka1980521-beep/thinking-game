@@ -49,6 +49,8 @@ const RENDER_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「キャラクター�
 
 厳守:
 - 新しい判断・新しい事実・新しい許可・新しい因果関係を足さない。
+- explicitQuestion がある場合、explicitAnswer の意味を最初に直接返してから、必要なら理由を1つだけ添える。周辺論点だけで質問をかわさない。
+- answerGrounding="UNKNOWN" の場合、人物像や職業から答えを創作しない。知らない／確定していないという意味を自然な人物語で返す。
 - Response Planが具体的な対象を指定している場合、それを抽象的な「担当」「確認」「線引き」だけに言い換えて消さない。
 - mode=CASUALなら、場面の問題を無理に持ち込まず普通に短く答える。
 - proposalDisposition=ACCEPTなら、旧案を守る言い方へ戻さない。
