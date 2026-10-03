@@ -88,33 +88,62 @@ function getClient() {
   return genAiClient;
 }
 
-async function callModel(client, { systemInstruction, prompt, responseSchema, limiter = modelCallLimiter }) {
-  const generateOnce = () => {
+async function callModel(
+  client,
+  {
+    systemInstruction,
+    prompt,
+    responseSchema,
+    limiter = modelCallLimiter,
+    stage = "model",
+    maxOutputTokens = 2048,
+  },
+) {
+  const generateOnce = async (attempt) => {
     if (!limiter.consume()) {
       const error = new Error("local_model_rate_limit");
       error.code = "LOCAL_MODEL_RATE_LIMIT";
       throw error;
     }
-    return client.models.generateContent({
-      model: MODEL,
-      contents: prompt,
-      config: {
-        systemInstruction,
-        temperature: 0.4,
-        // Same disclosed empty-response mitigation as functions/newlife-dialogue/:
-        // gemini-2.5-flash can spend budget on internal thinking and return no
-        // visible text when the budget is too small; one transparent retry.
-        maxOutputTokens: 2048,
-        responseMimeType: "application/json",
-        responseSchema,
-      },
-    });
+    const started = Date.now();
+    try {
+      const response = await client.models.generateContent({
+        model: MODEL,
+        contents: prompt,
+        config: {
+          systemInstruction,
+          temperature: 0.4,
+          maxOutputTokens,
+          responseMimeType: "application/json",
+          responseSchema,
+        },
+      });
+      console.log(JSON.stringify({
+        event: "newlife_model_stage",
+        stage,
+        attempt,
+        ms: Date.now() - started,
+        ok: true,
+        empty: !(response.text || "").trim(),
+      }));
+      return response;
+    } catch (error) {
+      console.error(JSON.stringify({
+        event: "newlife_model_stage",
+        stage,
+        attempt,
+        ms: Date.now() - started,
+        ok: false,
+        error: error instanceof Error ? error.name : "unknown_error",
+      }));
+      throw error;
+    }
   };
 
-  let response = await generateOnce();
+  let response = await generateOnce(1);
   let text = (response.text || "").trim();
   if (!text) {
-    response = await generateOnce();
+    response = await generateOnce(2);
     text = (response.text || "").trim();
   }
   return text;
@@ -171,7 +200,11 @@ function lastPlayerUtterance(recentDialogue) {
   return "";
 }
 
+const FACT_VERIFY_SOFT_BUDGET_MS = 35_000;
+const RENDER_SOFT_BUDGET_MS = 55_000;
+
 async function attemptPlannedTurn(client, body, continuation = false) {
+  const turnStarted = Date.now();
   const enriched = withCanonicalStateFacts(body);
   const dossiers = getCaseDossiers(body.caseId);
   const dossier = dossiers && dossiers[body.targetNpc];
@@ -207,6 +240,8 @@ async function attemptPlannedTurn(client, body, continuation = false) {
       systemInstruction: TURN_PLAN_SYSTEM_INSTRUCTION,
       prompt: planPrompt,
       responseSchema: buildTurnPlanSchema(Type, enums),
+      stage: `turn_plan_${planAttempt + 1}`,
+      maxOutputTokens: 1536,
     });
     if (!planText) continue;
 
@@ -229,20 +264,31 @@ async function attemptPlannedTurn(client, body, continuation = false) {
     plan.explicitQuestion &&
     ["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(plan.answerGrounding)
   ) {
-    const verificationText = await callModel(client, {
-      systemInstruction: EVIDENCE_VERIFY_SYSTEM_INSTRUCTION,
-      prompt: buildEvidenceVerificationPrompt({ plan, evidenceLedger }),
-      responseSchema: EVIDENCE_VERIFY_RESPONSE_SCHEMA,
-    });
-    let rawVerification = null;
-    try {
-      rawVerification = verificationText ? JSON.parse(verificationText) : null;
-    } catch {
-      rawVerification = null;
-    }
-    answerVerification = normalizeEvidenceVerification(rawVerification, evidenceLedger, plan.answerEvidenceIds);
-    if (!answerVerification || !answerVerification.supported) {
+    if (Date.now() - turnStarted >= FACT_VERIFY_SOFT_BUDGET_MS) {
+      answerVerification = {
+        supported: false,
+        reason: "verification_skipped_latency_budget",
+        usedEvidenceIds: [],
+      };
       plan = downgradeUnsupportedFactPlan(plan);
+    } else {
+      const verificationText = await callModel(client, {
+        systemInstruction: EVIDENCE_VERIFY_SYSTEM_INSTRUCTION,
+        prompt: buildEvidenceVerificationPrompt({ plan, evidenceLedger }),
+        responseSchema: EVIDENCE_VERIFY_RESPONSE_SCHEMA,
+        stage: "evidence_verify",
+        maxOutputTokens: 512,
+      });
+      let rawVerification = null;
+      try {
+        rawVerification = verificationText ? JSON.parse(verificationText) : null;
+      } catch {
+        rawVerification = null;
+      }
+      answerVerification = normalizeEvidenceVerification(rawVerification, evidenceLedger, plan.answerEvidenceIds);
+      if (!answerVerification || !answerVerification.supported) {
+        plan = downgradeUnsupportedFactPlan(plan);
+      }
     }
   }
 
@@ -259,35 +305,42 @@ async function attemptPlannedTurn(client, body, continuation = false) {
   });
   let npcLine = null;
   let renderRecovery = "NONE";
-  for (let renderAttempt = 0; renderAttempt < 2 && !npcLine; renderAttempt += 1) {
-    const renderPrompt = [
-      baseRenderPrompt,
-      renderAttempt === 0
-        ? ""
-        : `前回は意味契約の必須要素を落としました。requiredContentの全項目を自然な会話として必ず含め、coveredRequirementIndexesには0から${Math.max(0, plan.requiredContent.length - 1)}までを、実際に表現できた場合だけ入れてください。`,
-    ].filter(Boolean).join("\n");
-    const renderText = await callModel(client, {
-      systemInstruction: RENDER_SYSTEM_INSTRUCTION,
-      prompt: renderPrompt,
-      responseSchema: RENDER_RESPONSE_SCHEMA,
-    });
-    if (!renderText) continue;
+  if (Date.now() - turnStarted >= RENDER_SOFT_BUDGET_MS) {
+    npcLine = plan.directAnswer;
+    renderRecovery = "DIRECT_SEMANTIC_LATENCY_FALLBACK";
+  } else {
+    for (let renderAttempt = 0; renderAttempt < 2 && !npcLine; renderAttempt += 1) {
+      if (renderAttempt > 0 && Date.now() - turnStarted >= RENDER_SOFT_BUDGET_MS) break;
+      const renderPrompt = [
+        baseRenderPrompt,
+        renderAttempt === 0
+          ? ""
+          : `前回は意味契約の必須要素を落としました。requiredContentの全項目を自然な会話として必ず含め、coveredRequirementIndexesには0から${Math.max(0, plan.requiredContent.length - 1)}までを、実際に表現できた場合だけ入れてください。`,
+      ].filter(Boolean).join("\n");
+      const renderText = await callModel(client, {
+        systemInstruction: RENDER_SYSTEM_INSTRUCTION,
+        prompt: renderPrompt,
+        responseSchema: RENDER_RESPONSE_SCHEMA,
+        stage: `render_${renderAttempt + 1}`,
+        maxOutputTokens: 384,
+      });
+      if (!renderText) continue;
 
-    let rawRender = null;
-    try {
-      rawRender = JSON.parse(renderText);
-    } catch {
-      rawRender = null;
+      let rawRender = null;
+      try {
+        rawRender = JSON.parse(renderText);
+      } catch {
+        rawRender = null;
+      }
+      npcLine = normalizeRenderedLine(rawRender, plan.requiredContent.length);
+      if (npcLine && renderAttempt > 0) renderRecovery = "RENDER_RETRY";
     }
-    npcLine = normalizeRenderedLine(rawRender, plan.requiredContent.length);
-    if (npcLine && renderAttempt > 0) renderRecovery = "RENDER_RETRY";
   }
   if (!npcLine) {
-    // Fail soft at the expression layer only: the semantic answer is already
-    // grounded/validated. Prefer a plain but correct answer over a broken
-    // conversation or a return to the old single-pass generator.
     npcLine = plan.directAnswer;
-    renderRecovery = "DIRECT_SEMANTIC_FALLBACK";
+    renderRecovery = renderRecovery === "NONE"
+      ? "DIRECT_SEMANTIC_FALLBACK"
+      : renderRecovery;
   }
 
   const candidateTurn =
@@ -311,6 +364,13 @@ async function attemptPlannedTurn(client, body, continuation = false) {
     body.targetNpc,
     body.caseId,
   );
+  console.log(JSON.stringify({
+    event: "newlife_turn_total",
+    operation: continuation ? "continue_npc_exchange" : "converse_turn",
+    ms: Date.now() - turnStarted,
+    renderRecovery,
+    verified: Boolean(answerVerification?.supported),
+  }));
   return normalized
     ? { ...normalized, responsePlan: { ...plan, answerVerification, renderRecovery } }
     : null;
@@ -365,6 +425,8 @@ async function attemptReflectAgent(client, body) {
     prompt: buildReflectAgentPrompt(body),
     responseSchema: REFLECT_AGENT_RESPONSE_SCHEMA,
     limiter: reflectionCallLimiter,
+    stage: "reflection",
+    maxOutputTokens: 768,
   });
   if (!text) return null;
 
