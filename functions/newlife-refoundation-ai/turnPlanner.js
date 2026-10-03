@@ -389,6 +389,9 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     answerGrounding = "OPINION";
     normalizedAnswerEvidenceIds = [];
   }
+  if (questionType === "ANALYTICAL" && answerGrounding === "OPINION") {
+    answerGrounding = "INFERRED";
+  }
   if (answerGrounding === "UNKNOWN") normalizedAnswerEvidenceIds = [];
   let responsibilityDowngraded = false;
   let normalizedResponsibilityStatus = "NOT_APPLICABLE";

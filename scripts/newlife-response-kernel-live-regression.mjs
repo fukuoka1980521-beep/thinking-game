@@ -32,8 +32,10 @@ async function postJson(body) {
       if (res.status !== 429 && res.status < 500) break;
       const retryHeader = Number(res.headers.get("retry-after"));
       const waitMs = Number.isFinite(retryHeader) && retryHeader > 0
-        ? Math.min(65_000, retryHeader * 1000 + 500)
-        : [2500, 7000, 15000][attempt] ?? 15000;
+        ? Math.min(70_000, retryHeader * 1000 + 500)
+        : res.status === 429
+          ? 60_000
+          : [2500, 7000, 15000][attempt] ?? 15000;
       await sleep(waitMs);
     } catch (error) {
       last = {
@@ -361,7 +363,7 @@ for (let i = startIndex; i < cases.length; i += 1) {
     }, null, 2),
     "utf8",
   );
-  await sleep(3500);
+  await sleep(10000);
 }
 
 const report = {

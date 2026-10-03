@@ -241,7 +241,7 @@ async function attemptPlannedTurn(client, body, continuation = false) {
       prompt: planPrompt,
       responseSchema: buildTurnPlanSchema(Type, enums),
       stage: `turn_plan_${planAttempt + 1}`,
-      maxOutputTokens: 1536,
+      maxOutputTokens: 2048,
     });
     if (!planText) continue;
 
