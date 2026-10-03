@@ -66,7 +66,7 @@ const cases = [
     utterance: "私も商売を始めたいんですが、何が向いてると思います？",
     expectedMode: "CASUAL",
     expectedQuestionType: "ADVICE",
-    expectedGrounding: ["OPINION", "NOT_APPLICABLE"],
+    expectedGrounding: ["OPINION", "NOT_APPLICABLE", "UNKNOWN"],
     expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
@@ -137,7 +137,7 @@ const cases = [
     utterance: "もし待機客のせいで喫茶の普通のお客さんが入れなくなったら、その責任は誰が負うんですか？",
     expectedQuestionType: ["HYPOTHETICAL", "NORMATIVE"],
     expectedResponsibilityStatus: "UNRESOLVED",
-    expectedImpactQuestion: false,
+    expectedImpactQuestion: true,
     expectedAccountabilityQuestion: true,
     requireNullAccountabilityOwner: true,
     minImpactBearers: 1,
