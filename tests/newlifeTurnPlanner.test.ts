@@ -507,6 +507,45 @@ describe("NEW LIFE turn planner", () => {
     expect(plan?.responsibilityStatus).toBe("UNRESOLVED");
   });
 
+  it("uses typed scene entities as referent evidence and does not resurrect rejected roles", () => {
+    const ledger = planner.buildEvidenceLedger({
+      caseCanon: { setting: "町" },
+      dossier: { displayName: "文子" },
+      dynamicState: {
+        sceneText: "大輔は椅子を修理し、別件で焼き菓子の受け取り場所を相談している。",
+        sceneFocus: {
+          issue: "焼き菓子の受け取り場所が未決。",
+          decision: "工房を借りられるか確認する。",
+          authority: "工房は大輔が決める。",
+        },
+        sceneEntities: [
+          {
+            id: "repair_chair",
+            label: "修理中の椅子",
+            role: "修理品",
+            facts: ["試売商品ではない"],
+          },
+          {
+            id: "hina_baked_goods",
+            label: "陽菜の焼き菓子",
+            role: "試売商品",
+            facts: ["予約客の受け取り対象"],
+          },
+        ],
+      },
+      recentDialogue: [
+        { speaker: "FUMIKO", text: "椅子は修理品です。試売品ではありません。" },
+      ],
+      rawPlayerUtterance: "実物を並べるかカタログにするかと、受け取り場所は別ですよね",
+    });
+
+    const ids = ledger.map((entry: { id: string }) => entry.id);
+    expect(ids).toContain("SCENE_ENTITY_0");
+    expect(ids).toContain("SCENE_ENTITY_1");
+    expect(planner.TURN_PLAN_SYSTEM_INSTRUCTION).toContain("否定済みの役割付けは破棄");
+    expect(planner.TURN_PLAN_SYSTEM_INSTRUCTION).toContain("sceneEntities");
+  });
+
   it("recovers proposal and required-content metadata conservatively", () => {
     const plan = planner.normalizeTurnPlan(
       validPlan({
