@@ -1012,9 +1012,11 @@ function buildNpcExchangePrompt(request) {
   const dynamicState = request.dynamicState || {};
   const retrievedMemories = Array.isArray(dynamicState.retrievedMemories) ? dynamicState.retrievedMemories : [];
   const sceneFocus = dynamicState.sceneFocus ?? null;
+  const sceneEntities = Array.isArray(dynamicState.sceneEntities) ? dynamicState.sceneEntities : [];
   const compactDynamicState = { ...dynamicState };
   delete compactDynamicState.retrievedMemories;
   delete compactDynamicState.sceneFocus;
+  delete compactDynamicState.sceneEntities;
   return [
     `caseId: ${JSON.stringify(request.caseId)}`,
     `対象NPC: ${request.targetNpc}（${dossier.displayName}）`,
