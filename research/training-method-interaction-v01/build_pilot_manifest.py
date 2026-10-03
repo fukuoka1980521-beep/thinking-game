@@ -14,6 +14,7 @@ TASKS={
  'T2':'Why do sites using the same nominal work process show persistent completion-time differences, which measurable factors account for those differences, and what observations would distinguish competing explanations?',
 }
 HEADINGS=['Objective and scope','Assumptions','Research design','Data or evidence needed','Measurement','Analysis','Decision / stopping rule','Limitations']
+RAW_COMPLETION_SUFFIX='\n\nResearch plan:\n\nObjective and scope\n'
 
 def user_text(method,task):
     return (
@@ -32,12 +33,15 @@ for stage in STAGES:
     for method in METHODS:
       for rep in range(1,4):
         txt=user_text(method,task)
+        raw_prompt=txt+RAW_COMPLETION_SUFFIX
         rid=f'P1-{stage}-{task}-{method}-R{rep:02d}'
         seed=int(sha(rid)[:8],16) & 0x7fffffff
         rows.append({
           'run_id':rid,'pilot':True,'counted_confirmatory':False,
           'training_stage':stage,'task_id':task,'method_family':method,'replicate':rep,
           'user_text':txt,'user_text_sha256':sha(txt),
+          'raw_completion_prompt':raw_prompt,'raw_completion_prompt_sha256':sha(raw_prompt),
+          'raw_rendering_version':'COMMON_RAW_V2_NEUTRAL_SCAFFOLD',
           'rendering_primary':'COMPLETION_NEUTRAL',
           'generation_settings':{
             'temperature':1.0,'top_p':1.0,'top_k':0,'min_p':0.0,'typical_p':1.0,

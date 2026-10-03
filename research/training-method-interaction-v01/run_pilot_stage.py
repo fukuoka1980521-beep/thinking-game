@@ -43,7 +43,7 @@ def request_payload(row,rendering):
   'dynatemp_range':s['dynatemp_range'],'seed':s['seed'],'cache_prompt':False,'stream':False,
  }
  if rendering=='raw':
-  return '/completion',{**common,'prompt':row['user_text'],'n_predict':s['max_new_tokens']}
+  return '/completion',{**common,'prompt':row.get('raw_completion_prompt',row['user_text']),'n_predict':s['max_new_tokens']}
  return '/v1/chat/completions',{**common,'model':'local','messages':[{'role':'user','content':row['user_text']}],'max_tokens':s['max_new_tokens']}
 
 def extract_text(resp,rendering):

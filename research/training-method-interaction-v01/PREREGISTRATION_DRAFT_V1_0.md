@@ -73,3 +73,9 @@ GO only if:
 5. cost/computation is explicitly authorized before any paid execution.
 
 Pilot outputs are calibration only and cannot be promoted into a preregistered confirmatory denominator.
+
+## Existing-data sizing proxy note
+
+A zero-cost balanced subsampling proxy was run on the completed parent Study A/R1b corpus. With the prior seven-family measurement, k=3 per family per task still produced above-chance cross-task classification in all six resampling repetitions for both prior acting models. This result supports using three replicates per cell for a **calibration pilot only**.
+
+It is not a prospective power analysis for the new TrainingStage × MethodFraming interaction, because the class count, acting models, quantization, stage structure and estimand differ. The confirmatory denominator must be selected only after the calibration pilot has established valid generation, usable variance and an interaction effect-size range; pilot outputs cannot be recycled into that denominator.
