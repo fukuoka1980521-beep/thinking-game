@@ -425,8 +425,20 @@ def ensure_pilot(state):
         log(f"PILOT_ANALYZE rc={rc}")
         if rc != 0:
             return False
-    state["status"] = "PILOT_COMPLETE"
-    log("PILOT_COMPLETE n=72")
+    gate = ROOT / "pilot_v01" / "analysis" / "PILOT_GATE.json"
+    if not gate.exists():
+        rc = subprocess.run([str(PYTHON), str(ROOT / "evaluate_pilot_gate.py")], cwd=ROOT).returncode
+        log(f"PILOT_GATE_EVAL rc={rc}")
+        if rc != 0:
+            return False
+    g = json.loads(gate.read_text(encoding="utf-8"))
+    decision = g.get("status")
+    if decision == "GO":
+        state["status"] = "PILOT_COMPLETE_GO"
+        log("PILOT_COMPLETE_GO n=72")
+    else:
+        state["status"] = "PILOT_COMPLETE_NO_GO"
+        log(f"PILOT_COMPLETE_NO_GO n=72 failed={[k for k,v in g.get('gates',{}).items() if not v]}")
     return True
 
 def commit_if_complete(state):
