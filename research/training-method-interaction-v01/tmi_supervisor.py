@@ -48,4 +48,4 @@ while True:
         log("WATCHDOG_TIMEOUT_600S")
     except Exception as e:
         log(f"SUPERVISOR_EXCEPTION {type(e).__name__} {e}")
-    time.sleep(60)
+    time.sleep(15)
