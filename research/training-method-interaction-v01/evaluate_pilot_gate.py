@@ -40,6 +40,11 @@ def main():
         stage_valid[stage]=sum(z)/len(z)
 
     method_acc={s:x['combined_accuracy'] for s,x in analysis['method_by_stage'].items()}
+    structure_acc={s:x['combined_accuracy'] for s,x in analysis['structure_only_by_stage'].items()}
+    length_acc={s:x['combined_accuracy'] for s,x in analysis['length_only_by_stage'].items()}
+    residual_method_advantage={
+        s:method_acc[s]-max(structure_acc[s],length_acc[s]) for s in method_acc
+    }
     chance=1/3
     max_stage=max(method_acc,key=method_acc.get)
     min_stage=min(method_acc,key=method_acc.get)
@@ -58,6 +63,7 @@ def main():
       'G2_each_stage_valid_rate_ge_80pct':all(v>=0.80 for v in stage_valid.values()),
       'G3_method_signal_above_chance_some_stage':max(method_acc.values())>chance,
       'G4_stage_interaction_measurable_at_two_correct_resolution':spread>=min_interaction_resolution,
+      'G5_method_signal_exceeds_structure_or_length_by_one_correct_some_stage':max(residual_method_advantage.values())>=1/18,
     }
     go=all(gates.values())
     result={
@@ -66,6 +72,9 @@ def main():
       'valid_rate':valid_rate,
       'stage_valid_rate':stage_valid,
       'method_accuracy_by_stage':method_acc,
+      'structure_only_accuracy_by_stage':structure_acc,
+      'length_only_accuracy_by_stage':length_acc,
+      'method_advantage_over_structure_length':residual_method_advantage,
       'method_accuracy_chance':chance,
       'max_method_stage':max_stage,
       'min_method_stage':min_stage,
@@ -83,6 +92,7 @@ def main():
            f"- method accuracy range: {method_acc[min_stage]:.3f} ({min_stage}) to {method_acc[max_stage]:.3f} ({max_stage})",
            f"- stage spread: {spread:.3f}",
            f"- stage-identity cross-task accuracy: {result['stage_identity_accuracy']:.3f}",
+           f"- best method advantage over structure/length: {max(residual_method_advantage.values()):.3f}",
            f"- best cross-stage method transfer: {best_cross[0]} → {best_cross[1]} = {best_cross[2]:.3f}",
            '',
            '## Gates','']
