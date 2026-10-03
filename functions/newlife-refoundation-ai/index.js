@@ -222,7 +222,7 @@ async function attemptPlannedTurn(client, body, continuation = false) {
     } catch {
       rawVerification = null;
     }
-    answerVerification = normalizeEvidenceVerification(rawVerification, evidenceLedger);
+    answerVerification = normalizeEvidenceVerification(rawVerification, evidenceLedger, plan.answerEvidenceIds);
     if (!answerVerification || !answerVerification.supported) {
       plan = downgradeUnsupportedFactPlan(plan);
     }
