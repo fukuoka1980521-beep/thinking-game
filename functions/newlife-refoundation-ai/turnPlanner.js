@@ -201,14 +201,19 @@ function buildEvidenceLedger({ caseCanon, dossier, dynamicState, recentDialogue,
 }
 
 function buildEvidenceVerificationPrompt({ plan, evidenceLedger }) {
+  const cited = new Set(plan.answerEvidenceIds || []);
+  const citedEvidence = evidenceLedger.filter((record) => cited.has(record.id));
   return [
+    `questionType: ${JSON.stringify(plan.questionType)}`,
     `explicitQuestion: ${JSON.stringify(plan.explicitQuestion)}`,
     `explicitAnswer: ${JSON.stringify(plan.explicitAnswer)}`,
     `answerGrounding: ${JSON.stringify(plan.answerGrounding)}`,
+    `responsibilityStatus: ${JSON.stringify(plan.responsibilityStatus)}`,
+    `accountabilityOwner: ${JSON.stringify(plan.accountabilityOwner)}`,
     `citedEvidenceIds: ${JSON.stringify(plan.answerEvidenceIds)}`,
-    `evidenceLedger: ${JSON.stringify(evidenceLedger)}`,
+    `citedEvidenceOnly: ${JSON.stringify(citedEvidence)}`,
     "",
-    "explicitAnswer が引用証拠で支持されるかだけを判定してください。",
+    "explicitAnswer が引用された証拠だけで支持されるか判定してください。引用されていない証拠で救済してはいけません。",
   ].join("\n");
 }
 
