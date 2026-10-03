@@ -216,6 +216,54 @@ def start_stage_job(stage, rendering, mode, state):
     state["retries"][key] = tries + 1
     log(f"JOB_START type={mode} stage={stage} rendering={rendering} pid={pid} attempt={tries+1}")
     return True
+def runtime_selection_path():
+    return ROOT / "runtime_benchmark" / "RUNTIME_SELECTION.json"
+
+def start_runtime_benchmark(state):
+    key = "runtime_benchmark"
+    tries = state["retries"].get(key, 0)
+    if tries >= 3:
+        state["status"] = "STOPPED_RUNTIME_BENCHMARK_RETRY_LIMIT"
+        log("STOP_RUNTIME_BENCHMARK_RETRY_LIMIT")
+        return False
+    cmd = [PYTHON, ROOT / "benchmark_runtime.py"]
+    pid = start_detached(cmd, ROOT / "autorun_logs" / "runtime_benchmark.log")
+    state["job"] = {"type": "runtime_benchmark", "pid": pid, "started_at": now()}
+    state["retries"][key] = tries + 1
+    log(f"JOB_START type=runtime_benchmark pid={pid} attempt={tries+1}")
+    return True
+
+def ensure_runtime_selection(state):
+    sel_path = runtime_selection_path()
+    if not sel_path.exists():
+        start_runtime_benchmark(state)
+        return False
+    sel = json.loads(sel_path.read_text(encoding="utf-8"))
+    selected = sel.get("selected_backend")
+    if selected not in {"cpu", "vulkan"}:
+        state["status"] = "STOPPED_RUNTIME_SELECTION_INVALID"
+        log(f"STOP_RUNTIME_SELECTION_INVALID value={selected}")
+        return False
+    state["runtime_backend"] = selected
+    state["runtime_gpu_layers"] = int(sel.get("gpu_layers", 0))
+    state["runtime_device"] = sel.get("device", "none")
+    p = smoke_file("BASE", "raw")
+    if p.exists():
+        rec = json.loads(p.read_text(encoding="utf-8"))
+        actual = rec.get("runtime_backend", "cpu_preselection")
+        if actual != selected:
+            archive = ROOT / "template_smoke" / "backend_calibration"
+            archive.mkdir(parents=True, exist_ok=True)
+            target = archive / f"SMOKE-BASE-RAW-{actual}.json"
+            if target.exists():
+                target.unlink()
+            p.replace(target)
+            state["retries"].pop("smoke:BASE:raw", None)
+            log(f"BASE_SMOKE_BACKEND_REDO from={actual} to={selected}")
+            start_stage_job("BASE", "raw", "smoke", state)
+            return False
+    return True
+
 def smoke_complete():
     needed = [("BASE", "raw")]
     for s in ["SFT", "DPO", "RLVR"]:
@@ -232,6 +280,8 @@ def ensure_smoke(state):
     if valid is False:
         state["status"] = "STOP_BASE_RAW_INVALID"
         log("STOP_BASE_RAW_INVALID")
+        return False
+    if not ensure_runtime_selection(state):
         return False
     for stage in ["SFT", "DPO", "RLVR"]:
         if not ensure_download(stage, state):

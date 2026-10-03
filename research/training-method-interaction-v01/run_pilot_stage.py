@@ -8,7 +8,14 @@ LLAMA_DIR=Path(r'C:\Users\user\AppData\Local\Microsoft\WinGet\Packages\ggml.llam
 SERVER=LLAMA_DIR/'llama-server.exe'
 REG=json.loads((ROOT/'PILOT_MODELS_V1_0.json').read_text(encoding='utf-8'))
 MANIFEST=[json.loads(x) for x in (ROOT/'PILOT_MANIFEST_DRAFT_V1_0.jsonl').read_text(encoding='utf-8').splitlines() if x.strip()]
+SELECTION_PATH=ROOT/'runtime_benchmark'/'RUNTIME_SELECTION.json'
 PORT=18081
+
+def runtime_selection():
+ if SELECTION_PATH.exists():
+  x=json.loads(SELECTION_PATH.read_text(encoding='utf-8'))
+  return {'backend':x['selected_backend'],'gpu_layers':int(x['gpu_layers']),'device':x['device']}
+ return {'backend':'cpu_preselection','gpu_layers':0,'device':'none'}
 
 def sha256_file(p):
  h=hashlib.sha256()
@@ -51,17 +58,18 @@ def extract_text(resp,rendering):
  choices=resp.get('choices') or []
  return str(choices[0].get('message',{}).get('content','')) if choices else ''
 def run(stage,rendering,mode,dry_run=False):
- info=REG['stages'][stage]; model=MODEL_DIR/info['filename']
+ info=REG['stages'][stage]; model=MODEL_DIR/info['filename']; runtime=runtime_selection()
  rows=[r for r in MANIFEST if r['training_stage']==stage]
  if mode=='smoke': rows=[r for r in rows if r['task_id']=='T1' and r['method_family']=='GENERIC' and r['replicate']==1]
  if dry_run:
-  print(json.dumps({'stage':stage,'rendering':rendering,'mode':mode,'model':str(model),'model_exists':model.exists(),'rows':[r['run_id'] for r in rows]},indent=2)); return
+  print(json.dumps({'stage':stage,'rendering':rendering,'mode':mode,'model':str(model),'model_exists':model.exists(),'runtime':runtime,'rows':[r['run_id'] for r in rows]},indent=2)); return
  if not model.exists(): raise SystemExit('missing model: '+str(model))
  model_hash=sha256_file(model)
  outroot=ROOT/('template_smoke' if mode=='smoke' else 'pilot_v01')/'raw'; outroot.mkdir(parents=True,exist_ok=True)
  logs=ROOT/('template_smoke' if mode=='smoke' else 'pilot_v01')/'logs'; logs.mkdir(parents=True,exist_ok=True)
  logf=(logs/f'server_{stage}_{rendering}.log').open('w',encoding='utf-8')
- cmd=[str(SERVER),'-m',str(model),'--host','127.0.0.1','--port',str(PORT),'-c','4096','-t','10','-ngl','0','-np','1','--alias','local','--no-ui','--no-cache-prompt','--log-disable']
+ cmd=[str(SERVER),'-m',str(model),'--host','127.0.0.1','--port',str(PORT),'-c','4096','-t','10','-ngl',str(runtime['gpu_layers']),'-np','1','--alias','local','--no-ui','--no-cache-prompt','--log-disable']
+ if runtime['device']!='none': cmd += ['--device',runtime['device']]
  proc=subprocess.Popen(cmd,stdout=logf,stderr=subprocess.STDOUT,text=True)
  try:
   wait_health(proc)
@@ -70,7 +78,7 @@ def run(stage,rendering,mode,dry_run=False):
    dest=outroot/(oid+'.json')
    if dest.exists(): print('SKIP',oid); continue
    endpoint,payload=request_payload(row,rendering); started=time.time(); resp=http_json(endpoint,payload); elapsed=time.time()-started; text=extract_text(resp,rendering)
-   rec={**row,'execution_id':oid,'rendering':rendering,'model_file':info['filename'],'model_sha256':model_hash,'pilot_model_repo':info['pilot_repo'],'pilot_model_revision':info['pilot_revision'],'llama_cpp_commit':'4e7481175cbd4759df8bee2f1c1a0073effbebd7','raw_text':text,'elapsed_seconds':elapsed,'response_stop':resp.get('stop'),'response_stopped_limit':resp.get('stopped_limit'),'usage':resp.get('usage'),'timings':resp.get('timings')}
+   rec={**row,'execution_id':oid,'rendering':rendering,'model_file':info['filename'],'model_sha256':model_hash,'pilot_model_repo':info['pilot_repo'],'pilot_model_revision':info['pilot_revision'],'llama_cpp_commit':'4e7481175cbd4759df8bee2f1c1a0073effbebd7','runtime_backend':runtime['backend'],'runtime_device':runtime['device'],'runtime_gpu_layers':runtime['gpu_layers'],'raw_text':text,'elapsed_seconds':elapsed,'response_stop':resp.get('stop'),'response_stopped_limit':resp.get('stopped_limit'),'usage':resp.get('usage'),'timings':resp.get('timings')}
    dest.write_text(json.dumps(rec,ensure_ascii=False,indent=2),encoding='utf-8'); print('OK',oid,'chars',len(text),'sec',round(elapsed,2),flush=True)
  finally:
   proc.terminate()
