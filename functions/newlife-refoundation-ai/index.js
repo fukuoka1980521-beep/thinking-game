@@ -144,7 +144,7 @@ function withCanonicalStateFacts(body) {
   };
 }
 
-function plannerEnums(caseId) {
+function plannerEnums(caseId, evidenceIds = []) {
   return {
     actionTypes: ACTION_TYPES,
     boundaryModes: BOUNDARY_MODES,
@@ -153,6 +153,7 @@ function plannerEnums(caseId) {
     sceneStatuses: SCENE_STATUSES,
     uncertaintyLevels: UNCERTAINTY_LEVELS,
     worldEffects: worldEffectsForCase(caseId),
+    evidenceIds,
   };
 }
 
@@ -166,14 +167,26 @@ function lastPlayerUtterance(recentDialogue) {
 
 async function attemptPlannedTurn(client, body, continuation = false) {
   const enriched = withCanonicalStateFacts(body);
-  const enums = plannerEnums(body.caseId);
+  const dossiers = getCaseDossiers(body.caseId);
+  const dossier = dossiers && dossiers[body.targetNpc];
+  const evidenceLedger = buildEvidenceLedger({
+    caseCanon: getCaseCanon(body.caseId),
+    dossier,
+    dynamicState: enriched.dynamicState,
+    recentDialogue: body.recentDialogue,
+  });
+  const enums = plannerEnums(body.caseId, evidenceLedger.map((record) => record.id));
+  const baseContext = [
+    buildConversationContextText(enriched),
+    `事実根拠台帳（evidenceLedger）: ${JSON.stringify(evidenceLedger)}`,
+  ].join("\n");
   const contextText = continuation
     ? [
-        buildConversationContextText(enriched),
+        baseContext,
         `NPC間継続ターン番号: ${body.continuationDepth || 1}`,
         "プレイヤーはこのターンでは新しく発言していない。直近PLAYER発言の意味を保持する。",
       ].join("\n")
-    : buildConversationContextText(enriched);
+    : baseContext;
 
   const planText = await callModel(client, {
     systemInstruction: TURN_PLAN_SYSTEM_INSTRUCTION,
@@ -188,12 +201,30 @@ async function attemptPlannedTurn(client, body, continuation = false) {
   } catch {
     return null;
   }
-  const plan = normalizeTurnPlan(rawPlan, body.targetNpc, enums);
-  if (!plan) return null;
+  let plan = normalizeTurnPlan(rawPlan, body.targetNpc, enums);
+  if (!plan || !dossier) return null;
 
-  const dossiers = getCaseDossiers(body.caseId);
-  const dossier = dossiers && dossiers[body.targetNpc];
-  if (!dossier) return null;
+  let answerVerification = null;
+  if (
+    plan.explicitQuestion &&
+    ["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(plan.answerGrounding)
+  ) {
+    const verificationText = await callModel(client, {
+      systemInstruction: EVIDENCE_VERIFY_SYSTEM_INSTRUCTION,
+      prompt: buildEvidenceVerificationPrompt({ plan, evidenceLedger }),
+      responseSchema: EVIDENCE_VERIFY_RESPONSE_SCHEMA,
+    });
+    let rawVerification = null;
+    try {
+      rawVerification = verificationText ? JSON.parse(verificationText) : null;
+    } catch {
+      rawVerification = null;
+    }
+    answerVerification = normalizeEvidenceVerification(rawVerification, evidenceLedger);
+    if (!answerVerification || !answerVerification.supported) {
+      plan = downgradeUnsupportedFactPlan(plan);
+    }
+  }
 
   const rawPlayerUtterance = continuation
     ? lastPlayerUtterance(body.recentDialogue)
@@ -242,7 +273,9 @@ async function attemptPlannedTurn(client, body, continuation = false) {
     body.targetNpc,
     body.caseId,
   );
-  return normalized ? { ...normalized, responsePlan: plan } : null;
+  return normalized
+    ? { ...normalized, responsePlan: { ...plan, answerVerification } }
+    : null;
 }
 
 async function attemptConverseTurn(client, body) {
