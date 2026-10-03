@@ -111,21 +111,53 @@ try {
   }
 
   $health = Get-Health
-  if (-not $health -or $health.buildSha -ne $head) {
+  $backendNeedsDeploy = $true
+  $backendSourceSha = $null
+
+  if ($health -and $health.buildSha) {
     Set-Location $repo
-    Deploy-Test $head
+    & git cat-file -e "$($health.buildSha)^{commit}" 2>$null
+    $knownBuild = ($LASTEXITCODE -eq 0)
+    if ($knownBuild) {
+      & git diff --quiet $health.buildSha $head -- functions/newlife-refoundation-ai
+      $diffCode = $LASTEXITCODE
+      if ($diffCode -eq 0) {
+        $backendNeedsDeploy = $false
+        $backendSourceSha = $health.buildSha
+        Log "REUSE TEST backend build=$backendSourceSha; no backend source diff to head=$head"
+      } elseif ($diffCode -ne 1) {
+        throw "unable to compare backend source between $($health.buildSha) and $head"
+      }
+    }
   }
 
-  $deadline = (Get-Date).AddMinutes(4)
-  do {
+  if ($backendNeedsDeploy) {
+    Set-Location $repo
+    Deploy-Test $head
+
+    $deadline = (Get-Date).AddMinutes(4)
+    do {
+      $health = Get-Health
+      if ($health -and $health.buildSha -eq $head) { break }
+      Start-Sleep -Seconds 8
+    } while ((Get-Date) -lt $deadline)
+    if (-not $health -or $health.buildSha -ne $head) {
+      throw "test backend did not converge to head $head"
+    }
+    $backendSourceSha = $head
+  } else {
     $health = Get-Health
-    if ($health -and $health.buildSha -eq $head) { break }
-    Start-Sleep -Seconds 8
-  } while ((Get-Date) -lt $deadline)
-  if (-not $health -or $health.buildSha -ne $head) {
-    throw "test backend did not converge to head $head"
+    if (-not $health -or $health.buildSha -ne $backendSourceSha) {
+      throw "reused test backend health identity changed unexpectedly"
+    }
   }
-  Write-Status "DEPLOY_TEST" "PASS" "test backend active" @{ head = $head; buildSha = $health.buildSha }
+
+  Write-Status "DEPLOY_TEST" "PASS" ($backendNeedsDeploy ? "test backend deployed" : "test backend reused; backend source unchanged") @{
+    head = $head
+    buildSha = $health.buildSha
+    backendSourceSha = $backendSourceSha
+    deployed = $backendNeedsDeploy
+  }
 
   $client = Join-Path $repo "src\newlife\refoundationDialogue.ts"
   $raw = Get-Content -Raw $client
@@ -156,6 +188,8 @@ try {
   Write-Status "COMPLETE" "PASS" "all self-drive gates passed" @{
     head = $head
     buildSha = $health.buildSha
+    backendSourceSha = $backendSourceSha
+    backendDeployed = $backendNeedsDeploy
     liveTotal = $report.total
     liveStructuralPasses = $report.structuralPasses
     transportFailures = $report.transportFailures
