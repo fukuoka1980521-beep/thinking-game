@@ -90,6 +90,11 @@ const cases = [
       decision: "喫茶席をどう扱うかはまだ未決。",
       authority: "喫茶席は美代子が決める。",
     },
+    sceneEntities: [
+      { id: "cafe_chairs", label: "美代子の喫茶の椅子", role: "仁が修理している店の設備", facts: ["試売商品ではない"] },
+      { id: "hina_baked_goods", label: "陽菜の焼き菓子", role: "試売商品", facts: ["販売場所は未定"] },
+      { id: "cafe_seats", label: "喫茶の四席", role: "美代子が管理する客席", facts: ["利用条件を決めるのは美代子"] },
+    ],
     canonicalState: { mSeats: "assumed" },
     utterance: "どうして椅子を見ていたんですか？",
     expectedResponsibilityStatus: "NOT_APPLICABLE",
@@ -197,6 +202,11 @@ const cases = [
       decision: "工房を一時的な受け取り場所に使えるか確認する。",
       authority: "工房は大輔が決める。椅子は修理品で試売の商品ではない。",
     },
+    sceneEntities: [
+      { id: "repair_chair", label: "大輔が修理中の椅子", role: "修理品", facts: ["試売商品ではない"] },
+      { id: "hina_baked_goods", label: "陽菜の焼き菓子", role: "試売商品・予約受取対象", facts: ["椅子とは別件"] },
+      { id: "daisuke_workshop", label: "大輔の工房", role: "焼き菓子の受け取り場所候補", facts: ["貸すか決めるのは大輔"] },
+    ],
     canonicalState: { dWorkshop: "pending" },
     utterance: "椅子の修理と、焼き菓子の受け取り場所の話は別ですよね？",
     expectedResponsibilityStatus: "NOT_APPLICABLE",
@@ -212,6 +222,11 @@ const cases = [
       decision: "工房を一時的な受け取り場所に使えるか確認する。",
       authority: "工房は大輔が決める。椅子は修理品で試売の商品ではない。",
     },
+    sceneEntities: [
+      { id: "repair_chair", label: "大輔が修理中の椅子", role: "修理品", facts: ["試売商品ではない"] },
+      { id: "hina_baked_goods", label: "陽菜の焼き菓子", role: "試売商品・予約受取対象", facts: ["椅子とは別件"] },
+      { id: "daisuke_workshop", label: "大輔の工房", role: "焼き菓子の受け取り場所候補", facts: ["貸すか決めるのは大輔"] },
+    ],
     canonicalState: { dWorkshop: "pending" },
     utterance: "実物を見せるかカタログにするかと、受け取り場所は因果的には別問題ですよね",
     expectedQuestionType: "ANALYTICAL",
@@ -315,6 +330,7 @@ for (let i = startIndex; i < cases.length; i += 1) {
       sceneTitle: c.sceneTitle,
       sceneText: c.sceneText,
       sceneFocus: c.sceneFocus ?? null,
+      sceneEntities: c.sceneEntities ?? [],
       canonicalState: c.canonicalState ?? {},
     },
   });
