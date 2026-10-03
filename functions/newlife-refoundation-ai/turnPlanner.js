@@ -147,7 +147,19 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const playerMeaning = boundedString(parsed.playerMeaning);
   const directAnswer = boundedString(parsed.directAnswer);
   const underlyingGoal = boundedString(parsed.underlyingGoal);
+  const referents = boundedArray(parsed.referents, 8);
+  const hardConstraints = boundedArray(parsed.hardConstraints, 6);
+  const affectedParties = boundedArray(parsed.affectedParties, 6, 200);
+  const burdens = boundedArray(parsed.burdens, 6);
+  const requiredContent = boundedArray(parsed.requiredContent, 4);
+  const unknowns = boundedArray(parsed.unknowns, 6);
+  const playerProposal = boundedString(parsed.playerProposal);
   if (!playerMeaning || !directAnswer || !underlyingGoal) return null;
+  if (parsed.mode === "SCENE_PROBLEM" && referents.length === 0) return null;
+  if (playerProposal && parsed.proposalDisposition === "NONE") return null;
+  if (!playerProposal && parsed.proposalDisposition !== "NONE") return null;
+  if (["ACCEPT", "MODIFY", "REJECT"].includes(parsed.proposalDisposition) && affectedParties.length === 0) return null;
+  if (requiredContent.length === 0) return null;
   if (!enums.uncertaintyLevels.includes(parsed.uncertainty)) return null;
   if (!enums.sceneStatuses.includes(parsed.sceneStatus)) return null;
 
@@ -161,19 +173,19 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     mode: parsed.mode,
     playerMeaning,
     directAnswer,
-    referents: boundedArray(parsed.referents, 8),
+    referents,
     activeIssue: boundedString(parsed.activeIssue),
     underlyingGoal,
     unresolvedDecision: boundedString(parsed.unresolvedDecision),
     authorityOwner: boundedString(parsed.authorityOwner, 200),
-    hardConstraints: boundedArray(parsed.hardConstraints, 6),
-    affectedParties: boundedArray(parsed.affectedParties, 6, 200),
-    burdens: boundedArray(parsed.burdens, 6),
-    playerProposal: boundedString(parsed.playerProposal),
+    hardConstraints,
+    affectedParties,
+    burdens,
+    playerProposal,
     proposalDisposition: parsed.proposalDisposition,
     responseMove: parsed.responseMove,
-    requiredContent: boundedArray(parsed.requiredContent, 4),
-    unknowns: boundedArray(parsed.unknowns, 6),
+    requiredContent,
+    unknowns,
     candidateFactRevealIds: boundedArray(parsed.candidateFactRevealIds, 5, 200),
     candidateCommitments: boundedArray(parsed.candidateCommitments, 5, 200),
     candidateWorldEffects: Array.isArray(parsed.candidateWorldEffects)
