@@ -210,7 +210,7 @@ async function attemptPlannedTurn(client, body, continuation = false) {
   } catch {
     return null;
   }
-  const npcLine = normalizeRenderedLine(rawRender);
+  const npcLine = normalizeRenderedLine(rawRender, plan.requiredContent.length);
   if (!npcLine) return null;
 
   const candidateTurn =
