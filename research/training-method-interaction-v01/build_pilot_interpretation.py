@@ -20,6 +20,7 @@ def main():
     residual={s:acc[s]-max(struct[s],length[s]) for s in STAGES}
     rec={s:a['method_by_stage'][s]['recall'] for s in STAGES}
     comp=a['compliance']
+    diversity={s:a['within_cell_diversity_by_stage'][s]['diversity_1_minus_similarity'] for s in STAGES}
     chance=a.get('chance_method_accuracy',1/3)
 
     patterns=[]
@@ -48,6 +49,13 @@ def main():
     dpo_delta=acc['DPO']-acc['SFT']
     patterns.append(('SFT→DPO selection shift',
       f"Lexical method recoverability changes by {dpo_delta:+.3f}; DPO residual over structure/length is {residual['DPO']:+.3f}. Interpret family recalls and compliance before attributing this to preference selection."))
+    dpo_div_delta=diversity['DPO']-diversity['SFT']
+    if dpo_div_delta < 0:
+        patterns.append(('DPO diversity compression candidate',
+          f"Within-cell residual lexical diversity changes SFT→DPO by {dpo_div_delta:+.3f}, directionally consistent with preference optimization narrowing response variation."))
+    else:
+        patterns.append(('No DPO diversity compression in this pilot',
+          f"Within-cell residual lexical diversity changes SFT→DPO by {dpo_div_delta:+.3f}; the expected compression pattern is not present."))
 
     sw_dpo=rec['DPO']['SOFTWARE_TESTING']['recall']
     sw_rl=rec['RLVR']['SOFTWARE_TESTING']['recall']
@@ -87,6 +95,9 @@ def main():
     for s in STAGES:
         lines.append(f"| {s} | {acc[s]:.3f} | {struct[s]:.3f} | {length[s]:.3f} | {residual[s]:+.3f} | {a['method_by_stage'][s]['macro_recall']:.3f} |")
 
+    lines += ['','## Within-cell residual lexical diversity','']
+    for s in STAGES:
+        lines.append(f"- {s}: {diversity[s]:.3f}")
     lines += ['','## Pattern interpretation','']
     for title,txt in patterns:
         lines += [f'### {title}',txt,'']

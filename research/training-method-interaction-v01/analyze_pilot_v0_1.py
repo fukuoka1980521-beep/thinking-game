@@ -1,5 +1,7 @@
 from __future__ import annotations
 import json, math, re
+from collections import Counter
+from itertools import combinations
 from pathlib import Path
 import numpy as np
 import pilot_measurement_v0_1 as m
@@ -49,6 +51,40 @@ def structure_features(text):
 def length_features(text):
     return np.array([len(re.findall(r"\b[A-Za-z][A-Za-z'-]*\b",text))],dtype=float)
 
+def residual_counter(text):
+    return Counter(m.normalize(text).split())
+
+def counter_cosine(a,b):
+    keys=set(a)|set(b)
+    dot=sum(a[k]*b[k] for k in keys)
+    na=math.sqrt(sum(v*v for v in a.values())); nb=math.sqrt(sum(v*v for v in b.values()))
+    return dot/(na*nb) if na and nb else 0.0
+
+def within_cell_diversity(rows):
+    cells={}
+    for r in rows:
+        cells.setdefault((r['task_id'],r['method_family']),[]).append(r)
+    cell_rows={}
+    all_sims=[]
+    for key,z in sorted(cells.items()):
+        sims=[]
+        for a,b in combinations(z,2):
+            sims.append(counter_cosine(residual_counter(a['text']),residual_counter(b['text'])))
+        if sims:
+            cell_rows[f'{key[0]}::{key[1]}']={
+                'mean_similarity':sum(sims)/len(sims),
+                'diversity_1_minus_similarity':1-sum(sims)/len(sims),
+                'pairs':len(sims),
+            }
+            all_sims.extend(sims)
+    mean_sim=sum(all_sims)/len(all_sims) if all_sims else None
+    return {
+        'mean_pairwise_similarity':mean_sim,
+        'diversity_1_minus_similarity':1-mean_sim if mean_sim is not None else None,
+        'pairs':len(all_sims),
+        'cells':cell_rows,
+    }
+
 def numeric_classify(train,test,label_key,classes,feature_fn):
     X=np.vstack([feature_fn(r['text']) for r in train])
     Y=np.array([classes.index(r[label_key]) for r in train],dtype=int)
@@ -91,6 +127,7 @@ def main():
         'status':'PILOT_CALIBRATION_ONLY','n':72,
         'chance_method_accuracy':1/len(m.METHODS),'chance_stage_accuracy':1/len(m.STAGES),
         'method_by_stage':{},'structure_only_by_stage':{},'length_only_by_stage':{},
+        'within_cell_diversity_by_stage':{},
         'stage_cross_task':{},'cross_stage_method_transfer':{},'compliance':{},'runtime':{},
     }
 
@@ -103,6 +140,7 @@ def main():
             t1,t2,lambda tr,te:numeric_classify(tr,te,'method_family',m.METHODS,structure_features))
         result['length_only_by_stage'][stage]=paired_cross_task(
             t1,t2,lambda tr,te:numeric_classify(tr,te,'method_family',m.METHODS,length_features))
+        result['within_cell_diversity_by_stage'][stage]=within_cell_diversity(z)
 
     t1=[r for r in rows if r['task_id']=='T1']; t2=[r for r in rows if r['task_id']=='T2']
     a=m.classify(t1,t2,'training_stage',m.STAGES); b=m.classify(t2,t1,'training_stage',m.STAGES)
@@ -153,6 +191,10 @@ def main():
               '| train stage | test stage | accuracy | macro recall |','|---|---|---:|---:|']
     for aa,row in result['cross_stage_method_transfer'].items():
         for bb,x in row.items(): lines.append(f"| {aa} | {bb} | {x['accuracy']:.3f} | {x['macro_recall']:.3f} |")
+    lines += ['','## Within-cell residual lexical diversity','']
+    for s in m.STAGES:
+        x=result['within_cell_diversity_by_stage'][s]
+        lines.append(f"- {s}: diversity={x['diversity_1_minus_similarity']:.3f} (mean pairwise similarity={x['mean_pairwise_similarity']:.3f}, pairs={x['pairs']})")
     lines += ['','## Compliance','']
     for s,x in result['compliance'].items():
         lines.append(f"- {s}: headings={x['all_headings_rate']:.2f}, refusal={x['refusal_rate']:.2f}, words={x['mean_word_count']:.1f}")
