@@ -350,6 +350,18 @@ For any change touching `src/newlife/**`, `functions/newlife-*/**`, `public/newl
 9. Research claims about Intent Decomposition Drift must distinguish observed repository evidence
    from hypotheses. Follow
    `docs/research/intent-decomposition-drift/INTENT_DECOMPOSITION_DRIFT_PROTOCOL_V1.md`.
+10. Ordinary NEW LIFE dialogue uses the response-construction kernel in
+    `docs/newlife/RESPONSE_CONSTRUCTION_KERNEL_V1.md`:
+    canonical context -> semantic response plan -> character render -> truth/authority gate.
+    Do not repair a bad line by adding a phrase case before checking whether the semantic plan,
+    referent binding, authority, burden, or render boundary failed.
+11. `sceneFocus` is an unresolved problem description, not a mandatory solution. A valid player
+    alternative may replace the current plan when it removes unnecessary burden and respects authority.
+12. Character style may change how a conclusion is expressed; it may not make an otherwise coherent
+    character ignore causal reasoning, merge unrelated objects, or repeat procedure after the plan has changed.
+13. The legacy action/boundary taxonomy is compatibility metadata for 30-day chat, not the owner of
+    semantic reasoning. Do not optimize natural conversation around those labels.
 
 NEW_LIFE_ROOT_DECISION = CHAT_FIRST
+NEW_LIFE_RESPONSE_ROOT = PLAN_THEN_RENDER
 
