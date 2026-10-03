@@ -145,7 +145,7 @@ try {
     node scripts/newlife-response-kernel-live-regression.mjs
   }
 
-  $report = Get-Content -Raw $kernelOut | ConvertFrom-Json
+  $report = Get-Content -Raw -Encoding utf8 $kernelOut | ConvertFrom-Json
   if ($report.transportFailures -ne 0) {
     throw "live kernel transport failures=$($report.transportFailures)"
   }
