@@ -92,3 +92,44 @@ A valid NEW LIFE turn must preserve all four:
 2. correct object/reference binding;
 3. logical update when the player's argument changes the workable plan;
 4. character individuality without turning personality into irrational repetition.
+
+
+## Isolated-backend regression probe after repairs
+
+Build under test:
+`1366c2517417ba2f61034b2af1c3772b095940c7`
+
+### Yohei — ordinary schedule question
+
+Player:
+> 今日何か予定あるのですか
+
+Yohei:
+> 今日はいつも通りだ。
+
+Result:
+The reply is now ordinary and literal rather than the more cryptic `いつものことだ`.
+
+### Fumiko — remove cafe dependency
+
+Player proposal:
+> 迷惑をかけるかもしれないので、喫茶を待機場所から外して会館側だけで考えた方がよいですよ
+
+Fumiko:
+> 喫茶を待機場所から外すなら、会館側で待機場所を確保する必要がありますね。
+
+Result:
+Fumiko accepts the structural change instead of mechanically insisting on defining cafe-seat conditions. She can remain procedural in personality while still updating the plan.
+
+### Day 4 — object/reference grounding
+
+Player:
+> 椅子を売るのですか？焼き菓子の受け取り場所の話とは別ですよね
+
+Fumiko:
+> 椅子は修理品ですよ。焼き菓子の受け取り場所とは別の話です。
+
+Result:
+The model now separates chair repair from baked-goods pickup and does not invent chair sales.
+
+These are targeted live regressions, not a full human-product PASS.
