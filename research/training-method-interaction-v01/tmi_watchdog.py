@@ -20,6 +20,25 @@ MODELS = {
     "RLVR": ("mradermacher/OLMo-2-1124-7B-Instruct-GGUF", "d618cdd4d18a8463dbb919e30ee9863b16b4173f", "OLMo-2-1124-7B-Instruct.Q4_K_M.gguf"),
 }
 STAGES = ["BASE", "SFT", "DPO", "RLVR"]
+
+# Download-source fallbacks are operational contingencies only. They do not alter
+# prompt/sampling conditions. RLVR has an official AllenAI Q4_K_M fallback.
+DOWNLOAD_SOURCES = {
+    "BASE": [
+        {"repo": "mradermacher/OLMo-2-1124-7B-GGUF", "rev": "052f3248d0878a61a6ffa8f8903e513b215e6f0e", "remote_file": "OLMo-2-1124-7B.Q4_K_M.gguf"},
+    ],
+    "SFT": [
+        {"repo": "mradermacher/OLMo-2-1124-7B-SFT-GGUF", "rev": "8fbeaff0abdd5cca10ee696462f2d3a17c8fdc82", "remote_file": "OLMo-2-1124-7B-SFT.Q4_K_M.gguf"},
+    ],
+    "DPO": [
+        {"repo": "mradermacher/OLMo-2-1124-7B-DPO-GGUF", "rev": "32ce3d935205a7301f5bde270abffb4331f22525", "remote_file": "OLMo-2-1124-7B-DPO.Q4_K_M.gguf"},
+    ],
+    "RLVR": [
+        {"repo": "mradermacher/OLMo-2-1124-7B-Instruct-GGUF", "rev": "d618cdd4d18a8463dbb919e30ee9863b16b4173f", "remote_file": "OLMo-2-1124-7B-Instruct.Q4_K_M.gguf", "label": "primary_one_distributor"},
+        {"repo": "allenai/OLMo-2-1124-7B-Instruct-GGUF", "rev": "410e0069f64869e4b1d17d8de04810b881fd824b", "remote_file": "olmo-2-1124-7B-instruct-Q4_K_M.gguf", "label": "official_allenai_fallback", "published_sha256": "e08112e5f84aab7c05fa6e713c58e5214cd5d8e32ed773ff3354b006eed41b95"},
+    ],
+}
+
 def now():
     return datetime.now().astimezone().isoformat(timespec="seconds")
 
@@ -161,7 +180,7 @@ def ensure_download(stage, state):
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     if finalize_download_if_complete(stage, state):
         return True
-    repo, rev, filename = MODELS[stage]
+    _, _, filename = MODELS[stage]
     final, partial, control = model_paths(stage)
     ds = state["downloads"].setdefault(stage, {})
     pid = ds.get("pid")
@@ -188,16 +207,75 @@ def ensure_download(stage, state):
             ds["status"] = "STALE_RESTART_PENDING"
             log(f"DOWNLOAD_STALE {stage} bytes={current_bytes} mtime_ns={current_mtime_ns}")
         return False
+
+    # A tracked downloader exited without producing a verified final file.
+    # Count the failed source attempt instead of blindly repeating it forever.
+    if pid:
+        ds["pid"] = None
+        ds["failed_attempts_current_source"] = int(ds.get("failed_attempts_current_source", 0) or 0) + 1
+        log(f"DOWNLOAD_PROCESS_EXIT_UNFINALIZED {stage} attempts={ds['failed_attempts_current_source']}")
+
+    sources = DOWNLOAD_SOURCES[stage]
+    source_index = int(ds.get("source_index", 0) or 0)
+    failed = int(ds.get("failed_attempts_current_source", 0) or 0)
+
+    # After two failed launches on the same source, switch source if a scientifically
+    # acceptable operational fallback exists. Otherwise, stop this dependency after
+    # three failed launches and report from current evidence.
+    if failed >= 2 and source_index + 1 < len(sources):
+        old_index = source_index
+        source_index += 1
+        ds["source_index"] = source_index
+        ds["failed_attempts_current_source"] = 0
+        if partial.exists():
+            archived = MODEL_DIR / (partial.name + f".source{old_index}.failed")
+            if archived.exists():
+                archived.unlink()
+            partial.replace(archived)
+        if control.exists():
+            control.unlink()
+        log(f"DOWNLOAD_SOURCE_SWITCH {stage} from={old_index} to={source_index} source={sources[source_index].get('label','fallback')}")
+        amendment = ROOT / f"DOWNLOAD_FALLBACK_AMENDMENT_{stage}.md"
+        amendment.write_text(
+            "# Download Fallback Amendment\n\n"
+            f"Stage: {stage}\n\n"
+            f"Primary download source failed twice without a verified artifact. "
+            f"Operational source switched before any {stage} output was generated.\n\n"
+            f"Fallback: {sources[source_index]['repo']} @ {sources[source_index]['rev']}\n\n"
+            "Scientific prompt/sampling conditions are unchanged. Quantization-source difference "
+            "must be disclosed as a calibration limitation.\n",
+            encoding="utf-8",
+        )
+        failed = 0
+
+    if failed >= 3 and source_index + 1 >= len(sources):
+        state["status"] = f"STOPPED_DOWNLOAD_UNRESOLVED_{stage}"
+        state["unresolved_dependency"] = {
+            "stage": stage,
+            "cause": "all configured download sources exhausted",
+            "attempts_on_final_source": failed,
+            "impact": "stage-specific behavioral comparison unavailable; completed stages remain valid",
+        }
+        log(f"STOP_DOWNLOAD_UNRESOLVED {stage} attempts={failed}")
+        try:
+            subprocess.run([str(PYTHON), str(ROOT / "build_execution_report.py")], cwd=ROOT, timeout=60)
+        except Exception as e:
+            log(f"EXECUTION_REPORT_AFTER_DOWNLOAD_STOP_ERROR {type(e).__name__} {e}")
+        return False
+
     if shutil.disk_usage(MODEL_DIR).free < 6_000_000_000:
         state["status"] = "STOPPED_DISK_LOW"
         log(f"STOP_DISK_LOW stage={stage} free={shutil.disk_usage(MODEL_DIR).free}")
         return False
-    url = f"https://huggingface.co/{repo}/resolve/{rev}/{filename}?download=true"
+
+    source = sources[source_index]
+    repo, rev, remote_file = source["repo"], source["rev"], source["remote_file"]
+    url = f"https://huggingface.co/{repo}/resolve/{rev}/{remote_file}?download=true"
     cmd = [
         ARIA2, "-x", "8", "-s", "8", "-k", "1M",
         "--continue=true", "--file-allocation=none",
         "--auto-file-renaming=false", "--allow-overwrite=true",
-        "--max-tries=0", "--retry-wait=3",
+        "--max-tries=5", "--retry-wait=3",
         "-d", MODEL_DIR, "-o", partial.name, url,
     ]
     pid = start_detached(cmd, ROOT / "autorun_logs" / f"download_{stage}.log")
@@ -206,9 +284,10 @@ def ensure_download(stage, state):
     mtime_ns = stat.st_mtime_ns if stat else 0
     ds.update({
         "status": "DOWNLOADING", "pid": pid, "started_at": now(), "url": url,
+        "source_index": source_index, "source_repo": repo, "source_revision": rev,
         "partial_bytes": existing, "partial_mtime_ns": mtime_ns, "last_progress_at": now()
     })
-    log(f"DOWNLOAD_START {stage} pid={pid} existing={existing}")
+    log(f"DOWNLOAD_START {stage} pid={pid} existing={existing} source_index={source_index} repo={repo}")
     return False
 def smoke_file(stage, rendering):
     return ROOT / "template_smoke" / "raw" / f"SMOKE-{stage}-{rendering.upper()}.json"
