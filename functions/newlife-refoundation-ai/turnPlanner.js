@@ -131,6 +131,83 @@ function buildRenderSchema(Type) {
   };
 }
 
+function buildEvidenceVerificationSchema(Type) {
+  return {
+    type: Type.OBJECT,
+    properties: {
+      supported: { type: Type.BOOLEAN },
+      reason: { type: Type.STRING },
+      usedEvidenceIds: { type: Type.ARRAY, items: { type: Type.STRING } },
+    },
+    required: ["supported", "reason", "usedEvidenceIds"],
+  };
+}
+
+function buildEvidenceLedger({ caseCanon, dossier, dynamicState, recentDialogue }) {
+  const records = [];
+  const push = (id, kind, value) => {
+    if (value === undefined || value === null) return;
+    const text = typeof value === "string" ? value.trim() : JSON.stringify(value);
+    if (!text) return;
+    records.push({ id, kind, text: text.slice(0, 4000) });
+  };
+
+  push("CASE_CANON", "CANON", caseCanon);
+  push("DOSSIER", "PERSONA_AND_KNOWLEDGE", dossier);
+  push("SCENE_TEXT", "OBSERVED_SCENE", dynamicState?.sceneText);
+  push("SCENE_FOCUS", "SCENE_PROBLEM", dynamicState?.sceneFocus);
+  const facts = Array.isArray(dynamicState?.canonicalStateFacts) ? dynamicState.canonicalStateFacts : [];
+  facts.slice(0, 20).forEach((fact, i) => push(`STATE_${i}`, "CANONICAL_STATE", fact));
+  const memories = Array.isArray(dynamicState?.retrievedMemories) ? dynamicState.retrievedMemories : [];
+  memories.slice(0, 8).forEach((memory, i) => push(`MEMORY_${i}`, "MEMORY", memory));
+  const dialogue = Array.isArray(recentDialogue) ? recentDialogue : [];
+  dialogue.slice(-12).forEach((line, i) => push(`DIALOGUE_${i}`, "RECENT_DIALOGUE", line));
+  return records;
+}
+
+function buildEvidenceVerificationPrompt({ plan, evidenceLedger }) {
+  return [
+    `explicitQuestion: ${JSON.stringify(plan.explicitQuestion)}`,
+    `explicitAnswer: ${JSON.stringify(plan.explicitAnswer)}`,
+    `answerGrounding: ${JSON.stringify(plan.answerGrounding)}`,
+    `citedEvidenceIds: ${JSON.stringify(plan.answerEvidenceIds)}`,
+    `evidenceLedger: ${JSON.stringify(evidenceLedger)}`,
+    "",
+    "explicitAnswer が引用証拠で支持されるかだけを判定してください。",
+  ].join("\n");
+}
+
+function normalizeEvidenceVerification(parsed, evidenceLedger) {
+  if (!parsed || typeof parsed !== "object" || typeof parsed.supported !== "boolean") return null;
+  const reason = boundedString(parsed.reason, 500);
+  if (!reason || !Array.isArray(parsed.usedEvidenceIds)) return null;
+  const allowed = new Set(evidenceLedger.map((e) => e.id));
+  const usedEvidenceIds = [...new Set(parsed.usedEvidenceIds)]
+    .filter((id) => typeof id === "string" && allowed.has(id))
+    .slice(0, 12);
+  return { supported: parsed.supported, reason, usedEvidenceIds };
+}
+
+function downgradeUnsupportedFactPlan(plan) {
+  if (!plan?.explicitQuestion) return plan;
+  const fallback = "その点は、今ある情報だけでは確定できません。";
+  return {
+    ...plan,
+    directAnswer: fallback,
+    explicitAnswer: fallback,
+    answerGrounding: "UNKNOWN",
+    answerEvidenceIds: [],
+    requiredContent: [fallback],
+    unknowns: [...new Set([...(plan.unknowns || []), plan.explicitQuestion])].slice(0, 6),
+    candidateFactRevealIds: [],
+    candidateCommitments: [],
+    candidateWorldEffects: [],
+    uncertainty: plan.uncertainty === "LOW" ? "MEDIUM" : plan.uncertainty,
+    sceneStatus: "AWAIT_PLAYER",
+    nextNpc: null,
+  };
+}
+
 function buildTurnPlanPrompt(contextText, continuation = false) {
   return [
     continuation ? "これはNPC間継続ターンです。" : "これはプレイヤーへの通常返答ターンです。",
