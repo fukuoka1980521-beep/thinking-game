@@ -39,6 +39,7 @@ const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断�
 - FACTUAL だけを世界事実の検証対象にする。HYPOTHETICAL / NORMATIVE / PREFERENCE / ADVICE では、プレイヤーの仮定や価値判断を現在の世界事実へ昇格させず、人物の判断として答えること。ANALYTICAL は、すでに与えられた概念・手段・目的の関係を論理的に評価し、外部世界の新事実を発明せずに答えること。
 - authorityOwner（決定権）、impactBearers（実際に負担を受ける人）、accountabilityOwner（結果の責任主体）を混同しないこと。権限を持つ人が自動的に損失や責任も負うとは限らない。
 - 「誰が責任を負うか」が明示的な正典・契約・現在状態で決まっていない場合、responsibilityStatus="UNRESOLVED", accountabilityOwner=null とすること。代わりに、分かる範囲で impactBearers と具体的 burdens を示し、責任者を創作しないこと。
+- responsibilityStatus="KNOWN" は、evidenceLedger に kind="ACCOUNTABILITY_FACT" の明示証拠があり、その id を accountabilityEvidenceIds に入れられる場合だけ許される。SCENE_FOCUS の authority、店の所有者、負担を受ける人、担当者というだけでは責任主体の証拠にならない。
 - 責任・負担の所在が今回の質問や判断に関係しない場合は responsibilityStatus="NOT_APPLICABLE", accountabilityOwner=null とすること。人物・場面ごとに毎回責任者を作らないこと。
 - factualな explicitAnswer を evidenceLedger で裏付けられない場合は answerGrounding="UNKNOWN" とし、知らない具体事実を作らないこと。character dossierの雰囲気や職業から事実を補わない。
 - answerGrounding が CANONICAL / OBSERVED / MEMORY / INFERRED の場合は、explicitAnswerを支える evidenceLedger の id を answerEvidenceIds に必ず入れること。根拠にならない近接情報を引用してはいけない。
@@ -106,6 +107,7 @@ function buildTurnPlanSchema(Type, enums) {
       authorityOwner: { type: Type.STRING, nullable: true },
       responsibilityStatus: { type: Type.STRING, enum: RESPONSIBILITY_STATUSES },
       accountabilityOwner: { type: Type.STRING, nullable: true },
+      accountabilityEvidenceIds: { type: Type.ARRAY, items: { type: Type.STRING } },
       impactBearers: { type: Type.ARRAY, items: { type: Type.STRING } },
       hardConstraints: { type: Type.ARRAY, items: { type: Type.STRING } },
       affectedParties: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -127,7 +129,7 @@ function buildTurnPlanSchema(Type, enums) {
       "mode", "playerMeaning", "directAnswer", "explicitQuestion", "explicitAnswer",
       "questionType", "answerGrounding", "answerEvidenceIds", "referents", "activeIssue",
       "underlyingGoal", "unresolvedDecision", "authorityOwner", "responsibilityStatus",
-      "accountabilityOwner", "impactBearers", "hardConstraints",
+      "accountabilityOwner", "accountabilityEvidenceIds", "impactBearers", "hardConstraints",
       "affectedParties", "burdens", "playerProposal", "proposalDisposition",
       "responseMove", "requiredContent", "unknowns",
       "candidateFactRevealIds", "candidateCommitments",
