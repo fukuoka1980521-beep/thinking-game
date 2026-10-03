@@ -14,7 +14,7 @@ Profile: GENERATIVE_WORLD
 
 ## Model routing
 - DEFAULT: gpt-6-luna for normal NPC turns and scene responses.
-- ESCALATE: gpt-6-sol for key-day reflection, multi-NPC consistency conflicts, major narrative planning, or repeated low-quality/non-progress dialogue.
+- ESCALATE: gpt-6.1-sol for key-day reflection, multi-NPC consistency conflicts, major narrative planning, or repeated low-quality/non-progress dialogue.
 - EXPERT: gpt-6-astra only for offline benchmark/story-system review.
 
 ## Context/state
