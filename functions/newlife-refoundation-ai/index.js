@@ -233,6 +233,9 @@ async function attemptPlannedTurn(client, body, continuation = false) {
 }
 
 async function attemptConverseTurn(client, body) {
+  if (body.caseId === "NEWLIFE_30DAY_V1") {
+    return attemptPlannedTurn(client, body, false);
+  }
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
     prompt: buildConversePrompt(withCanonicalStateFacts(body)),
@@ -252,6 +255,9 @@ async function attemptConverseTurn(client, body) {
 
 
 async function attemptNpcExchangeTurn(client, body) {
+  if (body.caseId === "NEWLIFE_30DAY_V1") {
+    return attemptPlannedTurn(client, body, true);
+  }
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
     prompt: buildNpcExchangePrompt(withCanonicalStateFacts(body)),
