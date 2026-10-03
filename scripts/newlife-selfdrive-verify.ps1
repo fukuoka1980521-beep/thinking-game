@@ -67,9 +67,17 @@ function Deploy-Test([string]$sha) {
       "--set-env-vars=GCP_PROJECT=$Project,NEWLIFE_REFOUNDATION_BUILD_SHA=$sha,NEWLIFE_REFOUNDATION_AI_MAX_CALLS_PER_MINUTE=120,NEWLIFE_REFOUNDATION_AI_MAX_REFLECTION_CALLS_PER_MINUTE=6",
       "--quiet"
     )
-    $output = & gcloud @args 2>&1
-    $code = $LASTEXITCODE
+    $stdout = Join-Path $env:TEMP "newlife-gcloud-$PID-$i.out.log"
+    $stderr = Join-Path $env:TEMP "newlife-gcloud-$PID-$i.err.log"
+    Remove-Item $stdout,$stderr -Force -ErrorAction SilentlyContinue
+    $gcloudExe = (Get-Command gcloud.cmd -ErrorAction SilentlyContinue).Source
+    if (-not $gcloudExe) { $gcloudExe = (Get-Command gcloud -ErrorAction Stop).Source }
+    $proc = Start-Process -FilePath $gcloudExe -ArgumentList $args -Wait -PassThru -NoNewWindow -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+    $output = @()
+    if (Test-Path $stdout) { $output += Get-Content $stdout }
+    if (Test-Path $stderr) { $output += Get-Content $stderr }
     $output | Add-Content -Path $LogPath -Encoding utf8
+    $code = $proc.ExitCode
     if ($code -eq 0) { return }
     $joined = ($output | Out-String)
     if ($joined -match "409|unable to queue the operation") {
