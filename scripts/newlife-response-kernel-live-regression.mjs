@@ -54,6 +54,7 @@ const cases = [
     sceneText: "洋平は自分の店で普段の仕事をしている。特別な予定は確定していない。",
     utterance: "今日は何か特別な予定あるんですか？",
     expectedMode: "CASUAL",
+    expectedQuestionType: "FACTUAL",
   },
   {
     id: "casual_business_advice",
@@ -63,6 +64,8 @@ const cases = [
     sceneText: "洋平は雑貨店主。プレイヤーは自分も商売を始めたいと雑談している。",
     utterance: "私も商売を始めたいんですが、何が向いてると思います？",
     expectedMode: "CASUAL",
+    expectedQuestionType: "ADVICE",
+    expectedGrounding: ["OPINION", "NOT_APPLICABLE"],
   },
   {
     id: "day2_referent",
@@ -106,6 +109,10 @@ const cases = [
     },
     canonicalState: { mSeats: "assumed" },
     utterance: "待機客のせいで喫茶の普通のお客さんが座れなくなる負担は誰が持つんですか？",
+    expectedQuestionType: ["HYPOTHETICAL", "NORMATIVE"],
+    expectedResponsibilityStatus: "UNRESOLVED",
+    requireNullAccountabilityOwner: true,
+    minImpactBearers: 1,
   },
   {
     id: "alternative_accept_1",
@@ -178,8 +185,15 @@ const cases = [
     },
     utterance: "ところで、このコーヒーは深煎りですか？",
     expectedMode: "TOPIC_SHIFT",
+    expectedQuestionType: "FACTUAL",
+    expectedGrounding: "UNKNOWN",
   },
 ];
+
+function matchesExpected(actual, expected) {
+  if (expected === undefined) return true;
+  return Array.isArray(expected) ? expected.includes(actual) : actual === expected;
+}
 
 function structuralChecks(c, reply) {
   const p = reply?.responsePlan;
@@ -192,6 +206,14 @@ function structuralChecks(c, reply) {
     disposition:
       !c.expectedDisposition ||
       c.expectedDisposition.includes(p?.proposalDisposition),
+    questionType: matchesExpected(p?.questionType, c.expectedQuestionType),
+    grounding: matchesExpected(p?.answerGrounding, c.expectedGrounding),
+    responsibilityStatus: matchesExpected(p?.responsibilityStatus, c.expectedResponsibilityStatus),
+    accountabilityOwner:
+      !c.requireNullAccountabilityOwner || p?.accountabilityOwner === null,
+    impactBearers:
+      !c.minImpactBearers ||
+      (Array.isArray(p?.impactBearers) && p.impactBearers.length >= c.minImpactBearers),
   };
   return { checks, pass: Object.values(checks).every(Boolean) };
 }
