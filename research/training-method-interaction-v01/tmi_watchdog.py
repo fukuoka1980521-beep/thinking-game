@@ -516,6 +516,12 @@ def ensure_pilot(state):
         log(f"PILOT_INTERPRETATION rc={rc}")
         if rc != 0:
             return False
+    decision_report = ROOT / "pilot_v01" / "analysis" / "PROGRAM_DECISION_REPORT.md"
+    if not decision_report.exists():
+        rc = subprocess.run([str(PYTHON), str(ROOT / "build_program_decision_report.py")], cwd=ROOT).returncode
+        log(f"PROGRAM_DECISION_REPORT rc={rc}")
+        if rc != 0:
+            return False
     g = json.loads(gate.read_text(encoding="utf-8"))
     decision = g.get("status")
     if decision == "GO":
