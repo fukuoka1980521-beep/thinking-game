@@ -174,6 +174,7 @@ async function attemptPlannedTurn(client, body, continuation = false) {
     dossier,
     dynamicState: enriched.dynamicState,
     recentDialogue: body.recentDialogue,
+    rawPlayerUtterance: continuation ? lastPlayerUtterance(body.recentDialogue) : body.rawPlayerUtterance,
   });
   const enums = plannerEnums(body.caseId, evidenceLedger.map((record) => record.id));
   const baseContext = [
@@ -206,6 +207,7 @@ async function attemptPlannedTurn(client, body, continuation = false) {
 
   let answerVerification = null;
   if (
+    plan.questionType === "FACTUAL" &&
     plan.explicitQuestion &&
     ["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(plan.answerGrounding)
   ) {
