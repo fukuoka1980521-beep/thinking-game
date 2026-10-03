@@ -65,3 +65,14 @@ A disappearing remote PID is therefore irrelevant. The next controller reads the
 - Human product validation remains separate; this verifier may establish technical/live-structural PASS only.
 
 SELFDRIVE_ROOT = DURABLE_CHECKPOINTS_NOT_PID
+
+## Runtime lifecycle
+
+The isolated NEW LIFE backend now targets Node.js 22.
+
+Reason:
+- Node.js 20 is approaching Cloud Functions decommission for deployment;
+- relying on a near-decommission runtime would recreate the same "sudden stop" class at infrastructure level;
+- Node.js 22 is GA in the target Google Cloud environment.
+
+The self-drive runner and deploy workflow must stay aligned with the function package engine. Runtime deprecation warnings are therefore treated as maintenance signals to remove, not permanent noise to suppress.
