@@ -55,6 +55,7 @@ const cases = [
     utterance: "今日は何か特別な予定あるんですか？",
     expectedMode: "CASUAL",
     expectedQuestionType: "FACTUAL",
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
     id: "casual_business_advice",
@@ -66,6 +67,7 @@ const cases = [
     expectedMode: "CASUAL",
     expectedQuestionType: "ADVICE",
     expectedGrounding: ["OPINION", "NOT_APPLICABLE"],
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
     id: "day2_referent",
@@ -80,6 +82,7 @@ const cases = [
     },
     canonicalState: { mSeats: "assumed" },
     utterance: "どうして椅子を見ていたんですか？",
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
     id: "proposal_reject_late_phone",
@@ -95,6 +98,7 @@ const cases = [
     canonicalState: { mSeats: "assumed" },
     utterance: "当日必要になったら美代子さんに電話して聞けばよいのでは？",
     expectedDisposition: ["REJECT", "MODIFY"],
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
     id: "burden_reasoning",
@@ -115,6 +119,24 @@ const cases = [
     minImpactBearers: 1,
   },
   {
+    id: "accountability_reasoning",
+    npc: "FUMIKO",
+    day: 3,
+    sceneTitle: "担当という言葉",
+    sceneText: "試売の日の待機場所が未決。喫茶席を使う案と会館側だけで完結する案がある。待機客で通常客が座れない場合の責任主体は正典では決まっていない。",
+    sceneFocus: {
+      issue: "待機場所が未決。",
+      decision: "喫茶席を使うか会館側だけで待機させるか決める。",
+      authority: "喫茶席は美代子、会館側の案内は文子。",
+    },
+    canonicalState: { mSeats: "assumed" },
+    utterance: "もし待機客のせいで喫茶の普通のお客さんが入れなくなったら、その責任は誰が負うんですか？",
+    expectedQuestionType: ["HYPOTHETICAL", "NORMATIVE"],
+    expectedResponsibilityStatus: "UNRESOLVED",
+    requireNullAccountabilityOwner: true,
+    minImpactBearers: 1,
+  },
+  {
     id: "alternative_accept_1",
     npc: "FUMIKO",
     day: 3,
@@ -128,6 +150,7 @@ const cases = [
     canonicalState: { mSeats: "assumed" },
     utterance: "それなら喫茶を待機場所から外して、会館側だけで考えた方がよくないですか？",
     expectedDisposition: ["ACCEPT", "MODIFY"],
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
     id: "alternative_accept_2",
@@ -143,6 +166,7 @@ const cases = [
     canonicalState: { mSeats: "assumed" },
     utterance: "他人の店を借りる前提をやめて、待つ人は全部会館で受けたらどうでしょう",
     expectedDisposition: ["ACCEPT", "MODIFY"],
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
     id: "day4_object_split",
@@ -157,6 +181,7 @@ const cases = [
     },
     canonicalState: { dWorkshop: "pending" },
     utterance: "椅子の修理と、焼き菓子の受け取り場所の話は別ですよね？",
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
     id: "day4_counterexample",
@@ -171,6 +196,9 @@ const cases = [
     },
     canonicalState: { dWorkshop: "pending" },
     utterance: "実物を見せるかカタログにするかと、受け取り場所は因果的には別問題ですよね",
+    expectedQuestionType: "ANALYTICAL",
+    expectedGrounding: ["INFERRED", "NOT_APPLICABLE"],
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
   {
     id: "topic_shift",
@@ -187,6 +215,7 @@ const cases = [
     expectedMode: "TOPIC_SHIFT",
     expectedQuestionType: "FACTUAL",
     expectedGrounding: "UNKNOWN",
+    expectedResponsibilityStatus: "NOT_APPLICABLE",
   },
 ];
 
