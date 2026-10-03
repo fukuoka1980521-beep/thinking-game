@@ -51,6 +51,30 @@ function Get-Health {
   }
 }
 
+function Get-DeployedConfig {
+  try {
+    $json = & gcloud functions describe $FunctionName --gen2 --region=$Region --project=$Project --format=json 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $json) { return $null }
+    return ($json | ConvertFrom-Json)
+  } catch {
+    return $null
+  }
+}
+
+function Test-DeployedConfig([object]$config) {
+  if (-not $config) { return $false }
+  $runtime = $config.buildConfig.runtime
+  $timeout = [int]$config.serviceConfig.timeoutSeconds
+  $env = $config.serviceConfig.environmentVariables
+  return (
+    $runtime -eq "nodejs22" -and
+    $timeout -ge 90 -and
+    $env.NEWLIFE_REFOUNDATION_AI_MAX_CALLS_PER_MINUTE -eq "120" -and
+    $env.NEWLIFE_REFOUNDATION_AI_MAX_REFLECTION_CALLS_PER_MINUTE -eq "6"
+  )
+}
+
+
 function Deploy-Test([string]$sha) {
   $maxAttempts = 3
   for ($i = 1; $i -le $maxAttempts; $i++) {
@@ -111,8 +135,10 @@ try {
   }
 
   $health = Get-Health
+  $deployedConfig = Get-DeployedConfig
   $backendNeedsDeploy = $true
   $backendSourceSha = $null
+  $configMatches = Test-DeployedConfig $deployedConfig
 
   if ($health -and $health.buildSha) {
     Set-Location $repo
@@ -121,10 +147,12 @@ try {
     if ($knownBuild) {
       & git diff --quiet $health.buildSha $head -- functions/newlife-refoundation-ai
       $diffCode = $LASTEXITCODE
-      if ($diffCode -eq 0) {
+      if ($diffCode -eq 0 -and $configMatches) {
         $backendNeedsDeploy = $false
         $backendSourceSha = $health.buildSha
-        Log "REUSE TEST backend build=$backendSourceSha; no backend source diff to head=$head"
+        Log "REUSE TEST backend build=$backendSourceSha; backend source and deploy config match"
+      } elseif ($diffCode -eq 0 -and -not $configMatches) {
+        Log "REDEPLOY TEST backend despite unchanged source: runtime/timeout/env config drift detected"
       } elseif ($diffCode -ne 1) {
         throw "unable to compare backend source between $($health.buildSha) and $head"
       }
@@ -145,6 +173,10 @@ try {
       throw "test backend did not converge to head $head"
     }
     $backendSourceSha = $head
+    $deployedConfig = Get-DeployedConfig
+    if (-not (Test-DeployedConfig $deployedConfig)) {
+      throw "test backend deploy completed but runtime/timeout/env config is still stale"
+    }
   } else {
     $health = Get-Health
     if (-not $health -or $health.buildSha -ne $backendSourceSha) {
@@ -152,13 +184,15 @@ try {
     }
   }
 
-  $deployDetail = "test backend reused; backend source unchanged"
+  $deployDetail = "test backend reused; backend source and deploy config unchanged"
   if ($backendNeedsDeploy) { $deployDetail = "test backend deployed" }
   Write-Status "DEPLOY_TEST" "PASS" $deployDetail @{
     head = $head
     buildSha = $health.buildSha
     backendSourceSha = $backendSourceSha
     deployed = $backendNeedsDeploy
+    runtime = $deployedConfig.buildConfig.runtime
+    timeoutSeconds = $deployedConfig.serviceConfig.timeoutSeconds
   }
 
   $client = Join-Path $repo "src\newlife\refoundationDialogue.ts"
@@ -231,6 +265,8 @@ try {
     buildSha = $health.buildSha
     backendSourceSha = $backendSourceSha
     backendDeployed = $backendNeedsDeploy
+    backendRuntime = $deployedConfig.buildConfig.runtime
+    backendTimeoutSeconds = $deployedConfig.serviceConfig.timeoutSeconds
     liveTotal = $report.total
     liveStructuralPasses = $report.structuralPasses
     transportFailures = $report.transportFailures
