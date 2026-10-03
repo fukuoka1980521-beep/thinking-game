@@ -58,4 +58,25 @@ describe("NEW LIFE scene comprehension regressions", () => {
     expect(scene.sceneFocus?.authority).toContain("決めるのは美代子");
     expect(scene.sceneFocus?.authority).toContain("文子は掲示");
   });
+
+  it("Day 2 keeps chair repair separate from Hina's sales location", () => {
+    const scene = getScene(2, "done", null);
+
+    expect(scene.text).toContain("椅子の脚");
+    expect(scene.text).toContain("コーヒー");
+    expect(scene.text).toContain("売れるといいわね");
+    expect(scene.sceneFocus?.issue).toContain("喫茶で販売すると決まったわけではありません");
+    expect(scene.sceneFocus?.authority).toContain("試売の販売物とは別");
+  });
+
+  it("Day 4 says baked-goods pickup explicitly and never implies that chairs are the trial-sale product", () => {
+    const scene = getScene(4, "done", null);
+
+    expect(scene.text).toContain("陽菜さんの焼き菓子");
+    expect(scene.text).toContain("商品を受け取る場所");
+    expect(scene.text).toContain("椅子の修理とは別の話");
+    expect(scene.sceneFocus?.decision).toContain("焼き菓子の受け取り場所");
+    expect(scene.sceneFocus?.authority).toContain("椅子は修理品");
+    expect(scene.text).not.toContain("椅子を販売");
+  });
 });
