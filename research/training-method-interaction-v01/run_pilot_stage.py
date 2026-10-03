@@ -17,6 +17,13 @@ def runtime_selection():
   return {'backend':x['selected_backend'],'gpu_layers':int(x['gpu_layers']),'device':x['device']}
  return {'backend':'cpu_preselection','gpu_layers':0,'device':'none'}
 
+def cleanup_stray_tmi_llama():
+ # A leftover llama process can retain ~4-6 GB and make the next stage fail during load.
+ # Only terminate llama processes whose command line points at this study's local model directory.
+ ps = r'''Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'llama*.exe' -and $_.CommandLine -like '*_research_runtime\\models\\tmi-pilot*' } | ForEach-Object { taskkill /PID $_.ProcessId /T /F | Out-Null }'''
+ subprocess.run(['powershell','-NoProfile','-Command',ps],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=30)
+ time.sleep(2)
+
 def sha256_file(p):
  h=hashlib.sha256()
  with p.open('rb') as f:
@@ -64,6 +71,7 @@ def run(stage,rendering,mode,dry_run=False):
  if dry_run:
   print(json.dumps({'stage':stage,'rendering':rendering,'mode':mode,'model':str(model),'model_exists':model.exists(),'runtime':runtime,'rows':[r['run_id'] for r in rows]},indent=2)); return
  if not model.exists(): raise SystemExit('missing model: '+str(model))
+ cleanup_stray_tmi_llama()
  model_hash=sha256_file(model)
  outroot=ROOT/('template_smoke' if mode=='smoke' else 'pilot_v01')/'raw'; outroot.mkdir(parents=True,exist_ok=True)
  logs=ROOT/('template_smoke' if mode=='smoke' else 'pilot_v01')/'logs'; logs.mkdir(parents=True,exist_ok=True)

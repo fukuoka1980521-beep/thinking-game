@@ -133,3 +133,29 @@ Before any manual kill, require all three:
 3. confirm that the watchdog has failed to recover the condition or that the process is outside tracked ownership.
 
 This rule prevents the operator from becoming the primary source of interruptions.
+
+## RLVR retry-limit incident — resolved
+
+Observed symptom:
+- BASE/SFT/DPO smoke paths completed;
+- RLVR RAW smoke failed four times at server load and triggered `STOPPED_RETRY_LIMIT`.
+
+Local diagnosis:
+1. RLVR GGUF remote LFS SHA256 = `17e3c5163d57309ae5c61e44c06dbda60c11ebb6211ffc8fea94051809094b9f`.
+2. Local RLVR GGUF SHA256 matched exactly.
+3. `llama-cli` loaded the RLVR GGUF successfully.
+4. verbose `llama-server` also loaded the model when sufficient RAM was available.
+5. process inspection found leftover TMI `llama-cli` / manual `llama-server` instances holding the same 4.47 GB model, leaving about 1.1 GB host memory free during one diagnosis attempt.
+6. after terminating only those diagnostic leftovers and adding preflight cleanup to `run_pilot_stage.py`, RLVR RAW smoke completed successfully without changing prompt, sampler, model or quantization.
+
+Root cause classification:
+**operational resource contention / leftover llama process**, not model incompatibility and not corrupt data.
+
+Impact on research:
+- no pilot output had been generated at the time of the incident;
+- frozen 72-run manifest and treatment definitions were unchanged;
+- no scientific result is invalidated;
+- the incident only delayed RLVR template calibration.
+
+Recovery rule added:
+Before loading any TMI stage, `run_pilot_stage.py` terminates only stale `llama*.exe` processes whose command line points to `_research_runtime\\models\\tmi-pilot`. This prevents stage-switch RAM retention while leaving unrelated llama workloads untouched.
