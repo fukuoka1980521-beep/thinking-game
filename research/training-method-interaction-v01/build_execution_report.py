@@ -81,10 +81,23 @@ def main():
               '## Current best-supported answer if execution stopped now','',
               '- BASE already produces substantive research-plan behavior under an identical raw scaffold.',
               '- SFT materially improves instruction routing/structural compliance under the same raw scaffold.',
-              '- Native SFT chat rendering improves compliance further, showing that interface/template contributes in addition to weight-stage differences.',
-              '- DPO and RLVR effects remain unresolved until their local smoke/pilot outputs exist.',
-              '- Therefore current evidence supports a **pretraining repertoire + SFT routing** account, but not yet claims about preference-selection or RLVR verifier effects.'
+              '- Native SFT chat rendering improves compliance further, showing that interface/template contributes in addition to weight-stage differences.'
     ]
+    if exists_smoke('DPO','raw') and exists_smoke('DPO','native'):
+        lines += [
+            '- DPO preserves strong structural instruction adherence established at SFT; GENERIC smoke alone does not show creation of a qualitatively new planning mode.',
+            '- BASE→SFT currently supports a repertoire-plus-routing account; SFT→DPO is more consistent with selection/preference reshaping than wholesale capability creation.'
+        ]
+    else:
+        lines.append('- DPO remains unresolved; preference-selection effects cannot yet be assessed.')
+    if exists_smoke('RLVR','raw') and exists_smoke('RLVR','native'):
+        lines.append('- RLVR smoke is available; verifier-stage interpretation should use the full smoke comparison and the frozen 72-run method pilot.')
+    else:
+        lines.append('- RLVR remains unresolved; no empirical claim yet about verifier/reward-stage effects.')
+    if ANALYSIS.exists():
+        lines.append('- The 72-run pilot analysis is available and supersedes smoke-only conclusions for method-stage interaction.')
+    else:
+        lines.append('- Methodological specialization is still unresolved because Bayesian/Software-Testing pilot cells have not yet been analyzed.')
     (ROOT/'CURRENT_EXECUTION_DECISION_REPORT.md').write_text('\n'.join(lines)+'\n',encoding='utf-8')
     print('EXECUTION_DECISION_REPORT=PASS')
 

@@ -11,8 +11,8 @@
 |---|---|---|---|---|
 | BASE | DO_NOW_COMPLETE | Required local model and smoke outputs are available. | none | Use existing outputs in analysis; do not regenerate. |
 | SFT | DO_NOW_COMPLETE | Required local model and smoke outputs are available. | none | Use existing outputs in analysis; do not regenerate. |
-| DPO | DEFER_WITH_DEPENDENCY | Model checkpoint is still downloading locally. | delays stage comparison only; does not affect completed-stage evidence | Continue independent analysis while supervisor resumes download automatically. |
-| RLVR | EXTERNAL_OPTION | Local model artifact is not ready and no active local dependency is recorded. | stage-specific inference unavailable until alternative or local artifact exists | Check external/open checkpoint or zero-cost inference route before reducing claim scope. |
+| DPO | DO_NOW_COMPLETE | Required local model and smoke outputs are available. | none | Use existing outputs in analysis; do not regenerate. |
+| RLVR | DEFER_WITH_DEPENDENCY | Model checkpoint is still downloading locally. | delays stage comparison only; does not affect completed-stage evidence | Continue independent analysis while supervisor resumes download automatically. |
 
 ## Pilot
 
@@ -35,5 +35,7 @@
 - BASE already produces substantive research-plan behavior under an identical raw scaffold.
 - SFT materially improves instruction routing/structural compliance under the same raw scaffold.
 - Native SFT chat rendering improves compliance further, showing that interface/template contributes in addition to weight-stage differences.
-- DPO and RLVR effects remain unresolved until their local smoke/pilot outputs exist.
-- Therefore current evidence supports a **pretraining repertoire + SFT routing** account, but not yet claims about preference-selection or RLVR verifier effects.
+- DPO preserves strong structural instruction adherence established at SFT; GENERIC smoke alone does not show creation of a qualitatively new planning mode.
+- BASE→SFT currently supports a repertoire-plus-routing account; SFT→DPO is more consistent with selection/preference reshaping than wholesale capability creation.
+- RLVR remains unresolved; no empirical claim yet about verifier/reward-stage effects.
+- Methodological specialization is still unresolved because Bayesian/Software-Testing pilot cells have not yet been analyzed.

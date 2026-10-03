@@ -94,3 +94,28 @@ Pretraining repertoire
 → observable research plan.
 
 This is a testable behavioral decomposition, not a claim that each training stage maps one-to-one onto a human cognitive faculty.
+
+## Diversity / convergence evidence
+
+Additional external studies strengthen an important competing interpretation.
+
+### Instruction tuning and DPO can narrow output diversity
+Recent work examining open model lineages including OLMo/OLMo 2 reports a measurable diversity gap after instruction tuning, with DPO producing a particularly large reduction in output diversity in the tested narrative-generation setting.
+
+Implication for this project:
+- post-training may improve instruction compliance while narrowing the set of strategies actually sampled;
+- weaker MethodFraming separation at DPO would therefore be scientifically meaningful, not automatically a failed model;
+- within-cell diversity must be measured alongside classification accuracy.
+
+### Representation geometry changes across stages
+Recent representation-geometry work across OLMo/Pythia reports stage-dependent geometric changes across pretraining, SFT, DPO and RLVR. The paper associates post-training stages with different compression/expansion dynamics and reports reduced generation diversity under some later-stage conditions.
+
+Implication:
+- provides independent plausibility for stage-dependent policy compression;
+- does **not** establish that the same internal mechanism causes this project's behavioral observations;
+- motivates, but does not replace, the project's black-box diversity measurement.
+
+Additional sources checked:
+- Peeperkorn et al. (2025), *Mind the Gap: Conformative Decoding to Improve Output Diversity of Instruction-Tuned Large Language Models*, arXiv:2507.20956.
+- Li et al. (2025), *Tracing the Representation Geometry of Language Models from Pretraining to Post-training*, arXiv:2509.23024.
+- Slocum et al. (2025), *Diverse Preference Learning for Capabilities and Alignment*, arXiv:2511.08594.
