@@ -12,6 +12,8 @@ const RESPONSE_MOVES = [
 ];
 const PROPOSAL_DISPOSITIONS = ["NONE", "ACCEPT", "MODIFY", "REJECT", "NEEDS_CHECK"];
 const ANSWER_GROUNDINGS = ["NOT_APPLICABLE", "CANONICAL", "OBSERVED", "MEMORY", "INFERRED", "OPINION", "UNKNOWN"];
+const QUESTION_TYPES = ["NONE", "FACTUAL", "HYPOTHETICAL", "NORMATIVE", "PREFERENCE", "ADVICE"];
+const RESPONSIBILITY_STATUSES = ["NOT_APPLICABLE", "KNOWN", "UNRESOLVED", "OPINION"];
 
 const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断プランナー」です。セリフは書きません。プレイヤーの発言を理解し、返答に必要な意味要素を落とさないためのResponse PlanだけをJSONで作ります。
 
@@ -33,6 +35,10 @@ const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断�
 - playerProposalがある場合、underlyingGoalを満たすか、hardConstraintsを破らないか、affectedPartiesへどんなburdensを生むかを比較して ACCEPT / MODIFY / REJECT / NEEDS_CHECK を選ぶ。
 - 提案の一部だけ修正すれば成立する場合はREJECTではなくMODIFYを優先し、成立条件をdirectAnswerに含める。
 - プレイヤーが明示的な質問をしている場合、explicitQuestion にその質問の意味、explicitAnswer にその質問へ直接返す答えを必ず入れること。「誰が」と聞かれたら誰か／未確定かを答え、「なぜ」と聞かれたら理由を答える。周辺論点だけで質問をかわさないこと。
+- explicitQuestion がある場合は questionType を分類すること。現在/過去/物の属性を尋ねる事実質問は FACTUAL、プレイヤーが仮定条件を置いて「もし〜なら」と結果を尋ねるものは HYPOTHETICAL、責任・公平・どうすべきかの価値判断は NORMATIVE、好みは PREFERENCE、助言や適性判断は ADVICE。質問がない場合は NONE。
+- FACTUAL だけを世界事実の検証対象にする。HYPOTHETICAL / NORMATIVE / PREFERENCE / ADVICE では、プレイヤーの仮定や価値判断を現在の世界事実へ昇格させず、人物の判断として答えること。
+- authorityOwner（決定権）、impactBearers（実際に負担を受ける人）、accountabilityOwner（結果の責任主体）を混同しないこと。権限を持つ人が自動的に損失や責任も負うとは限らない。
+- 「誰が責任を負うか」が明示的な正典・契約・現在状態で決まっていない場合、responsibilityStatus="UNRESOLVED", accountabilityOwner=null とすること。代わりに、分かる範囲で impactBearers と具体的 burdens を示し、責任者を創作しないこと。
 - factualな explicitAnswer を evidenceLedger で裏付けられない場合は answerGrounding="UNKNOWN" とし、知らない具体事実を作らないこと。character dossierの雰囲気や職業から事実を補わない。
 - answerGrounding が CANONICAL / OBSERVED / MEMORY / INFERRED の場合は、explicitAnswerを支える evidenceLedger の id を answerEvidenceIds に必ず入れること。根拠にならない近接情報を引用してはいけない。
 - INFERRED は、提示された証拠から自然に導けるが明文ではない推論だけに使う。新しい商品仕様・時間・人数・感情・習慣を作るためには使わない。
@@ -46,6 +52,8 @@ const EVIDENCE_VERIFY_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの事実根拠�
 
 厳守:
 - character/personaの雰囲気・職業・語彙例は、そこに明示された事実以外の世界事実を証明しない。
+- PERSONA_IDENTITY は、明示された年齢・職業・役割など本人属性だけを支持する。店主であることから、目の前の商品の焙煎度・在庫・価格・今日の予定を推論してはならない。
+- SCENE_PROBLEM の authority は「誰が決められるか」を示すだけであり、「誰が損失や責任を負うか」を証明しない。authority と accountability を同一視しない。
 - evidenceLedgerにない商品仕様、焙煎度、時間、人数、継続感情、過去行動を補わない。
 - 「ありそう」「その職業なら知っていそう」は支持根拠ではない。
 - INFERRED は、証拠から直接かつ安全に導ける推論だけを許す。新しい設定の創作は不可。
@@ -62,6 +70,7 @@ const RENDER_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「キャラクター�
 厳守:
 - 新しい判断・新しい事実・新しい許可・新しい因果関係を足さない。
 - explicitQuestion がある場合、explicitAnswer の意味を最初に直接返してから、必要なら理由を1つだけ添える。周辺論点だけで質問をかわさない。
+- responsibilityStatus="UNRESOLVED" のとき、authorityOwner を責任者として言い換えない。impactBearers / burdens があれば、誰にどんな負担が出るかと、責任の所在が未確定であることを自然に分けて述べる。
 - answerGrounding="UNKNOWN" の場合、人物像や職業から答えを創作しない。知らない／確定していないという意味を自然な人物語で返す。
 - Response Planが具体的な対象を指定している場合、それを抽象的な「担当」「確認」「線引き」だけに言い換えて消さない。
 - mode=CASUALなら、場面の問題を無理に持ち込まず普通に短く答える。
