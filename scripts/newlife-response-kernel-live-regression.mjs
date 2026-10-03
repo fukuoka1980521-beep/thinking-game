@@ -377,3 +377,11 @@ const report = {
 };
 fs.writeFileSync(out, JSON.stringify(report, null, 2), "utf8");
 console.log(JSON.stringify({ out, total: report.total, structuralPasses: report.structuralPasses, transportFailures: report.transportFailures }, null, 2));
+
+// Let the outer self-drive runner retry from the durable checkpoint whenever
+// the live endpoint produced transport/model-response failures or a structural miss.
+// Without a non-zero exit code, the wrapper sees LIVE_KERNEL as PASS and stops
+// immediately afterward instead of exercising its checkpointed retry loop.
+if (report.transportFailures !== 0 || report.structuralPasses !== report.total) {
+  process.exitCode = 1;
+}
