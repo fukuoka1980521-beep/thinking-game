@@ -21,7 +21,19 @@ import shoppingStreetArt from "../assets/newlife/locations/shopping-street.png";
 import yoheiShopArt from "../assets/newlife/locations/yohei-shop.png";
 import { NewLifeAiConsentPrompt } from "./semantic/NewLifeAiConsentPrompt";
 import { createEmptyLedger, syncLedgerWithState, type FactLedger } from "./semantic/factLedger";
-import { converseWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
+import { converseWithRefoundation, reflectWithRefoundation, supportsRefoundation } from "./refoundationDialogue";
+import { applyConversationEffectGate } from "./conversationEffectGate";
+import {
+  appendAgentMemory,
+  buildAgentObservationText,
+  createEmptyAgentMemoryStore,
+  formatRetrievedMemories,
+  formatRetrievedMemoryAnchors,
+  reflectionSourceMemories,
+  retrieveAgentMemories,
+  shouldReflect,
+  type AgentMemoryStore,
+} from "./agentMemory";
 
 const NPC_ART: Partial<Record<NpcId, string>> = {
   hina: hinaArt,
@@ -92,6 +104,7 @@ interface SavedSession {
   state: NewLife30State;
   transcript: TranscriptLine[];
   memory: TranscriptLine[];
+  agentMemory?: AgentMemoryStore;
   addressee: NpcId;
   previousDayTrace: string | null;
   thinking: { important: string; unknown: string; next: string };
@@ -110,18 +123,22 @@ function dayLabel(state: NewLife30State): string {
  * Text-first isolated feature slice: reachable only via `?newlife30=1`
  * (see App.tsx), not linked from HomeScreen or any other screen. This
  * component renders state produced by the deterministic engine in
- * state.ts and never itself decides a canonical fact — it only calls
- * applyAction/advanceDay and displays their result, plus free-text lines
- * answered by the read-only npcVoice layer.
+ * state.ts and never itself decides a canonical fact. Consented ordinary
+ * free conversation is generation-first; structured proposals then pass
+ * through conversationEffectGate.ts before any canonical state mutation.
+ * No-consent/offline continuity may still use the legacy deterministic
+ * fallback path.
  *
- * HUMAN_VALIDATION_STATUS = PENDING. This candidate is not a claim of
- * product/human validation; see docs/newlife/evaluation/
- * PHASE_27_PLAYABLE_IMPLEMENTATION_REPORT_V1.md.
+ * HUMAN_VALIDATION_STATUS = PARTIAL. V42/V45 are preserved human-accepted
+ * scene evidence, but the 30-day chat-first + free-text-consequence loop
+ * still requires the no-choice human product gate defined by the current
+ * Product Constitution.
  */
 export function NewLife30App({ onExit }: Props) {
   const [state, setState] = useState<NewLife30State>(createInitialState);
   const [transcript, setTranscript] = useState<TranscriptLine[]>([]);
   const [memory, setMemory] = useState<TranscriptLine[]>([]);
+  const [agentMemory, setAgentMemory] = useState<AgentMemoryStore>(createEmptyAgentMemoryStore);
   const [addressee, setAddressee] = useState<NpcId>("hina");
   const [freeText, setFreeText] = useState("");
   const [thinkingOpen, setThinkingOpen] = useState(false);
@@ -130,6 +147,7 @@ export function NewLife30App({ onExit }: Props) {
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [previousDayTrace, setPreviousDayTrace] = useState<string | null>(null);
   const immediateActionTrace = useRef<string | null>(null);
+  const reflectionInFlightRef = useRef<Set<NpcId>>(new Set());
   const optionDetailsRef = useRef<HTMLDetailsElement | null>(null);
   const transcriptEndRef = useRef<HTMLDivElement | null>(null);
   const [pending, setPending] = useState(false);
@@ -148,10 +166,10 @@ export function NewLife30App({ onExit }: Props) {
   const [consentStatus, setConsentStatus] = useState<NewLifeAiDialogueConsentStatus | null>(() => getNewLifeAiDialogueConsent());
   const [pendingSubmission, setPendingSubmission] = useState<{ npc: NpcId; text: string } | null>(null);
 
-  // With the shipped empty endpoint (`config.ts`), this is always `null` and
-  // `resolveFreeText` never attempts a network call -- byte-identical to
-  // calling `answerFreeText` directly, matching Phase 27/28/28B's existing
-  // deterministic router unchanged.
+  // Legacy semantic interpreter remains available only for the explicit
+  // fallback path. Normal consented conversation uses the refoundation
+  // chat-first engine first; deterministic phrase routing no longer runs
+  // before that live conversation path.
   const interpreter = useMemo(
     () => (NEWLIFE_DIALOGUE_ENDPOINT_URL ? new HttpSemanticInterpreter(NEWLIFE_DIALOGUE_ENDPOINT_URL) : null),
     [],
@@ -173,14 +191,14 @@ export function NewLife30App({ onExit }: Props) {
 
   useEffect(() => {
     if (showIntro) return;
-    const save: SavedSession = { state, transcript, memory, addressee, previousDayTrace, thinking };
+    const save: SavedSession = { state, transcript, memory, agentMemory, addressee, previousDayTrace, thinking };
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(save));
       setSavedSession(save);
     } catch {
       // Saving is convenience only; gameplay must continue if storage is unavailable.
     }
-  }, [state, transcript, memory, addressee, previousDayTrace, thinking, showIntro]);
+  }, [state, transcript, memory, agentMemory, addressee, previousDayTrace, thinking, showIntro]);
 
   function resetTranscriptFor(nextState: NewLife30State) {
     setTranscript([]);
@@ -191,11 +209,66 @@ export function NewLife30App({ onExit }: Props) {
     setMemory((prev) => [...prev, ...lines].slice(-12));
   }
 
+  function scheduleBackgroundReflection(
+    npc: NpcId,
+    sourceStore: AgentMemoryStore,
+    day: number,
+    canonicalState: NewLife30State,
+  ) {
+    if (!shouldReflect(sourceStore, npc) || reflectionInFlightRef.current.has(npc)) return;
+    const sourceRecords = reflectionSourceMemories(sourceStore, npc, 20);
+    if (sourceRecords.length === 0) return;
+
+    reflectionInFlightRef.current.add(npc);
+    const sourceTexts = sourceRecords.map((record) => `Day ${record.day} [${record.kind}] ${record.text}`);
+    void reflectWithRefoundation(npc, sourceTexts, {
+      day,
+      title: scene.title,
+      text: scene.text,
+      sceneFocus: scene.sceneFocus,
+      sceneEntities: scene.sceneEntities,
+      canonicalState: {
+        signVersion: canonicalState.signVersion,
+        pickupPlan: canonicalState.pickupPlan,
+        mSeats: canonicalState.mSeats,
+        jWork: canonicalState.jWork,
+        dWorkshop: canonicalState.dWorkshop,
+        fEditor: canonicalState.fEditor,
+        hyFactCheck: canonicalState.hyFactCheck,
+        playerReport: canonicalState.playerReport,
+        publicBlame: canonicalState.publicBlame,
+        encouragementOnly: canonicalState.encouragementOnly,
+        day24Outcome: canonicalState.day24Outcome,
+      },
+    }).then((insights) => {
+      if (insights.length === 0) return;
+      setAgentMemory((current) =>
+        insights.reduce(
+          (next, insight) =>
+            appendAgentMemory(next, {
+              owner: npc,
+              day,
+              kind: "REFLECTION",
+              text: insight.text,
+              importance: 8,
+              source: "REFLECTION",
+            }),
+          current,
+        ),
+      );
+    }).catch(() => {
+      // Reflection is background cognition only. A failure must never block dialogue.
+    }).finally(() => {
+      reflectionInFlightRef.current.delete(npc);
+    });
+  }
+
   function startFresh() {
     const fresh = createInitialState();
     setState(fresh);
     setTranscript([]);
     setMemory([]);
+    setAgentMemory(createEmptyAgentMemoryStore());
     setAddressee("hina");
     setPreviousDayTrace(null);
     setThinking({ important: "", unknown: "", next: "" });
@@ -216,6 +289,7 @@ export function NewLife30App({ onExit }: Props) {
     setState(savedSession.state);
     setTranscript(savedSession.transcript ?? []);
     setMemory(savedSession.memory ?? []);
+    setAgentMemory(savedSession.agentMemory ?? createEmptyAgentMemoryStore());
     setAddressee(savedSession.addressee ?? "hina");
     setPreviousDayTrace(savedSession.previousDayTrace ?? null);
     setThinking(savedSession.thinking ?? { important: "", unknown: "", next: "" });
@@ -244,7 +318,31 @@ export function NewLife30App({ onExit }: Props) {
     const actionTrace = latestAction ? scene.options.find((o) => latestAction.endsWith(`:${o.id}`))?.label : undefined;
     setPreviousDayTrace(lastPlayerLine?.text ?? immediateActionTrace.current ?? actionTrace ?? null);
     immediateActionTrace.current = null;
-    resetTranscriptFor(advanceDay(state));
+
+    const nextState = advanceDay(state);
+    if (!nextState.finished) {
+      const nextScene = getScene(nextState.day, nextState.day11Phase, nextState.day24Outcome);
+      setAgentMemory((current) =>
+        nextScene.npcsPresent.reduce(
+          (store, npc) =>
+            appendAgentMemory(store, {
+              owner: npc,
+              day: nextState.day,
+              kind: "OBSERVATION",
+              text: [
+                `場面「${nextScene.title}」が始まった。`,
+                nextScene.sceneFocus ? `問題: ${nextScene.sceneFocus.issue}` : "",
+                nextScene.sceneFocus ? `未決: ${nextScene.sceneFocus.decision}` : "",
+                nextScene.text,
+              ].filter(Boolean).join(" "),
+              importance: nextScene.sceneFocus ? 5 : 3,
+              source: "DAY_TRANSITION",
+            }),
+          current,
+        ),
+      );
+    }
+    resetTranscriptFor(nextState);
   }
 
   async function submitFreeText(
@@ -256,29 +354,104 @@ export function NewLife30App({ onExit }: Props) {
     setPending(true);
     try {
       const baseState = options?.stateOverride ?? state;
-      const freeAction = options?.skipFreeAction ? null : resolveFreeAction(baseState, npc, text);
-      const responseState = freeAction ? applyAction(baseState, freeAction) : baseState;
       const playerText = options?.displayText ?? text;
 
+      // CHAT-FIRST normal path:
+      // understand/respond first, then let a deterministic authority gate
+      // decide whether the semantic proposal may change canonical state.
+      // No keyword/regex free-action routing runs before this model call.
       if (consentAccepted && supportsRefoundation(npc)) {
         try {
+          const memoryQuery = [
+            text,
+            scene.sceneFocus?.issue,
+            scene.sceneFocus?.decision,
+            scene.sceneFocus?.authority,
+            ...(scene.sceneEntities ?? []).flatMap((entity) => [
+              entity.label,
+              entity.role,
+              ...(entity.facts ?? []),
+            ]),
+            scene.text,
+          ].filter((part): part is string => Boolean(part)).join("\n");
+          const retrieval = retrieveAgentMemories(agentMemory, npc, memoryQuery, 6);
+          let nextAgentMemory = retrieval.store;
+
           const live = await converseWithRefoundation(npc, text, [...memory, ...transcript].slice(-12), {
-            day: responseState.day,
+            day: baseState.day,
             title: scene.title,
             text: scene.text,
+            sceneFocus: scene.sceneFocus,
+            sceneEntities: scene.sceneEntities,
+            retrievedMemories: formatRetrievedMemories(retrieval.selected),
+            retrievedMemoryAnchors: formatRetrievedMemoryAnchors(retrieval.selected),
             canonicalState: {
-              signVersion: responseState.signVersion,
-              pickupPlan: responseState.pickupPlan,
-              mSeats: responseState.mSeats,
-              jWork: responseState.jWork,
-              dWorkshop: responseState.dWorkshop,
-              fEditor: responseState.fEditor,
-              hyFactCheck: responseState.hyFactCheck,
-              day24Outcome: responseState.day24Outcome,
+              signVersion: baseState.signVersion,
+              pickupPlan: baseState.pickupPlan,
+              mSeats: baseState.mSeats,
+              jWork: baseState.jWork,
+              dWorkshop: baseState.dWorkshop,
+              fEditor: baseState.fEditor,
+              hyFactCheck: baseState.hyFactCheck,
+              playerReport: baseState.playerReport,
+              publicBlame: baseState.publicBlame,
+              encouragementOnly: baseState.encouragementOnly,
+              day24Outcome: baseState.day24Outcome,
             },
             interactionKind: options?.skipFreeAction ? "ACTION" : "SPEECH",
           });
-          if (freeAction) setState(responseState);
+
+          let worldEffectApplied = false;
+          if (!options?.skipFreeAction) {
+            const effect = applyConversationEffectGate(baseState, npc, live);
+            worldEffectApplied = effect.applied;
+            if (effect.applied) setState(effect.state);
+          }
+
+          const exchangeImportance = worldEffectApplied
+            ? 9
+            : live.candidateCommitments.length > 0
+              ? 8
+              : scene.sceneFocus
+                ? 5
+                : 3;
+          nextAgentMemory = appendAgentMemory(nextAgentMemory, {
+            owner: npc,
+            day: baseState.day,
+            kind: "OBSERVATION",
+            text: buildAgentObservationText({
+              sceneTitle: scene.title,
+              sceneFocus: scene.sceneFocus,
+              playerMeaning: live.understoodPlayerMeaning,
+              playerText: text,
+              selfReply: live.text,
+            }),
+            importance: exchangeImportance,
+            source: worldEffectApplied ? "WORLD_EFFECT" : "PLAYER_SPEECH",
+            focusSnapshot: scene.sceneFocus,
+            playerMeaning: live.understoodPlayerMeaning,
+          });
+          for (const continuation of live.continuations) {
+            nextAgentMemory = appendAgentMemory(nextAgentMemory, {
+              owner: continuation.npc,
+              day: baseState.day,
+              kind: "OBSERVATION",
+              text: buildAgentObservationText({
+                sceneTitle: scene.title,
+                sceneFocus: scene.sceneFocus,
+                playerMeaning: live.understoodPlayerMeaning,
+                playerText: text,
+                selfReply: `${npcDisplayName(npc)}が「${live.text}」と答えた後、私は「${continuation.text}」と返した。`,
+              }),
+              importance: worldEffectApplied ? 8 : 5,
+              source: worldEffectApplied ? "WORLD_EFFECT" : "NPC_SPEECH",
+              focusSnapshot: scene.sceneFocus,
+              playerMeaning: live.understoodPlayerMeaning,
+            });
+          }
+          setAgentMemory(nextAgentMemory);
+          scheduleBackgroundReflection(npc, nextAgentMemory, baseState.day, baseState);
+
           const lines: TranscriptLine[] = [
             { speaker: "\u3042\u306a\u305f", text: playerText },
             { speaker: npcDisplayName(npc), text: live.text },
@@ -299,12 +472,35 @@ export function NewLife30App({ onExit }: Props) {
         }
       }
 
+      // Explicit fallback / no-consent path only. Phrase routing remains here
+      // for continuity and offline resilience, but it is no longer the owner
+      // of normal live conversation.
+      const freeAction = options?.skipFreeAction ? null : resolveFreeAction(baseState, npc, text);
+      const responseState = freeAction ? applyAction(baseState, freeAction) : baseState;
       const result = await resolveFreeText(npc, text, responseState, { interpreter, consentAccepted, ledger });
       if (result.ledger) setLedger(result.ledger);
       if (freeAction) setState(responseState);
-      const lines: TranscriptLine[] = [{ speaker: "\u3042\u306a\u305f", text: playerText }, { speaker: npcDisplayName(npc), text: result.text }];
+      const lines: TranscriptLine[] = [
+        { speaker: "\u3042\u306a\u305f", text: playerText },
+        { speaker: npcDisplayName(npc), text: result.text },
+      ];
       setTranscript((prev) => [...prev, ...lines]);
       appendMemory(lines);
+      setAgentMemory((current) =>
+        appendAgentMemory(current, {
+          owner: npc,
+          day: baseState.day,
+          kind: "OBSERVATION",
+          text: buildAgentObservationText({
+            sceneTitle: scene.title,
+            sceneFocus: scene.sceneFocus,
+            playerText: text,
+            selfReply: result.text,
+          }),
+          importance: freeAction ? 6 : 3,
+          source: freeAction ? "WORLD_EFFECT" : "PLAYER_SPEECH",
+        }),
+      );
     } finally {
       setPending(false);
     }
@@ -473,9 +669,19 @@ export function NewLife30App({ onExit }: Props) {
           <p>人物を選び直しても、直近の会話と今日の状況を引き継いで話します。</p>
         </aside>
       </div>
+      {scene.sceneFocus ? (
+        <section className="newlife30-situation-guide" aria-label="いまの状況">
+          <strong>いま何が問題？</strong>
+          <span>{scene.sceneFocus.issue}</span>
+          <strong>今ここで決めたいこと</strong>
+          <span>{scene.sceneFocus.decision}</span>
+          <strong>誰が決める？</strong>
+          <span>{scene.sceneFocus.authority}</span>
+        </section>
+      ) : null}
+
       <div className="newlife30-scene">
         {scene.text}
-        {scene.lowEngagementHook ? <p className="newlife30-hook">{scene.lowEngagementHook}</p> : null}
       </div>
 
       <div className="newlife30-primary-guide">

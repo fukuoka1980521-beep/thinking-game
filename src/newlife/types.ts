@@ -64,6 +64,26 @@ export interface DayOption {
   label: string;
 }
 
+export interface SceneFocus {
+  /** One concrete sentence: what is going wrong or may go wrong right now. */
+  issue: string;
+  /** The concrete decision/check that would move this scene forward. */
+  decision: string;
+  /** Who owns the decision or permission; never let another NPC inherit this authority. */
+  authority: string;
+}
+
+export interface SceneEntity {
+  /** Stable scene-local identity used to keep nearby objects/tasks separate. */
+  id: string;
+  /** Player-facing canonical label. */
+  label: string;
+  /** What this entity is doing/for in the current scene. */
+  role: string;
+  /** Explicit facts that must not be overwritten by conversational proximity. */
+  facts?: string[];
+}
+
 export interface DayScene {
   day: number;
   phase?: "morning" | "afternoon";
@@ -71,11 +91,6 @@ export interface DayScene {
   text: string;
   npcsPresent: NpcId[];
   options: DayOption[];
-  /**
-   * Days 2/3/7/9 low-engagement mitigation (Phase 26 audit finding, §5): a short,
-   * optional, single-word-answerable line addressed directly to a silent player,
-   * so a brief/quiet playthrough still gets one concrete hook on these days
-   * without forcing engagement or turning the NPC into a customer-service bot.
-   */
-  lowEngagementHook?: string;
+  sceneFocus?: SceneFocus;
+  sceneEntities?: SceneEntity[];
 }

@@ -83,11 +83,4 @@ describe("NEW LIFE 30-day engine — three full simulated playthroughs", () => {
       titles.add(key);
     }
   });
-
-  it("Days 2/3/7/9 each carry a low-engagement hook addressed directly to a silent player", () => {
-    for (const d of [2, 3, 7, 9]) {
-      const scene = getScene(d, "done", null);
-      expect(scene.lowEngagementHook).toBeTruthy();
-    }
-  });
 });

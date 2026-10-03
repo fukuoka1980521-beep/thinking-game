@@ -1,25 +1,56 @@
 const { GoogleGenAI, Type } = require("@google/genai");
 const {
   NPC_IDS,
+  ACTION_TYPES,
+  BOUNDARY_MODES,
+  RELATIONAL_EVENTS,
+  SCENE_STATUSES,
+  UNCERTAINTY_LEVELS,
   buildInterpretResponseSchema,
   buildInterpretPrompt,
   buildNpcResponseSchema,
   buildNpcPrompt,
   buildConverseResponseSchema,
+  buildConversationContextText,
   buildConversePrompt,
   buildNpcExchangePrompt,
+  buildReflectAgentResponseSchema,
+  buildReflectAgentPrompt,
   normalizeConverseResponse,
+  normalizeReflectAgentResponse,
   buildOrganizeThoughtResponseSchema,
   buildOrganizeThoughtPrompt,
   buildHealthResponse,
+  getCaseCanon,
+  getCaseDossiers,
+  worldEffectsForCase,
   INTERPRET_SYSTEM_INSTRUCTION,
   NPC_SYSTEM_INSTRUCTION,
   CONVERSE_SYSTEM_INSTRUCTION,
+  REFLECT_AGENT_SYSTEM_INSTRUCTION,
   ORGANIZE_THOUGHT_SYSTEM_INSTRUCTION,
   validateInput,
   applyCors,
   createFixedWindowLimiter,
 } = require("./lib");
+const { canonicalStateFactsForCase } = require("./stateFacts");
+const {
+  TURN_PLAN_SYSTEM_INSTRUCTION,
+  RENDER_SYSTEM_INSTRUCTION,
+  EVIDENCE_VERIFY_SYSTEM_INSTRUCTION,
+  buildTurnPlanSchema,
+  buildRenderSchema,
+  buildEvidenceVerificationSchema,
+  buildEvidenceLedger,
+  buildEvidenceVerificationPrompt,
+  buildTurnPlanPrompt,
+  buildRenderPrompt,
+  normalizeTurnPlan,
+  normalizeRenderedLine,
+  normalizeEvidenceVerification,
+  downgradeUnsupportedResponsibilityPlan,
+  downgradeUnsupportedFactPlan,
+} = require("./turnPlanner");
 
 // Same no-secret pattern as functions/dialogue/ and functions/newlife-dialogue/:
 // the only identity this function ever uses is its own Cloud Run/Cloud
@@ -33,13 +64,21 @@ const LOCATION = process.env.NEWLIFE_REFOUNDATION_AI_LOCATION || "asia-northeast
 const MODEL = process.env.NEWLIFE_REFOUNDATION_AI_MODEL || "gemini-2.5-flash";
 const MAX_MODEL_CALLS_PER_MINUTE = Math.max(
   1,
-  Number.parseInt(process.env.NEWLIFE_REFOUNDATION_AI_MAX_CALLS_PER_MINUTE || "20", 10) || 20
+  Number.parseInt(process.env.NEWLIFE_REFOUNDATION_AI_MAX_CALLS_PER_MINUTE || "40", 10) || 40
+);
+const MAX_REFLECTION_CALLS_PER_MINUTE = Math.max(
+  1,
+  Number.parseInt(process.env.NEWLIFE_REFOUNDATION_AI_MAX_REFLECTION_CALLS_PER_MINUTE || "6", 10) || 6
 );
 const modelCallLimiter = createFixedWindowLimiter(MAX_MODEL_CALLS_PER_MINUTE, 60_000);
+const reflectionCallLimiter = createFixedWindowLimiter(MAX_REFLECTION_CALLS_PER_MINUTE, 60_000);
 
 const INTERPRET_RESPONSE_SCHEMA = buildInterpretResponseSchema(Type);
 const NPC_RESPONSE_SCHEMA = buildNpcResponseSchema(Type);
 const ORGANIZE_THOUGHT_RESPONSE_SCHEMA = buildOrganizeThoughtResponseSchema(Type);
+const REFLECT_AGENT_RESPONSE_SCHEMA = buildReflectAgentResponseSchema(Type);
+const RENDER_RESPONSE_SCHEMA = buildRenderSchema(Type);
+const EVIDENCE_VERIFY_RESPONSE_SCHEMA = buildEvidenceVerificationSchema(Type);
 
 let genAiClient;
 function getClient() {
@@ -49,33 +88,62 @@ function getClient() {
   return genAiClient;
 }
 
-async function callModel(client, { systemInstruction, prompt, responseSchema }) {
-  const generateOnce = () => {
-    if (!modelCallLimiter.consume()) {
+async function callModel(
+  client,
+  {
+    systemInstruction,
+    prompt,
+    responseSchema,
+    limiter = modelCallLimiter,
+    stage = "model",
+    maxOutputTokens = 2048,
+  },
+) {
+  const generateOnce = async (attempt) => {
+    if (!limiter.consume()) {
       const error = new Error("local_model_rate_limit");
       error.code = "LOCAL_MODEL_RATE_LIMIT";
       throw error;
     }
-    return client.models.generateContent({
-      model: MODEL,
-      contents: prompt,
-      config: {
-        systemInstruction,
-        temperature: 0.4,
-        // Same disclosed empty-response mitigation as functions/newlife-dialogue/:
-        // gemini-2.5-flash can spend budget on internal thinking and return no
-        // visible text when the budget is too small; one transparent retry.
-        maxOutputTokens: 2048,
-        responseMimeType: "application/json",
-        responseSchema,
-      },
-    });
+    const started = Date.now();
+    try {
+      const response = await client.models.generateContent({
+        model: MODEL,
+        contents: prompt,
+        config: {
+          systemInstruction,
+          temperature: 0.4,
+          maxOutputTokens,
+          responseMimeType: "application/json",
+          responseSchema,
+        },
+      });
+      console.log(JSON.stringify({
+        event: "newlife_model_stage",
+        stage,
+        attempt,
+        ms: Date.now() - started,
+        ok: true,
+        empty: !(response.text || "").trim(),
+      }));
+      return response;
+    } catch (error) {
+      console.error(JSON.stringify({
+        event: "newlife_model_stage",
+        stage,
+        attempt,
+        ms: Date.now() - started,
+        ok: false,
+        error: error instanceof Error ? error.name : "unknown_error",
+      }));
+      throw error;
+    }
   };
 
-  let response = await generateOnce();
+  let response = await generateOnce(1);
   let text = (response.text || "").trim();
   if (!text) {
-    response = await generateOnce();
+    response = await generateOnce(2);
     text = (response.text || "").trim();
   }
   return text;
@@ -93,10 +161,228 @@ async function callModel(client, { systemInstruction, prompt, responseSchema }) 
  * exactly one retry against the same canonical prompt/schema before the
  * caller fails closed.
  */
+function withCanonicalStateFacts(body) {
+  const dynamicState = body && body.dynamicState && typeof body.dynamicState === "object"
+    ? body.dynamicState
+    : {};
+  return {
+    ...body,
+    dynamicState: {
+      ...dynamicState,
+      canonicalStateFacts: canonicalStateFactsForCase(body.caseId, dynamicState),
+    },
+  };
+}
+
+function plannerEnums(caseId, evidenceLedger = []) {
+  const evidenceIds = evidenceLedger.map((record) => record.id);
+  const accountabilityEvidenceIds = evidenceLedger
+    .filter((record) => record.kind === "ACCOUNTABILITY_FACT")
+    .map((record) => record.id);
+  return {
+    actionTypes: ACTION_TYPES,
+    boundaryModes: BOUNDARY_MODES,
+    relationalEvents: RELATIONAL_EVENTS,
+    npcIds: NPC_IDS,
+    sceneStatuses: SCENE_STATUSES,
+    uncertaintyLevels: UNCERTAINTY_LEVELS,
+    worldEffects: worldEffectsForCase(caseId),
+    evidenceIds,
+    accountabilityEvidenceIds,
+  };
+}
+
+function lastPlayerUtterance(recentDialogue) {
+  if (!Array.isArray(recentDialogue)) return "";
+  for (let i = recentDialogue.length - 1; i >= 0; i -= 1) {
+    if (recentDialogue[i] && recentDialogue[i].speaker === "PLAYER") return recentDialogue[i].text || "";
+  }
+  return "";
+}
+
+const FACT_VERIFY_SOFT_BUDGET_MS = 35_000;
+const RENDER_SOFT_BUDGET_MS = 55_000;
+
+async function attemptPlannedTurn(client, body, continuation = false) {
+  const turnStarted = Date.now();
+  const enriched = withCanonicalStateFacts(body);
+  const dossiers = getCaseDossiers(body.caseId);
+  const dossier = dossiers && dossiers[body.targetNpc];
+  const evidenceLedger = buildEvidenceLedger({
+    caseCanon: getCaseCanon(body.caseId),
+    dossier,
+    dynamicState: enriched.dynamicState,
+    recentDialogue: body.recentDialogue,
+    rawPlayerUtterance: continuation ? lastPlayerUtterance(body.recentDialogue) : body.rawPlayerUtterance,
+  });
+  const enums = plannerEnums(body.caseId, evidenceLedger);
+  const baseContext = [
+    buildConversationContextText(enriched),
+    `事実根拠台帳（evidenceLedger）: ${JSON.stringify(evidenceLedger)}`,
+  ].join("\n");
+  const contextText = continuation
+    ? [
+        baseContext,
+        `NPC間継続ターン番号: ${body.continuationDepth || 1}`,
+        "プレイヤーはこのターンでは新しく発言していない。直近PLAYER発言の意味を保持する。",
+      ].join("\n")
+    : baseContext;
+
+  let plan = null;
+  for (let planAttempt = 0; planAttempt < 2 && !plan; planAttempt += 1) {
+    const planPrompt = [
+      buildTurnPlanPrompt(contextText, continuation),
+      planAttempt === 0
+        ? ""
+        : "前回はResponse Planとして利用できませんでした。意味を変えず、必須フィールドを整合させて再生成してください。",
+    ].filter(Boolean).join("\n");
+    const planText = await callModel(client, {
+      systemInstruction: TURN_PLAN_SYSTEM_INSTRUCTION,
+      prompt: planPrompt,
+      responseSchema: buildTurnPlanSchema(Type, enums),
+      stage: `turn_plan_${planAttempt + 1}`,
+      maxOutputTokens: 1536,
+    });
+    if (!planText) continue;
+
+    let rawPlan = null;
+    try {
+      rawPlan = JSON.parse(planText);
+    } catch {
+      rawPlan = null;
+    }
+    plan = normalizeTurnPlan(rawPlan, body.targetNpc, enums);
+  }
+  if (!plan || !dossier) return null;
+  if (plan.responsibilityDowngraded) {
+    plan = downgradeUnsupportedResponsibilityPlan(plan);
+  }
+
+  let answerVerification = null;
+  if (
+    plan.questionType === "FACTUAL" &&
+    plan.explicitQuestion &&
+    ["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(plan.answerGrounding)
+  ) {
+    if (Date.now() - turnStarted >= FACT_VERIFY_SOFT_BUDGET_MS) {
+      answerVerification = {
+        supported: false,
+        reason: "verification_skipped_latency_budget",
+        usedEvidenceIds: [],
+      };
+      plan = downgradeUnsupportedFactPlan(plan);
+    } else {
+      const verificationText = await callModel(client, {
+        systemInstruction: EVIDENCE_VERIFY_SYSTEM_INSTRUCTION,
+        prompt: buildEvidenceVerificationPrompt({ plan, evidenceLedger }),
+        responseSchema: EVIDENCE_VERIFY_RESPONSE_SCHEMA,
+        stage: "evidence_verify",
+        maxOutputTokens: 512,
+      });
+      let rawVerification = null;
+      try {
+        rawVerification = verificationText ? JSON.parse(verificationText) : null;
+      } catch {
+        rawVerification = null;
+      }
+      answerVerification = normalizeEvidenceVerification(rawVerification, evidenceLedger, plan.answerEvidenceIds);
+      if (!answerVerification || !answerVerification.supported) {
+        plan = downgradeUnsupportedFactPlan(plan);
+      }
+    }
+  }
+
+  const rawPlayerUtterance = continuation
+    ? lastPlayerUtterance(body.recentDialogue)
+    : body.rawPlayerUtterance;
+
+  const baseRenderPrompt = buildRenderPrompt({
+    npc: body.targetNpc,
+    dossier,
+    plan,
+    recentDialogue: body.recentDialogue,
+    rawPlayerUtterance,
+  });
+  let npcLine = null;
+  let renderRecovery = "NONE";
+  if (Date.now() - turnStarted >= RENDER_SOFT_BUDGET_MS) {
+    npcLine = plan.directAnswer;
+    renderRecovery = "DIRECT_SEMANTIC_LATENCY_FALLBACK";
+  } else {
+    for (let renderAttempt = 0; renderAttempt < 2 && !npcLine; renderAttempt += 1) {
+      if (renderAttempt > 0 && Date.now() - turnStarted >= RENDER_SOFT_BUDGET_MS) break;
+      const renderPrompt = [
+        baseRenderPrompt,
+        renderAttempt === 0
+          ? ""
+          : `前回は意味契約の必須要素を落としました。requiredContentの全項目を自然な会話として必ず含め、coveredRequirementIndexesには0から${Math.max(0, plan.requiredContent.length - 1)}までを、実際に表現できた場合だけ入れてください。`,
+      ].filter(Boolean).join("\n");
+      const renderText = await callModel(client, {
+        systemInstruction: RENDER_SYSTEM_INSTRUCTION,
+        prompt: renderPrompt,
+        responseSchema: RENDER_RESPONSE_SCHEMA,
+        stage: `render_${renderAttempt + 1}`,
+        maxOutputTokens: 384,
+      });
+      if (!renderText) continue;
+
+      let rawRender = null;
+      try {
+        rawRender = JSON.parse(renderText);
+      } catch {
+        rawRender = null;
+      }
+      npcLine = normalizeRenderedLine(rawRender, plan.requiredContent.length);
+      if (npcLine && renderAttempt > 0) renderRecovery = "RENDER_RETRY";
+    }
+  }
+  if (!npcLine) {
+    npcLine = plan.directAnswer;
+    renderRecovery = renderRecovery === "NONE"
+      ? "DIRECT_SEMANTIC_FALLBACK"
+      : renderRecovery;
+  }
+
+  const candidateTurn =
+    plan.mode === "CLARIFY" || plan.uncertainty === "HIGH"
+      ? { action: "CLARIFY", boundaryMode: "UNKNOWN", relationalEvents: [], needsClarification: true }
+      : { action: "OBSERVE", boundaryMode: "NOT_RELEVANT", relationalEvents: [], needsClarification: false };
+
+  const normalized = normalizeConverseResponse(
+    {
+      npcLine,
+      understoodPlayerMeaning: plan.playerMeaning,
+      candidateTurn,
+      candidateFactRevealIds: plan.candidateFactRevealIds,
+      candidateCommitments: plan.candidateCommitments,
+      candidateWorldEffects: plan.candidateWorldEffects,
+      uncertainty: plan.uncertainty,
+      thoughtSupportSignal: plan.thoughtSupportSignal,
+      sceneStatus: plan.sceneStatus,
+      nextNpc: plan.nextNpc,
+    },
+    body.targetNpc,
+    body.caseId,
+  );
+  console.log(JSON.stringify({
+    event: "newlife_turn_total",
+    operation: continuation ? "continue_npc_exchange" : "converse_turn",
+    ms: Date.now() - turnStarted,
+    renderRecovery,
+    verified: Boolean(answerVerification?.supported),
+  }));
+  return normalized
+    ? { ...normalized, responsePlan: { ...plan, answerVerification, renderRecovery } }
+    : null;
+}
+
 async function attemptConverseTurn(client, body) {
+  if (body.caseId === "NEWLIFE_30DAY_V1") {
+    return attemptPlannedTurn(client, body, false);
+  }
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
-    prompt: buildConversePrompt(body),
+    prompt: buildConversePrompt(withCanonicalStateFacts(body)),
     responseSchema: buildConverseResponseSchema(Type, body.caseId),
   });
   if (!text) return null;
@@ -113,9 +399,12 @@ async function attemptConverseTurn(client, body) {
 
 
 async function attemptNpcExchangeTurn(client, body) {
+  if (body.caseId === "NEWLIFE_30DAY_V1") {
+    return attemptPlannedTurn(client, body, true);
+  }
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
-    prompt: buildNpcExchangePrompt(body),
+    prompt: buildNpcExchangePrompt(withCanonicalStateFacts(body)),
     responseSchema: buildConverseResponseSchema(Type, body.caseId),
   });
   if (!text) return null;
@@ -130,11 +419,32 @@ async function attemptNpcExchangeTurn(client, body) {
   return normalizeConverseResponse(parsed, body.targetNpc, body.caseId);
 }
 
+async function attemptReflectAgent(client, body) {
+  const text = await callModel(client, {
+    systemInstruction: REFLECT_AGENT_SYSTEM_INSTRUCTION,
+    prompt: buildReflectAgentPrompt(body),
+    responseSchema: REFLECT_AGENT_RESPONSE_SCHEMA,
+    limiter: reflectionCallLimiter,
+    stage: "reflection",
+    maxOutputTokens: 768,
+  });
+  if (!text) return null;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return null;
+  }
+
+  return normalizeReflectAgentResponse(parsed, body.memories.length);
+}
+
 
 /**
  * HTTP Cloud Function (Gen 2). POST-only, stateless. One operation
  * discriminator (`interpret_turn` / `generate_npc_line` / `converse_turn` /
- * `continue_npc_exchange` / `organize_thought`), each returning only the closed shape its client-side
+ * `continue_npc_exchange` / `reflect_agent` / `organize_thought`), each returning only the closed shape its client-side
  * contract validates (`isValidRawTurnClassification` / `isValidRawNpcLine` /
  * `isValidRawConverseResult` / `isValidRawThoughtOrganizerResult`) — never a
  * state delta, never a score. Never logs the request body or player free
@@ -224,6 +534,15 @@ exports.newlifeRefoundationAi = async (req, res) => {
       }
       if (!normalized) {
         res.status(502).json({ error: "unusable_model_response" });
+        return;
+      }
+      res.status(200).json(normalized);
+      return;
+    } else if (req.body.operation === "reflect_agent") {
+      let normalized = await attemptReflectAgent(client, req.body);
+      if (!normalized) normalized = await attemptReflectAgent(client, req.body);
+      if (!normalized) {
+        res.status(502).json({ error: "unusable_reflection_response" });
         return;
       }
       res.status(200).json(normalized);

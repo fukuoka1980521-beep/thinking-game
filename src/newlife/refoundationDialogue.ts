@@ -1,4 +1,4 @@
-import type { NpcId } from "./types";
+import type { NpcId, SceneEntity, SceneFocus } from "./types";
 import { postDialogueJson } from "./semantic/httpInterpreter";
 
 export const REFOUNDATION_ENDPOINT = "https://newlife-refoundation-ai-zqtk74q2ra-an.a.run.app";
@@ -14,11 +14,29 @@ const DISPLAY_TO_API: Record<string, string> = {
 
 export interface DialogueLine { speaker: string; text: string }
 export interface RefoundationContinuation { npc: NpcId; text: string }
+export type RefoundationUncertainty = "LOW" | "MEDIUM" | "HIGH";
+export interface RefoundationCandidateTurn {
+  action: string;
+  boundaryMode: string;
+  relationalEvents: string[];
+  needsClarification: boolean;
+}
 export interface RefoundationReply {
   text: string;
   continuations: RefoundationContinuation[];
   nextNpc: NpcId | null;
   nextText: string | null;
+  understoodPlayerMeaning: string;
+  candidateTurn: RefoundationCandidateTurn;
+  candidateFactRevealIds: string[];
+  candidateCommitments: string[];
+  candidateWorldEffects: string[];
+  uncertainty: RefoundationUncertainty;
+}
+
+export interface RefoundationReflection {
+  text: string;
+  evidenceIndexes: number[];
 }
 
 function localNpc(api: unknown): NpcId | null {
@@ -28,6 +46,7 @@ function localNpc(api: unknown): NpcId | null {
 }
 const RETRYABLE_STATUSES = new Set([0, 429, 502, 503, 504]);
 const RETRY_DELAYS_MS = [500, 1400];
+const FOREGROUND_REQUEST_TIMEOUT_MS = 80_000;
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -35,7 +54,7 @@ function wait(ms: number): Promise<void> {
 
 async function post(body: unknown): Promise<any> {
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
-    const result = await postDialogueJson(REFOUNDATION_ENDPOINT, body, 45_000);
+    const result = await postDialogueJson(REFOUNDATION_ENDPOINT, body, FOREGROUND_REQUEST_TIMEOUT_MS);
     if (result.ok) return result.data;
     if (!RETRYABLE_STATUSES.has(result.status) || attempt === RETRY_DELAYS_MS.length) {
       throw new Error("refoundation_" + (result.status || result.reason || "unavailable"));
@@ -48,12 +67,66 @@ export interface LiveSceneContext {
   day: number;
   title: string;
   text: string;
+  sceneFocus?: SceneFocus;
+  sceneEntities?: SceneEntity[];
+  retrievedMemories?: string[];
+  retrievedMemoryAnchors?: Array<{
+    day: number;
+    kind: string;
+    issue?: string;
+    decision?: string;
+    authority?: string;
+    playerMeaning?: string;
+  }>;
   canonicalState: Record<string, unknown>;
   interactionKind?: "SPEECH" | "ACTION";
 }
 export function supportsRefoundation(npc: NpcId): boolean {
   return Boolean(API_NPC[npc]);
 }
+export async function reflectWithRefoundation(
+  npc: NpcId,
+  memories: string[],
+  scene: LiveSceneContext,
+): Promise<RefoundationReflection[]> {
+  if (!supportsRefoundation(npc) || memories.length === 0) return [];
+  const caseId = CASE_ID;
+  const targetNpc = API_NPC[npc];
+  const result = await post({
+    operation: "reflect_agent",
+    caseId,
+    targetNpc,
+    memories: memories.slice(-20),
+    dynamicState: {
+      day: scene.day,
+      sceneTitle: scene.title,
+      sceneText: scene.text,
+      sceneFocus: scene.sceneFocus ?? null,
+      sceneEntities: Array.isArray(scene.sceneEntities) ? scene.sceneEntities.slice(0, 12) : [],
+      canonicalState: scene.canonicalState,
+    },
+  });
+  if (!result || !Array.isArray(result.insights)) return [];
+  const insights = result.insights as unknown[];
+  return insights
+    .filter((insight: unknown): insight is { text: string; evidenceIndexes: unknown[] } =>
+      Boolean(
+        insight &&
+        typeof insight === "object" &&
+        typeof (insight as { text?: unknown }).text === "string" &&
+        Array.isArray((insight as { evidenceIndexes?: unknown }).evidenceIndexes),
+      ),
+    )
+    .map((insight: { text: string; evidenceIndexes: unknown[] }) => ({
+      text: insight.text.trim(),
+      evidenceIndexes: insight.evidenceIndexes.filter(
+        (index: unknown): index is number => typeof index === "number" && Number.isInteger(index),
+      ),
+    }))
+    .filter((insight: RefoundationReflection) => insight.text.length > 0)
+    .slice(0, 3);
+}
+
 export async function converseWithRefoundation(
   npc: NpcId, utterance: string, transcript: DialogueLine[], scene: LiveSceneContext,
 ): Promise<RefoundationReply> {
@@ -64,7 +137,11 @@ export async function converseWithRefoundation(
   const dynamicState = {
     relationshipState: "NEUTRAL", boundaryStatus: "UNKNOWN", remainingMinutes: 30,
     activeCommitment: null, sceneRevisionText: null,
-    day: scene.day, sceneTitle: scene.title, sceneText: scene.text, canonicalState: scene.canonicalState,
+    day: scene.day, sceneTitle: scene.title, sceneText: scene.text, sceneFocus: scene.sceneFocus ?? null,
+    sceneEntities: Array.isArray(scene.sceneEntities) ? scene.sceneEntities.slice(0, 12) : [],
+    retrievedMemories: Array.isArray(scene.retrievedMemories) ? scene.retrievedMemories.slice(0, 8) : [],
+    retrievedMemoryAnchors: Array.isArray(scene.retrievedMemoryAnchors) ? scene.retrievedMemoryAnchors.slice(0, 8) : [],
+    canonicalState: scene.canonicalState,
     interactionKind: scene.interactionKind ?? "SPEECH",
   };
   const first = await post({ operation: "converse_turn", caseId, targetNpc, rawPlayerUtterance: utterance, recentDialogue, dynamicState });
@@ -93,10 +170,40 @@ export async function converseWithRefoundation(
     current = next;
   }
 
+  const candidateTurn: RefoundationCandidateTurn =
+    first.candidateTurn && typeof first.candidateTurn === "object"
+      ? {
+          action: typeof first.candidateTurn.action === "string" ? first.candidateTurn.action : "CLARIFY",
+          boundaryMode: typeof first.candidateTurn.boundaryMode === "string" ? first.candidateTurn.boundaryMode : "UNKNOWN",
+          relationalEvents: Array.isArray(first.candidateTurn.relationalEvents)
+            ? first.candidateTurn.relationalEvents.filter((v: unknown): v is string => typeof v === "string")
+            : [],
+          needsClarification: first.candidateTurn.needsClarification === true,
+        }
+      : { action: "CLARIFY", boundaryMode: "UNKNOWN", relationalEvents: [], needsClarification: true };
+
+  const uncertainty: RefoundationUncertainty =
+    first.uncertainty === "LOW" || first.uncertainty === "MEDIUM" || first.uncertainty === "HIGH"
+      ? first.uncertainty
+      : "HIGH";
+
   return {
     text: first.npcLine.trim(),
     continuations,
     nextNpc: continuations[0]?.npc ?? null,
     nextText: continuations[0]?.text ?? null,
+    understoodPlayerMeaning:
+      typeof first.understoodPlayerMeaning === "string" ? first.understoodPlayerMeaning : "",
+    candidateTurn,
+    candidateFactRevealIds: Array.isArray(first.candidateFactRevealIds)
+      ? first.candidateFactRevealIds.filter((v: unknown): v is string => typeof v === "string")
+      : [],
+    candidateCommitments: Array.isArray(first.candidateCommitments)
+      ? first.candidateCommitments.filter((v: unknown): v is string => typeof v === "string")
+      : [],
+    candidateWorldEffects: Array.isArray(first.candidateWorldEffects)
+      ? first.candidateWorldEffects.filter((v: unknown): v is string => typeof v === "string")
+      : [],
+    uncertainty,
   };
 }

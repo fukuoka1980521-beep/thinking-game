@@ -4,7 +4,14 @@ export type FreeActionId = "press_miyoko_for_boundary";
 
 function normalized(text: string): string { return text.replace(/\s+/g, ""); }
 
-/** Recognizes only explicit player-owned procedural actions; never NPC consent or permission. */
+/**
+ * Legacy/offline fallback only.
+ *
+ * Normal consented conversation must not pass through this phrase router
+ * before generation. Chat-first play uses conversationEffectGate.ts after
+ * semantic generation. Keep this narrow for no-consent/offline continuity;
+ * do not grow it one transcript/regex at a time.
+ */
 export function resolveFreeAction(state: NewLife30State, npc: NpcId, text: string): FreeActionId | null {
   const t = normalized(text);
   if (!t) return null;
