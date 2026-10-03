@@ -157,25 +157,46 @@ function buildEvidenceVerificationSchema(Type) {
   };
 }
 
-function buildEvidenceLedger({ caseCanon, dossier, dynamicState, recentDialogue }) {
+function extractPersonaIdentity(dossier) {
+  if (!dossier || typeof dossier !== "object") return null;
+  if (typeof dossier.identity === "string" && dossier.identity.trim()) return dossier.identity.trim();
+  const model = typeof dossier.canonicalCharacterModel === "string" ? dossier.canonicalCharacterModel : "";
+  const match = model.match(/\*\*IDENTITY:\*\*\s*([^\n]+)/);
+  return match ? match[1].trim() : null;
+}
+
+function buildEvidenceLedger({ caseCanon, dossier, dynamicState, recentDialogue, rawPlayerUtterance }) {
   const records = [];
-  const push = (id, kind, value) => {
+  const push = (id, kind, value, scope = "WORLD_FACT") => {
     if (value === undefined || value === null) return;
     const text = typeof value === "string" ? value.trim() : JSON.stringify(value);
     if (!text) return;
-    records.push({ id, kind, text: text.slice(0, 4000) });
+    records.push({ id, kind, scope, text: text.slice(0, 4000) });
   };
 
-  push("CASE_CANON", "CANON", caseCanon);
-  push("DOSSIER", "PERSONA_AND_KNOWLEDGE", dossier);
-  push("SCENE_TEXT", "OBSERVED_SCENE", dynamicState?.sceneText);
-  push("SCENE_FOCUS", "SCENE_PROBLEM", dynamicState?.sceneFocus);
+  push("CASE_CANON", "CANON", caseCanon, "WORLD_FACT");
+  const identity = extractPersonaIdentity(dossier);
+  if (identity) push("PERSONA_IDENTITY", "PERSONA_IDENTITY", identity, "IDENTITY_ONLY");
+  if (Array.isArray(dossier?.knowledge)) {
+    dossier.knowledge.slice(0, 20).forEach((fact, i) =>
+      push(`PERSONA_KNOWLEDGE_${i}`, "PERSONA_KNOWLEDGE", fact, "WORLD_FACT")
+    );
+  }
+  push("SCENE_TEXT", "OBSERVED_SCENE", dynamicState?.sceneText, "OBSERVED_FACT");
+  push("SCENE_FOCUS", "SCENE_PROBLEM", dynamicState?.sceneFocus, "PROBLEM_STRUCTURE");
   const facts = Array.isArray(dynamicState?.canonicalStateFacts) ? dynamicState.canonicalStateFacts : [];
-  facts.slice(0, 20).forEach((fact, i) => push(`STATE_${i}`, "CANONICAL_STATE", fact));
+  facts.slice(0, 20).forEach((fact, i) => push(`STATE_${i}`, "CANONICAL_STATE", fact, "WORLD_FACT"));
   const memories = Array.isArray(dynamicState?.retrievedMemories) ? dynamicState.retrievedMemories : [];
-  memories.slice(0, 8).forEach((memory, i) => push(`MEMORY_${i}`, "MEMORY", memory));
+  memories.slice(0, 8).forEach((memory, i) => {
+    const kind = typeof memory === "string" && memory.includes("[REFLECTION]") ? "MEMORY_REFLECTION" : "MEMORY_OBSERVATION";
+    const scope = kind === "MEMORY_REFLECTION" ? "OPINION_MEMORY" : "OBSERVED_MEMORY";
+    push(`MEMORY_${i}`, kind, memory, scope);
+  });
   const dialogue = Array.isArray(recentDialogue) ? recentDialogue : [];
-  dialogue.slice(-12).forEach((line, i) => push(`DIALOGUE_${i}`, "RECENT_DIALOGUE", line));
+  dialogue.slice(-12).forEach((line, i) => push(`DIALOGUE_${i}`, "RECENT_DIALOGUE", line, "SPEECH_EVENT"));
+  if (typeof rawPlayerUtterance === "string" && rawPlayerUtterance.trim()) {
+    push("PLAYER_INPUT", "PLAYER_INPUT", rawPlayerUtterance, "HYPOTHETICAL_OR_QUERY");
+  }
   return records;
 }
 
