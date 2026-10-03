@@ -560,6 +560,47 @@ describe("functions/newlife-refoundation-ai/lib.js — NEWLIFE_30DAY_V1 six-NPC 
   });
 });
 
+describe("functions/newlife-refoundation-ai/lib.js — scene entity context", () => {
+  it("carries a typed scene entity map into both player and NPC-exchange prompts", () => {
+    const dynamicState = validDynamicState({
+      day: 4,
+      sceneTitle: "工房を借りられるか",
+      sceneText: "大輔は椅子を修理し、焼き菓子の受け取り場所を別件で相談している。",
+      sceneEntities: [
+        {
+          id: "repair_chair",
+          label: "修理中の椅子",
+          role: "修理品",
+          facts: ["試売商品ではない"],
+        },
+      ],
+    });
+    const converse = lib.buildConversePrompt(
+      validThirtyDayConverseBody({
+        targetNpc: "FUMIKO",
+        rawPlayerUtterance: "椅子を売るんですか",
+        dynamicState,
+      }),
+    );
+    const exchange = lib.buildNpcExchangePrompt(
+      validNpcExchangeBody({
+        caseId: "NEWLIFE_30DAY_V1",
+        targetNpc: "FUMIKO",
+        recentDialogue: [
+          { speaker: "PLAYER", text: "椅子を売るんですか" },
+          { speaker: "DAISUKE", text: "椅子は修理品だよ。" },
+        ],
+        dynamicState,
+      }),
+    );
+
+    expect(converse).toContain("sceneEntities");
+    expect(converse).toContain("試売商品ではない");
+    expect(exchange).toContain("sceneEntities");
+    expect(exchange).toContain("試売商品ではない");
+  });
+});
+
 describe("functions/newlife-refoundation-ai/lib.js — concrete scene anchoring", () => {
   it("shared instruction maps abstract player advice back to issue / decision / authority", () => {
     const instruction = lib.CONVERSE_SYSTEM_INSTRUCTION;
