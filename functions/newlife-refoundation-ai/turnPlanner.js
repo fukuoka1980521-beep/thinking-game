@@ -153,6 +153,8 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   if (!PROPOSAL_DISPOSITIONS.includes(parsed.proposalDisposition)) return null;
   const playerMeaning = boundedString(parsed.playerMeaning);
   const directAnswer = boundedString(parsed.directAnswer);
+  const explicitQuestion = boundedString(parsed.explicitQuestion);
+  const explicitAnswer = boundedString(parsed.explicitAnswer);
   const underlyingGoal = boundedString(parsed.underlyingGoal);
   const referents = boundedArray(parsed.referents, 8);
   const hardConstraints = boundedArray(parsed.hardConstraints, 6);
@@ -162,6 +164,10 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const unknowns = boundedArray(parsed.unknowns, 6);
   const playerProposal = boundedString(parsed.playerProposal);
   if (!playerMeaning || !directAnswer || !underlyingGoal) return null;
+  if (!ANSWER_GROUNDINGS.includes(parsed.answerGrounding)) return null;
+  if (explicitQuestion && !explicitAnswer) return null;
+  if (!explicitQuestion && explicitAnswer) return null;
+  if (parsed.answerGrounding === "UNKNOWN" && !explicitQuestion) return null;
   if (parsed.mode === "SCENE_PROBLEM" && referents.length === 0) return null;
   if (playerProposal && parsed.proposalDisposition === "NONE") return null;
   if (!playerProposal && parsed.proposalDisposition !== "NONE") return null;
@@ -180,6 +186,9 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     mode: parsed.mode,
     playerMeaning,
     directAnswer,
+    explicitQuestion,
+    explicitAnswer,
+    answerGrounding: parsed.answerGrounding,
     referents,
     activeIssue: boundedString(parsed.activeIssue),
     underlyingGoal,
@@ -224,6 +233,7 @@ module.exports = {
   PLAN_MODES,
   RESPONSE_MOVES,
   PROPOSAL_DISPOSITIONS,
+  ANSWER_GROUNDINGS,
   TURN_PLAN_SYSTEM_INSTRUCTION,
   RENDER_SYSTEM_INSTRUCTION,
   buildTurnPlanSchema,
