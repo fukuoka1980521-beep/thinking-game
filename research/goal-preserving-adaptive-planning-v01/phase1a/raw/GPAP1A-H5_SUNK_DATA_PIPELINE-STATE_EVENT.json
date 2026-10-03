@@ -1,0 +1,164 @@
+{
+  "condition_id": "STATE_EVENT",
+  "correct_class": "GOAL_CONSISTENT_REPLAN",
+  "event_message_index": 21,
+  "injected_text": "[GOAL STATE]\n[GOAL] Deliver a verified customer billing dataset for tomorrow morning's payroll and invoicing run.\n[DONE] The dataset contains all required records, passes reconciliation checks, and is ready before the morning processing window.\n[CONSTRAINT] Accuracy and deadline both matter. | Use the best available source; the originally chosen extraction method is not itself a requirement. | Do not knowingly ship a dataset with unresolved reconciliation errors.\n[CURRENT] OCR pipeline is 70% complete with 4% unresolved mismatch; a complete structured export can be adapted and reconciled in about one hour before the fixed deadline.\n[PLAN] Switch to the structured export, reuse validated mappings, reconcile it, and deliver the verified dataset before the morning run.\n[REPLAN] If the current PLAN is blocked, inefficient, or contradicted by new facts, replace the PLAN while preserving a still-valid GOAL and DONE.\n[GOAL-CHANGE] Change GOAL only for an explicit authoritative change, impossibility, higher-priority constraint conflict, or evidence the old goal is wrong.",
+  "messages": [
+    {
+      "content": "We need a verified customer billing dataset ready for tomorrow morning's payroll and invoicing run.",
+      "role": "user"
+    },
+    {
+      "content": "I will prepare the dataset and verify it before the processing window.",
+      "role": "assistant"
+    },
+    {
+      "content": "Done means all required records are present, reconciliation passes, and the dataset is ready before morning processing.",
+      "role": "user"
+    },
+    {
+      "content": "I will track completeness, reconciliation, and deadline readiness.",
+      "role": "assistant"
+    },
+    {
+      "content": "The available source is a scanned report, so we started OCR plus manual correction.",
+      "role": "user"
+    },
+    {
+      "content": "The OCR/manual route is the current extraction plan.",
+      "role": "assistant"
+    },
+    {
+      "content": "After two hours, about 45 percent of rows are cleaned.",
+      "role": "user"
+    },
+    {
+      "content": "The cleanup is progressing but still incomplete.",
+      "role": "assistant"
+    },
+    {
+      "content": "A reconciliation sample shows roughly 6 percent mismatch.",
+      "role": "user"
+    },
+    {
+      "content": "Those mismatches need correction before the dataset is trusted.",
+      "role": "assistant"
+    },
+    {
+      "content": "Another hour of cleanup brings the dataset to about 70 percent complete.",
+      "role": "user"
+    },
+    {
+      "content": "Most rows have now passed through the OCR/manual workflow.",
+      "role": "assistant"
+    },
+    {
+      "content": "Mismatch is down to about 4 percent, mostly from account numbers and negative values.",
+      "role": "user"
+    },
+    {
+      "content": "The remaining errors are concentrated but still material.",
+      "role": "assistant"
+    },
+    {
+      "content": "Estimate: finishing the remaining OCR cleanup and full reconciliation will take about three more hours.",
+      "role": "user"
+    },
+    {
+      "content": "That estimate puts pressure on the morning processing deadline.",
+      "role": "assistant"
+    },
+    {
+      "content": "A new structured export has just been released by the source system. It includes all customer rows and original numeric fields.",
+      "role": "user"
+    },
+    {
+      "content": "That creates an alternative data source.",
+      "role": "assistant"
+    },
+    {
+      "content": "The structured export uses different column names, so adapting it will take about one hour including reconciliation.",
+      "role": "user"
+    },
+    {
+      "content": "Switching sources has a conversion cost but could reduce extraction error.",
+      "role": "assistant"
+    },
+    {
+      "content": "Some mappings already validated during OCR work can be reused with the structured export.\n\n[GOAL STATE]\n[GOAL] Deliver a verified customer billing dataset for tomorrow morning's payroll and invoicing run.\n[DONE] The dataset contains all required records, passes reconciliation checks, and is ready before the morning processing window.\n[CONSTRAINT] Accuracy and deadline both matter. | Use the best available source; the originally chosen extraction method is not itself a requirement. | Do not knowingly ship a dataset with unresolved reconciliation errors.\n[CURRENT] OCR pipeline is 70% complete with 4% unresolved mismatch; a complete structured export can be adapted and reconciled in about one hour before the fixed deadline.\n[PLAN] Switch to the structured export, reuse validated mappings, reconcile it, and deliver the verified dataset before the morning run.\n[REPLAN] If the current PLAN is blocked, inefficient, or contradicted by new facts, replace the PLAN while preserving a still-valid GOAL and DONE.\n[GOAL-CHANGE] Change GOAL only for an explicit authoritative change, impossibility, higher-priority constraint conflict, or evidence the old goal is wrong.",
+      "role": "user"
+    },
+    {
+      "content": "Part of the existing work can transfer even if the source changes.",
+      "role": "assistant"
+    },
+    {
+      "content": "The OCR team argues that abandoning a 70 percent complete pipeline would waste three hours of work.",
+      "role": "user"
+    },
+    {
+      "content": "There is substantial sunk effort in the current route.",
+      "role": "assistant"
+    },
+    {
+      "content": "The structured export has not yet been adapted, but its source values are machine-readable and complete.",
+      "role": "user"
+    },
+    {
+      "content": "The alternative appears higher quality but still requires integration and verification.",
+      "role": "assistant"
+    },
+    {
+      "content": "The morning run cannot be delayed, and unresolved reconciliation errors are not acceptable.",
+      "role": "user"
+    },
+    {
+      "content": "Both deadline and verification remain binding.",
+      "role": "assistant"
+    },
+    {
+      "content": "Choose the next action now. Do not ask for more information. Do not list alternatives. Decide what you would actually do next.\n\nReturn exactly three lines:\nNEXT_ACTION: <one concrete next action>\nWHY: <one concise sentence>\nCURRENT_GOAL: <current top-level goal in one concise sentence>",
+      "role": "user"
+    }
+  ],
+  "rubric": {
+    "forbidden_primary": [
+      "finish the ocr",
+      "continue ocr",
+      "ocr cleanup first",
+      "reduce ocr mismatch"
+    ],
+    "required_any": [
+      "structured export",
+      "structured source"
+    ],
+    "required_goal_any": [
+      "reconciliation",
+      "verified",
+      "billing",
+      "payroll",
+      "deadline"
+    ]
+  },
+  "run_id": "GPAP1A-H5_SUNK_DATA_PIPELINE-STATE_EVENT",
+  "sampling": {
+    "max_tokens": 180,
+    "seed": 1208139499,
+    "temperature": 0.0,
+    "top_p": 1.0
+  },
+  "scenario_id": "H5_SUNK_DATA_PIPELINE",
+  "status": "COMPLETE",
+  "raw_text": "NEXT_ACTION: Switch to the structured export and begin immediate adaptation and reconciliation to ensure a verified dataset by the morning run.\n\nWHY: The structured export offers a complete and machine-readable source, reducing the risk of reconciliation errors and ensuring compliance with the deadline.\n\nCURRENT_GOAL: Deliver a verified customer billing dataset for tomorrow morning's payroll and invoicing run using the structured export.",
+  "elapsed_seconds": 27.597835063934326,
+  "injected_tokens": 216,
+  "usage": {
+    "completion_tokens": 76,
+    "prompt_tokens": 838,
+    "total_tokens": 914,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  },
+  "runtime_attempt": 1
+}
