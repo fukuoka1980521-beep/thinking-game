@@ -107,4 +107,28 @@ describe("NEW LIFE turn planner", () => {
     expect(planner.TURN_PLAN_SYSTEM_INSTRUCTION).toContain("旧案を守るのではなく");
     expect(planner.TURN_PLAN_SYSTEM_INSTRUCTION).toContain("因果・責任・負担");
   });
+
+  it("does not make the legacy conversational-act taxonomy part of 30-day planning", () => {
+    const FakeType = {
+      OBJECT: "OBJECT", STRING: "STRING", ARRAY: "ARRAY", NUMBER: "NUMBER", BOOLEAN: "BOOLEAN",
+    };
+    const schema = planner.buildTurnPlanSchema(FakeType, enums);
+    expect(schema.properties.candidateTurn).toBeUndefined();
+    expect(schema.required).not.toContain("candidateTurn");
+  });
+
+  it("fails rendering when the renderer says a required semantic obligation was not covered", () => {
+    expect(
+      planner.normalizeRenderedLine(
+        { npcLine: "会館側で考えましょう。", coveredRequirementIndexes: [1] },
+        2,
+      ),
+    ).toBeNull();
+    expect(
+      planner.normalizeRenderedLine(
+        { npcLine: "喫茶は外して、会館側で考えましょう。", coveredRequirementIndexes: [0, 1] },
+        2,
+      ),
+    ).toContain("喫茶は外して");
+  });
 });
