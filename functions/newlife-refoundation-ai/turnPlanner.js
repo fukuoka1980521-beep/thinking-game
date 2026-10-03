@@ -52,6 +52,7 @@ const RENDER_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「キャラクター�
 - proposalDisposition=REJECT/MODIFYなら、その理由をResponse Planの範囲で自然に示す。
 - キャラクターらしさは、論理を曲げることではない。
 - 1〜3文。説明書・箇条書き・メタ発言にしない。
+- coveredRequirementIndexes には、npcLine内で実際に意味として表現できた requiredContent の0始まりindexだけを入れる。表現していない項目を入れてはいけない。
 - 出力は指定JSONのみ。`;
 
 function buildTurnPlanSchema(Type, enums) {
@@ -100,8 +101,11 @@ function buildTurnPlanSchema(Type, enums) {
 function buildRenderSchema(Type) {
   return {
     type: Type.OBJECT,
-    properties: { npcLine: { type: Type.STRING } },
-    required: ["npcLine"],
+    properties: {
+      npcLine: { type: Type.STRING },
+      coveredRequirementIndexes: { type: Type.ARRAY, items: { type: Type.NUMBER } },
+    },
+    required: ["npcLine", "coveredRequirementIndexes"],
   };
 }
 
@@ -182,9 +186,19 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   };
 }
 
-function normalizeRenderedLine(parsed, maxLength = 600) {
+function normalizeRenderedLine(parsed, requiredCount = 0, maxLength = 600) {
   if (!parsed || typeof parsed !== "object") return null;
-  return boundedString(parsed.npcLine, maxLength);
+  const line = boundedString(parsed.npcLine, maxLength);
+  if (!line || !Array.isArray(parsed.coveredRequirementIndexes)) return null;
+  const covered = new Set(
+    parsed.coveredRequirementIndexes.filter(
+      (index) => Number.isInteger(index) && index >= 0 && index < requiredCount,
+    ),
+  );
+  for (let i = 0; i < requiredCount; i += 1) {
+    if (!covered.has(i)) return null;
+  }
+  return line;
 }
 
 module.exports = {
