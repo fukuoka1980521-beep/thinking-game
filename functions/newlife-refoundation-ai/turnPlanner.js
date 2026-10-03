@@ -42,6 +42,7 @@ const TURN_PLAN_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの「意味・判断�
 - factualな explicitAnswer を evidenceLedger で裏付けられない場合は answerGrounding="UNKNOWN" とし、知らない具体事実を作らないこと。character dossierの雰囲気や職業から事実を補わない。
 - answerGrounding が CANONICAL / OBSERVED / MEMORY / INFERRED の場合は、explicitAnswerを支える evidenceLedger の id を answerEvidenceIds に必ず入れること。根拠にならない近接情報を引用してはいけない。
 - INFERRED は、提示された証拠から自然に導けるが明文ではない推論だけに使う。新しい商品仕様・時間・人数・感情・習慣を作るためには使わない。
+- 「未確認」「未確定」「記録がない」は、反対事実が確定したことを意味しない。「予定が未確定」から「予定はない」、「席数未確認」から「席は使えない」のような否定へ強めないこと。
 - directAnswerは、キャラクター口調にする前の「何と答えるべきか」の意味内容を1〜2文で書く。explicitQuestionがある場合は explicitAnswer を先に含める。
 - requiredContentには、最終セリフで落としてはいけない具体要素を最大4件入れる。explicitQuestionがある場合、explicitAnswerの意味内容を最初のrequiredContentに含める。
 - unknownsには、根拠がなく断定してはいけない点を書く。
@@ -57,6 +58,7 @@ const EVIDENCE_VERIFY_SYSTEM_INSTRUCTION = `あなたはNEW LIFEの事実根拠�
 - evidenceLedgerにない商品仕様、焙煎度、時間、人数、継続感情、過去行動を補わない。
 - 「ありそう」「その職業なら知っていそう」は支持根拠ではない。
 - INFERRED は、証拠から直接かつ安全に導ける推論だけを許す。新しい設定の創作は不可。
+- unknown/未確認/未確定 と false/存在しない を区別すること。「確定していない」は「ない」を支持しない。証拠より強い断定なら supported=false。
 - citedEvidenceIds に挙げた証拠が explicitAnswer を支持していなければ supported=false。
 - 出力は指定JSONのみ。`;
 
