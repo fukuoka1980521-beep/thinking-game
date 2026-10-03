@@ -247,6 +247,9 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   const directAnswer = boundedString(parsed.directAnswer);
   const explicitQuestion = boundedString(parsed.explicitQuestion);
   const explicitAnswer = boundedString(parsed.explicitAnswer);
+  const allowedEvidenceIds = new Set(enums.evidenceIds || []);
+  const answerEvidenceIds = boundedArray(parsed.answerEvidenceIds, 12, 100)
+    .filter((id) => allowedEvidenceIds.has(id));
   const underlyingGoal = boundedString(parsed.underlyingGoal);
   const referents = boundedArray(parsed.referents, 8);
   const hardConstraints = boundedArray(parsed.hardConstraints, 6);
@@ -260,6 +263,9 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
   if (explicitQuestion && !explicitAnswer) return null;
   if (!explicitQuestion && explicitAnswer) return null;
   if (parsed.answerGrounding === "UNKNOWN" && !explicitQuestion) return null;
+  if (["CANONICAL", "OBSERVED", "MEMORY", "INFERRED"].includes(parsed.answerGrounding) &&
+      explicitQuestion && answerEvidenceIds.length === 0) return null;
+  if (parsed.answerGrounding === "UNKNOWN" && answerEvidenceIds.length > 0) return null;
   if (parsed.mode === "SCENE_PROBLEM" && referents.length === 0) return null;
   if (playerProposal && parsed.proposalDisposition === "NONE") return null;
   if (!playerProposal && parsed.proposalDisposition !== "NONE") return null;
@@ -281,6 +287,7 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     explicitQuestion,
     explicitAnswer,
     answerGrounding: parsed.answerGrounding,
+    answerEvidenceIds,
     referents,
     activeIssue: boundedString(parsed.activeIssue),
     underlyingGoal,
@@ -328,10 +335,16 @@ module.exports = {
   ANSWER_GROUNDINGS,
   TURN_PLAN_SYSTEM_INSTRUCTION,
   RENDER_SYSTEM_INSTRUCTION,
+  EVIDENCE_VERIFY_SYSTEM_INSTRUCTION,
   buildTurnPlanSchema,
   buildRenderSchema,
+  buildEvidenceVerificationSchema,
+  buildEvidenceLedger,
+  buildEvidenceVerificationPrompt,
   buildTurnPlanPrompt,
   buildRenderPrompt,
   normalizeTurnPlan,
   normalizeRenderedLine,
+  normalizeEvidenceVerification,
+  downgradeUnsupportedFactPlan,
 };
