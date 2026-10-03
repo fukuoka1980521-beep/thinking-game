@@ -79,4 +79,20 @@ describe("NEW LIFE scene comprehension regressions", () => {
     expect(scene.sceneFocus?.authority).toContain("椅子は修理品");
     expect(scene.text).not.toContain("椅子を販売");
   });
+
+  it("Day 4 exposes separate canonical entities for chair repair, baked goods, and workshop", () => {
+    const scene = getScene(4, "done", null);
+    const entities = scene.sceneEntities ?? [];
+
+    const chair = entities.find((entity) => entity.id === "repair_chair");
+    const goods = entities.find((entity) => entity.id === "hina_baked_goods");
+    const workshop = entities.find((entity) => entity.id === "daisuke_workshop");
+
+    expect(chair?.role).toContain("修理");
+    expect(chair?.facts).toContain("陽菜の試売商品ではない");
+    expect(goods?.role).toContain("試売商品");
+    expect(goods?.facts).toContain("椅子とは別件");
+    expect(workshop?.role).toContain("受け渡す場所");
+    expect(workshop?.facts).toContain("貸すかどうかを決めるのは大輔");
+  });
 });
