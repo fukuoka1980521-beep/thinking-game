@@ -144,7 +144,11 @@ function withCanonicalStateFacts(body) {
   };
 }
 
-function plannerEnums(caseId, evidenceIds = []) {
+function plannerEnums(caseId, evidenceLedger = []) {
+  const evidenceIds = evidenceLedger.map((record) => record.id);
+  const accountabilityEvidenceIds = evidenceLedger
+    .filter((record) => record.kind === "ACCOUNTABILITY_FACT")
+    .map((record) => record.id);
   return {
     actionTypes: ACTION_TYPES,
     boundaryModes: BOUNDARY_MODES,
@@ -154,6 +158,7 @@ function plannerEnums(caseId, evidenceIds = []) {
     uncertaintyLevels: UNCERTAINTY_LEVELS,
     worldEffects: worldEffectsForCase(caseId),
     evidenceIds,
+    accountabilityEvidenceIds,
   };
 }
 
@@ -176,7 +181,7 @@ async function attemptPlannedTurn(client, body, continuation = false) {
     recentDialogue: body.recentDialogue,
     rawPlayerUtterance: continuation ? lastPlayerUtterance(body.recentDialogue) : body.rawPlayerUtterance,
   });
-  const enums = plannerEnums(body.caseId, evidenceLedger.map((record) => record.id));
+  const enums = plannerEnums(body.caseId, evidenceLedger);
   const baseContext = [
     buildConversationContextText(enriched),
     `事実根拠台帳（evidenceLedger）: ${JSON.stringify(evidenceLedger)}`,
