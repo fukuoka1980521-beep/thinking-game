@@ -88,3 +88,16 @@ If the Python supervisor dies: the hidden CMD loop restarts it after 15 seconds.
 If Windows/user session restarts: Startup VBS relaunches the supervisor chain after login.
 
 The remaining hard stop is machine power-off or a frozen scientific STOP gate. A scientific STOP gate is intentional and must not be bypassed automatically.
+
+## Hang detection hardening
+
+A live PID is no longer treated as proof of progress.
+
+Additional recovery rules:
+- model download: if partial-file bytes do not increase for 10 minutes, terminate the download tree and resume on the next tick;
+- runtime benchmark: absolute timeout 30 minutes;
+- template smoke: absolute timeout 20 minutes;
+- stage pilot: absolute timeout 120 minutes and no-output-progress timeout 30 minutes;
+- terminated stale jobs consume a bounded retry attempt and are restarted only while below the retry limit.
+
+This prevents a hung process from leaving the project indefinitely in a misleading RUNNING state.

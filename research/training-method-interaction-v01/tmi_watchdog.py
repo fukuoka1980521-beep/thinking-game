@@ -85,6 +85,25 @@ def process_alive(pid):
     ok = k32.GetExitCodeProcess(h, ctypes.byref(code))
     k32.CloseHandle(h)
     return bool(ok and code.value == 259)
+
+def age_seconds(iso_value):
+    if not iso_value:
+        return 0.0
+    try:
+        return max(0.0, (datetime.now().astimezone() - datetime.fromisoformat(iso_value)).total_seconds())
+    except Exception:
+        return 0.0
+
+def terminate_tree(pid, reason):
+    if not pid or not process_alive(pid):
+        return
+    log(f"PROCESS_TREE_TERMINATE pid={pid} reason={reason}")
+    subprocess.run(
+        ["taskkill", "/PID", str(pid), "/T", "/F"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        timeout=30,
+    )
 def sha256_file(path):
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -148,7 +167,19 @@ def ensure_download(stage, state):
     pid = ds.get("pid")
     if process_alive(pid):
         ds["status"] = "DOWNLOADING"
-        ds["partial_bytes"] = partial.stat().st_size if partial.exists() else 0
+        current_bytes = partial.stat().st_size if partial.exists() else 0
+        previous_bytes = int(ds.get("partial_bytes", 0) or 0)
+        if current_bytes > previous_bytes:
+            ds["last_progress_at"] = now()
+            ds["partial_bytes"] = current_bytes
+        elif not ds.get("last_progress_at"):
+            ds["last_progress_at"] = now()
+            ds["partial_bytes"] = current_bytes
+        elif age_seconds(ds.get("last_progress_at")) > 600:
+            terminate_tree(pid, f"download_stale_{stage}")
+            ds["pid"] = None
+            ds["status"] = "STALE_RESTART_PENDING"
+            log(f"DOWNLOAD_STALE {stage} bytes={current_bytes}")
         return False
     if shutil.disk_usage(MODEL_DIR).free < 6_000_000_000:
         state["status"] = "STOPPED_DISK_LOW"
@@ -163,8 +194,12 @@ def ensure_download(stage, state):
         "-d", MODEL_DIR, "-o", partial.name, url,
     ]
     pid = start_detached(cmd, ROOT / "autorun_logs" / f"download_{stage}.log")
-    ds.update({"status": "DOWNLOADING", "pid": pid, "started_at": now(), "url": url})
-    log(f"DOWNLOAD_START {stage} pid={pid} existing={partial.stat().st_size if partial.exists() else 0}")
+    existing = partial.stat().st_size if partial.exists() else 0
+    ds.update({
+        "status": "DOWNLOADING", "pid": pid, "started_at": now(), "url": url,
+        "partial_bytes": existing, "last_progress_at": now()
+    })
+    log(f"DOWNLOAD_START {stage} pid={pid} existing={existing}")
     return False
 def smoke_file(stage, rendering):
     return ROOT / "template_smoke" / "raw" / f"SMOKE-{stage}-{rendering.upper()}.json"
@@ -192,9 +227,48 @@ def base_smoke_valid():
         log(f"BASE_SMOKE_PARSE_ERROR {type(e).__name__} {e}")
         return False
 
+def job_progress_count(j):
+    kind = j.get("type")
+    if kind == "runtime_benchmark":
+        d = ROOT / "runtime_benchmark"
+        return len(list(d.glob("*"))) if d.exists() else 0
+    if kind == "smoke":
+        return int(smoke_file(j.get("stage"), j.get("rendering")).exists())
+    if kind == "pilot":
+        d = ROOT / "pilot_v01" / "raw"
+        if not d.exists():
+            return 0
+        stage = j.get("stage")
+        rendering = str(j.get("rendering", "")).upper()
+        return len(list(d.glob(f"P1-{stage}-*-{rendering}.json")))
+    return 0
+
 def job_alive(state):
     j = state.get("job")
-    return bool(j and process_alive(j.get("pid")))
+    if not j or not process_alive(j.get("pid")):
+        return False
+    kind = j.get("type")
+    absolute_limits = {"runtime_benchmark": 1800, "smoke": 1200, "pilot": 7200}
+    if age_seconds(j.get("started_at")) > absolute_limits.get(kind, 7200):
+        terminate_tree(j.get("pid"), f"{kind}_absolute_timeout")
+        state["job"] = None
+        log(f"JOB_STALE_ABSOLUTE type={kind}")
+        return False
+    current = job_progress_count(j)
+    previous = int(j.get("progress_count", -1))
+    if current > previous:
+        j["progress_count"] = current
+        j["last_progress_at"] = now()
+    elif not j.get("last_progress_at"):
+        j["progress_count"] = current
+        j["last_progress_at"] = now()
+    stale_limit = 1800 if kind == "pilot" else absolute_limits.get(kind, 7200)
+    if age_seconds(j.get("last_progress_at")) > stale_limit:
+        terminate_tree(j.get("pid"), f"{kind}_no_progress")
+        state["job"] = None
+        log(f"JOB_STALE_NO_PROGRESS type={kind} count={current}")
+        return False
+    return True
 
 def clear_finished_job(state):
     j = state.get("job")
