@@ -195,20 +195,29 @@ async function attemptPlannedTurn(client, body, continuation = false) {
       ].join("\n")
     : baseContext;
 
-  const planText = await callModel(client, {
-    systemInstruction: TURN_PLAN_SYSTEM_INSTRUCTION,
-    prompt: buildTurnPlanPrompt(contextText, continuation),
-    responseSchema: buildTurnPlanSchema(Type, enums),
-  });
-  if (!planText) return null;
+  let plan = null;
+  for (let planAttempt = 0; planAttempt < 2 && !plan; planAttempt += 1) {
+    const planPrompt = [
+      buildTurnPlanPrompt(contextText, continuation),
+      planAttempt === 0
+        ? ""
+        : "前回はResponse Planとして利用できませんでした。意味を変えず、必須フィールドを整合させて再生成してください。",
+    ].filter(Boolean).join("\n");
+    const planText = await callModel(client, {
+      systemInstruction: TURN_PLAN_SYSTEM_INSTRUCTION,
+      prompt: planPrompt,
+      responseSchema: buildTurnPlanSchema(Type, enums),
+    });
+    if (!planText) continue;
 
-  let rawPlan;
-  try {
-    rawPlan = JSON.parse(planText);
-  } catch {
-    return null;
+    let rawPlan = null;
+    try {
+      rawPlan = JSON.parse(planText);
+    } catch {
+      rawPlan = null;
+    }
+    plan = normalizeTurnPlan(rawPlan, body.targetNpc, enums);
   }
-  let plan = normalizeTurnPlan(rawPlan, body.targetNpc, enums);
   if (!plan || !dossier) return null;
   if (plan.responsibilityDowngraded) {
     plan = downgradeUnsupportedResponsibilityPlan(plan);
@@ -241,27 +250,45 @@ async function attemptPlannedTurn(client, body, continuation = false) {
     ? lastPlayerUtterance(body.recentDialogue)
     : body.rawPlayerUtterance;
 
-  const renderText = await callModel(client, {
-    systemInstruction: RENDER_SYSTEM_INSTRUCTION,
-    prompt: buildRenderPrompt({
-      npc: body.targetNpc,
-      dossier,
-      plan,
-      recentDialogue: body.recentDialogue,
-      rawPlayerUtterance,
-    }),
-    responseSchema: RENDER_RESPONSE_SCHEMA,
+  const baseRenderPrompt = buildRenderPrompt({
+    npc: body.targetNpc,
+    dossier,
+    plan,
+    recentDialogue: body.recentDialogue,
+    rawPlayerUtterance,
   });
-  if (!renderText) return null;
+  let npcLine = null;
+  let renderRecovery = "NONE";
+  for (let renderAttempt = 0; renderAttempt < 2 && !npcLine; renderAttempt += 1) {
+    const renderPrompt = [
+      baseRenderPrompt,
+      renderAttempt === 0
+        ? ""
+        : `前回は意味契約の必須要素を落としました。requiredContentの全項目を自然な会話として必ず含め、coveredRequirementIndexesには0から${Math.max(0, plan.requiredContent.length - 1)}までを、実際に表現できた場合だけ入れてください。`,
+    ].filter(Boolean).join("\n");
+    const renderText = await callModel(client, {
+      systemInstruction: RENDER_SYSTEM_INSTRUCTION,
+      prompt: renderPrompt,
+      responseSchema: RENDER_RESPONSE_SCHEMA,
+    });
+    if (!renderText) continue;
 
-  let rawRender;
-  try {
-    rawRender = JSON.parse(renderText);
-  } catch {
-    return null;
+    let rawRender = null;
+    try {
+      rawRender = JSON.parse(renderText);
+    } catch {
+      rawRender = null;
+    }
+    npcLine = normalizeRenderedLine(rawRender, plan.requiredContent.length);
+    if (npcLine && renderAttempt > 0) renderRecovery = "RENDER_RETRY";
   }
-  const npcLine = normalizeRenderedLine(rawRender, plan.requiredContent.length);
-  if (!npcLine) return null;
+  if (!npcLine) {
+    // Fail soft at the expression layer only: the semantic answer is already
+    // grounded/validated. Prefer a plain but correct answer over a broken
+    // conversation or a return to the old single-pass generator.
+    npcLine = plan.directAnswer;
+    renderRecovery = "DIRECT_SEMANTIC_FALLBACK";
+  }
 
   const candidateTurn =
     plan.mode === "CLARIFY" || plan.uncertainty === "HIGH"
@@ -285,7 +312,7 @@ async function attemptPlannedTurn(client, body, continuation = false) {
     body.caseId,
   );
   return normalized
-    ? { ...normalized, responsePlan: { ...plan, answerVerification } }
+    ? { ...normalized, responsePlan: { ...plan, answerVerification, renderRecovery } }
     : null;
 }
 
