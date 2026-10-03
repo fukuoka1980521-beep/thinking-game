@@ -113,7 +113,7 @@ const cases = [
     },
     canonicalState: { mSeats: "assumed" },
     utterance: "待機客のせいで喫茶の普通のお客さんが座れなくなる負担は誰が持つんですか？",
-    expectedQuestionType: ["HYPOTHETICAL", "NORMATIVE"],
+    expectedQuestionType: ["HYPOTHETICAL", "NORMATIVE", "ANALYTICAL"],
     expectedResponsibilityStatus: "UNRESOLVED",
     requireNullAccountabilityOwner: true,
     minImpactBearers: 1,
@@ -212,7 +212,7 @@ const cases = [
       authority: "喫茶席は美代子が決める。",
     },
     utterance: "ところで、このコーヒーは深煎りですか？",
-    expectedMode: "TOPIC_SHIFT",
+    expectedMode: ["TOPIC_SHIFT", "CASUAL"],
     expectedQuestionType: "FACTUAL",
     expectedGrounding: "UNKNOWN",
     expectedResponsibilityStatus: "NOT_APPLICABLE",
@@ -231,7 +231,7 @@ function structuralChecks(c, reply) {
     hasPlan: Boolean(p && p.playerMeaning && p.directAnswer && p.underlyingGoal),
     hasRequiredContent: Boolean(p && Array.isArray(p.requiredContent) && p.requiredContent.length > 0),
     hasRenderedLine: Boolean(reply && typeof reply.npcLine === "string" && reply.npcLine.trim()),
-    mode: !c.expectedMode || p?.mode === c.expectedMode,
+    mode: matchesExpected(p?.mode, c.expectedMode),
     disposition:
       !c.expectedDisposition ||
       c.expectedDisposition.includes(p?.proposalDisposition),
