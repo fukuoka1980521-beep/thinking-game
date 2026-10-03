@@ -378,4 +378,64 @@ describe("NEW LIFE turn planner", () => {
     expect(plan?.questionType).toBe("ANALYTICAL");
     expect(plan?.answerGrounding).toBe("INFERRED");
   });
+
+  it("recovers a missing explicit answer from the already-generated direct semantic answer", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        explicitQuestion: "誰が決めるのか。",
+        explicitAnswer: null,
+        questionType: "ANALYTICAL",
+        answerGrounding: "OPINION",
+      }),
+      "FUMIKO",
+      enums,
+    );
+    expect(plan).not.toBeNull();
+    expect(plan.explicitAnswer).toBe(plan.directAnswer);
+  });
+
+  it("downgrades factual grounding without usable evidence instead of dropping the whole turn", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        mode: "CASUAL",
+        explicitQuestion: "今日は特別な予定があるか。",
+        explicitAnswer: "今日は特別な予定はない。",
+        questionType: "FACTUAL",
+        answerGrounding: "CANONICAL",
+        answerEvidenceIds: [],
+        playerProposal: null,
+        proposalDisposition: "NONE",
+      }),
+      "YOHEI",
+      enums,
+    );
+    expect(plan).not.toBeNull();
+    expect(plan.answerGrounding).toBe("UNKNOWN");
+    expect(plan.answerEvidenceIds).toEqual([]);
+  });
+
+  it("turns a scene-problem plan with missing referents into clarification instead of transport failure", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({ referents: [] }),
+      "FUMIKO",
+      enums,
+    );
+    expect(plan).not.toBeNull();
+    expect(plan.mode).toBe("CLARIFY");
+    expect(plan.uncertainty).toBe("HIGH");
+  });
+
+  it("recovers proposal and required-content metadata conservatively", () => {
+    const plan = planner.normalizeTurnPlan(
+      validPlan({
+        proposalDisposition: "NONE",
+        requiredContent: [],
+      }),
+      "FUMIKO",
+      enums,
+    );
+    expect(plan).not.toBeNull();
+    expect(plan.proposalDisposition).toBe("NEEDS_CHECK");
+    expect(plan.requiredContent).toEqual([plan.directAnswer]);
+  });
 });
