@@ -217,14 +217,16 @@ function buildEvidenceVerificationPrompt({ plan, evidenceLedger }) {
   ].join("\n");
 }
 
-function normalizeEvidenceVerification(parsed, evidenceLedger) {
+function normalizeEvidenceVerification(parsed, evidenceLedger, citedEvidenceIds = []) {
   if (!parsed || typeof parsed !== "object" || typeof parsed.supported !== "boolean") return null;
   const reason = boundedString(parsed.reason, 500);
   if (!reason || !Array.isArray(parsed.usedEvidenceIds)) return null;
-  const allowed = new Set(evidenceLedger.map((e) => e.id));
+  const ledgerIds = new Set(evidenceLedger.map((e) => e.id));
+  const cited = new Set(citedEvidenceIds);
   const usedEvidenceIds = [...new Set(parsed.usedEvidenceIds)]
-    .filter((id) => typeof id === "string" && allowed.has(id))
+    .filter((id) => typeof id === "string" && ledgerIds.has(id) && cited.has(id))
     .slice(0, 12);
+  if (parsed.supported && usedEvidenceIds.length === 0) return null;
   return { supported: parsed.supported, reason, usedEvidenceIds };
 }
 
