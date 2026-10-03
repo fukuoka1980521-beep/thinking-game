@@ -239,6 +239,30 @@ function normalizeEvidenceVerification(parsed, evidenceLedger, citedEvidenceIds 
   return { supported: parsed.supported, reason, usedEvidenceIds };
 }
 
+function downgradeUnsupportedResponsibilityPlan(plan) {
+  if (!plan?.responsibilityDowngraded) return plan;
+  const base = "責任の所在は、今ある情報では決まっていません。";
+  const impacted = Array.isArray(plan.impactBearers) && plan.impactBearers.length > 0
+    ? `負担が生じる可能性があるのは${plan.impactBearers.join("、")}です。`
+    : "";
+  const answer = impacted ? `${base}${impacted}` : base;
+  return {
+    ...plan,
+    directAnswer: answer,
+    explicitAnswer: plan.explicitQuestion ? answer : plan.explicitAnswer,
+    responsibilityStatus: "UNRESOLVED",
+    accountabilityOwner: null,
+    accountabilityEvidenceIds: [],
+    requiredContent: impacted ? [base, impacted] : [base],
+    candidateFactRevealIds: [],
+    candidateCommitments: [],
+    candidateWorldEffects: [],
+    uncertainty: plan.uncertainty === "LOW" ? "MEDIUM" : plan.uncertainty,
+    sceneStatus: "AWAIT_PLAYER",
+    nextNpc: null,
+  };
+}
+
 function downgradeUnsupportedFactPlan(plan) {
   if (!plan?.explicitQuestion) return plan;
   const fallback = "その点は、今ある情報だけでは確定できません。";
@@ -332,10 +356,14 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     return null;
   }
   if (parsed.answerGrounding === "UNKNOWN" && answerEvidenceIds.length > 0) return null;
-  if (responsibilityStatus === "KNOWN" && (!accountabilityOwner || accountabilityEvidenceIds.length === 0)) return null;
-  if (responsibilityStatus !== "KNOWN" && accountabilityEvidenceIds.length > 0) return null;
-  if (responsibilityStatus === "UNRESOLVED" && accountabilityOwner) return null;
-  if (responsibilityStatus === "NOT_APPLICABLE" && accountabilityOwner) return null;
+  const responsibilityDowngraded =
+    (responsibilityStatus === "KNOWN" && (!accountabilityOwner || accountabilityEvidenceIds.length === 0)) ||
+    (responsibilityStatus !== "KNOWN" && accountabilityEvidenceIds.length > 0) ||
+    (responsibilityStatus === "UNRESOLVED" && Boolean(accountabilityOwner)) ||
+    (responsibilityStatus === "NOT_APPLICABLE" && Boolean(accountabilityOwner));
+  const normalizedResponsibilityStatus = responsibilityDowngraded ? "UNRESOLVED" : responsibilityStatus;
+  const normalizedAccountabilityOwner = responsibilityDowngraded ? null : accountabilityOwner;
+  const normalizedAccountabilityEvidenceIds = responsibilityDowngraded ? [] : accountabilityEvidenceIds;
   if (parsed.mode === "SCENE_PROBLEM" && referents.length === 0) return null;
   if (playerProposal && parsed.proposalDisposition === "NONE") return null;
   if (!playerProposal && parsed.proposalDisposition !== "NONE") return null;
@@ -364,9 +392,10 @@ function normalizeTurnPlan(parsed, expectedNpc, enums) {
     underlyingGoal,
     unresolvedDecision: boundedString(parsed.unresolvedDecision),
     authorityOwner: boundedString(parsed.authorityOwner, 200),
-    responsibilityStatus,
-    accountabilityOwner,
-    accountabilityEvidenceIds,
+    responsibilityStatus: normalizedResponsibilityStatus,
+    accountabilityOwner: normalizedAccountabilityOwner,
+    accountabilityEvidenceIds: normalizedAccountabilityEvidenceIds,
+    responsibilityDowngraded,
     impactBearers,
     hardConstraints,
     affectedParties,
@@ -423,5 +452,6 @@ module.exports = {
   normalizeTurnPlan,
   normalizeRenderedLine,
   normalizeEvidenceVerification,
+  downgradeUnsupportedResponsibilityPlan,
   downgradeUnsupportedFactPlan,
 };
