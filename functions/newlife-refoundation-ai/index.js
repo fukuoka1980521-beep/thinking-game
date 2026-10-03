@@ -136,6 +136,102 @@ function withCanonicalStateFacts(body) {
   };
 }
 
+function plannerEnums(caseId) {
+  return {
+    actionTypes: ACTION_TYPES,
+    boundaryModes: BOUNDARY_MODES,
+    relationalEvents: RELATIONAL_EVENTS,
+    npcIds: NPC_IDS,
+    sceneStatuses: SCENE_STATUSES,
+    uncertaintyLevels: UNCERTAINTY_LEVELS,
+    worldEffects: worldEffectsForCase(caseId),
+  };
+}
+
+function lastPlayerUtterance(recentDialogue) {
+  if (!Array.isArray(recentDialogue)) return "";
+  for (let i = recentDialogue.length - 1; i >= 0; i -= 1) {
+    if (recentDialogue[i] && recentDialogue[i].speaker === "PLAYER") return recentDialogue[i].text || "";
+  }
+  return "";
+}
+
+async function attemptPlannedTurn(client, body, continuation = false) {
+  const enriched = withCanonicalStateFacts(body);
+  const enums = plannerEnums(body.caseId);
+  const contextText = continuation
+    ? [
+        buildConversationContextText(enriched),
+        `NPC間継続ターン番号: ${body.continuationDepth || 1}`,
+        "プレイヤーはこのターンでは新しく発言していない。直近PLAYER発言の意味を保持する。",
+      ].join("\n")
+    : buildConversationContextText(enriched);
+
+  const planText = await callModel(client, {
+    systemInstruction: TURN_PLAN_SYSTEM_INSTRUCTION,
+    prompt: buildTurnPlanPrompt(contextText, continuation),
+    responseSchema: buildTurnPlanSchema(Type, enums),
+  });
+  if (!planText) return null;
+
+  let rawPlan;
+  try {
+    rawPlan = JSON.parse(planText);
+  } catch {
+    return null;
+  }
+  const plan = normalizeTurnPlan(rawPlan, body.targetNpc, enums);
+  if (!plan) return null;
+
+  const dossiers = getCaseDossiers(body.caseId);
+  const dossier = dossiers && dossiers[body.targetNpc];
+  if (!dossier) return null;
+
+  const rawPlayerUtterance = continuation
+    ? lastPlayerUtterance(body.recentDialogue)
+    : body.rawPlayerUtterance;
+
+  const renderText = await callModel(client, {
+    systemInstruction: RENDER_SYSTEM_INSTRUCTION,
+    prompt: buildRenderPrompt({
+      npc: body.targetNpc,
+      dossier,
+      plan,
+      recentDialogue: body.recentDialogue,
+      rawPlayerUtterance,
+    }),
+    responseSchema: RENDER_RESPONSE_SCHEMA,
+  });
+  if (!renderText) return null;
+
+  let rawRender;
+  try {
+    rawRender = JSON.parse(renderText);
+  } catch {
+    return null;
+  }
+  const npcLine = normalizeRenderedLine(rawRender);
+  if (!npcLine) return null;
+
+  const normalized = normalizeConverseResponse(
+    {
+      npcLine,
+      understoodPlayerMeaning: plan.playerMeaning,
+      candidateTurn: plan.candidateTurn,
+      candidateFactRevealIds: plan.candidateFactRevealIds,
+      candidateCommitments: plan.candidateCommitments,
+      candidateWorldEffects: plan.candidateWorldEffects,
+      uncertainty: plan.uncertainty,
+      thoughtSupportSignal: plan.thoughtSupportSignal,
+      sceneStatus: plan.sceneStatus,
+      nextNpc: plan.nextNpc,
+    },
+    body.targetNpc,
+    body.caseId,
+  );
+  return normalized ? { ...normalized, responsePlan: plan } : null;
+}
+
 async function attemptConverseTurn(client, body) {
   const text = await callModel(client, {
     systemInstruction: CONVERSE_SYSTEM_INSTRUCTION,
