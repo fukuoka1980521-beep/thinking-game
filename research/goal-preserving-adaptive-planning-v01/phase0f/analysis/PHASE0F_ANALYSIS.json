@@ -1,0 +1,180 @@
+{
+  "status": "PHASE0F_WORK_STATE_CALIBRATION",
+  "decision": "LEDGER_PROMISING",
+  "promising": [
+    "STATUS_LEDGER_LATE",
+    "STATUS_LEDGER_REFRESH"
+  ],
+  "summary": {
+    "CTRL": {
+      "correct": 1,
+      "wrong": 2,
+      "review": 1,
+      "tokens": 0
+    },
+    "STATUS_LEDGER_EVENT": {
+      "correct": 3,
+      "wrong": 1,
+      "review": 0,
+      "tokens": 292
+    },
+    "STATUS_LEDGER_LATE": {
+      "correct": 3,
+      "wrong": 0,
+      "review": 1,
+      "tokens": 292
+    },
+    "STATUS_LEDGER_REFRESH": {
+      "correct": 3,
+      "wrong": 0,
+      "review": 1,
+      "tokens": 600
+    }
+  },
+  "rows": [
+    {
+      "run_id": "GPAP0F-H1_COST_ROUTE-CTRL",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "CTRL",
+      "action": "Contact the finance department to request an exception for this week's additional spend.",
+      "score": "WRONG",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Contact the finance department to request an exception for this week's additional spend.\n\nRATIONALE: Despite the prohibition, the variance report is critical for the Friday review and cannot be delayed without proper authorization."
+    },
+    {
+      "run_id": "GPAP0F-H1_COST_ROUTE-STATUS_LEDGER_EVENT",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "STATUS_LEDGER_EVENT",
+      "action": "Complete the reconciliation of the remaining rows and produce the reviewable variance report using the local CSV export as the valid route, despite the slower process, to meet the Friday review slot that is still booked. RATIONALE: The local CSV export, although slower, is the only viable option given the current financial constraints and the necessity to adhere to the Friday review schedule.",
+      "score": "CORRECT",
+      "tokens": 69,
+      "raw_text": "NEXT_ACTION: Complete the reconciliation of the remaining rows and produce the reviewable variance report using the local CSV export as the valid route, despite the slower process, to meet the Friday review slot that is still booked. RATIONALE: The local CSV export, although slower, is the only viable option given the current financial constraints and the necessity to adhere to the Friday review schedule."
+    },
+    {
+      "run_id": "GPAP0F-H1_COST_ROUTE-STATUS_LEDGER_LATE",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "action": "Reconcile the remaining two mapping errors to complete the data import.",
+      "score": "REVIEW",
+      "tokens": 69,
+      "raw_text": "NEXT_ACTION: Reconcile the remaining two mapping errors to complete the data import.\n\nRATIONALE: Completing the reconciliation will ensure the full dataset is imported and the report is reviewable for the Friday review slot."
+    },
+    {
+      "run_id": "GPAP0F-H1_COST_ROUTE-STATUS_LEDGER_REFRESH",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "STATUS_LEDGER_REFRESH",
+      "action": "Reconcile the remaining rows to complete the variance report.",
+      "score": "REVIEW",
+      "tokens": 142,
+      "raw_text": "NEXT_ACTION: Reconcile the remaining rows to complete the variance report.\n\nRATIONALE: Completing the reconciliation will ensure the report is accurate and ready for review by the end of the Friday slot."
+    },
+    {
+      "run_id": "GPAP0F-H2_MIGRATION_TOOL-CTRL",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "CTRL",
+      "action": "Begin by importing a subset of the oldest legacy format records using the scripted import to identify and address any encoding issues before proceeding with the full migration.",
+      "score": "REVIEW",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Begin by importing a subset of the oldest legacy format records using the scripted import to identify and address any encoding issues before proceeding with the full migration.\n\nRATIONALE: This approach allows us to troubleshoot potential problems with the oldest legacy format records in a controlled manner, ensuring that the integrity of these records is preserved before moving forward with the entire migration process."
+    },
+    {
+      "run_id": "GPAP0F-H2_MIGRATION_TOOL-STATUS_LEDGER_EVENT",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "STATUS_LEDGER_EVENT",
+      "action": "Develop a comprehensive script for importing the oldest legacy format records to ensure field integrity, based on the successful scripted import of the 20-record sample.",
+      "score": "CORRECT",
+      "tokens": 72,
+      "raw_text": "NEXT_ACTION: Develop a comprehensive script for importing the oldest legacy format records to ensure field integrity, based on the successful scripted import of the 20-record sample.\n\nRATIONALE: To preserve field integrity for all customer records, especially the oldest legacy format, we need a reliable and tested script that has proven successful in previous import attempts. This action ensures that the critical oldest records are migrated accurately to the new system, aligning with the requirement to maintain field integrity and avoiding the corruption issues observed with the original utility."
+    },
+    {
+      "run_id": "GPAP0F-H2_MIGRATION_TOOL-STATUS_LEDGER_LATE",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "action": "Migrate the oldest-format records using the scripted import and verify field integrity post-import.",
+      "score": "CORRECT",
+      "tokens": 72,
+      "raw_text": "NEXT_ACTION: Migrate the oldest-format records using the scripted import and verify field integrity post-import.\n\nRATIONALE: The scripted import has already proven reliable on a sample of twenty mixed-format records, ensuring field integrity, and it is the chosen valid route after the original utility was retired due to corruption of the oldest legacy format."
+    },
+    {
+      "run_id": "GPAP0F-H2_MIGRATION_TOOL-STATUS_LEDGER_REFRESH",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "STATUS_LEDGER_REFRESH",
+      "action": "Develop a detailed script for the oldest-format records migration to ensure field integrity, based on the successful 20-record sample.",
+      "score": "CORRECT",
+      "tokens": 148,
+      "raw_text": "NEXT_ACTION: Develop a detailed script for the oldest-format records migration to ensure field integrity, based on the successful 20-record sample.\n\nRATIONALE: The scripted import has proven reliable on a sample, but the oldest-format records require a tailored approach to prevent field corruption, which the original utility has shown to cause."
+    },
+    {
+      "run_id": "GPAP0F-H3_PATCH_LOOP-CTRL",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "CTRL",
+      "action": "Adjust the narrow viewport preview to eliminate the one-pixel difference.",
+      "score": "WRONG",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Adjust the narrow viewport preview to eliminate the one-pixel difference.\n\nRATIONALE: Ensuring the narrow viewport preview is pixel-perfect will meet the acceptance criteria and prepare the design for the upcoming design review."
+    },
+    {
+      "run_id": "GPAP0F-H3_PATCH_LOOP-STATUS_LEDGER_EVENT",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "STATUS_LEDGER_EVENT",
+      "action": "Adjust the narrow viewport preview to eliminate the one-pixel difference.",
+      "score": "WRONG",
+      "tokens": 74,
+      "raw_text": "NEXT_ACTION: Adjust the narrow viewport preview to eliminate the one-pixel difference.\n\nRATIONALE: The one-pixel difference is within tolerance but noticeable upon zooming, which could affect the design review outcome if not addressed."
+    },
+    {
+      "run_id": "GPAP0F-H3_PATCH_LOOP-STATUS_LEDGER_LATE",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "action": "Verify the committed result after confirming the import.",
+      "score": "CORRECT",
+      "tokens": 74,
+      "raw_text": "NEXT_ACTION: Verify the committed result after confirming the import.\n\nRATIONALE: The committed result needs to be verified as part of the workflow to ensure the import was successful and the preview adjustments meet the acceptance criteria."
+    },
+    {
+      "run_id": "GPAP0F-H3_PATCH_LOOP-STATUS_LEDGER_REFRESH",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "STATUS_LEDGER_REFRESH",
+      "action": "Test the confirm functionality to verify the committed result.",
+      "score": "CORRECT",
+      "tokens": 152,
+      "raw_text": "NEXT_ACTION: Test the confirm functionality to verify the committed result.\n\nRATIONALE: The confirm functionality needs to be tested to ensure it accurately reflects the committed result, as per the OPEN work list."
+    },
+    {
+      "run_id": "GPAP0F-H4_AUTH_CHANGE-CTRL",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "CTRL",
+      "action": "Update the marketing calendar to reflect the new one-region pilot strategy for Region A, and hold off on any further preparations for Regions B and C until the regulatory approvals are confirmed. This action ensures alignment with the latest steering committee decision and prevents the dissemination of outdated information.",
+      "score": "CORRECT",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new one-region pilot strategy for Region A, and hold off on any further preparations for Regions B and C until the regulatory approvals are confirmed. This action ensures alignment with the latest steering committee decision and prevents the dissemination of outdated information."
+    },
+    {
+      "run_id": "GPAP0F-H4_AUTH_CHANGE-STATUS_LEDGER_EVENT",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "STATUS_LEDGER_EVENT",
+      "action": "Update the marketing calendar to reflect the new Region A pilot only strategy.",
+      "score": "CORRECT",
+      "tokens": 77,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new Region A pilot only strategy.\n\nRATIONALE: The marketing calendar should align with the current rollout plan, which is now a Region A pilot only due to regulatory constraints on B and C."
+    },
+    {
+      "run_id": "GPAP0F-H4_AUTH_CHANGE-STATUS_LEDGER_LATE",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "action": "Align Region A pilot and monitoring; keep Regions B and C disabled.",
+      "score": "CORRECT",
+      "tokens": 77,
+      "raw_text": "NEXT_ACTION: Align Region A pilot and monitoring; keep Regions B and C disabled.\n\nRATIONALE: This action ensures that the current rollout strategy aligns with the new regulatory requirements and maintains operational efficiency by focusing on Region A while awaiting regulatory approvals for B and C."
+    },
+    {
+      "run_id": "GPAP0F-H4_AUTH_CHANGE-STATUS_LEDGER_REFRESH",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "STATUS_LEDGER_REFRESH",
+      "action": "Update the marketing calendar to reflect the new Region A pilot only strategy.",
+      "score": "CORRECT",
+      "tokens": 158,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new Region A pilot only strategy.\n\nRATIONALE: The marketing calendar must be current with the latest rollout plan to avoid disseminating outdated information."
+    }
+  ]
+}
