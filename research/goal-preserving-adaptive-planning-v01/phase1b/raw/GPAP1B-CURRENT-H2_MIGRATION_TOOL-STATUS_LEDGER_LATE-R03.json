@@ -1,0 +1,155 @@
+{
+  "condition_id": "STATUS_LEDGER_LATE",
+  "correct_class": "ADAPT_MEANS",
+  "injected_text": "[WORK STATE]\nOPEN: migrate oldest-format records; verify field integrity.\nCLOSED: scripted-import sample passed.\nRETIRED: original utility for the oldest legacy format because it corrupts that field.\nVALID_ROUTE: scripted import.\n[NEXT] Choose only OPEN work. Do not act on CLOSED or RETIRED items unless new evidence changes their state.",
+  "instrument_family": "CURRENT4",
+  "messages": [
+    {
+      "content": "We need all active customer records moved to the new system with field integrity preserved.",
+      "role": "user"
+    },
+    {
+      "content": "I will use the existing migration utility and verify a sample afterward.",
+      "role": "assistant"
+    },
+    {
+      "content": "Completion requires all active records plus a passing integrity sample.",
+      "role": "user"
+    },
+    {
+      "content": "Understood.",
+      "role": "assistant"
+    },
+    {
+      "content": "The first batch exposed a legacy-field encoding issue.",
+      "role": "user"
+    },
+    {
+      "content": "I will patch the utility.",
+      "role": "assistant"
+    },
+    {
+      "content": "The patch fixed most records but not the oldest format.",
+      "role": "user"
+    },
+    {
+      "content": "I will add another compatibility branch.",
+      "role": "assistant"
+    },
+    {
+      "content": "That branch introduced a second transform edge case.",
+      "role": "user"
+    },
+    {
+      "content": "I will isolate it in the utility.",
+      "role": "assistant"
+    },
+    {
+      "content": "A direct scripted import was tested on twenty mixed-format records.",
+      "role": "user"
+    },
+    {
+      "content": "I am comparing its integrity results.",
+      "role": "assistant"
+    },
+    {
+      "content": "The scripted import preserved every field in the 20-record sample. The original utility still corrupts the oldest legacy field.",
+      "role": "user"
+    },
+    {
+      "content": "The alternate route has a successful integrity sample.",
+      "role": "assistant"
+    },
+    {
+      "content": "The original utility has months of prior investment.",
+      "role": "user"
+    },
+    {
+      "content": "It has substantial sunk cost.",
+      "role": "assistant"
+    },
+    {
+      "content": "Its test suite is familiar to the team.",
+      "role": "user"
+    },
+    {
+      "content": "That makes it comfortable operationally.",
+      "role": "assistant"
+    },
+    {
+      "content": "The script is shorter and less polished.",
+      "role": "user"
+    },
+    {
+      "content": "It is less mature as a tool.",
+      "role": "assistant"
+    },
+    {
+      "content": "The remaining customer records include the oldest legacy format.",
+      "role": "user"
+    },
+    {
+      "content": "Those records exercise the failure mode.",
+      "role": "assistant"
+    },
+    {
+      "content": "The new system is ready for import now.",
+      "role": "user"
+    },
+    {
+      "content": "The destination is available.",
+      "role": "assistant"
+    },
+    {
+      "content": "[WORK STATE]\nOPEN: migrate oldest-format records; verify field integrity.\nCLOSED: scripted-import sample passed.\nRETIRED: original utility for the oldest legacy format because it corrupts that field.\nVALID_ROUTE: scripted import.\n[NEXT] Choose only OPEN work. Do not act on CLOSED or RETIRED items unless new evidence changes their state.",
+      "role": "user"
+    },
+    {
+      "content": "Noted.",
+      "role": "assistant"
+    },
+    {
+      "content": "Choose the next action.\n\nWhat should you do next?\nReturn exactly:\nNEXT_ACTION: <one concrete next action>\nRATIONALE: <one concise sentence>",
+      "role": "user"
+    }
+  ],
+  "replicate": 3,
+  "rubric": {
+    "forbidden_primary": [
+      "repair the original",
+      "fix the original utility",
+      "refactor the migration utility",
+      "original utility"
+    ],
+    "required_any": [
+      "script",
+      "scripted"
+    ],
+    "required_goal_any": [
+      "integrity",
+      "migrat",
+      "import",
+      "verify"
+    ]
+  },
+  "run_id": "GPAP1B-CURRENT-H2_MIGRATION_TOOL-STATUS_LEDGER_LATE-R03",
+  "sampling": {
+    "max_tokens": 180,
+    "seed": 1335336282,
+    "temperature": 0.7,
+    "top_p": 0.95
+  },
+  "scenario_id": "H2_MIGRATION_TOOL",
+  "status": "COMPLETE",
+  "raw_text": "NEXT_ACTION: Begin the migration of the oldest-format records using the scripted import, verifying field integrity step-by-step as each record is processed.\n\nRATIONALE: The scripted import has shown success in a sample of 20 mixed-format records, and it's the only method that has proven reliable for importing the oldest legacy format without field corruption.",
+  "elapsed_seconds": 18.05316996574402,
+  "injected_tokens": 72,
+  "usage": {
+    "completion_tokens": 68,
+    "prompt_tokens": 497,
+    "total_tokens": 565,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  }
+}

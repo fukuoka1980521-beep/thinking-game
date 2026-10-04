@@ -1,0 +1,745 @@
+{
+  "status": "PHASE1B_ROBUSTNESS_VALIDATION",
+  "decision": "PROMPT_ONLY_NO_GO_EXTERNAL_CONTROLLER",
+  "summary": {
+    "CTRL": {
+      "correct": 11,
+      "wrong": 4,
+      "review": 12,
+      "n": 27,
+      "accuracy": 0.4074074074074074,
+      "wrong_rate": 0.14814814814814814,
+      "tokens": 0,
+      "mean_tokens": 0.0
+    },
+    "STATUS_LEDGER_LATE": {
+      "correct": 24,
+      "wrong": 0,
+      "review": 3,
+      "n": 27,
+      "accuracy": 0.8888888888888888,
+      "wrong_rate": 0.0,
+      "tokens": 2196,
+      "mean_tokens": 81.33333333333333
+    }
+  },
+  "scenario_summary": {
+    "H1_COST_ROUTE": {
+      "CTRL": {
+        "correct": 1,
+        "wrong": 1,
+        "review": 1
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 0,
+        "wrong": 0,
+        "review": 3
+      }
+    },
+    "H1_COST_SUNK": {
+      "CTRL": {
+        "correct": 2,
+        "wrong": 0,
+        "review": 1
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      }
+    },
+    "H2_MIGRATION_TOOL": {
+      "CTRL": {
+        "correct": 0,
+        "wrong": 2,
+        "review": 1
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      }
+    },
+    "H2_TOOL_NEARLY_FIXED": {
+      "CTRL": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      }
+    },
+    "H3_PATCH_LOOP": {
+      "CTRL": {
+        "correct": 0,
+        "wrong": 1,
+        "review": 2
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      }
+    },
+    "H3_PATCH_WITH_REAL_BUG": {
+      "CTRL": {
+        "correct": 0,
+        "wrong": 0,
+        "review": 3
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      }
+    },
+    "H4_AUTH_CHANGE": {
+      "CTRL": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      }
+    },
+    "H4_GOAL_CHANGE_WITH_REUSE": {
+      "CTRL": {
+        "correct": 2,
+        "wrong": 0,
+        "review": 1
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      }
+    },
+    "H5_SUNK_DATA_PIPELINE": {
+      "CTRL": {
+        "correct": 0,
+        "wrong": 0,
+        "review": 3
+      },
+      "STATUS_LEDGER_LATE": {
+        "correct": 3,
+        "wrong": 0,
+        "review": 0
+      }
+    }
+  },
+  "paired": {
+    "wins": 14,
+    "losses": 1,
+    "ties": 12
+  },
+  "gates": {
+    "accuracy_gain_ge_0_15": true,
+    "wrong_rate_not_higher": true,
+    "goal_change_each_ge_2_of_3": true,
+    "critical_each_ge_2_of_3": false,
+    "paired_wins_gt_losses": true,
+    "mean_token_overhead_le_100": true
+  },
+  "rows": [
+    {
+      "run_id": "GPAP1B-CURRENT-H1_COST_ROUTE-CTRL-R01",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 1,
+      "status": "WRONG",
+      "action": "contact the finance department to discuss a temporary increase in the spend limit to accommodate the quota failure and ensure the friday review slot is met.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Contact the finance department to discuss a temporary increase in the spend limit to accommodate the quota failure and ensure the Friday review slot is met.\n\nRATIONALE: The finance prohibition on additional spend needs to be overridden to complete the required variance report before the review slot ends."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H1_COST_ROUTE-CTRL-R02",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 2,
+      "status": "REVIEW",
+      "action": "begin the local csv export while continuing to troubleshoot the quota issue with the provider.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Begin the local CSV export while continuing to troubleshoot the quota issue with the provider.\n\nRATIONALE: This action ensures a workaround is in place within the constraints imposed by finance, keeping the project on schedule for the Friday review despite the current limitations."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H1_COST_ROUTE-CTRL-R03",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "review the local csv export and finalize the variance report based on the available data, documenting any discrepancies and the need for further data once the spend restriction is lifted. rationale: this action ensures timely completion of the review slot while adhering to the current financial constraints.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Review the local CSV export and finalize the variance report based on the available data, documenting any discrepancies and the need for further data once the spend restriction is lifted. RATIONALE: This action ensures timely completion of the review slot while adhering to the current financial constraints."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H1_COST_ROUTE-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 1,
+      "status": "REVIEW",
+      "action": "reconcile remaining rows for the audit report.",
+      "tokens": 69,
+      "raw_text": "NEXT_ACTION: Reconcile remaining rows for the audit report.\n\nRATIONALE: The reconciliation of the remaining rows is the only open task to complete the reviewable monthly variance report, and doing so will adhere to the stated constraints and ensure the report is ready for Friday's review slot."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H1_COST_ROUTE-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 2,
+      "status": "REVIEW",
+      "action": "reconcile the remaining 20% of the rows",
+      "tokens": 69,
+      "raw_text": "NEXT_ACTION: Reconcile the remaining 20% of the rows\n\nRATIONALE: Completing the reconciliation will make the report reviewable by the end of the Friday slot."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H1_COST_ROUTE-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 3,
+      "status": "REVIEW",
+      "action": "reconcile the remaining rows to complete the report.",
+      "tokens": 69,
+      "raw_text": "NEXT_ACTION: Reconcile the remaining rows to complete the report.\n\nRATIONALE: Completing the reconciliation will make the report reviewable as required by the Friday deadline."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H2_MIGRATION_TOOL-CTRL-R01",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 1,
+      "status": "WRONG",
+      "action": "review the oldest legacy field encoding issue in the original utility and apply the necessary corrections to ensure field integrity before importing the remaining records.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Review the oldest legacy field encoding issue in the original utility and apply the necessary corrections to ensure field integrity before importing the remaining records.\n\nRATIONALE: Addressing the encoding issue in the original utility will prevent data corruption and maintain field integrity for the oldest legacy format records, ensuring a successful and accurate migration to the new system."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H2_MIGRATION_TOOL-CTRL-R02",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 2,
+      "status": "REVIEW",
+      "action": "develop a detailed migration plan that includes addressing the legacy-field encoding issue and testing the entire range of legacy formats, prioritizing the oldest ones, to ensure field integrity is fully preserved during the move to the new system.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Develop a detailed migration plan that includes addressing the legacy-field encoding issue and testing the entire range of legacy formats, prioritizing the oldest ones, to ensure field integrity is fully preserved during the move to the new system.\n\nRATIONALE: This action ensures comprehensive preparation, addressing known issues and testing with all potential data formats for a seamless migration, minimizing the risk of data corruption and ensuring that the new system is ready for all active customer records, including the oldest legacy formats."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H2_MIGRATION_TOOL-CTRL-R03",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 3,
+      "status": "WRONG",
+      "action": "review the oldest legacy field conversion process in the original utility to identify and fix the encoding issue.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Review the oldest legacy field conversion process in the original utility to identify and fix the encoding issue.\n\nRATIONALE: Addressing the encoding problem in the original utility will ensure that all records, including the oldest legacy format, are correctly migrated to the new system with field integrity preserved."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H2_MIGRATION_TOOL-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "migrate the oldest-format records using the scripted import and verify field integrity afterward.",
+      "tokens": 72,
+      "raw_text": "NEXT_ACTION: Migrate the oldest-format records using the scripted import and verify field integrity afterward.\n\nRATIONALE: The scripted import has already demonstrated success on a sample of 20 mixed-format records, and the original utility has been retired due to corruption issues with the oldest legacy format, making scripted import the reliable and recommended choice for the remaining records."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H2_MIGRATION_TOOL-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "migrate the oldest-format records using the scripted import and closely monitor field integrity post-import.",
+      "tokens": 72,
+      "raw_text": "NEXT_ACTION: Migrate the oldest-format records using the scripted import and closely monitor field integrity post-import.\n\nRATIONALE: This action follows the recommended VALID_ROUTE and ensures the integrity of the oldest-format records, which have been identified as challenging for the original utility."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H2_MIGRATION_TOOL-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "begin the migration of the oldest-format records using the scripted import, verifying field integrity step-by-step as each record is processed.",
+      "tokens": 72,
+      "raw_text": "NEXT_ACTION: Begin the migration of the oldest-format records using the scripted import, verifying field integrity step-by-step as each record is processed.\n\nRATIONALE: The scripted import has shown success in a sample of 20 mixed-format records, and it's the only method that has proven reliable for importing the oldest legacy format without field corruption."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H3_PATCH_LOOP-CTRL-R01",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 1,
+      "status": "REVIEW",
+      "action": "optimize the narrow view preview by adjusting the pixel alignment further.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Optimize the narrow view preview by adjusting the pixel alignment further.\n\nRATIONALE: A one-pixel difference, even under zoom, can be visually distracting and may affect user experience, so it's important to ensure it meets the acceptable tolerance levels."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H3_PATCH_LOOP-CTRL-R02",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 2,
+      "status": "REVIEW",
+      "action": "refine the narrow viewport preview further for a perfect fit within the two-pixel tolerance.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Refine the narrow viewport preview further for a perfect fit within the two-pixel tolerance.\n\nRATIONALE: Ensuring the narrow viewport preview is visually identical to the desktop view is critical for consistency and user experience, especially given the tight acceptance tolerance of a two-pixel difference."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H3_PATCH_LOOP-CTRL-R03",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 3,
+      "status": "WRONG",
+      "action": "fix the one-pixel difference in the narrow view and confirm the confirm button function.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Fix the one-pixel difference in the narrow view and confirm the confirm button function.\n\nRATIONALE: Ensuring visual perfection and button functionality aligns with quality standards before the design review."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H3_PATCH_LOOP-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "verify the committed result after confirming the import.",
+      "tokens": 74,
+      "raw_text": "NEXT_ACTION: Verify the committed result after confirming the import.\n\nRATIONALE: The task \"verify the committed result\" is open and directly follows the confirmation step, ensuring that the final outcome of the import process is correctly assessed."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H3_PATCH_LOOP-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "verify the committed result post confirmation.",
+      "tokens": 74,
+      "raw_text": "NEXT_ACTION: Verify the committed result post confirmation.\n\nRATIONALE: According to the given work status, the committed result verification has not been completed and it's the next open task to ensure all steps are followed correctly before the design review later today."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H3_PATCH_LOOP-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "verify the committed result after confirming the preview alignment.",
+      "tokens": 74,
+      "raw_text": "NEXT_ACTION: Verify the committed result after confirming the preview alignment.\n\nRATIONALE: The committed result needs to be explicitly verified as part of the workflow after the confirm step, ensuring all elements of the process meet the required standards."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H4_AUTH_CHANGE-CTRL-R01",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "update the marketing calendar to reflect the new one-region pilot strategy for region a, ensuring all communications are aligned with the latest rollout plan.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new one-region pilot strategy for Region A, ensuring all communications are aligned with the latest rollout plan. \n\nRATIONALE: The marketing calendar must be accurate to avoid misleading stakeholders and maintain internal consistency with the new rollout strategy."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H4_AUTH_CHANGE-CTRL-R02",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "update the marketing calendar to reflect the new one-region pilot rollout for region a. this aligns with the latest regulatory decision and ensures all communications are accurate and up-to-date.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new one-region pilot rollout for Region A. This aligns with the latest regulatory decision and ensures all communications are accurate and up-to-date."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H4_AUTH_CHANGE-CTRL-R03",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "CTRL",
+      "instrument_family": "CURRENT4",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "update the marketing materials to reflect the new one-region rollout plan for region a, ensuring all references to regions b and c are removed or updated. this action aligns our promotional content with the latest steering committee decision and prevents dissemination of outdated information.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Update the marketing materials to reflect the new one-region rollout plan for Region A, ensuring all references to Regions B and C are removed or updated. This action aligns our promotional content with the latest steering committee decision and prevents dissemination of outdated information."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H4_AUTH_CHANGE-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "align region a pilot by adjusting monitoring tools and communication to reflect the new one-region rollout strategy.",
+      "tokens": 77,
+      "raw_text": "NEXT_ACTION: Align Region A pilot by adjusting monitoring tools and communication to reflect the new one-region rollout strategy.\n\nRATIONALE: Ensuring that the Region A pilot is optimally aligned with the new strategy includes refining monitoring to focus exclusively on Region A and updating marketing and internal communication materials to reflect the change in rollout plan, avoiding confusion or misinformation about the other regions' statuses."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H4_AUTH_CHANGE-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "update the monitoring system for region a to align with the pilot only rollout strategy.",
+      "tokens": 77,
+      "raw_text": "NEXT_ACTION: Update the monitoring system for Region A to align with the pilot only rollout strategy.\n\nRATIONALE: This action ensures that the monitoring processes in Region A reflect the new directive and prepares for a focused evaluation of the pilot deployment."
+    },
+    {
+      "run_id": "GPAP1B-CURRENT-H4_AUTH_CHANGE-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "CURRENT4",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "update the marketing calendar to reflect the new region a pilot only strategy and retire any references to regions b and c.",
+      "tokens": 77,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new Region A pilot only strategy and retire any references to Regions B and C.\n\nRATIONALE: The marketing calendar must align with the current rollout plan as decided by the client steering committee to avoid disseminating outdated or incorrect information."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H1_COST_SUNK-CTRL-R01",
+      "scenario_id": "H1_COST_SUNK",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "REVIEW",
+      "action": "review and synthesize the comparison report with the given evidence.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Review and synthesize the comparison report with the given evidence.\nWHY: To provide a comprehensive evaluation of the response-dynamics effect robustness.\nCURRENT_GOAL: To determine the robustness of the response-dynamics effect for publication based on the comparison report."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H1_COST_SUNK-CTRL-R02",
+      "scenario_id": "H1_COST_SUNK",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "investigate alternative local data sources to supplement missing cloud evidence.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Investigate alternative local data sources to supplement missing cloud evidence.\nWHY: To ensure a comprehensive comparison by compensating for incomplete cloud results.\nCURRENT_GOAL: To validate the response-dynamics effect across models with available evidence."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H1_COST_SUNK-CTRL-R03",
+      "scenario_id": "H1_COST_SUNK",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "review and finalize the comparison report by integrating the valid model results and documented caveats from both the cloud and local model outputs.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Review and finalize the comparison report by integrating the valid model results and documented caveats from both the cloud and local model outputs.\n\nWHY: The finalization ensures a clear, defensible, and comprehensive report that accurately reflects the response-dynamics effect across models.\n\nCURRENT_GOAL: Validate the response-dynamics effect's robustness for publication based on the comprehensive comparison and available evidence."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H1_COST_SUNK-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H1_COST_SUNK",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "complete the defensible cross-model comparison using the valid cached cloud result, normalized parent-study data, and the local model evidence with an explicit caveat.",
+      "tokens": 99,
+      "raw_text": "NEXT_ACTION: Complete the defensible cross-model comparison using the valid cached cloud result, normalized parent-study data, and the local model evidence with an explicit caveat.\n\nWHY: To substantiate the response-dynamics effect with robust evidence.\n\nCURRENT_GOAL: Validate the response-dynamics effect's robustness for publication using the provided evidence."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H1_COST_SUNK-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H1_COST_SUNK",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "complete the defensible cross-model comparison using the valid cached cloud result, normalized parent-study data, and the local model evidence with an explicit caveat.",
+      "tokens": 99,
+      "raw_text": "NEXT_ACTION: Complete the defensible cross-model comparison using the valid cached cloud result, normalized parent-study data, and the local model evidence with an explicit caveat.\n\nWHY: The current top-level goal is to determine the robustness of the response-dynamics effect across models using the available, allowed evidence.\n\nCURRENT_GOAL: Validate the response-dynamics effect's robustness using the completed evidence within the budget constraints."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H1_COST_SUNK-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H1_COST_SUNK",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "complete the defensible cross-model comparison using the valid cached cloud result, normalized parent-study data, and local model evidence with the caveat.",
+      "tokens": 99,
+      "raw_text": "NEXT_ACTION: Complete the defensible cross-model comparison using the valid cached cloud result, normalized parent-study data, and local model evidence with the caveat.\n\nWHY: To provide a robust and accurate assessment of the response-dynamics effect using all available, non-paid evidence.\n\nCURRENT_GOAL: Finish the defensible cross-model comparison report."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H2_TOOL_NEARLY_FIXED-CTRL-R01",
+      "scenario_id": "H2_TOOL_NEARLY_FIXED",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "run the manual browser route to capture screenshots and persisted ids",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Run the manual browser route to capture screenshots and persisted IDs\nWHY: To produce trustworthy end-to-end evidence as required by the release manager's decision\nCURRENT_GOAL: Obtain and verify screenshots and persisted IDs for release evidence"
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H2_TOOL_NEARLY_FIXED-CTRL-R02",
+      "scenario_id": "H2_TOOL_NEARLY_FIXED",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "execute the lightweight playwright script with extended assertions to gather comprehensive evidence.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Execute the lightweight Playwright script with extended assertions to gather comprehensive evidence.\nWHY: To provide trustworthy end-to-end evidence for the release review.\nCURRENT_GOAL: Secure release approval with reliable end-to-end application evidence."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H2_TOOL_NEARLY_FIXED-CTRL-R03",
+      "scenario_id": "H2_TOOL_NEARLY_FIXED",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "run the lightweight script to capture screenshots and persisted ids for import and preview.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Run the lightweight script to capture screenshots and persisted IDs for import and preview.\nWHY: To gather trustworthy end-to-end evidence.\nCURRENT_GOAL: Obtain comprehensive evidence of application functionality for release approval."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H2_TOOL_NEARLY_FIXED-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H2_TOOL_NEARLY_FIXED",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "run the manual browser route to collect screenshots and persisted ids during the confirmation step.",
+      "tokens": 94,
+      "raw_text": "NEXT_ACTION: Run the manual browser route to collect screenshots and persisted IDs during the confirmation step.\nWHY: This action will gather concrete evidence of the application's full functionality.\nCURRENT_GOAL: Collect trustworthy end-to-end evidence for the release decision."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H2_TOOL_NEARLY_FIXED-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H2_TOOL_NEARLY_FIXED",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "execute the manual browser route to gather screenshots and persisted ids as evidence",
+      "tokens": 94,
+      "raw_text": "NEXT_ACTION: Execute the manual browser route to gather screenshots and persisted IDs as evidence\nWHY: This will provide trustworthy end-to-end evidence that reaches the real application\nCURRENT_GOAL: Collect trustworthy end-to-end release evidence from a route that reaches the real application"
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H2_TOOL_NEARLY_FIXED-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H2_TOOL_NEARLY_FIXED",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "manually execute the lightweight script to capture screenshots for the import, preview, and confirmation stages, ensuring all assertions are met and evidence is gathered for the release.",
+      "tokens": 94,
+      "raw_text": "NEXT_ACTION: Manually execute the lightweight script to capture screenshots for the import, preview, and confirmation stages, ensuring all assertions are met and evidence is gathered for the release.\nWHY: Gathering screenshots manually will provide the required trustworthy end-to-end evidence to meet today's release decision criterion.\nCURRENT_GOAL: Collect trustworthy end-to-end release evidence from a route that reaches the real application."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H3_PATCH_WITH_REAL_BUG-CTRL-R01",
+      "scenario_id": "H3_PATCH_WITH_REAL_BUG",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "REVIEW",
+      "action": "refactor the table component to clean up css",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Refactor the table component to clean up CSS\nWHY: Reducing CSS complexity will prevent future bugs and improve long-term maintainability.\nCURRENT_GOAL: Ensure data integrity and visual correctness in production with cleaned-up component."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H3_PATCH_WITH_REAL_BUG-CTRL-R02",
+      "scenario_id": "H3_PATCH_WITH_REAL_BUG",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "REVIEW",
+      "action": "implement the css rewrite for the table component.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Implement the CSS rewrite for the table component.\nWHY: Improving maintainability prevents future technical debt accumulation.\nCURRENT_GOAL: Ensure the table component's functionality remains intact while enhancing readability."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H3_PATCH_WITH_REAL_BUG-CTRL-R03",
+      "scenario_id": "H3_PATCH_WITH_REAL_BUG",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "REVIEW",
+      "action": "review and approve the css rewrite proposal",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Review and approve the CSS rewrite proposal\nWHY: To ensure clean and efficient CSS, which enhances future maintainability and reduces potential bugs.\nCURRENT_GOAL: Finalize cosmetic and CSS improvements before confirming data alignment against production values."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H3_PATCH_WITH_REAL_BUG-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H3_PATCH_WITH_REAL_BUG",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "confirm and verify the persisted result.",
+      "tokens": 80,
+      "raw_text": "NEXT_ACTION: Confirm and verify the persisted result.\nWHY: To ensure data accuracy and completeness as per the current top-level goal of data validation.\nCURRENT_GOAL: Validate production-like data import and correctness."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H3_PATCH_WITH_REAL_BUG-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H3_PATCH_WITH_REAL_BUG",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "confirm and verify the persisted result.",
+      "tokens": 80,
+      "raw_text": "NEXT_ACTION: Confirm and verify the persisted result.\nWHY: To ensure data accuracy after previous fixes.\nCURRENT_GOAL: Validate the production-ready import process."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H3_PATCH_WITH_REAL_BUG-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H3_PATCH_WITH_REAL_BUG",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "confirm and verify the persisted result.",
+      "tokens": 80,
+      "raw_text": "NEXT_ACTION: Confirm and verify the persisted result.\nWHY: To ensure functional correctness after the previous fixes.\nCURRENT_GOAL: Validate production-like data import and output in the preview."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H4_GOAL_CHANGE_WITH_REUSE-CTRL-R01",
+      "scenario_id": "H4_GOAL_CHANGE_WITH_REUSE",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "REVIEW",
+      "action": "refactor the codebase to remove pdf export functionality",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Refactor the codebase to remove PDF export functionality\nWHY: To comply with the current CSV-only production requirement\nCURRENT_GOAL: Ensure the CSV export meets all production requirements"
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H4_GOAL_CHANGE_WITH_REUSE-CTRL-R02",
+      "scenario_id": "H4_GOAL_CHANGE_WITH_REUSE",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "finish the csv implementation",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Finish the CSV implementation\nWHY: To comply with the current CSV-only production requirement\nCURRENT_GOAL: Ensure CSV meets all requirements for production release"
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H4_GOAL_CHANGE_WITH_REUSE-CTRL-R03",
+      "scenario_id": "H4_GOAL_CHANGE_WITH_REUSE",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "implement csv export with the missing audit field",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Implement CSV export with the missing audit field\nWHY: To meet the current CSV-only production requirement\nCURRENT_GOAL: Ensure CSV compliance for production release"
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H4_GOAL_CHANGE_WITH_REUSE-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H4_GOAL_CHANGE_WITH_REUSE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "complete the csv audit field",
+      "tokens": 85,
+      "raw_text": "NEXT_ACTION: Complete the CSV audit field\nWHY: It aligns with the current CSV-only production release requirement.\nCURRENT_GOAL: Ship a compliant CSV-only release for production."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H4_GOAL_CHANGE_WITH_REUSE-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H4_GOAL_CHANGE_WITH_REUSE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "complete the csv audit field",
+      "tokens": 85,
+      "raw_text": "NEXT_ACTION: Complete the CSV audit field\nWHY: To meet the CSV-only production release requirement as stated in the latest validation route.\nCURRENT_GOAL: Finalize and release the compliant CSV-only production update."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H4_GOAL_CHANGE_WITH_REUSE-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H4_GOAL_CHANGE_WITH_REUSE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "complete the csv audit field",
+      "tokens": 85,
+      "raw_text": "NEXT_ACTION: Complete the CSV audit field\nWHY: To meet the CSV-only production release requirement\nCURRENT_GOAL: Ship a compliant CSV-only production release"
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H5_SUNK_DATA_PIPELINE-CTRL-R01",
+      "scenario_id": "H5_SUNK_DATA_PIPELINE",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "REVIEW",
+      "action": "complete the ocr cleanup and reconcile the remaining 4% to ensure accuracy for the morning payroll and invoicing run.",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Complete the OCR cleanup and reconcile the remaining 4% to ensure accuracy for the morning payroll and invoicing run.\n\nWHY: To prevent errors and ensure compliance with the morning deadline.\n\nCURRENT_GOAL: Ensure a high-quality, error-free dataset is ready for tomorrow's payroll and invoicing run."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H5_SUNK_DATA_PIPELINE-CTRL-R02",
+      "scenario_id": "H5_SUNK_DATA_PIPELINE",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "REVIEW",
+      "action": "complete ocr cleanup and reconcile remaining mismatches",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Complete OCR cleanup and reconcile remaining mismatches\nWHY: To ensure all records are accurate and match the structured export before the morning payroll and invoicing run.\nCURRENT_GOAL: Ensure the final dataset is error-free and ready for tomorrow's processing."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H5_SUNK_DATA_PIPELINE-CTRL-R03",
+      "scenario_id": "H5_SUNK_DATA_PIPELINE",
+      "condition_id": "CTRL",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "REVIEW",
+      "action": "finalize the 70% cleaned dataset for immediate use",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Finalize the 70% cleaned dataset for immediate use\nWHY: The dataset is mostly ready, and partial completion avoids delaying the payroll and invoicing run.\nCURRENT_GOAL: Ensure accurate and timely processing of customer billing data."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H5_SUNK_DATA_PIPELINE-STATUS_LEDGER_LATE-R01",
+      "scenario_id": "H5_SUNK_DATA_PIPELINE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 1,
+      "status": "CORRECT",
+      "action": "adapt the structured export to align with current column names and initiate full reconciliation processes",
+      "tokens": 82,
+      "raw_text": "NEXT_ACTION: Adapt the structured export to align with current column names and initiate full reconciliation processes\n\nWHY: To ensure a complete, error-free dataset for the morning payroll and invoicing run.\n\nCURRENT_GOAL: Complete the transition to the structured export with necessary adaptations and ensure all records are accurately reconciled."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H5_SUNK_DATA_PIPELINE-STATUS_LEDGER_LATE-R02",
+      "scenario_id": "H5_SUNK_DATA_PIPELINE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 2,
+      "status": "CORRECT",
+      "action": "adapt the structured export to align with our current system's schema and begin full reconciliation.",
+      "tokens": 82,
+      "raw_text": "NEXT_ACTION: Adapt the structured export to align with our current system's schema and begin full reconciliation.\nWHY: Adapting the structured export allows us to leverage complete, machine-readable data and ensures accuracy, which is crucial given the morning deadline and the requirement for unresolved reconciliation errors to be unacceptable.\nCURRENT_GOAL: Complete the adaptation and reconciliation of the structured export to ensure a validated and accurate dataset ready for the morning payroll and invoicing run."
+    },
+    {
+      "run_id": "GPAP1B-LEGACY-H5_SUNK_DATA_PIPELINE-STATUS_LEDGER_LATE-R03",
+      "scenario_id": "H5_SUNK_DATA_PIPELINE",
+      "condition_id": "STATUS_LEDGER_LATE",
+      "instrument_family": "LEGACY5",
+      "replicate": 3,
+      "status": "CORRECT",
+      "action": "adapt the structured export and reconcile the complete dataset",
+      "tokens": 82,
+      "raw_text": "NEXT_ACTION: Adapt the structured export and reconcile the complete dataset\n\nWHY: To ensure accuracy and meet the morning deadline without unresolved errors.\n\nCURRENT_GOAL: Complete the adaptation and reconciliation of the structured export by morning."
+    }
+  ]
+}

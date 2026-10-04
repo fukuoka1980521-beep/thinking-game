@@ -1,0 +1,157 @@
+{
+  "condition_id": "STATUS_LEDGER_LATE",
+  "correct_class": "CHANGE_TARGET",
+  "injected_text": "[WORK STATE]\nOPEN: align Region A pilot and monitoring; keep Regions B and C disabled.\nCLOSED: Region A technical readiness.\nRETIRED: old three-region rollout objective and B/C launch until approvals.\nVALID_ROUTE: Region A pilot only.\n[NEXT] Choose only OPEN work. Do not act on CLOSED or RETIRED items unless new evidence changes their state.",
+  "instrument_family": "CURRENT4",
+  "messages": [
+    {
+      "content": "This month we want the scheduling feature live in all three regions.",
+      "role": "user"
+    },
+    {
+      "content": "I will prepare the three-region rollout.",
+      "role": "assistant"
+    },
+    {
+      "content": "Completion currently means all three are enabled and monitored.",
+      "role": "user"
+    },
+    {
+      "content": "Understood.",
+      "role": "assistant"
+    },
+    {
+      "content": "Region A is technically ready.",
+      "role": "user"
+    },
+    {
+      "content": "I will continue packaging B and C.",
+      "role": "assistant"
+    },
+    {
+      "content": "Region B passed application testing.",
+      "role": "user"
+    },
+    {
+      "content": "I will continue the rollout package.",
+      "role": "assistant"
+    },
+    {
+      "content": "Region C has one remaining deployment checklist item.",
+      "role": "user"
+    },
+    {
+      "content": "The original rollout is close to technically ready.",
+      "role": "assistant"
+    },
+    {
+      "content": "The client steering committee is reviewing a new regulatory notice.",
+      "role": "user"
+    },
+    {
+      "content": "I will preserve the rollout state pending their decision.",
+      "role": "assistant"
+    },
+    {
+      "content": "Authoritative steering decision: this month must be a Region A pilot only. Regions B and C may not launch until separate regulatory approval. This replaces the three-region rollout objective.",
+      "role": "user"
+    },
+    {
+      "content": "The steering committee has issued a new authoritative rollout requirement.",
+      "role": "assistant"
+    },
+    {
+      "content": "The B and C deployment package is almost finished.",
+      "role": "user"
+    },
+    {
+      "content": "Most of that work is already sunk.",
+      "role": "assistant"
+    },
+    {
+      "content": "Region B would technically work today.",
+      "role": "user"
+    },
+    {
+      "content": "Technical readiness is not the same as launch authorization.",
+      "role": "assistant"
+    },
+    {
+      "content": "The marketing calendar still contains the old three-region announcement.",
+      "role": "user"
+    },
+    {
+      "content": "That material is now stale.",
+      "role": "assistant"
+    },
+    {
+      "content": "Region A can be monitored independently.",
+      "role": "user"
+    },
+    {
+      "content": "A one-region pilot is operationally feasible.",
+      "role": "assistant"
+    },
+    {
+      "content": "The regulatory approvals for B and C have no confirmed date.",
+      "role": "user"
+    },
+    {
+      "content": "Those launches are not currently authorized.",
+      "role": "assistant"
+    },
+    {
+      "content": "[WORK STATE]\nOPEN: align Region A pilot and monitoring; keep Regions B and C disabled.\nCLOSED: Region A technical readiness.\nRETIRED: old three-region rollout objective and B/C launch until approvals.\nVALID_ROUTE: Region A pilot only.\n[NEXT] Choose only OPEN work. Do not act on CLOSED or RETIRED items unless new evidence changes their state.",
+      "role": "user"
+    },
+    {
+      "content": "Noted.",
+      "role": "assistant"
+    },
+    {
+      "content": "Choose the next action.\n\nWhat should you do next?\nReturn exactly:\nNEXT_ACTION: <one concrete next action>\nRATIONALE: <one concise sentence>",
+      "role": "user"
+    }
+  ],
+  "replicate": 2,
+  "rubric": {
+    "forbidden_primary": [
+      "three-region",
+      "all three",
+      "launch b",
+      "launch c",
+      "finish b and c"
+    ],
+    "required_any": [
+      "region a",
+      "one-region",
+      "pilot"
+    ],
+    "required_goal_any": [
+      "region",
+      "pilot",
+      "disabled",
+      "marketing"
+    ]
+  },
+  "run_id": "GPAP1B-CURRENT-H4_AUTH_CHANGE-STATUS_LEDGER_LATE-R02",
+  "sampling": {
+    "max_tokens": 180,
+    "seed": 183216637,
+    "temperature": 0.7,
+    "top_p": 0.95
+  },
+  "scenario_id": "H4_AUTH_CHANGE",
+  "status": "COMPLETE",
+  "raw_text": "NEXT_ACTION: Update the monitoring system for Region A to align with the pilot only rollout strategy.\n\nRATIONALE: This action ensures that the monitoring processes in Region A reflect the new directive and prepares for a focused evaluation of the pilot deployment.",
+  "elapsed_seconds": 14.388577222824097,
+  "injected_tokens": 77,
+  "usage": {
+    "completion_tokens": 48,
+    "prompt_tokens": 511,
+    "total_tokens": 559,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  }
+}
