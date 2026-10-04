@@ -1,0 +1,162 @@
+{
+  "condition_id": "STRUCTURED_CONTROLLER",
+  "correct_class": "ADAPT_MEANS",
+  "injected_text": "[WORK STATE IDS]\nOPEN O1: test confirm; verify the committed result.\nCLOSED C1: import passes; preview alignment is accepted within tolerance.\nRETIRED R1: further preview/CSS polishing before functional acceptance.\nVALID_ROUTE V1: confirm and committed-result verification.\n[NEXT] Choose an OPEN_ID. Do not choose CLOSED or RETIRED. Use only a VALID_ROUTE.",
+  "instrument_family": "CURRENT4",
+  "messages": [
+    {
+      "content": "Release target: the import-preview-confirm workflow after functional acceptance is complete.",
+      "role": "user"
+    },
+    {
+      "content": "I will resolve the preview display issue and continue through the functional checks.",
+      "role": "assistant"
+    },
+    {
+      "content": "Acceptance covers import, preview, confirm, and the committed result.",
+      "role": "user"
+    },
+    {
+      "content": "Understood.",
+      "role": "assistant"
+    },
+    {
+      "content": "Import now passes.",
+      "role": "user"
+    },
+    {
+      "content": "I am working on preview alignment.",
+      "role": "assistant"
+    },
+    {
+      "content": "The first adjustment fixed desktop alignment.",
+      "role": "user"
+    },
+    {
+      "content": "I will check the narrow viewport.",
+      "role": "assistant"
+    },
+    {
+      "content": "Narrow view is off by one pixel.",
+      "role": "user"
+    },
+    {
+      "content": "I will refine that spacing.",
+      "role": "assistant"
+    },
+    {
+      "content": "The acceptance tolerance allows a two-pixel visual difference.",
+      "role": "user"
+    },
+    {
+      "content": "The remaining difference is within tolerance.",
+      "role": "assistant"
+    },
+    {
+      "content": "Confirm has not been exercised yet, and no committed-result check exists.",
+      "role": "user"
+    },
+    {
+      "content": "Those functional checks remain outstanding.",
+      "role": "assistant"
+    },
+    {
+      "content": "The one-pixel difference is still visible if zoomed to 175 percent.",
+      "role": "user"
+    },
+    {
+      "content": "That makes the cosmetic issue easy to notice during close inspection.",
+      "role": "assistant"
+    },
+    {
+      "content": "A CSS cleanup would remove several old selectors.",
+      "role": "user"
+    },
+    {
+      "content": "That would improve maintainability.",
+      "role": "assistant"
+    },
+    {
+      "content": "The confirm button is working enough to be tested now.",
+      "role": "user"
+    },
+    {
+      "content": "The untested functional path is available.",
+      "role": "assistant"
+    },
+    {
+      "content": "No one has inspected the committed record after confirm.",
+      "role": "user"
+    },
+    {
+      "content": "That acceptance step remains unresolved.",
+      "role": "assistant"
+    },
+    {
+      "content": "The design review is later today.",
+      "role": "user"
+    },
+    {
+      "content": "There is limited time before review.",
+      "role": "assistant"
+    },
+    {
+      "content": "[WORK STATE IDS]\nOPEN O1: test confirm; verify the committed result.\nCLOSED C1: import passes; preview alignment is accepted within tolerance.\nRETIRED R1: further preview/CSS polishing before functional acceptance.\nVALID_ROUTE V1: confirm and committed-result verification.\n[NEXT] Choose an OPEN_ID. Do not choose CLOSED or RETIRED. Use only a VALID_ROUTE.",
+      "role": "user"
+    },
+    {
+      "content": "Noted.",
+      "role": "assistant"
+    },
+    {
+      "content": "Choose the next action.\n\nWhat should you do next?\nReturn exactly three lines:\nOPEN_ID: <OPEN id>\nROUTE_ID: <VALID_ROUTE id or NONE>\nACTION: <one concrete action>",
+      "role": "user"
+    }
+  ],
+  "replicate": 1,
+  "rubric": {
+    "forbidden_primary": [
+      "one-pixel",
+      "one pixel",
+      "continue preview",
+      "rebuild the preview",
+      "css cleanup",
+      "css"
+    ],
+    "required_any": [
+      "confirm"
+    ],
+    "required_goal_any": [
+      "committed",
+      "result",
+      "verify",
+      "test"
+    ]
+  },
+  "run_id": "GPAP2A-CURRENT-H3_PATCH_LOOP-STRUCTURED_CONTROLLER-R01",
+  "sampling": {
+    "max_tokens": 180,
+    "seed": 385916770,
+    "temperature": 0.7,
+    "top_p": 0.95
+  },
+  "scenario_id": "H3_PATCH_LOOP",
+  "status": "COMPLETE",
+  "controller_state": {
+    "OPEN": "test confirm; verify the committed result.",
+    "CLOSED": "import passes; preview alignment is accepted within tolerance.",
+    "RETIRED": "further preview/CSS polishing before functional acceptance.",
+    "VALID_ROUTE": "confirm and committed-result verification."
+  },
+  "raw_text": "OPEN_ID: O1\nROUTE_ID: V1\nACTION: Verify the committed result after confirming the import and preview alignment.",
+  "elapsed_seconds": 11.544691324234009,
+  "injected_tokens": 81,
+  "usage": {
+    "completion_tokens": 27,
+    "prompt_tokens": 506,
+    "total_tokens": 533,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    }
+  }
+}
