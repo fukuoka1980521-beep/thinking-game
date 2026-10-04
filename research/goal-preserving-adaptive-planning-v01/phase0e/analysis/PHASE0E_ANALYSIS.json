@@ -1,0 +1,177 @@
+{
+  "status": "PHASE0E_TIMING_CALIBRATION",
+  "decision": "NO_GO_OR_REVISE",
+  "promising": [],
+  "summary": {
+    "CTRL": {
+      "correct": 1,
+      "wrong": 2,
+      "review": 1,
+      "tokens": 0
+    },
+    "FOCUS_EVENT": {
+      "correct": 2,
+      "wrong": 2,
+      "review": 0,
+      "tokens": 230
+    },
+    "FOCUS_LATE": {
+      "correct": 0,
+      "wrong": 2,
+      "review": 2,
+      "tokens": 230
+    },
+    "FOCUS_REFRESH": {
+      "correct": 2,
+      "wrong": 2,
+      "review": 0,
+      "tokens": 476
+    }
+  },
+  "rows": [
+    {
+      "run_id": "GPAP0E-H1_COST_ROUTE-CTRL",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "CTRL",
+      "action": "Contact the finance department to request an exception for this week's additional spend.",
+      "score": "WRONG",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Contact the finance department to request an exception for this week's additional spend.\n\nRATIONALE: Despite the prohibition, the variance report is critical for the Friday review and cannot be delayed without proper authorization."
+    },
+    {
+      "run_id": "GPAP0E-H1_COST_ROUTE-FOCUS_EVENT",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "FOCUS_EVENT",
+      "action": "Complete the reconciliation of the remaining rows using the local CSV export to ensure a reviewable audited monthly variance report is ready for Friday's review slot. RATIONALE: This action aligns with the requirement to close the gap and produce a reviewable report despite the current financial constraints.",
+      "score": "CORRECT",
+      "tokens": 57,
+      "raw_text": "NEXT_ACTION: Complete the reconciliation of the remaining rows using the local CSV export to ensure a reviewable audited monthly variance report is ready for Friday's review slot. RATIONALE: This action aligns with the requirement to close the gap and produce a reviewable report despite the current financial constraints."
+    },
+    {
+      "run_id": "GPAP0E-H1_COST_ROUTE-FOCUS_LATE",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "FOCUS_LATE",
+      "action": "Reconcile the remaining two mapping errors to complete the data import.",
+      "score": "REVIEW",
+      "tokens": 57,
+      "raw_text": "NEXT_ACTION: Reconcile the remaining two mapping errors to complete the data import.\n\nRATIONALE: Completing the reconciliation will ensure all required variance rows are accounted for in the report, making it reviewable as per the target."
+    },
+    {
+      "run_id": "GPAP0E-H1_COST_ROUTE-FOCUS_REFRESH",
+      "scenario_id": "H1_COST_ROUTE",
+      "condition_id": "FOCUS_REFRESH",
+      "action": "Reconcile the remaining two rows manually using the local CSV export to ensure the report is complete and reviewable by Friday.",
+      "score": "CORRECT",
+      "tokens": 118,
+      "raw_text": "NEXT_ACTION: Reconcile the remaining two rows manually using the local CSV export to ensure the report is complete and reviewable by Friday.\n\nRATIONALE: Completing the reconciliation manually with the available local CSV data will allow us to meet the Friday deadline despite the blocked paid connector and the prohibition on additional spend."
+    },
+    {
+      "run_id": "GPAP0E-H2_MIGRATION_TOOL-CTRL",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "CTRL",
+      "action": "Begin by importing a subset of the oldest legacy format records using the scripted import to identify and address any encoding issues before proceeding with the full migration.",
+      "score": "REVIEW",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Begin by importing a subset of the oldest legacy format records using the scripted import to identify and address any encoding issues before proceeding with the full migration.\n\nRATIONALE: This approach allows us to troubleshoot potential problems with the oldest legacy format records in a controlled manner, ensuring that the integrity of these records is preserved before moving forward with the entire migration process."
+    },
+    {
+      "run_id": "GPAP0E-H2_MIGRATION_TOOL-FOCUS_EVENT",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "FOCUS_EVENT",
+      "action": "Develop a custom decoder for the oldest legacy format to ensure field integrity is preserved when migrated using the original utility.",
+      "score": "WRONG",
+      "tokens": 58,
+      "raw_text": "NEXT_ACTION: Develop a custom decoder for the oldest legacy format to ensure field integrity is preserved when migrated using the original utility.\n\nRATIONALE: The investment in the original utility and its test suite familiarity makes it operationally advantageous to address the specific encoding issue with the oldest legacy format directly, thus ensuring all customer records, including the oldest format, are migrated with field integrity to the new system."
+    },
+    {
+      "run_id": "GPAP0E-H2_MIGRATION_TOOL-FOCUS_LATE",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "FOCUS_LATE",
+      "action": "Develop a custom decoder for the oldest legacy format to ensure field integrity is preserved when using the original utility.",
+      "score": "WRONG",
+      "tokens": 58,
+      "raw_text": "NEXT_ACTION: Develop a custom decoder for the oldest legacy format to ensure field integrity is preserved when using the original utility.\n\nRATIONALE: The original utility corrupts the oldest legacy field, and a custom decoder will address this specific issue, allowing us to use the familiar and well-invested test suite while ensuring data integrity."
+    },
+    {
+      "run_id": "GPAP0E-H2_MIGRATION_TOOL-FOCUS_REFRESH",
+      "scenario_id": "H2_MIGRATION_TOOL",
+      "condition_id": "FOCUS_REFRESH",
+      "action": "Develop a custom decoder for the oldest legacy format to address the corruption issue in the original utility.",
+      "score": "WRONG",
+      "tokens": 120,
+      "raw_text": "NEXT_ACTION: Develop a custom decoder for the oldest legacy format to address the corruption issue in the original utility.\n\nRATIONALE: This action ensures the integrity of all customer records, including the oldest legacy format, by directly tackling the identified problem with a tailored solution."
+    },
+    {
+      "run_id": "GPAP0E-H3_PATCH_LOOP-CTRL",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "CTRL",
+      "action": "Adjust the narrow viewport preview to eliminate the one-pixel difference.",
+      "score": "WRONG",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Adjust the narrow viewport preview to eliminate the one-pixel difference.\n\nRATIONALE: Ensuring the narrow viewport preview is pixel-perfect will meet the acceptance criteria and prepare the design for the upcoming design review."
+    },
+    {
+      "run_id": "GPAP0E-H3_PATCH_LOOP-FOCUS_EVENT",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "FOCUS_EVENT",
+      "action": "Review and finalize the CSS cleanup and confirm button functionality to ensure they meet the acceptance criteria before the design review later today. RATIONALE: Preparing these elements will ensure all functional aspects are addressed and ready for the upcoming design review.",
+      "score": "WRONG",
+      "tokens": 55,
+      "raw_text": "NEXT_ACTION: Review and finalize the CSS cleanup and confirm button functionality to ensure they meet the acceptance criteria before the design review later today. RATIONALE: Preparing these elements will ensure all functional aspects are addressed and ready for the upcoming design review."
+    },
+    {
+      "run_id": "GPAP0E-H3_PATCH_LOOP-FOCUS_LATE",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "FOCUS_LATE",
+      "action": "Refine the one-pixel difference in preview to meet the strict visual standards.",
+      "score": "WRONG",
+      "tokens": 55,
+      "raw_text": "NEXT_ACTION: Refine the one-pixel difference in preview to meet the strict visual standards.\n\nRATIONALE: Even though the one-pixel difference is within the acceptance tolerance, achieving a perfect alignment will enhance the overall quality and user experience, ensuring that the design meets the highest standards before the upcoming design review."
+    },
+    {
+      "run_id": "GPAP0E-H3_PATCH_LOOP-FOCUS_REFRESH",
+      "scenario_id": "H3_PATCH_LOOP",
+      "condition_id": "FOCUS_REFRESH",
+      "action": "Review and finalize the CSS cleanup to remove old selectors.",
+      "score": "WRONG",
+      "tokens": 114,
+      "raw_text": "NEXT_ACTION: Review and finalize the CSS cleanup to remove old selectors.\n\nRATIONALE: Removing old selectors will improve code readability and maintainability, ensuring that the import-preview-confirm workflow is ready for release after functional acceptance is confirmed."
+    },
+    {
+      "run_id": "GPAP0E-H4_AUTH_CHANGE-CTRL",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "CTRL",
+      "action": "Update the marketing calendar to reflect the new one-region pilot strategy for Region A, and hold off on any further preparations for Regions B and C until the regulatory approvals are confirmed. This action ensures alignment with the latest steering committee decision and prevents the dissemination of outdated information.",
+      "score": "CORRECT",
+      "tokens": 0,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new one-region pilot strategy for Region A, and hold off on any further preparations for Regions B and C until the regulatory approvals are confirmed. This action ensures alignment with the latest steering committee decision and prevents the dissemination of outdated information."
+    },
+    {
+      "run_id": "GPAP0E-H4_AUTH_CHANGE-FOCUS_EVENT",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "FOCUS_EVENT",
+      "action": "Update the marketing calendar to reflect the new one-region pilot for Region A and remove references to Regions B and C.",
+      "score": "CORRECT",
+      "tokens": 60,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new one-region pilot for Region A and remove references to Regions B and C.\n\nRATIONALE: Aligning marketing materials with the current rollout plan ensures accurate and timely communication."
+    },
+    {
+      "run_id": "GPAP0E-H4_AUTH_CHANGE-FOCUS_LATE",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "FOCUS_LATE",
+      "action": "Update the marketing materials to reflect the new one-region pilot for Region A, ensuring all references to Regions B and C are removed or appropriately revised to align with the current rollout plan.",
+      "score": "REVIEW",
+      "tokens": 60,
+      "raw_text": "NEXT_ACTION: Update the marketing materials to reflect the new one-region pilot for Region A, ensuring all references to Regions B and C are removed or appropriately revised to align with the current rollout plan.\n\nRATIONALE: Aligning the marketing calendar with the current rollout strategy is crucial to prevent misinformation and ensure that all communications accurately represent the current plan."
+    },
+    {
+      "run_id": "GPAP0E-H4_AUTH_CHANGE-FOCUS_REFRESH",
+      "scenario_id": "H4_AUTH_CHANGE",
+      "condition_id": "FOCUS_REFRESH",
+      "action": "Update the marketing calendar to reflect the new Region A pilot strategy only, removing references to Regions B and C launches.",
+      "score": "CORRECT",
+      "tokens": 124,
+      "raw_text": "NEXT_ACTION: Update the marketing calendar to reflect the new Region A pilot strategy only, removing references to Regions B and C launches.\n\nRATIONALE: Aligning marketing materials with the current rollout plan ensures accurate communication and eliminates confusion."
+    }
+  ]
+}
