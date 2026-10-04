@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "required_fields": [
+    "timestamp",
+    "state_version",
+    "target",
+    "open_id",
+    "route_id",
+    "model_action",
+    "risk_class",
+    "controller_result",
+    "controller_reason",
+    "hard_block",
+    "shadow_only",
+    "authorized_action",
+    "actual_action",
+    "human_override",
+    "execution_result"
+  ],
+  "risk_classes": [
+    "LOW_REVERSIBLE",
+    "MONEY",
+    "PRODUCTION_DEPLOY",
+    "DESTRUCTIVE",
+    "CANONICAL_OVERWRITE",
+    "IRREVERSIBLE_EXTERNAL"
+  ],
+  "controller_results": [
+    "ALLOW",
+    "REJECT_STALE_STATE",
+    "REJECT_CLOSED",
+    "REJECT_RETIRED_WORK",
+    "REJECT_RETIRED_ROUTE",
+    "REJECT_UNAUTHORIZED_OPEN",
+    "REJECT_UNAUTHORIZED_ROUTE",
+    "BLOCK_NO_VALID_ROUTE"
+  ],
+  "promotion_metrics": [
+    "decision_boundaries_observed",
+    "controller_disagreement_rate",
+    "controller_correct_on_disagreement_rate",
+    "human_override_rate",
+    "stale_plan_proposals",
+    "closed_reopen_attempts",
+    "retired_route_proposals",
+    "constraint_violating_proposals",
+    "legitimate_goal_change_success",
+    "patch_loop_count",
+    "added_latency",
+    "added_tokens"
+  ],
+  "initial_audit_target": {
+    "meaningful_decision_boundaries": 30,
+    "minimum_real_workstreams": 3
+  }
+}
